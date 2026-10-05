@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261005-130000">
+<meta name="beeatlas-build" content="20261005-142108">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -1504,6 +1504,8 @@
   .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:var(--space-10) var(--space-5);}
   .empty-state .box-illustration{width:130px;height:130px;margin-bottom:var(--space-6);}
   .empty-state h3{font-size:19px;line-height:24px;letter-spacing:.2px;font-weight:500;margin:0 0 var(--space-5);}
+  .uc-zero-state h3{margin-bottom:var(--space-4);}
+  .uc-zero-state p{max-width:560px;margin:0 0 var(--space-6);color:var(--text-secondary);font-size:15px;line-height:20px;letter-spacing:.2px;}
 
 
   .info-grid .lbl{font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);margin-bottom:var(--space-2);}
@@ -9262,6 +9264,7 @@ function filteredUseCases(p){
 }
 
 function UseCaseTab(p){
+  if(!(p.useCases||[]).length) return UseCaseZeroState(p);
   const list = filteredUseCases(p);
   return `
     <div class="filters-row uc-filters">
@@ -9278,6 +9281,7 @@ function UseCaseTab(p){
         <button class="view-toggle-btn ${state.ucListView==="grid"?"active":""}" data-action="uc-set-view" data-mode="grid" title="Карточки">${icon("grid")}</button>
         <button class="view-toggle-btn ${state.ucListView==="table"?"active":""}" data-action="uc-set-view" data-mode="table" title="Таблица">${icon("menu")}</button>
       </div>
+      <button class="btn btn-primary btn-sm" data-action="uc-create" data-id="${p.id}">Создать сценарий</button>
     </div>
 
     ${state.ucListView==="grid" ? `
@@ -9695,6 +9699,19 @@ function UseCaseDetailPage(projectId, ucId){
   `;
 }
 
+/* Нулевое состояние вкладки Use Case. Текст объясняет, что даёт сценарий и что
+   останется сделать руками: построение больше не идёт от агента, поэтому описание
+   агента («Разбирает диаграмму…») здесь не подходит — оно рассказывало про агента,
+   а не про содержимое экрана. */
+function UseCaseZeroState(p){
+  return `<div class="empty-state uc-zero-state">
+    ${boxIllustration()}
+    <h3>Нет созданных сценариев</h3>
+    <p>Сценарий Use Case разложит диаграмму PlantUML на шаги, определит системы-участники и сопоставит вызовы с интерфейсами ландшафта. Решения останутся только по вызовам, которые не удалось сопоставить.</p>
+    <button class="btn btn-primary" data-action="uc-create" data-id="${p.id}">Создать сценарий</button>
+  </div>`;
+}
+
 function BusinessTab(p){
   const b = p.business;
   if(!b){
@@ -9777,7 +9794,9 @@ function InternalAgentsGrid(p){
           </div>
           <div class="cell-clamp-wrap"><div class="agent-card-v2-sub cell-clamp">${escapeHtml(meta.desc)}</div><div class="cell-tooltip">${escapeHtml(meta.desc)}</div></div>
           <div class="agent-card-v2-foot">
-            <button class="btn btn-outline btn-sm" data-action="launch-agent" data-agent="${key}" data-id="${p.id}">Запустить агента</button>
+            ${key==="usecase"
+              ? `<button class="btn btn-outline btn-sm" data-action="open-project-usecase" data-id="${p.id}">Открыть Use Case</button>`
+              : `<button class="btn btn-outline btn-sm" data-action="launch-agent" data-agent="${key}" data-id="${p.id}">Запустить агента</button>`}
           </div>
         </div>
       `;
@@ -13086,6 +13105,7 @@ function handleAction(action, el){
     case "open-assessment": go("assessment-detail", {projectId: el.dataset.id, assessmentId: el.dataset.aid}); setTimeout(bindTocScroll,30); break;
 
     case "set-project-tab": state.projectTab = el.dataset.tab; render(); break;
+    case "uc-create": startUcWizard(el.dataset.id); break;
     case "set-project-data-subtab": state.projectDataSubTab = el.dataset.sub; render(); break;
     case "set-project-agents-subtab": state.projectAgentsSubTab = el.dataset.sub; render(); break;
     case "launch-agent": {
