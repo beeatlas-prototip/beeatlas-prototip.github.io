@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261005-142624">
+<meta name="beeatlas-build" content="20261005-143955">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -8546,7 +8546,7 @@ function UcActionsMenu(p, u){
     `<div class="uc-menu-item" data-action="${action}" ${data}>${icon(ico)}<span class="txt">${txt}</span>${extra||""}</div>`;
   return `
     <div class="uc-menu">
-      <div class="uc-menu-cap">Ветка сценария</div>
+      <div class="uc-menu-cap">Ветка Use Case</div>
       ${branches.map(b=>`
         <div class="uc-menu-item" data-action="uc-switch-branch" data-branch="${escapeHtml(b.id)}">
           ${icon("gitBranch")}<span class="txt">${escapeHtml(b.id)}</span>
@@ -8560,7 +8560,7 @@ function UcActionsMenu(p, u){
       </div>
       ${activeMeta && activeMeta.kind==="user" ? item("uc-branch-delete-ask",`data-branch="${escapeHtml(u.branch)}"`,"trash",`Удалить ветку «${escapeHtml(u.branch)}»`) : ""}
       <div class="uc-menu-divider"></div>
-      ${item("edit-usecase",`data-id="${p.id}" data-uc="${u.id}"`,"pencil","Редактировать сценарий")}
+      ${item("edit-usecase",`data-id="${p.id}" data-uc="${u.id}"`,"pencil","Редактировать Use Case")}
       ${item("open-usecase-history",`data-id="${p.id}" data-uc="${u.id}"`,"history","История импорта")}
       <div class="uc-menu-divider"></div>
       ${item("export-uc",`data-format="puml" data-id="${p.id}" data-uc="${u.id}"`,"upload","Экспорт в PUML")}
@@ -8601,12 +8601,12 @@ function UcBranchStatusRow(p, u){
 function UcBranchEmptyState(u){
   const donors = ucBranchList(u).filter(b=>b.id!==u.branch && ucBranchData(u,b.id).scenarios.length).map(b=>b.id);
   const hint = donors.length
-    ? `Создай ветку-клон от «${donors.join("»/«")}», чтобы перенести сюда состав, либо импортируй сценарий заново.`
-    : `В других ветках этого сценария его тоже пока нет — начни с импорта.`;
+    ? `Создай ветку-клон от «${donors.join("»/«")}», чтобы перенести сюда состав, либо импортируй Use Case заново.`
+    : `В других ветках этого Use Case его тоже пока нет — начни с импорта.`;
   return `
     <div class="card empty-state" style="padding:var(--space-9) var(--space-5);">
       <div style="width:56px;height:56px;border-radius:50%;background:var(--bg-alt);display:flex;align-items:center;justify-content:center;margin-bottom:var(--space-5);color:var(--text-tertiary);">${icon("gitBranch")}</div>
-      <h3>Сценарий не заполнен в ветке «${escapeHtml(u.branch)}»</h3>
+      <h3>Use Case не заполнен в ветке «${escapeHtml(u.branch)}»</h3>
       <div style="color:var(--text-secondary);max-width:460px;">Ветки полностью изолированы — состав не расшаривается автоматически. ${hint}</div>
     </div>
   `;
@@ -8630,7 +8630,7 @@ function UcBranchCreatePanel(){
     <div class="backdrop${enter}" data-action="uc-close-branch-create"></div>
     <div class="side-panel${enter}">
       <div class="side-head">
-        <h2>Новая ветка сценария</h2>
+        <h2>Новая ветка Use Case</h2>
         <button class="wizard-close" data-action="uc-close-branch-create">${icon("x")}</button>
       </div>
       <div class="side-body">
@@ -8645,7 +8645,7 @@ function UcBranchCreatePanel(){
         </div>
         <div class="readonly-note" style="align-items:flex-start;">
           ${icon("info")}
-          <span>Новая ветка получит полную независимую копию шагов сценария выбранной ветки. Дальнейшие изменения в одной ветке не затронут другую.</span>
+          <span>Новая ветка получит полную независимую копию шагов выбранной ветки. Дальнейшие изменения в одной ветке не затронут другую.</span>
         </div>
       </div>
       <div class="side-foot">
@@ -8682,7 +8682,7 @@ function UcMergePanel(){
       <div class="wizard-body">
        <div style="max-width:640px;margin:0 auto;">
         <div class="cj-merge-title-wrap">
-          <h2 style="margin-bottom:var(--space-2);">Объединение веток сценария</h2>
+          <h2 style="margin-bottom:var(--space-2);">Объединение веток Use Case</h2>
           <button class="icon-btn cj-merge-help-btn" data-action="toggle-popover" data-popover="uc-merge-help" title="Как это работает">${icon("info")}</button>
           ${state.popover==="uc-merge-help" ? `
             <div class="popover cj-merge-help-popover">
@@ -8694,7 +8694,7 @@ function UcMergePanel(){
               </ul>
             </div>` : ""}
         </div>
-        <div style="color:var(--text-secondary);font-size:13px;margin-bottom:var(--space-6);">Выбери, откуда и куда переносим изменения сценария «${escapeHtml(u.name)}»</div>
+        <div style="color:var(--text-secondary);font-size:13px;margin-bottom:var(--space-6);">Выбери, откуда и куда переносим изменения Use Case «${escapeHtml(u.name)}»</div>
 
         <div style="display:flex;gap:var(--space-4);">
           <div class="field-block" style="flex:1;">
@@ -9271,7 +9271,7 @@ function UseCaseTab(p){
       <div class="search-wrap">
         <div class="field-with-icon">
           ${icon("search")}
-          <input class="input" id="ucListSearch" placeholder="Поиск по названию или коду сценария" value="${escapeHtml(state.ucSearch)}" autocomplete="off"/>
+          <input class="input" id="ucListSearch" placeholder="Поиск по названию или коду Use Case" value="${escapeHtml(state.ucSearch)}" autocomplete="off"/>
         </div>
       </div>
       ${FilterSelect({id:"uc-filter-source", label:"Источник", value:state.ucSourceFilter, options:["Все","Ручной импорт","Автоматический импорт"], action:"uc-source-filter-set"})}
@@ -9281,7 +9281,7 @@ function UseCaseTab(p){
         <button class="view-toggle-btn ${state.ucListView==="grid"?"active":""}" data-action="uc-set-view" data-mode="grid" title="Карточки">${icon("grid")}</button>
         <button class="view-toggle-btn ${state.ucListView==="table"?"active":""}" data-action="uc-set-view" data-mode="table" title="Таблица">${icon("menu")}</button>
       </div>
-      <button class="btn btn-primary btn-sm" data-action="uc-create" data-id="${p.id}">Создать сценарий</button>
+      <button class="btn btn-primary btn-sm" data-action="uc-create" data-id="${p.id}">Создать Use Case</button>
     </div>
 
     ${state.ucListView==="grid" ? `
@@ -9290,7 +9290,7 @@ function UseCaseTab(p){
     ` : `
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Сценарий</th><th>Статус</th><th>Источник</th><th>Дата изменения</th><th>История</th><th></th></tr></thead>
+        <thead><tr><th>Use Case</th><th>Статус</th><th>Источник</th><th>Дата изменения</th><th>История</th><th></th></tr></thead>
         <tbody>
           ${list.length ? list.map(u=>`
             <tr>
@@ -9302,7 +9302,7 @@ function UseCaseTab(p){
               <td>${escapeHtml(u.source)}</td>
               <td>${escapeHtml(u.updated)}</td>
               <td><span class="proj-link" data-action="open-usecase-history" data-id="${p.id}" data-uc="${u.id}">Посмотреть</span></td>
-              <td style="width:44px;"><button class="icon-btn" data-action="edit-usecase" data-id="${p.id}" data-uc="${u.id}" title="Редактировать сценарий">${icon("pencil")}</button></td>
+              <td style="width:44px;"><button class="icon-btn" data-action="edit-usecase" data-id="${p.id}" data-uc="${u.id}" title="Редактировать Use Case">${icon("pencil")}</button></td>
             </tr>
           `).join("") : `
             <tr><td colspan="6" style="text-align:center;color:var(--text-secondary);padding:var(--space-8);">Ничего не нашлось. Измени фильтры или сбрось их</td></tr>
@@ -9318,7 +9318,7 @@ function UseCaseTab(p){
 function UseCaseCard(projectId, u){
   return `
     <div class="card uc-card">
-      <div class="uc-card-head">${ucStatusBadge(u.status)}<button class="icon-btn" data-action="edit-usecase" data-id="${projectId}" data-uc="${u.id}" title="Редактировать сценарий">${icon("pencil")}</button></div>
+      <div class="uc-card-head">${ucStatusBadge(u.status)}<button class="icon-btn" data-action="edit-usecase" data-id="${projectId}" data-uc="${u.id}" title="Редактировать Use Case">${icon("pencil")}</button></div>
       <div class="uc-card-name" data-action="open-usecase" data-id="${projectId}" data-uc="${u.id}" title="${escapeHtml(u.name)}">${escapeHtml(u.name)}</div>
       <div class="row-sub">${escapeHtml(u.code)}</div>
       <div class="uc-card-meta">
@@ -9498,7 +9498,7 @@ function UcDynamicPanel(){
   return `
     <div class="side-head"><h2>Dynamic-диаграмма ${escapeHtml(sp.seq)}</h2><button class="wizard-close" data-action="close-side">${icon("x")}</button></div>
     <div class="side-body">
-      <p style="color:var(--text-secondary);font-size:15px;margin:0 0 var(--space-4);">Диаграмма последовательности вызовов части сценария, в нотации PlantUML</p>
+      <p style="color:var(--text-secondary);font-size:15px;margin:0 0 var(--space-4);">Диаграмма последовательности вызовов шага, в нотации PlantUML</p>
       <pre style="background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius-sm);padding:var(--space-4) var(--space-4);font-size:13px;line-height:22px;overflow-x:auto;white-space:pre;">${escapeHtml(sp.plantUml||"—")}</pre>
     </div>
     <div class="side-foot">
@@ -9706,9 +9706,9 @@ function UseCaseDetailPage(projectId, ucId){
 function UseCaseZeroState(p){
   return `<div class="empty-state uc-zero-state">
     ${boxIllustration()}
-    <h3>Нет созданных сценариев</h3>
-    <p>Создайте сценарий из диаграммы PlantUML: шаги, системы-участники и вызовы определятся автоматически. Решения останутся только по вызовам, которые не удалось сопоставить.</p>
-    <button class="btn btn-primary" data-action="uc-create" data-id="${p.id}">Создать сценарий</button>
+    <h3>Нет созданных Use Case</h3>
+    <p>Создайте Use Case из диаграммы PlantUML: шаги, системы-участники и вызовы определятся автоматически. Решения останутся только по вызовам, которые не удалось сопоставить.</p>
+    <button class="btn btn-primary" data-action="uc-create" data-id="${p.id}">Создать Use Case</button>
   </div>`;
 }
 
@@ -11293,7 +11293,7 @@ function hldFlowDoneMsg(type, r){
 
 /* ============================= WIZARD: ИМПОРТ USECASE ============================= */
 const UC_WIZARD_STEPS = [
-  {key:"setup", label:"Данные сценария"},
+  {key:"setup", label:"Данные Use Case"},
   {key:"result", label:"Результат"},
 ];
 
@@ -11394,7 +11394,7 @@ function UcWizardOverlay(){
   // отступы, что и контент, вместо разметки от края до края (см. .wiz-col .wizard-stepper-wrap).
   return `<div class="wizard-overlay wiz-col">
     <div class="wizard-head">
-      <h2>${w.editing ? "Редактирование сценария" : "Импортирование сценария"}</h2>
+      <h2>${w.editing ? "Редактирование Use Case" : "Создание Use Case"}</h2>
       <button class="wizard-close" data-action="close-uc-wizard">${icon("x")}</button>
     </div>
     <div class="wizard-body${centerCls}">
@@ -11445,8 +11445,8 @@ function UcWizardStepFooter(w){
       return `<button class="btn btn-outline" data-action="uc-abort-import">Прервать импорт</button>`;
     }
     return `
-      <button class="btn btn-outline" data-action="uc-wiz-restart">Переделать сценарий</button>
-      <button class="btn btn-primary" data-action="uc-confirm-apply">${w.editing ? "Применить изменения сценария" : "Применить сценарий"}</button>
+      <button class="btn btn-outline" data-action="uc-wiz-restart">Переделать Use Case</button>
+      <button class="btn btn-primary" data-action="uc-confirm-apply">${w.editing ? "Применить изменения" : "Применить Use Case"}</button>
     `;
   }
   return "";
@@ -11467,8 +11467,8 @@ function UcStepSetup(w){
       </div>
       ${w.editing ? "" : `
       <div class="pill-toggle">
-        <div class="pill-item ${d.mode==="new"?"active":""}" data-action="uc-set-mode" data-mode="new">Новый сценарий</div>
-        <div class="pill-item ${d.mode==="existing"?"active":""}" data-action="uc-set-mode" data-mode="existing">Существующий сценарий</div>
+        <div class="pill-item ${d.mode==="new"?"active":""}" data-action="uc-set-mode" data-mode="new">Новый Use Case</div>
+        <div class="pill-item ${d.mode==="existing"?"active":""}" data-action="uc-set-mode" data-mode="existing">Существующий Use Case</div>
       </div>`}
       <div class="uc-step-setup-row">
         <div class="field-block">
@@ -11477,12 +11477,12 @@ function UcStepSetup(w){
               <div class="ffield-box">
                 <input class="input ffield-input" id="ucWizName" value="${escapeHtml(d.ucName)}"/>
               </div>
-              <label class="ffield-label">Название сценария</label>
+              <label class="ffield-label">Название Use Case</label>
             </div>
           ` : FloatingSelect({
               id:"ucWizExisting",
-              label:"Название сценария",
-              valueLabel: currentExisting ? currentExisting.name : "Выбрать сценарий",
+              label:"Название Use Case",
+              valueLabel: currentExisting ? currentExisting.name : "Выбрать Use Case",
               menuHtml: (p.useCases||[]).map(u=>`<div class="ds-select-item two-line${d.existingUcId===u.id?" selected":""}" data-action="uc-wiz-set-existing" data-value="${u.id}" title="${escapeHtml(existingLabel(u))}"><div>${escapeHtml(u.name)}</div><div class="ds-select-sub">${escapeHtml(u.code)}</div></div>`).join("")
             })}
         </div>
@@ -11506,7 +11506,7 @@ function UcStepSetup(w){
           <label class="ffield-label">PlantUml</label>
         </div>
       </div>
-      <p style="color:var(--text-secondary);font-size:15px;margin:0 0 var(--space-7);">Вставь текст диаграммы последовательности в нотации PlantUML. Используй названия систем/контейнеров, соответствующие существующим в ландшафте BeeAtlas — так части сценария будут сопоставлены автоматически.</p>
+      <p style="color:var(--text-secondary);font-size:15px;margin:0 0 var(--space-7);">Вставь текст диаграммы последовательности в нотации PlantUML. Используй названия систем/контейнеров, соответствующие существующим в ландшафте BeeAtlas — так вызовы будут сопоставлены автоматически.</p>
 
       <div class="uc-form-section">
         <h3>Добавить файл</h3>
@@ -11571,7 +11571,7 @@ function UcStepResult(w){
   return `
     <div style="width:100%;">
     ${UseCaseCjCard(preview)}
-    <div class="section-head-row"><h2 style="margin:0;font-size:19px;line-height:24px;letter-spacing:.2px;font-weight:500;">Staging собрал сценарии из PlantUML</h2></div>
+    <div class="section-head-row"><h2 style="margin:0;font-size:19px;line-height:24px;letter-spacing:.2px;font-weight:500;">Staging собрал Use Case из PlantUML</h2></div>
     <div class="uc-stat-cards">
       <div class="uc-stat-card"><div class="val">${confirmedCount}</div><div class="lbl"><span class="dot green"></span>Подтверждено</div></div>
       <div class="uc-stat-card"><div class="val">${plannedCount}</div><div class="lbl"><span class="dot gray"></span>Планируется</div></div>
@@ -11672,7 +11672,7 @@ function UcUnmappedPartCard(x){
         </label>
         <label class="uc-choice ${choice==="notcall"?"active":""}">
           <input type="radio" name="uc-choice-${x.id}" data-action="uc-part-choice" data-id="${x.id}" data-choice="notcall" ${choice==="notcall"?"checked":""}/>
-          <div><b>Не является вызовом</b><div class="row-sub">Шаг останется в сценарии информационной строкой и в маппинг не пойдёт</div></div>
+          <div><b>Не является вызовом</b><div class="row-sub">Шаг останется в Use Case информационной строкой и в маппинг не пойдёт</div></div>
         </label>
       </div>
 
@@ -11825,7 +11825,7 @@ function ucConfirmApply(){
   const projectId = p.id, ucId = uc.id;
   const wasExisting = d.mode==="existing";
   state.ucWizard = null;
-  showToast(wasExisting ? "Изменения сохранены" : "Сценарий создан");
+  showToast(wasExisting ? "Изменения сохранены" : "Use Case создан");
   openUseCase(projectId, ucId);
 }
 
