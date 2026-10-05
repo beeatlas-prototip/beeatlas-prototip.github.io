@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261002-150535">
+<meta name="beeatlas-build" content="20261005-130000">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -9335,6 +9335,7 @@ function findUseCase(p, ucId){
 function scenarioStatusBadge(status){
   if(status==="planned") return '<span class="badge gray">Планируется</span>';
   if(status==="confirmed") return '<span class="badge green">Подтверждено</span>';
+  if(status==="notcall") return '<span class="badge blue">Не является вызовом</span>';
   return '<span class="badge red">Не смаппирован</span>';
 }
 
@@ -9385,6 +9386,9 @@ function ucParticipantSystems(items){
     });
   });
   items.forEach(x=>{
+    // «Не является вызовом» — характеристика шага, а не вызова: такой шаг не делает
+    // систему-участника нераспознанной, поэтому выпадает из проверки целиком.
+    if(x.status==="notcall" || x.decision==="notcall") return;
     const known = x.mapped===true || x.status==="confirmed" || x.status==="planned";
     if(!known){
       const row = rows.find(r=>r.alias===splitParticipant(x.participant).callee);
@@ -11541,6 +11545,7 @@ function UcStepResult(w){
   const manualConfirmedCount = parts.filter(x=>x.decision==="specified").length;
   const confirmedCount = mappedCount + manualConfirmedCount;
   const plannedCount = parts.filter(x=>x.decision==="planned").length;
+  const notCallCount = parts.filter(x=>x.decision==="notcall").length;
   const unresolvedParts = parts.filter(x=>!x.mapped && !x.decision);
   const resolvedParts = parts.filter(x=>x.mapped || x.decision);
   const unmappedParts = parts.filter(x=>!x.mapped);
@@ -11552,6 +11557,7 @@ function UcStepResult(w){
       <div class="uc-stat-card"><div class="val">${confirmedCount}</div><div class="lbl"><span class="dot green"></span>Подтверждено</div></div>
       <div class="uc-stat-card"><div class="val">${plannedCount}</div><div class="lbl"><span class="dot gray"></span>Планируется</div></div>
       <div class="uc-stat-card"><div class="val">${unresolvedParts.length}</div><div class="lbl"><span class="dot orange"></span>Требуют решения</div></div>
+      ${notCallCount ? `<div class="uc-stat-card"><div class="val">${notCallCount}</div><div class="lbl"><span class="dot blue"></span>Не является вызовом</div></div>` : ""}
     </div>
     <div class="section-head-row" style="margin-bottom:var(--space-4);">
       <h3 style="margin:0;font-size:15px;">Список участников</h3>
@@ -11604,13 +11610,13 @@ function UcStepResult(w){
 // сворачивается в статус-карточку с карандашом, вместо того чтобы исчезать: пользователь видит
 // весь исходный набор несмаппированных частей и что с каждой уже решено, не считая по памяти.
 function UcResolvedUnmappedCard(x){
-  const confirmed = x.decision==="specified";
+  const status = x.decision==="specified" ? "confirmed" : x.decision;
   return `
     <div class="card uc-unmapped-card">
       <div class="uc-unmapped-head">
         <div><b><span class="uc-part-code">${x.part}</span> ${escapeHtml(x.participant)} ${escapeHtml(x.action)}</b></div>
         <div style="display:flex;align-items:center;gap:var(--space-3);">
-          ${scenarioStatusBadge(confirmed ? "confirmed" : "planned")}
+          ${scenarioStatusBadge(status)}
           <button class="btn btn-outline btn-icon-only btn-sm" data-action="uc-reset-part" data-id="${x.id}" title="Изменить решение">${icon("pencil")}</button>
         </div>
       </div>
@@ -11621,6 +11627,7 @@ function UcResolvedUnmappedCard(x){
 function ucPartCanSave(x){
   if(x.choice==="specified") return !!((x.bc||"").trim() && (x.containerName||"").trim() && (x.interfaceCode||"").trim());
   if(x.choice==="planned") return !!((x.bc||"").trim() && (x.containerName||"").trim() && (x.interfaceCode||"").trim() && (x.protocol||"").trim());
+  if(x.choice==="notcall") return true;
   return false;
 }
 
@@ -11638,11 +11645,15 @@ function UcUnmappedPartCard(x){
       <div class="uc-choice-group">
         <label class="uc-choice ${choice==="specified"?"active":""}">
           <input type="radio" name="uc-choice-${x.id}" data-action="uc-part-choice" data-id="${x.id}" data-choice="specified" ${choice==="specified"?"checked":""}/>
-          <div><b>Указать существующие</b><div class="row-sub">Смаппить на интерфейс/контейнер из ландшафта</div></div>
+          <div><b>Существует, в спецификации архитектуры отсутствует</b><div class="row-sub">Вызов есть в системе, но в описание архитектуры не внесён</div></div>
         </label>
         <label class="uc-choice ${choice==="planned"?"active":""}">
           <input type="radio" name="uc-choice-${x.id}" data-action="uc-part-choice" data-id="${x.id}" data-choice="planned" ${choice==="planned"?"checked":""}/>
-          <div><b>Требовать новые</b><div class="row-sub">Создать интерфейс/контейнер в результате проекта</div></div>
+          <div><b>Необходимо разработать</b><div class="row-sub">Интерфейс или метод создаётся в результате проекта</div></div>
+        </label>
+        <label class="uc-choice ${choice==="notcall"?"active":""}">
+          <input type="radio" name="uc-choice-${x.id}" data-action="uc-part-choice" data-id="${x.id}" data-choice="notcall" ${choice==="notcall"?"checked":""}/>
+          <div><b>Не является вызовом</b><div class="row-sub">Шаг останется в сценарии информационной строкой и в маппинг не пойдёт</div></div>
         </label>
       </div>
 
@@ -11758,6 +11769,7 @@ function ucConfirmApply(){
   const notices = d.parts.filter(x=>!x.mapped).map(x=>{
     if(x.decision==="specified") return `${x.part}: указан существующий интерфейс архитектором (${x.api})`;
     if(x.decision==="planned") return `${x.part}: отмечен как плановый интерфейс (${x.api})`;
+    if(x.decision==="notcall") return `${x.part}: отмечен как не являющийся вызовом, остаётся информационной строкой`;
     return `${x.part}: ${x.note || "часть не сопоставлена"}`;
   });
   if(!notices.length) notices.push("Все части сопоставлены с известными системами ландшафта автоматически");
@@ -13135,6 +13147,10 @@ function handleAction(action, el){
         part.tcName = "Уточнено архитектором: " + part.api;
         part.tcCode = "TC-" + Math.floor(200+Math.random()*700);
         part.dynamic = "SEQ-" + Math.floor(10+Math.random()*89);
+      } else if(part.decision==="notcall"){
+        part.tcName = null;
+        part.tcCode = null;
+        part.dynamic = null;
       } else {
         part.tcName = "Плановый интерфейс: " + part.api;
         part.tcCode = null;
