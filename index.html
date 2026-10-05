@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261005-143955">
+<meta name="beeatlas-build" content="20261005-162531">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -2716,6 +2716,7 @@
 /* ---------- PlantUML import (карточка E2E-сценария) ---------- */
 .e2ecat-scope .pillstat.warn{background:var(--warn-bg);color:var(--warn-text);}
 .e2ecat-scope .pillstat.neutral{background:var(--bg-hover);color:var(--text-tertiary);}
+.e2ecat-scope .pillstat.info{background:var(--blue-bg);color:var(--blue-text);}
 .e2ecat-scope .title-edit-row{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
 .e2ecat-scope .iconghost{border:none;background:transparent;color:var(--text-tertiary);width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
 .e2ecat-scope .iconghost:hover{background:var(--bg-hover);color:var(--text);}
@@ -2724,6 +2725,9 @@
 .e2ecat-scope .vh-table th{text-align:left;font-size:12px;color:var(--text-tertiary);font-weight:600;padding:0 10px 10px;border-bottom:1px solid var(--border);white-space:nowrap;}
 .e2ecat-scope .vh-table td{padding:12px 10px;border-bottom:1px solid var(--border);font-size:13.5px;vertical-align:middle;}
 .e2ecat-scope .vh-table tr:last-child td{border-bottom:none;}
+.e2ecat-scope .vh-table.uc-table{table-layout:fixed;min-width:1120px;}
+.e2ecat-scope .vh-table.uc-table td{vertical-align:top;}
+.e2ecat-scope .uc-cell-clamp{display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;}
 .e2ecat-scope .vbadge{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:700;font-size:12.5px;background:var(--bg-hover);padding:3px 8px;border-radius:6px;}
 .e2ecat-scope textarea.puml{width:100%;min-height:220px;border:1px solid var(--border);background:var(--bg-hover);border-radius:var(--radius-sm);padding:12px;font-size:13px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;resize:vertical;outline:none;line-height:1.5;}
 .e2ecat-scope textarea.puml:focus{border-color:var(--accent);background:var(--bg-panel);}
@@ -2866,15 +2870,37 @@ var UC_ACTION_POOL=[
   "Система формирует заявку на подключение услуги, резервирует нужные ресурсы в биллинге и возвращает статус обработки заявки в приложение.",
   "Клиент подтверждает согласие с условиями оказания услуги, после чего система фиксирует согласие и передаёт данные в CRM для дальнейшей обработки."
 ];
+/* Участники, ТС и динамика — те же поля, что в UC_SCENARIOS_TEMPLATE на карточке
+   Use Case: вкладка «Use Case» в каталоге Е2Е показывает ту же таблицу, а не
+   урезанную выжимку, иначе один и тот же Use Case в двух местах выглядит
+   по-разному и читается как разные данные. */
+var UC_PARTICIPANT_POOL=[
+  'app — ext_gateway','app — cart_service','app — pricing_service',
+  'app — order_service','order_service — billing','order_service — notification'
+];
+var UC_TC_POOL=[
+  {name:'Возможность авторизации пользователя', code:'TC-101'},
+  {name:'Возможность получения корзины', code:'TC-108'},
+  {name:'Возможность расчёта стоимости', code:'TC-114'},
+  {name:'Возможность создания заказа', code:'TC-142'}
+];
 function buildStepUc(n, stepTitle){
   if(n%3===0) return null;
+  var tcA=UC_TC_POOL[n%UC_TC_POOL.length];
   return {
     code:'UC-'+(100+n),
-    name:'Use Case: '+stepTitle,
+    name:stepTitle,
     status: n%2===0 ? 'published':'draft',
     scenarios:[
-      {part:'P-01', action:UC_ACTION_POOL[n%UC_ACTION_POOL.length], call:E2E_CALLS_ONLY[n%E2E_CALLS_ONLY.length], status:'confirmed'},
-      {part:'P-02', action:UC_ACTION_POOL[(n+1)%UC_ACTION_POOL.length], call:E2E_CALLS_ONLY[(n+1)%E2E_CALLS_ONLY.length], status: n%2===0?'confirmed':'planned'}
+      {part:'P-01', participant:UC_PARTICIPANT_POOL[n%UC_PARTICIPANT_POOL.length],
+       action:UC_ACTION_POOL[n%UC_ACTION_POOL.length], call:E2E_CALLS_ONLY[n%E2E_CALLS_ONLY.length],
+       tcName:tcA.name, tcCode:tcA.code, dynamic:'SEQ-'+(20+n), status:'confirmed'},
+      {part:'P-02', participant:UC_PARTICIPANT_POOL[(n+1)%UC_PARTICIPANT_POOL.length],
+       action:UC_ACTION_POOL[(n+1)%UC_ACTION_POOL.length], call:E2E_CALLS_ONLY[(n+1)%E2E_CALLS_ONLY.length],
+       status: n%2===0?'confirmed':'planned'},
+      {part:'P-03', participant:UC_PARTICIPANT_POOL[(n+2)%UC_PARTICIPANT_POOL.length],
+       action:UC_ACTION_POOL[(n+2)%UC_ACTION_POOL.length], call:E2E_CALLS_ONLY[(n+2)%E2E_CALLS_ONLY.length],
+       status:'notcall'}
     ]
   };
 }
@@ -3831,8 +3857,15 @@ function renderStepPage(id){
 function ucStatusPill(status){
   if(status==='confirmed'||status==='published') return '<span class="pillstat ok">'+(status==='confirmed'?'Подтверждено':'Опубликован')+'</span>';
   if(status==='planned') return '<span class="pillstat neutral">Планируется</span>';
+  if(status==='notcall') return '<span class="pillstat info">Не является вызовом</span>';
   return '<span class="pillstat neutral">Черновик</span>';
 }
+// «Вызывающий — Вызываемый» в одной строке участника, как splitParticipant на карточке UC
+function ucSplitParticipant(str){
+  var parts=String(str||'').split(/\s*[—–]\s*/);
+  return {caller:parts[0]||'', callee:parts.length>1?parts[1]:(parts[0]||'')};
+}
+function ucEmptyCell(){ return '<span style="color:var(--text-tertiary);">—</span>'; }
 
 function renderUseCaseTab(step){
   var uc=step.uc;
@@ -3844,14 +3877,24 @@ function renderUseCaseTab(step){
     '</div>';
   }
   var rows=uc.scenarios.map(function(s){
-    return '<tr><td>'+esc(s.part)+'</td>'+
-      '<td style="max-width:420px;white-space:normal;">'+esc(s.action)+'</td>'+
+    var pp=ucSplitParticipant(s.participant);
+    return '<tr><td style="white-space:nowrap;">'+esc(s.part)+'</td>'+
+      '<td>'+(pp.caller?esc(pp.caller):ucEmptyCell())+'</td>'+
+      '<td>'+(pp.callee?esc(pp.callee):ucEmptyCell())+'</td>'+
+      '<td><div class="uc-cell-clamp">'+esc(s.action)+'</div></td>'+
       '<td style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;white-space:normal;">'+esc(s.call)+'</td>'+
+      '<td>'+(s.tcName?esc(s.tcName)+'<div style="color:var(--text-tertiary);font-size:12px;">'+esc(s.tcCode)+'</div>':ucEmptyCell())+'</td>'+
+      '<td style="white-space:nowrap;">'+(s.dynamic?esc(s.dynamic):ucEmptyCell())+'</td>'+
       '<td>'+ucStatusPill(s.status)+'</td></tr>';
   }).join('');
   return '<div class="card">'+
     '<div class="card-title"><span><a onclick="notAvail()" style="color:var(--link);cursor:pointer;">'+esc(uc.name)+'</a> <span style="color:var(--text-tertiary);font-weight:500;">'+esc(uc.code)+'</span></span>'+ucStatusPill(uc.status)+'</div>'+
-    '<div style="overflow-x:auto;"><table class="vh-table"><thead><tr><th>Часть</th><th>Действие</th><th>Вызов</th><th>Статус</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
+    '<div style="overflow-x:auto;"><table class="vh-table uc-table">'+
+      '<colgroup>'+
+        '<col style="width:5%"><col style="width:13%"><col style="width:13%"><col style="width:20%">'+
+        '<col style="width:16%"><col style="width:13%"><col style="width:7%"><col style="width:13%">'+
+      '</colgroup>'+
+      '<thead><tr><th>Шаг</th><th>Вызывающий</th><th>Вызываемый</th><th>Действие</th><th>Вызов</th><th>TC</th><th>Dynamyc</th><th>Статус вызова</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
   '</div>';
 }
 
