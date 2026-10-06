@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261006-184949">
+<meta name="beeatlas-build" content="20261006-190848">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -861,6 +861,24 @@
   .sidebar.collapsed .navitem:hover::after{opacity:1;visibility:visible;}
 
   .main{flex:1;min-width:0;overflow-y:auto;background:var(--bg);}
+  /* Скроллбары навигации и контента: системный 15px выглядел полосой между меню и
+     страницей. Делаем тонкими, трек прозрачный, бегунок виден только когда есть что
+     скроллить (ДС про скроллбары не говорит, берём те же цвета, что у меню селекта). */
+  .sidebar::-webkit-scrollbar,
+  .main::-webkit-scrollbar,
+  .table-scroll::-webkit-scrollbar{width:8px;height:8px;}
+  .sidebar::-webkit-scrollbar-track,
+  .main::-webkit-scrollbar-track,
+  .table-scroll::-webkit-scrollbar-track{background:transparent;}
+  .sidebar::-webkit-scrollbar-thumb,
+  .main::-webkit-scrollbar-thumb,
+  .table-scroll::-webkit-scrollbar-thumb{background:var(--color-text-inactive);border-radius:var(--size-border-radius-x4);}
+  .sidebar::-webkit-scrollbar-thumb:hover,
+  .main::-webkit-scrollbar-thumb:hover,
+  .table-scroll::-webkit-scrollbar-thumb:hover{background:var(--text-tertiary);}
+  @supports not selector(::-webkit-scrollbar){
+    .sidebar, .main, .table-scroll{scrollbar-width:thin;scrollbar-color:var(--color-text-inactive) transparent;}
+  }
   /* Отступы контентной области: 32 слева/справа/сверху, 40 снизу (x8 / x10 по шкале ДС) */
   .page{max-width:none;margin:0;padding:var(--size-spacing-x8) var(--size-spacing-x8) var(--size-spacing-x10);}
   .page.page-full{max-width:none;margin:0;padding:0;height:100%;display:flex;flex-direction:column;}
@@ -1341,6 +1359,20 @@
 
   /* table */
   .table-wrap{border:1px solid var(--border);border-radius:var(--size-border-radius-x6);overflow-x:auto;overflow-y:hidden;}
+  /* Ячейки прямоугольные, поэтому в скруглённых углах обёртки их фон и границы
+     выходили за радиус — углам таблицы задаём то же скругление, что у рамки. */
+  .table-wrap > table thead th:first-child,
+  .table-wrap-fit > table thead th:first-child,
+  .table-scroll > table thead th:first-child{border-top-left-radius:var(--size-border-radius-x6);}
+  .table-wrap > table thead th:last-child,
+  .table-wrap-fit > table thead th:last-child,
+  .table-scroll > table thead th:last-child{border-top-right-radius:var(--size-border-radius-x6);}
+  .table-wrap > table tbody tr:last-child td:first-child,
+  .table-wrap-fit > table tbody tr:last-child td:first-child,
+  .table-scroll > table tbody tr:last-child td:first-child{border-bottom-left-radius:var(--size-border-radius-x6);}
+  .table-wrap > table tbody tr:last-child td:last-child,
+  .table-wrap-fit > table tbody tr:last-child td:last-child,
+  .table-scroll > table tbody tr:last-child td:last-child{border-bottom-right-radius:var(--size-border-radius-x6);}
   /* ДС Table: body 15/400/18/0.2, header 15/500/20/0.2, padding 17-18 / 24 */
   table{width:100%;border-collapse:collapse;font-size:15px;font-weight:400;line-height:18px;letter-spacing:.2px;}
   thead th{
@@ -1378,7 +1410,14 @@
   .table-scroll{border:1px solid var(--border);border-radius:var(--size-border-radius-x6);overflow-x:auto;overflow-y:hidden;}
   .table-scroll thead th:first-child,
   .table-scroll tbody td:first-child{position:sticky;left:0;z-index:2;background:var(--bg);box-shadow:var(--elevation-low);}
-  .table-scroll tbody tr:hover td:first-child{background:var(--color-background-base-hover);}
+  /* Токен ховера полупрозрачный: если положить его на sticky-ячейку одним цветом,
+     сквозь неё видно уезжающие под низ ячейки. Кладём его слоем поверх фона страницы. */
+  .table-scroll tbody tr:hover td:first-child{
+    background:linear-gradient(var(--color-background-base-hover),var(--color-background-base-hover)), var(--bg);
+  }
+  /* Таблица прокручивается, поэтому абсолютный тултип обрезался её краем. Внутри
+     такой таблицы он позиционируется фиксированно — координаты считает positionCellTooltips(). */
+  .table-scroll .cell-tooltip{position:fixed;top:auto;left:auto;}
   table.fixed-table thead th{white-space:normal;}
   table.fixed-table tbody td{overflow:visible;}
   .cell-clamp-wrap{position:relative;}
@@ -6901,10 +6940,10 @@ function AcE2eUcTable(){
       <span class="reset-link" data-action="ac-reset-e2e-uc">Сбросить</span>
     </div>
     <div class="table-scroll">
-      <table class="fixed-table" style="min-width:1900px;">
+      <table class="fixed-table" style="min-width:1932px;">
         <colgroup>
-          <col style="width:220px"><col style="width:76px"><col style="width:190px"><col style="width:190px"><col style="width:340px">
-          <col style="width:190px"><col style="width:250px"><col style="width:96px"><col style="width:150px"><col style="width:200px">
+          <col style="width:220px"><col style="width:76px"><col style="width:190px"><col style="width:190px"><col style="width:320px">
+          <col style="width:190px"><col style="width:240px"><col style="width:96px"><col style="width:160px"><col style="width:250px">
         </colgroup>
         <thead><tr>
           ${acSortTh("Use Case","ucCode",ac.e2eUcSort,"ac-e2e-uc-sort")}
@@ -12858,8 +12897,39 @@ function render(){
   renderShell();
   positionDsSelectMenus();
   positionToast();
+  bindScrollTableTooltips();
   saveLocation();
 }
+
+/* Тултип ячейки лежит внутри таблицы, а прокручиваемая таблица обрезает всё, что
+   выходит за её границы, — подсказка пряталась под краем. Внутри .table-scroll
+   тултип переводится в position:fixed, и координаты ему проставляются по месту
+   наведения: под текстом ячейки, со сдвигом влево, если не помещается справа. */
+function bindScrollTableTooltips(){
+  document.querySelectorAll(".table-scroll").forEach(wrap=>{
+    if(wrap.dataset.tipBound) return;
+    wrap.dataset.tipBound = "1";
+    wrap.addEventListener("mouseover", e=>{
+      const cell = e.target.closest(".cell-clamp-wrap");
+      if(!cell || !wrap.contains(cell)) return;
+      const tip = cell.querySelector(".cell-tooltip");
+      if(!tip) return;
+      const r = cell.getBoundingClientRect();
+      tip.style.visibility = "hidden";
+      tip.style.display = "block";
+      const tw = tip.offsetWidth, th = tip.offsetHeight;
+      const left = Math.min(r.left, window.innerWidth - tw - TIP_EDGE);
+      const below = r.bottom + TIP_GAP;
+      const top = below + th > window.innerHeight - TIP_EDGE ? r.top - th - TIP_GAP : below;
+      tip.style.left = Math.max(TIP_EDGE, left) + "px";
+      tip.style.top = top + "px";
+      tip.style.display = "";
+      tip.style.visibility = "";
+    });
+  });
+}
+const TIP_GAP = 6;   /* тот же отступ от ячейки, что у абсолютного варианта */
+const TIP_EDGE = 8;  /* зазор до края окна */
 
 /* Запоминаем, на какой странице пользователь, чтобы обновление браузера открывало
    то же место, а не отбрасывало к списку проектов. Раньше из раздела «Проекты»
