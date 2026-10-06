@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261006-194517">
+<meta name="beeatlas-build" content="20261006-195122">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -866,18 +866,24 @@
      скроллить (ДС про скроллбары не говорит, берём те же цвета, что у меню селекта). */
   .sidebar::-webkit-scrollbar,
   .main::-webkit-scrollbar,
-  .table-scroll::-webkit-scrollbar{width:8px;height:8px;}
+  .table-scroll::-webkit-scrollbar{width:15px;height:15px;}
+  /* Дорожка прозрачная и отступает от верхнего и нижнего края на 8px (ДС:
+     notifications — «верхний паддинг 8, правый 4»). Боковые 4px даёт прозрачная
+     рамка ползунка, поэтому видимая ширина ползунка — 7px. */
   .sidebar::-webkit-scrollbar-track,
-  .main::-webkit-scrollbar-track,
-  .table-scroll::-webkit-scrollbar-track{background:transparent;}
+  .main::-webkit-scrollbar-track{background-color:transparent;margin:var(--size-spacing-x2) 0;}
+  .table-scroll::-webkit-scrollbar-track{background-color:transparent;margin:0 var(--size-spacing-x2);}
   .sidebar::-webkit-scrollbar-thumb,
   .main::-webkit-scrollbar-thumb,
-  .table-scroll::-webkit-scrollbar-thumb{background:var(--color-text-inactive);border-radius:var(--size-border-radius-x4);}
+  .table-scroll::-webkit-scrollbar-thumb{
+    background-color:var(--text-tertiary);border:4px solid transparent;
+    background-clip:content-box;border-radius:100px;min-height:28px;
+  }
   .sidebar::-webkit-scrollbar-thumb:hover,
   .main::-webkit-scrollbar-thumb:hover,
-  .table-scroll::-webkit-scrollbar-thumb:hover{background:var(--text-tertiary);}
+  .table-scroll::-webkit-scrollbar-thumb:hover{background-color:var(--color-text-inactive);}
   @supports not selector(::-webkit-scrollbar){
-    .sidebar, .main, .table-scroll{scrollbar-width:thin;scrollbar-color:var(--color-text-inactive) transparent;}
+    .sidebar, .main, .table-scroll{scrollbar-width:thin;scrollbar-color:var(--text-tertiary) transparent;}
   }
   /* Отступы контентной области: 32 слева/справа/сверху, 40 снизу (x8 / x10 по шкале ДС) */
   .page{max-width:none;margin:0;padding:var(--size-spacing-x8) var(--size-spacing-x8) var(--size-spacing-x10);}
@@ -1312,6 +1318,9 @@
   /* filters row */
   .filters-row{display:flex;align-items:center;gap:var(--space-4);margin-bottom:var(--space-6);flex-wrap:wrap;}
   .filters-row .search-wrap{flex:1;min-width:260px;position:relative;}
+  /* Участие в E2E процессах: поиск фиксированной ширины 648, как на «Проектах»
+     и в Use Case, — растянутое на всю строку поле выглядело чужеродно. */
+  .ac-e2e-filters .search-wrap{flex:0 0 648px;width:648px;max-width:100%;}
   .filters-row .arch-input{width:230px;}
   /* Use Case: поиск 648, фильтры по 260 — как на странице «Проекты». Строка не
      переносится: если всё это в ширину не влезает, поля пропорционально ужимаются. */
@@ -6886,7 +6895,7 @@ function AcE2eStepsTable(){
   rows = acSortRows(rows, ac.e2eSort, {tc:r=>r.tcName||"ЯЯ", dynamic:r=>r.dynamic||"ЯЯ"});
   const methods = ["Все"].concat(Array.from(new Set(AC_E2E_ROWS.map(r=>r.method))).sort());
   return `
-    <div class="filters-row">
+    <div class="filters-row ac-e2e-filters">
       <div class="search-wrap field-with-icon">${icon("search")}<input class="input" id="acE2eSearch" placeholder="Процесс, шаг сценария, метод или техническая возможность" value="${escapeHtml(ac.e2eSearch)}" autocomplete="off"/></div>
       ${FilterSelect({id:"ac-e2e-method", label:"Метод", value:ac.e2eMethodFilter, options:methods, action:"ac-e2e-method-filter"})}
       ${FilterSelect({id:"ac-e2e-source", label:"Источник", value:ac.e2eSourceFilter, options:["Все"].concat(AC_E2E_SOURCES), action:"ac-e2e-source-filter"})}
@@ -6933,7 +6942,7 @@ function AcE2eUcTable(){
     tc:r=>r.tcName||"ЯЯ", dynamic:r=>r.dynamic||"ЯЯ", status:r=>scenarioStatusLabel(r.status),
   });
   return `
-    <div class="filters-row">
+    <div class="filters-row ac-e2e-filters">
       <div class="search-wrap field-with-icon">${icon("search")}<input class="input" id="acE2eUcSearch" placeholder="Use Case, шаг, вызов или техническая возможность" value="${escapeHtml(ac.e2eUcSearch)}" autocomplete="off"/></div>
       ${FilterSelect({id:"ac-e2e-uc-mstatus", label:"Статус метода", value:ac.e2eUcMethodStatusFilter, options:["Все"].concat(AC_E2E_METHOD_STATUSES), action:"ac-e2e-uc-mstatus-filter"})}
       ${FilterSelect({id:"ac-e2e-uc-cstatus", label:"Статус вызова", value:ac.e2eUcCallStatusFilter, options:["Все","Подтверждено","Планируется","Не смаппирован"], action:"ac-e2e-uc-cstatus-filter"})}
