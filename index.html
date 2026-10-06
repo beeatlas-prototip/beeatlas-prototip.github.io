@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261006-122653">
+<meta name="beeatlas-build" content="20261006-125221">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -4031,7 +4031,15 @@ function renderStepUcCallsTab(step){
     '</div>';
   }
   var cur=currentImpl(step,'uc');
-  return renderImplChips(step,'uc')+renderUseCaseTab(cur.uc);
+  var uc=cur.uc;
+  return renderImplChips(step,'uc')+
+    '<div class="impl-meta">'+
+      '<span>Use Case: '+esc(uc.name)+'</span>'+
+      ucStatusPill(uc.status)+
+      // переход на сам Use Case: по вызову не видно, из какого он решения
+      '<a onclick="notAvail()" style="color:var(--link);cursor:pointer;">Открыть '+esc(uc.code)+'</a>'+
+    '</div>'+
+    renderCallsTab(cur.offset,'uc');
 }
 
 function ucStatusPill(status){
@@ -4040,40 +4048,6 @@ function ucStatusPill(status){
   if(status==='notcall') return '<span class="pillstat info">Не является вызовом</span>';
   return '<span class="pillstat neutral">Черновик</span>';
 }
-// «Вызывающий — Вызываемый» в одной строке участника, как splitParticipant на карточке UC
-function ucSplitParticipant(str){
-  var parts=String(str||'').split(/\s*[—–]\s*/);
-  return {caller:parts[0]||'', callee:parts.length>1?parts[1]:(parts[0]||'')};
-}
-function ucEmptyCell(){ return '<span style="color:var(--text-tertiary);">—</span>'; }
-
-function renderUseCaseTab(uc){
-  if(!uc) return '';
-  var rows=uc.scenarios.map(function(s){
-    var pp=ucSplitParticipant(s.participant);
-    return '<tr><td style="white-space:nowrap;">'+esc(s.part)+'</td>'+
-      '<td>'+(pp.caller?esc(pp.caller):ucEmptyCell())+'</td>'+
-      '<td>'+(pp.callee?esc(pp.callee):ucEmptyCell())+'</td>'+
-      '<td><div class="uc-cell-clamp">'+esc(s.action)+'</div></td>'+
-      '<td style="font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;white-space:normal;">'+esc(s.call)+'</td>'+
-      '<td>'+(s.tcName?esc(s.tcName)+'<div style="color:var(--text-tertiary);font-size:12px;">'+esc(s.tcCode)+'</div>':ucEmptyCell())+'</td>'+
-      '<td style="white-space:nowrap;">'+(s.dynamic?esc(s.dynamic):ucEmptyCell())+'</td>'+
-      '<td>'+ucStatusPill(s.status)+'</td></tr>';
-  }).join('');
-  return '<div class="card">'+
-    '<div class="card-title"><span>'+esc(uc.name)+' <span style="color:var(--text-tertiary);font-weight:500;">'+esc(uc.code)+'</span></span>'+ucStatusPill(uc.status)+'</div>'+
-    // с вызовов Use Case нужен переход на сам Use Case: по вызову здесь не видно,
-    // из какого он решения и что с ним дальше делают
-    '<div class="impl-meta" style="margin-top:-6px;"><a onclick="notAvail()" style="color:var(--link);cursor:pointer;">Открыть Use Case '+esc(uc.code)+'</a></div>'+
-    '<div style="overflow-x:auto;"><table class="vh-table uc-table">'+
-      '<colgroup>'+
-        '<col style="width:5%"><col style="width:13%"><col style="width:13%"><col style="width:20%">'+
-        '<col style="width:16%"><col style="width:13%"><col style="width:7%"><col style="width:13%">'+
-      '</colgroup>'+
-      '<thead><tr><th>Шаг</th><th>Вызывающий</th><th>Вызываемый</th><th>Действие</th><th>Вызов</th><th>TC</th><th>Dynamyc</th><th>Статус вызова</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+
-  '</div>';
-}
-
 function renderE2ePage(id){
   var e=findE2e(id); if(!e) return renderEmptyState();
   var active=state.activeTab[id]||'calls';
@@ -4154,19 +4128,22 @@ function renderCallRows(rows,depth){
 }
 // offset — порядковый номер реализации: у разных загрузок состав вызовов разный,
 // иначе переключение между ними выглядело бы как будто ничего не меняется
-function callTreeFor(offset){
-  if(!offset) return CALL_TREE;
-  var keep=Math.max(3, CALL_TREE.length-offset);
-  return CALL_TREE.slice(0, keep);
+function callTreeFor(offset, kind){
+  // Use Case описывает решение, а не загруженную трассу, поэтому состав вызовов
+  // у него свой — иначе обе вкладки показывали бы одно и то же.
+  var tree = kind==='uc' ? CALL_TREE.slice(1) : CALL_TREE;
+  if(!offset) return tree;
+  var keep=Math.max(3, tree.length-offset);
+  return tree.slice(0, keep);
 }
-function renderCallsTab(offset){
+function renderCallsTab(offset, kind){
   var k=callKey();
   var selId=state.selectedCall[k];
   var detail = selId ? renderCallDetail() : (
     '<div class="detail-empty">'+boxSvgSmall()+'<div>Выбери вызов из списка</div></div>'
   );
   return '<div class="calls-wrap">'+
-    '<div class="calls-list">'+renderCallRows(callTreeFor(offset||0),0)+'</div>'+
+    '<div class="calls-list">'+renderCallRows(callTreeFor(offset||0, kind),0)+'</div>'+
     '<div class="detail-panel"><div class="card-title">Данные вызова</div>'+detail+'</div>'+
   '</div>';
 }
