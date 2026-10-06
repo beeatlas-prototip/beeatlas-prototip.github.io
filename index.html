@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261006-175216">
+<meta name="beeatlas-build" content="20261006-181951">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -1361,7 +1361,7 @@
   thead th.th-sort{cursor:pointer;user-select:none;}
   .th-sort-inner{display:inline-flex;align-items:center;gap:var(--space-2);}
   .th-sort-arrow{display:inline-flex;font-size:16px;opacity:0;transition:opacity .12s ease,transform .12s ease;}
-  thead th.th-sort:hover .th-sort-arrow{opacity:.45;}
+  thead th.th-sort:hover .th-sort-arrow{opacity:.38;}
   thead th.th-sort.on .th-sort-arrow{opacity:1;}
   thead th.th-sort.on.desc .th-sort-arrow{transform:rotate(180deg);}
 
@@ -1372,6 +1372,13 @@
   .table-wrap-fit{border:1px solid var(--border);border-radius:var(--size-border-radius-x6);overflow-x:auto;overflow-y:hidden;}
   .table-wrap-fit:has(> table.fixed-table){overflow:visible;}
   table.fixed-table{table-layout:fixed;width:100%;}
+  /* Таблица, которой не хватает ширины страницы (много столбцов), прокручивается
+     по горизонтали, а первый столбец закрепляется — ДС Table, «Фиксирование шапки
+     и столбцов»: у закреплённого столбца при скролле тень Low. */
+  .table-scroll{border:1px solid var(--border);border-radius:var(--size-border-radius-x6);overflow-x:auto;overflow-y:hidden;}
+  .table-scroll thead th:first-child,
+  .table-scroll tbody td:first-child{position:sticky;left:0;z-index:2;background:var(--bg);box-shadow:var(--elevation-low);}
+  .table-scroll tbody tr:hover td:first-child{background:var(--color-background-base-hover);}
   table.fixed-table thead th{white-space:normal;}
   table.fixed-table tbody td{overflow:visible;}
   .cell-clamp-wrap{position:relative;}
@@ -1380,6 +1387,9 @@
     overflow:hidden;text-overflow:ellipsis;word-break:break-word;line-height:1.4;
   }
   .cell-clamp.clamp-5{-webkit-line-clamp:5;}
+  /* ДС Table / Поведение: по умолчанию текст в ячейке занимает одну строку и
+     обрезается по ширине колонки, полное значение показывает Tooltip. */
+  .cell-clamp.clamp-1{display:block;white-space:nowrap;word-break:normal;overflow:hidden;text-overflow:ellipsis;}
   /* Tooltip (ДС: components/tooltip) — padding 4/8, радиус 8px, без рамки,
      цвета из токенов темы; показывается в инвертированной теме. */
   .cell-tooltip{
@@ -2520,7 +2530,6 @@
 .e2ecat-scope .brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:16px;white-space:nowrap;cursor:pointer;user-select:none;}
 .e2ecat-scope .brand .bee{font-size:18px;}
 .e2ecat-scope .brand .beeatlas{color:var(--text-tertiary);font-weight:600;}
-.e2ecat-scope .brand .billain{color:var(--text);font-weight:700;}
 .e2ecat-scope .topnav{display:flex;gap:28px;align-items:center;height:100%;}
 .e2ecat-scope .topnav a{color:var(--text-secondary);font-size:14px;font-weight:500;height:100%;display:flex;align-items:center;border-bottom:2px solid transparent;white-space:nowrap;}
 .e2ecat-scope .topnav a.active{color:var(--text);border-bottom-color:var(--accent);}
@@ -3077,7 +3086,7 @@ var CALL_DETAIL={
   app:'arch.система клиентского опыта для визуализации дашбордов, работы с гео-аналитикой..24.11.2023'
 };
 
-var DIAG_LIFELINES=['WWWBEELINERU2013','QP','PBE.ATTRACTION','RICH','USSS'];
+var DIAG_LIFELINES=['WWWPORTAL2013','QP','PBE.ATTRACTION','RICH','USSS'];
 var DIAG_MESSAGES=[
   {from:0,to:0,label:'GET /api/v1/constructors/packets()'},
   {from:0,to:1,label:'SELECT виджет()'},
@@ -3106,7 +3115,7 @@ var DIAG_MESSAGES=[
    PlantUML import (внедрено в карточку E2E-сценария каталога)
 --------------------------------------------------------- */
 var KNOWN_ALIASES=[
-  {name:'WWWBEELINERU2013',kind:'system'},
+  {name:'WWWPORTAL2013',kind:'system'},
   {name:'QP',kind:'system'},
   {name:'PBE.ATTRACTION',kind:'container'},
   {name:'RICH',kind:'container'},
@@ -3133,7 +3142,7 @@ var RESULT_KINDS=[
 ];
 
 var EXAMPLE_PUML_OK='@startuml\n'+
-'WWWBEELINERU2013 -> PBE.ATTRACTION: GET /api/v1/order/create\n'+
+'WWWPORTAL2013 -> PBE.ATTRACTION: GET /api/v1/order/create\n'+
 'PBE.ATTRACTION -> RICH: GET /v1/subscribers/{ctn}/services\n'+
 'RICH -> USSS: POST /getUSSS\n'+
 'USSS -> CM: POST /getcommand\n'+
@@ -3141,8 +3150,8 @@ var EXAMPLE_PUML_OK='@startuml\n'+
 '@enduml';
 
 var EXAMPLE_PUML_WARN='@startuml\n'+
-'WWWBEELINERU2013 -> QP: SELECT виджет()\n'+
-'WWWBEELINERU2013 -> PBE.ATTRACTION: GET /api/v1/order/create\n'+
+'WWWPORTAL2013 -> QP: SELECT виджет()\n'+
+'WWWPORTAL2013 -> PBE.ATTRACTION: GET /api/v1/order/create\n'+
 'PBE.ATTRACTION -> LEGACY_BILLING: POST /legacy/charge\n'+
 'LEGACY_BILLING -> PBE.ATTRACTION: callback(status)\n'+
 '@enduml';
@@ -3722,7 +3731,7 @@ function renderTopbar(){
   return ''+
   '<div class="topbar">'+
     '<div class="brand" onclick="goHome()">'+
-      '<span class="bee">🐝</span><span class="beeatlas">beeatlas</span><span class="billain">билайн</span>'+
+      '<span class="bee">🐝</span><span class="beeatlas">beeatlas</span>'+
     '</div>'+
     '<div class="topnav">'+
       '<a class="active" onclick="event.preventDefault()">Модели</a>'+
@@ -4659,7 +4668,7 @@ const RISKS = [
    Пользователь по каждому кандидату принимает решение: Reuse (переиспользовать найденную ТС),
    New (завести новую ТС) или Skip (пропустить). Если лучшее совпадение вложенной ТС >=50% —
    решение Reuse проставляется автоматически, иначе по умолчанию — Skip (кандидат считается шумом). */
-const TC_SYSTEM_POOL = ["lk-beecloud","fdmshowcaseapp","Beeatlas","CRM","DMP","NLP-Core"];
+const TC_SYSTEM_POOL = ["lk-cloud","fdmshowcaseapp","Beeatlas","CRM","DMP","NLP-Core"];
 const MANUAL_BC_CODE = "MANUAL";
 const MANUAL_BC_NAME = "Добавлено вручную";
 
@@ -4686,9 +4695,9 @@ function makeTcCandidatePool(){
         {code:"BC-018316", name:"Решение инцидентов", match:46, desc:"", expanded:false, tcNested:[]},
         {code:"BC-014063", name:"Связывание проблемы с артефактами других процессов", match:45, desc:"Возможность связать проблему с артефактами других процессов", expanded:false, tcNested:[]},
         {code:"BC-009994", name:"Возможность поиска и определения аномалий в собранных данных журналов", match:45, desc:"", expanded:false, tcNested:[
-          {code:"BC-044492", name:"API-интеграция для внешнего запроса RCA-информации", match:51, system:"lk-beecloud", desc:"Возможность предоставлять, получать, экспортировать данные о первопричинах инцидентов через программный интерфейс для интеграции с внешними системами мониторинга."},
-          {code:"BC-044503", name:"API для подачи новых метрик и запроса прогнозов", match:46, system:"lk-beecloud", desc:"Возможность принимать, хранить и обрабатывать новые данные метрик, а также запрашивать прогнозы на их основе."},
-          {code:"BC-044472", name:"API для добавления новых источников метрик", match:43, system:"lk-beecloud", desc:"Возможность подключать и получать данные из внешних систем мониторинга для расширения набора метрик."},
+          {code:"BC-044492", name:"API-интеграция для внешнего запроса RCA-информации", match:51, system:"lk-cloud", desc:"Возможность предоставлять, получать, экспортировать данные о первопричинах инцидентов через программный интерфейс для интеграции с внешними системами мониторинга."},
+          {code:"BC-044503", name:"API для подачи новых метрик и запроса прогнозов", match:46, system:"lk-cloud", desc:"Возможность принимать, хранить и обрабатывать новые данные метрик, а также запрашивать прогнозы на их основе."},
+          {code:"BC-044472", name:"API для добавления новых источников метрик", match:43, system:"lk-cloud", desc:"Возможность подключать и получать данные из внешних систем мониторинга для расширения набора метрик."},
         ]},
         {code:"BC-014818", name:"Управление ресурсными инцидентами", match:44, desc:"", expanded:false, tcNested:[]},
         {code:"BC-014071", name:"Распределение инцидентов между ответственными", match:44, desc:"Возможность распределять инциденты между ответственными специалистами и командами.", expanded:false, tcNested:[]},
@@ -4813,7 +4822,7 @@ function makeHldSkeleton(p){
     id: uid("hld"),
     author: ARCHITECT,
     date: NOW_DATE,
-    confluenceUrl: "https://bwiki.beeline.ru/x/hLD" + Math.floor(1000+Math.random()*8999),
+    confluenceUrl: "https://bwiki.example.ru/x/hLD" + Math.floor(1000+Math.random()*8999),
     pageTitle: "HLD — " + p.name,
     fr: FR_LIST.slice(0,9).map(x=>Object.assign({},x)),
     nfr: NFR_LIST.slice(0,6).map(x=>Object.assign({},x)),
@@ -5367,11 +5376,11 @@ function findProject(id){ return state.projects.find(p=>p.id===id); }
 const CJ_LIBRARY = [
   {id:"cj1", status:"Опубликован", statusColor:"green",
     extraBadges:[{t:"GRAFANA",c:"green"},{t:"BPMN",c:"orange"}],
-    name:"CJ по услуге «Кто звонит»", code:"CJ.01.02.03.00",
+    name:"CJ по услуге «Определитель номера»", code:"CJ.01.02.03.00",
     desc:"Клиент, который ценит свое время и хочет избегать нежелательных звонков. Он часто сталкивается с незнакомыми номерами…",
     app:"Блокировка удаленного доступа сотрудникам \"ВымпелКом\" и Amdocs",
     channels:"Web site, Мобильное приложение, Офисы продаж (мультибренд)",
-    tags:["E2E","B2C","Кто звонит","Голос"], date:"20.01.2025"},
+    tags:["E2E","B2C","Определитель номера","Голос"], date:"20.01.2025"},
   {id:"cj2", status:"Опубликован", statusColor:"green",
     extraBadges:[{t:"GRAFANA",c:"green"},{t:"BPMN",c:"orange"}],
     name:"CJ по услуге «Перевод остатка баланса»", code:"CJ.01.05.02.00",
@@ -5392,7 +5401,7 @@ const CJ_LIBRARY = [
     app:"—", channels:"Мобильное приложение, Личный кабинет", tags:["B2C","Роуминг"], date:"18.01.2025"},
   {id:"cj5", status:"Черновик", statusColor:"gray", extraBadges:[{t:"Beeatlas",c:"blue"}],
     name:"CJ по услуге «Перенос номера (MNP)»", code:"CJ.01.09.03.00",
-    desc:"Абонент другого оператора, который хочет перенести свой привычный номер в билайн, не теряя его при смене оператора.",
+    desc:"Абонент другого оператора, который хочет перенести свой номер к другому оператору, не теряя его при смене оператора.",
     app:"—", channels:"Салоны продаж, Личный кабинет", tags:["B2C","MNP"], date:"18.01.2025"},
   {id:"cj6", status:"Черновик", statusColor:"gray", extraBadges:[{t:"Beeatlas",c:"blue"}],
     name:"CJ по услуге «Детализация звонков»", code:"CJ.01.02.09.00",
@@ -5410,7 +5419,7 @@ const CJ_SOURCE_META = {
 // Состав (stages→scenarios→sources→calls) висит на ветке (CJ_BRANCHES), не на артефакте —
 // см. Vision "ветвление артефактов проектирования" §1, принцип 2.
 const CJ_META = {
-  cj1: { title:"CJ по услуге «Кто звонит»", subtitle:"Портрет пользователя", status:"Черновик" },
+  cj1: { title:"CJ по услуге «Определитель номера»", subtitle:"Портрет пользователя", status:"Черновик" },
 };
 
 // Создание артефакта = создание трёх системных веток (design/develop/main), см. §3.1.
@@ -5429,8 +5438,8 @@ const CJ_BRANCH_META = {
 const CJ_MAIN_STAGES = [
     {
       id:"st1", color:"c1", name:"Название этапа 1",
-      biName:"Поиск услуги «Кто звонит»", biId:"BI 01.02.03.01",
-      description:"Я, как клиент билайна, хочу подключить услугу",
+      biName:"Поиск услуги «Определитель номера»", biId:"BI 01.02.03.01",
+      description:"Я, как клиент, хочу подключить услугу",
       characteristic:{t:"Целевой", c:"pink"},
       lifecycle:{t:"В эксплуатации", c:"green"},
       scenario:["1. Пользователь вводит около релевантный запрос в поисковой системе","2. Отображается список релевантных результатов","3. Пользователь выбирает необходимую страницу"],
@@ -5446,7 +5455,7 @@ const CJ_MAIN_STAGES = [
     {
       id:"st2", color:"c2", name:"Название этапа 2",
       biName:"Подключение услуги USSD", biId:"BI 01.02.03.03",
-      description:"Я, как клиент билайна, хочу иметь возможность подключить услугу без перехода в ЛК и МП",
+      description:"Я, как клиент, хочу иметь возможность подключить услугу без перехода в ЛК и МП",
       characteristic:{t:"Целевой", c:"pink"},
       lifecycle:{t:"В эксплуатации", c:"green"},
       scenario:["1. Пользователь знакомится с тем, как осуществляется USSD запрос.","2. Пользователь набирает специальную команду на телефоне и нажимает на кнопку вызова.","3. Автоматически приходит сообщение с подключением услуги"],
@@ -5476,7 +5485,7 @@ const CJ_MAIN_STAGES = [
     {
       id:"st3", color:"c3", name:"Название этапа 3",
       biName:"Использование (входящие звонки)", biId:"BI 01.02.03.04",
-      description:"Я, как клент билайна, хочу видеть название компании и цель звонка",
+      description:"Я, как клиент, хочу видеть название компании и цель звонка",
       characteristic:{t:"Фактический", c:"blue"},
       lifecycle:{t:"В эксплуатации", c:"green"},
       scenario:["1. Пользователь блокирует типы номеров, от которых не хочет брать трубку.","2. Поступает нежелательный входящий вызов.","3. Автоматически система блокирует входящий вызов, звонок не отображается."],
@@ -5496,8 +5505,8 @@ const CJ_MAIN_STAGES = [
     },
     {
       id:"st4", color:"c4", name:"Название этапа 4",
-      biName:"Отключение услуги «Кто звонит» (sms)", biId:"BI 01.02.03.05",
-      description:"Я, как клиент билайна, хочу иметь возможность отключить услугу без перехода в ЛК и МП и получить нотификацию",
+      biName:"Отключение услуги «Определитель номера» (sms)", biId:"BI 01.02.03.05",
+      description:"Я, как клиент, хочу иметь возможность отключить услугу без перехода в ЛК и МП и получить нотификацию",
       characteristic:{t:"Фактический", c:"blue"},
       lifecycle:{t:"Не в эксплуатации", c:"orange"},
       scenario:["2. Пользователь набирает SMS со словом STOP и отправляет его.","3. Автоматически приходит сообщение о том, что услуга отключена"],
@@ -5548,7 +5557,7 @@ const CJ2_STAGES = [
   {
     id:"st1", color:"c1", name:"Название этапа 1",
     biName:"Поиск услуги «Перевод остатка»", biId:"BI 01.05.02.01",
-    description:"Я, как клиент билайна, хочу найти способ передать часть баланса другому абоненту",
+    description:"Я, как клиент, хочу найти способ передать часть баланса другому абоненту",
     characteristic:{t:"Целевой", c:"pink"}, lifecycle:{t:"В эксплуатации", c:"green"},
     scenario:["1. Пользователь открывает раздел «Баланс» в приложении.","2. Выбирает пункт «Перевести остаток»."],
     channels:"Мобильное приложение, USSD", tags:["B2C","Баланс"], docs:"Ссылка", metrics:"Текстовое описание метрик",
@@ -5559,7 +5568,7 @@ const CJ2_STAGES = [
   {
     id:"st2", color:"c2", name:"Название этапа 2",
     biName:"Перевод остатка на другой номер", biId:"BI 01.05.02.02",
-    description:"Я, как клиент билайна, хочу перевести часть своего баланса на номер другого абонента",
+    description:"Я, как клиент, хочу перевести часть своего баланса на номер другого абонента",
     characteristic:{t:"Целевой", c:"pink"}, lifecycle:{t:"В эксплуатации", c:"green"},
     scenario:["1. Пользователь вводит номер получателя и сумму.","2. Подтверждает операцию кодом из SMS.","3. Средства списываются и зачисляются получателю."],
     channels:"Мобильное приложение, USSD", tags:["B2C","Баланс"], docs:"Ссылка", metrics:"Текстовое описание метрик",
@@ -5573,7 +5582,7 @@ const CJ3_STAGES = [
   {
     id:"st1", color:"c1", name:"Название этапа 1",
     biName:"Настройка автоплатежа", biId:"BI 01.03.04.01",
-    description:"Я, как клиент билайна, хочу настроить автоматическое пополнение баланса с банковской карты",
+    description:"Я, как клиент, хочу настроить автоматическое пополнение баланса с банковской карты",
     characteristic:{t:"Целевой", c:"pink"}, lifecycle:{t:"В эксплуатации", c:"green"},
     scenario:["1. Пользователь привязывает банковскую карту.","2. Задаёт порог и сумму автоплатежа."],
     channels:"Мобильное приложение", tags:["B2C","Платежи"], docs:"Ссылка", metrics:"Текстовое описание метрик",
@@ -5584,7 +5593,7 @@ const CJ3_STAGES = [
   {
     id:"st2", color:"c2", name:"Название этапа 2",
     biName:"Автоматическое списание при снижении баланса", biId:"BI 01.03.04.02",
-    description:"Я, как клиент билайна, хочу, чтобы баланс пополнялся автоматически, когда опускается ниже порога",
+    description:"Я, как клиент, хочу, чтобы баланс пополнялся автоматически, когда опускается ниже порога",
     characteristic:{t:"Фактический", c:"blue"}, lifecycle:{t:"В эксплуатации", c:"green"},
     scenario:["1. Баланс опускается ниже заданного порога.","2. Система списывает средства с привязанной карты.","3. Приходит уведомление о пополнении."],
     channels:"Мобильное приложение", tags:["B2C","Платежи"], docs:"Ссылка", metrics:"Текстовое описание метрик",
@@ -5598,7 +5607,7 @@ const CJ4_STAGES = [
   {
     id:"st1", color:"c1", name:"Название этапа 1",
     biName:"Подключение пакета роуминга", biId:"BI 01.07.01.01",
-    description:"Я, как клиент билайна, хочу подключить пакет услуг перед поездкой за границу",
+    description:"Я, как клиент, хочу подключить пакет услуг перед поездкой за границу",
     characteristic:{t:"Целевой", c:"pink"}, lifecycle:{t:"В эксплуатации", c:"green"},
     scenario:["1. Пользователь выбирает страну поездки.","2. Подключает подходящий пакет роуминга."],
     channels:"Мобильное приложение, Личный кабинет", tags:["B2C","Роуминг"], docs:"Ссылка", metrics:"Текстовое описание метрик",
@@ -5609,7 +5618,7 @@ const CJ4_STAGES = [
   {
     id:"st2", color:"c2", name:"Название этапа 2",
     biName:"Списание трафика и минут в роуминге", biId:"BI 01.07.01.02",
-    description:"Я, как клиент билайна, хочу пользоваться связью за границей в рамках подключённого пакета",
+    description:"Я, как клиент, хочу пользоваться связью за границей в рамках подключённого пакета",
     characteristic:{t:"Фактический", c:"blue"}, lifecycle:{t:"В эксплуатации", c:"green"},
     scenario:["1. Пользователь совершает звонки и использует интернет за границей.","2. Система списывает расход в рамках пакета."],
     channels:"Мобильное приложение, Личный кабинет", tags:["B2C","Роуминг"], docs:"Ссылка", metrics:"Текстовое описание метрик",
@@ -5622,7 +5631,7 @@ const CJ5_STAGES = [
   {
     id:"st1", color:"c1", name:"Название этапа 1",
     biName:"Оформление заявки MNP", biId:"BI 01.09.03.01",
-    description:"Я, как абонент другого оператора, хочу перенести свой номер к билайну",
+    description:"Я, как абонент другого оператора, хочу перенести свой номер к другому оператору",
     characteristic:{t:"Целевой", c:"pink"}, lifecycle:{t:"В эксплуатации", c:"green"},
     scenario:["1. Пользователь подаёт заявку на перенос номера.","2. Указывает данные текущего оператора."],
     channels:"Салоны продаж, Личный кабинет", tags:["B2C","MNP"], docs:"Ссылка", metrics:"Текстовое описание метрик",
@@ -5633,9 +5642,9 @@ const CJ5_STAGES = [
   {
     id:"st2", color:"c2", name:"Название этапа 2",
     biName:"Активация номера у нового оператора", biId:"BI 01.09.03.02",
-    description:"Я, как клиент билайна, хочу, чтобы перенесённый номер заработал в оговорённый срок",
+    description:"Я, как клиент, хочу, чтобы перенесённый номер заработал в оговорённый срок",
     characteristic:{t:"Фактический", c:"blue"}, lifecycle:{t:"Не в эксплуатации", c:"orange"},
-    scenario:["1. Оператор-донор подтверждает перенос.","2. Номер активируется в сети билайн."],
+    scenario:["1. Оператор-донор подтверждает перенос.","2. Номер активируется в сети нового оператора."],
     channels:"Салоны продаж, Личный кабинет", tags:["B2C","MNP"], docs:"Ссылка", metrics:"Текстовое описание метрик",
     scenarios:[{id:"sc1", sources:[{id:"m", type:"manual", label:"Ручная привязка", calls:[
       {app:"MNP Service", capability:"Активация перенесённого номера в сети", endpoint:"POST /mnp/activate", iface:"REST"},
@@ -5646,7 +5655,7 @@ const CJ6_STAGES = [
   {
     id:"st1", color:"c1", name:"Название этапа 1",
     biName:"Запрос детализации звонков", biId:"BI 01.02.09.01",
-    description:"Я, как клиент билайна, хочу заказать детализацию своих звонков и трафика за период",
+    description:"Я, как клиент, хочу заказать детализацию своих звонков и трафика за период",
     characteristic:{t:"Целевой", c:"pink"}, lifecycle:{t:"В эксплуатации", c:"green"},
     scenario:["1. Пользователь выбирает период в личном кабинете.","2. Заказывает детализацию."],
     channels:"Личный кабинет, Email", tags:["B2C","Биллинг"], docs:"Ссылка", metrics:"Текстовое описание метрик",
@@ -5657,7 +5666,7 @@ const CJ6_STAGES = [
   {
     id:"st2", color:"c2", name:"Название этапа 2",
     biName:"Выгрузка детализации", biId:"BI 01.02.09.02",
-    description:"Я, как клиент билайна, хочу получить готовую детализацию звонков в удобном формате",
+    description:"Я, как клиент, хочу получить готовую детализацию звонков в удобном формате",
     characteristic:{t:"Фактический", c:"blue"}, lifecycle:{t:"В эксплуатации", c:"green"},
     scenario:["1. Система формирует файл детализации.","2. Пользователь скачивает файл или получает его на почту."],
     channels:"Личный кабинет, Email", tags:["B2C","Биллинг"], docs:"Ссылка", metrics:"Текстовое описание метрик",
@@ -6485,7 +6494,7 @@ const AC_CAPS_TABLE = [
   {status:"Успешно", name:"Возможность online-отображения информации в процессе коммуникации сотрудников офисов и call-центров", code:"B2CDIGITALRETAILDELIVERYCATALOG.002"},
 ];
 const AC_ADR_TABLE = [
-  {name:"ADR-0001 Интеграция каталогов возможностей с BeeWorks Marketplace", date:"12.08.2025, 13:40"},
+  {name:"ADR-0001 Интеграция каталогов возможностей с Enterprise Marketplace", date:"12.08.2025, 13:40"},
   {name:"ADR 0002 Выбор способа ведения НФТ продуктов", date:"12.08.2025, 13:40"},
 ];
 function fitnessRows(kind){
@@ -6595,54 +6604,54 @@ const AC_OBS_TREE = [
    приложение и какими методами». E2E и Use Case — физически разные сущности, поэтому
    это две независимые таблицы, а не одна с признаком. Dynamic View у E2E-строк пока
    пустой: на бэке связки «шаг E2E → Dynamic-диаграмма» ещё нет, колонка заведена под неё. */
-const AC_E2E_SOURCES = ["Импорт E2E из Parks", "Ручная привязка"];
+const AC_E2E_SOURCES = ["Импорт из Parks", "Ручная привязка"];
 
 const AC_E2E_ROWS = [
   {process:"Я, как клиент, переношу денежные средства между балансами", processCode:"E2E.00.00.01",
    step:"Клиент открывает форму переноса средств", stepCode:"STEP.00.00.01.01",
    method:"GET /bucket", tcName:"Возможность получения балансов абонента", tcCode:"TC-108",
-   dynamic:null, source:"Импорт E2E из Parks"},
+   dynamic:null, source:"Импорт из Parks"},
   {process:"Я, как клиент, переношу денежные средства между балансами", processCode:"E2E.00.00.01",
    step:"Клиент подтверждает перенос средств", stepCode:"STEP.00.00.01.02",
    method:"POST /transferBalance", tcName:"Возможность переноса средств между балансами", tcCode:"TC-150",
-   dynamic:null, source:"Импорт E2E из Parks"},
-  {process:"Я, как клиент, подключаю услугу Общий Баланс", processCode:"E2E.00.00.02",
+   dynamic:null, source:"Импорт из Parks"},
+  {process:"Я, как клиент, подключаю услугу Совместный баланс", processCode:"E2E.00.00.02",
    step:"Клиент открывает карточку услуги", stepCode:"STEP.00.00.02.01",
    method:"GET /bucket", tcName:"Возможность получения балансов абонента", tcCode:"TC-108",
-   dynamic:null, source:"Импорт E2E из Parks"},
+   dynamic:null, source:"Импорт из Parks"},
   {process:"Я, как клиент, получаю контрпредложение при попытке уменьшить абон. плату путём смены или изменения ТП в МП", processCode:"E2E.00.00.03",
    step:"Система проверяет остаток на балансе", stepCode:"STEP.00.00.03.01",
    method:"GET /bucket", tcName:"Возможность получения балансов абонента", tcCode:"TC-108",
-   dynamic:null, source:"Импорт E2E из Parks"},
+   dynamic:null, source:"Импорт из Parks"},
   {process:"Я, как клиент, получаю контрпредложение при попытке уменьшить абон. плату путём смены или изменения ТП в МП", processCode:"E2E.00.00.03",
    step:"Система запрашивает кредитный лимит", stepCode:"STEP.00.00.03.02",
    method:"GET /creditlimit", tcName:"Возможность получения кредитного лимита", tcCode:"TC-121",
-   dynamic:null, source:"Импорт E2E из Parks"},
+   dynamic:null, source:"Импорт из Parks"},
   {process:"Я, как клиент, получаю контрпредложение при попытке уменьшить абон. плату путём смены или изменения ТП в МП", processCode:"E2E.00.00.03",
    step:"Клиент принимает контрпредложение", stepCode:"STEP.00.00.03.04",
    method:"POST /transferBalance", tcName:"Возможность переноса средств между балансами", tcCode:"TC-150",
    dynamic:null, source:"Ручная привязка"},
-  {process:"Я, как клиент, провожу оплату в интернете через мобильный платёж (Оплата в AppStore)", processCode:"E2E.00.00.04",
+  {process:"Я, как клиент, провожу оплату в интернете через мобильный платёж (оплата в магазине приложений)", processCode:"E2E.00.00.04",
    step:"Система резервирует средства на балансе", stepCode:"STEP.00.00.04.02",
    method:"GET /bucket", tcName:"Возможность получения балансов абонента", tcCode:"TC-108",
-   dynamic:null, source:"Импорт E2E из Parks"},
-  {process:"Я, как клиент, провожу оплату в интернете через мобильный платёж (Оплата в AppStore)", processCode:"E2E.00.00.04",
+   dynamic:null, source:"Импорт из Parks"},
+  {process:"Я, как клиент, провожу оплату в интернете через мобильный платёж (оплата в магазине приложений)", processCode:"E2E.00.00.04",
    step:"Система списывает сумму покупки", stepCode:"STEP.00.00.04.03",
    method:"POST /adjustBalance", tcName:"Возможность корректировки баланса", tcCode:"TC-134",
-   dynamic:null, source:"Импорт E2E из Parks"},
-  {process:"Я, как клиент, провожу оплату в интернете через мобильный платёж (Оплата в AppStore)", processCode:"E2E.00.00.04",
+   dynamic:null, source:"Импорт из Parks"},
+  {process:"Я, как клиент, провожу оплату в интернете через мобильный платёж (оплата в магазине приложений)", processCode:"E2E.00.00.04",
    step:"Система переносит средства на сервисный счёт", stepCode:"STEP.00.00.04.05",
    method:"POST /transferBalance", tcName:"Возможность переноса средств между балансами", tcCode:"TC-150",
-   dynamic:null, source:"Импорт E2E из Parks"},
-  {process:"Я, как клиент, хочу выполнить смену ТП на семейства «конструктор» в МП (prepaid)", processCode:"E2E.00.00.05",
+   dynamic:null, source:"Импорт из Parks"},
+  {process:"Я, как клиент, хочу выполнить смену ТП на семейства «Гибкий» в МП (prepaid)", processCode:"E2E.00.00.05",
    step:"Система проверяет баланс перед сменой ТП", stepCode:"STEP.00.00.05.01",
    method:"GET /bucket", tcName:"Возможность получения балансов абонента", tcCode:"TC-108",
-   dynamic:null, source:"Импорт E2E из Parks"},
-  {process:"Я, как клиент, хочу выполнить смену ТП на семейства «конструктор» в МП (prepaid)", processCode:"E2E.00.00.05",
+   dynamic:null, source:"Импорт из Parks"},
+  {process:"Я, как клиент, хочу выполнить смену ТП на семейства «Гибкий» в МП (prepaid)", processCode:"E2E.00.00.05",
    step:"Система проверяет кредитный лимит", stepCode:"STEP.00.00.05.02",
    method:"GET /creditlimit", tcName:"Возможность получения кредитного лимита", tcCode:"TC-121",
-   dynamic:null, source:"Импорт E2E из Parks"},
-  {process:"Я, как клиент, хочу выполнить смену ТП на семейства «конструктор» в МП (prepaid)", processCode:"E2E.00.00.05",
+   dynamic:null, source:"Импорт из Parks"},
+  {process:"Я, как клиент, хочу выполнить смену ТП на семейства «Гибкий» в МП (prepaid)", processCode:"E2E.00.00.05",
    step:"Система списывает стоимость перехода", stepCode:"STEP.00.00.05.04",
    method:"POST /transferBalance", tcName:null, tcCode:null,
    dynamic:null, source:"Ручная привязка"},
@@ -6669,17 +6678,17 @@ const AC_E2E_UC_ROWS = [
    action:"send_transfer_notification", call:"POST /api/v1/notify/send",
    tcName:"Возможность отправки уведомления", tcCode:"TC-163",
    dynamic:null, status:"planned", methodStatus:"Не реализовано"},
-  {ucCode:"UC-021", ucName:"Подключение услуги Общий Баланс", part:"P-01",
+  {ucCode:"UC-021", ucName:"Подключение услуги Совместный баланс", part:"P-01",
    caller:"Мобильное приложение", callee:"Сервис Платежи и переводы",
    action:"get_bucket_list", call:"GET /bucket",
    tcName:"Возможность получения балансов абонента", tcCode:"TC-108",
    dynamic:"SEQ-91", status:"confirmed", methodStatus:"Реализовано"},
-  {ucCode:"UC-021", ucName:"Подключение услуги Общий Баланс", part:"P-02",
+  {ucCode:"UC-021", ucName:"Подключение услуги Совместный баланс", part:"P-02",
    caller:"Сервис Платежи и переводы", callee:"BSS Billing Engine",
-   action:"Сервис активирует опцию «Общий Баланс» в биллинге и дожидается подтверждения активации.",
+   action:"Сервис активирует опцию «Совместный баланс» в биллинге и дожидается подтверждения активации.",
    call:"POST /billing/options/activate", tcName:"Возможность активации тарифной опции", tcCode:"TC-311",
    dynamic:"SEQ-91", status:"confirmed", methodStatus:"Реализовано"},
-  {ucCode:"UC-021", ucName:"Подключение услуги Общий Баланс", part:"P-03",
+  {ucCode:"UC-021", ucName:"Подключение услуги Совместный баланс", part:"P-03",
    caller:"Сервис Платежи и переводы", callee:"Сервис лояльности",
    action:"apply_bonus_points", call:"POST /api/v1/loyalty/apply",
    tcName:null, tcCode:null,
@@ -6699,12 +6708,12 @@ const AC_E2E_UC_ROWS = [
    action:"check_fraud_score", call:"POST /api/v1/fraud/check",
    tcName:null, tcCode:null,
    dynamic:null, status:"unmapped", methodStatus:"Отсутствует в архитектуре"},
-  {ucCode:"UC-047", ucName:"Смена ТП на семейство «конструктор»", part:"P-01",
+  {ucCode:"UC-047", ucName:"Смена ТП на семейство «Гибкий»", part:"P-01",
    caller:"Мобильное приложение", callee:"Сервис Платежи и переводы",
    action:"get_credit_limit", call:"GET /creditlimit",
    tcName:"Возможность получения кредитного лимита", tcCode:"TC-121",
    dynamic:null, status:"confirmed", methodStatus:"Реализовано"},
-  {ucCode:"UC-047", ucName:"Смена ТП на семейство «конструктор»", part:"P-04",
+  {ucCode:"UC-047", ucName:"Смена ТП на семейство «Гибкий»", part:"P-04",
    caller:"Мобильное приложение", callee:"Сервис Платежи и переводы",
    action:"Приложение списывает стоимость перехода на новый тарифный план с основного баланса абонента.",
    call:"POST /transferBalance", tcName:"Возможность переноса средств между балансами", tcCode:"TC-150",
@@ -6799,7 +6808,12 @@ function acSortRows(rows, sort, getters){
 /* Название + код под ним. В отличие от clampNameCell название не красим в синий:
    шаг E2E-сценария здесь не ссылка, а подпись к строке. */
 function acNameCodeCell(name, code){
-  return `${clampCell(name)}<div class="row-sub">${escapeHtml(code)}</div>`;
+  return `${clampCell(name, "clamp-1")}<div class="row-sub">${escapeHtml(code)}</div>`;
+}
+/* Техническая возможность в таблицах приложения — подпись, а не ссылка: в карточку ТВ
+   отсюда не переходят, поэтому синим её не красим (в отличие от clampNameCell). */
+function acTcCell(name, code){
+  return name ? acNameCodeCell(name, code) : '<span class="empty-cell">—</span>';
 }
 function acMethodStatusBadge(s){
   if(s==="Реализовано") return '<span class="badge green">Реализовано</span>';
@@ -6841,7 +6855,7 @@ function AcE2eStepsTable(){
     </div>
     <div class="table-wrap-fit">
       <table class="fixed-table">
-        <colgroup><col style="width:28%"><col style="width:22%"><col style="width:15%"><col style="width:17%"><col style="width:8%"><col style="width:10%"></colgroup>
+        <colgroup><col style="width:25%"><col style="width:21%"><col style="width:15%"><col style="width:18%"><col style="width:7%"><col style="width:14%"></colgroup>
         <thead><tr>
           ${acSortTh("Процесс","process",ac.e2eSort,"ac-e2e-sort")}
           ${acSortTh("Шаг сценария","step",ac.e2eSort,"ac-e2e-sort")}
@@ -6853,12 +6867,12 @@ function AcE2eStepsTable(){
         <tbody>
           ${rows.length ? rows.map(r=>`
             <tr>
-              <td><div class="proj-link" data-action="ac-open-e2e-process" data-code="${escapeHtml(r.processCode)}">${escapeHtml(r.process)}</div><div class="row-sub">${escapeHtml(r.processCode)}</div></td>
+              <td><div class="cell-clamp-wrap"><div class="cell-clamp clamp-1 proj-link" data-action="ac-open-e2e-process" data-code="${escapeHtml(r.processCode)}">${escapeHtml(r.process)}</div><div class="cell-tooltip">${escapeHtml(r.process)}</div></div><div class="row-sub">${escapeHtml(r.processCode)}</div></td>
               <td>${acNameCodeCell(r.step, r.stepCode)}</td>
-              <td>${clampCell(r.method)}</td>
-              <td>${r.tcName ? clampNameCell(r.tcName, r.tcCode) : '<span class="empty-cell">—</span>'}</td>
-              <td>${r.dynamic ? `<span class="proj-link" data-action="ac-open-e2e-dynamic" data-id="${escapeHtml(r.dynamic)}">${escapeHtml(r.dynamic)}</span>` : '<span class="empty-cell">—</span>'}</td>
-              <td>${escapeHtml(r.source)}</td>
+              <td>${clampCell(r.method, "clamp-1")}</td>
+              <td>${acTcCell(r.tcName, r.tcCode)}</td>
+              <td>${r.dynamic ? `<span class="proj-link" style="white-space:nowrap;" data-action="ac-open-e2e-dynamic" data-id="${escapeHtml(r.dynamic)}">${escapeHtml(r.dynamic)}</span>` : '<span class="empty-cell">—</span>'}</td>
+              <td>${clampCell(r.source, "clamp-1")}</td>
             </tr>
           `).join("") : acEmptyRow(6)}
         </tbody>
@@ -6886,11 +6900,11 @@ function AcE2eUcTable(){
       ${FilterSelect({id:"ac-e2e-uc-cstatus", label:"Статус вызова", value:ac.e2eUcCallStatusFilter, options:["Все","Подтверждено","Планируется","Не смаппирован"], action:"ac-e2e-uc-cstatus-filter"})}
       <span class="reset-link" data-action="ac-reset-e2e-uc">Сбросить</span>
     </div>
-    <div class="table-wrap-fit">
-      <table class="fixed-table">
+    <div class="table-scroll">
+      <table class="fixed-table" style="min-width:1900px;">
         <colgroup>
-          <col style="width:12%"><col style="width:4%"><col style="width:9%"><col style="width:9%"><col style="width:16%">
-          <col style="width:11%"><col style="width:12%"><col style="width:6%"><col style="width:10%"><col style="width:11%">
+          <col style="width:220px"><col style="width:76px"><col style="width:190px"><col style="width:190px"><col style="width:340px">
+          <col style="width:190px"><col style="width:250px"><col style="width:96px"><col style="width:150px"><col style="width:200px">
         </colgroup>
         <thead><tr>
           ${acSortTh("Use Case","ucCode",ac.e2eUcSort,"ac-e2e-uc-sort")}
@@ -6907,14 +6921,14 @@ function AcE2eUcTable(){
         <tbody>
           ${rows.length ? rows.map(r=>`
             <tr>
-              <td><div class="proj-link" data-action="ac-open-e2e-uc" data-code="${escapeHtml(r.ucCode)}">${escapeHtml(r.ucName)}</div><div class="row-sub">${escapeHtml(r.ucCode)}</div></td>
+              <td><div class="cell-clamp-wrap"><div class="cell-clamp clamp-1 proj-link" data-action="ac-open-e2e-uc" data-code="${escapeHtml(r.ucCode)}">${escapeHtml(r.ucName)}</div><div class="cell-tooltip">${escapeHtml(r.ucName)}</div></div><div class="row-sub">${escapeHtml(r.ucCode)}</div></td>
               <td style="white-space:nowrap;">${escapeHtml(r.part)}</td>
-              <td>${clampCell(r.caller)}</td>
-              <td>${clampCell(r.callee)}</td>
-              <td>${clampCell(r.action, "clamp-5")}</td>
-              <td>${clampCell(r.call)}</td>
-              <td>${r.tcName ? clampNameCell(r.tcName, r.tcCode) : '<span class="empty-cell">—</span>'}</td>
-              <td>${r.dynamic ? `<span class="proj-link" data-action="ac-open-e2e-dynamic" data-id="${escapeHtml(r.dynamic)}">${escapeHtml(r.dynamic)}</span>` : '<span class="empty-cell">—</span>'}</td>
+              <td>${clampCell(r.caller, "clamp-1")}</td>
+              <td>${clampCell(r.callee, "clamp-1")}</td>
+              <td>${clampCell(r.action, "clamp-1")}</td>
+              <td>${clampCell(r.call, "clamp-1")}</td>
+              <td>${acTcCell(r.tcName, r.tcCode)}</td>
+              <td>${r.dynamic ? `<span class="proj-link" style="white-space:nowrap;" data-action="ac-open-e2e-dynamic" data-id="${escapeHtml(r.dynamic)}">${escapeHtml(r.dynamic)}</span>` : '<span class="empty-cell">—</span>'}</td>
               <td>${scenarioStatusBadge(r.status)}</td>
               <td>${acMethodStatusBadge(r.methodStatus)}</td>
             </tr>
@@ -7126,9 +7140,9 @@ function AcGeneralInfo(app){
       <div class="ac-kv-row"><div class="k">Критичность</div><div class="v">${escapeHtml(app.crit)}</div></div>
       <div class="ac-kv-row"><div class="k">Описание</div><div class="v ac-desc">${escapeHtml(app.name)} — интеграционный сервис, предоставляет смежным системам данные о складах и номенклатуре, поступлении товара, статусах заказов клиентов и плане работы сотрудников для мобильного приложения. Контур обслуживания номера передаёт операции по абоненту: установку и снятие блокировки номера, информацию о наличии отложенного отключения и данные о номере для проверок…<div class="ac-desc-more" data-action="noop-doc">Показать полностью ${icon("chevronDown")}</div></div></div>
       <div class="ac-kv-row"><div class="k">Влияние приложения</div><div class="v"><span class="proj-link" data-action="noop-doc">Посмотреть влияние ${icon("externalLink")}</span></div></div>
-      <div class="ac-kv-row"><div class="k">Информация о приложении</div><div class="v"><a class="proj-link" data-action="noop-doc">https://bw.beeline.ru/catalog/apps/53</a></div></div>
-      <div class="ac-kv-row"><div class="k">Дашборд приложения</div><div class="v"><a class="proj-link" data-action="noop-doc">https://bw.beeline.ru/catalog/apps/53</a></div></div>
-      <div class="ac-kv-row"><div class="k">Structurizr URL</div><div class="v"><a class="proj-link" data-action="noop-doc">https://bw.beeline.ru/catalog/apps/53</a></div></div>
+      <div class="ac-kv-row"><div class="k">Информация о приложении</div><div class="v"><a class="proj-link" data-action="noop-doc">https://bw.example.ru/catalog/apps/53</a></div></div>
+      <div class="ac-kv-row"><div class="k">Дашборд приложения</div><div class="v"><a class="proj-link" data-action="noop-doc">https://bw.example.ru/catalog/apps/53</a></div></div>
+      <div class="ac-kv-row"><div class="k">Structurizr URL</div><div class="v"><a class="proj-link" data-action="noop-doc">https://bw.example.ru/catalog/apps/53</a></div></div>
     </div>
     <div class="table-wrap" style="margin-bottom:var(--space-6);">
       <table>
@@ -7136,7 +7150,7 @@ function AcGeneralInfo(app){
         <tbody><tr><td>876.567.999</td><td>12.12.2025, 23:59</td><td>GitOPS pipeline</td><td>Какой-то статус</td></tr></tbody>
       </table>
     </div>
-    <div class="ac-kv-row" style="margin-bottom:var(--space-4);"><div class="k">Репозиторий архитектуры</div><div class="v"><a class="proj-link" data-action="noop-doc">https://bw.beeline.ru/catalog/apps/53</a></div></div>
+    <div class="ac-kv-row" style="margin-bottom:var(--space-4);"><div class="k">Репозиторий архитектуры</div><div class="v"><a class="proj-link" data-action="noop-doc">https://bw.example.ru/catalog/apps/53</a></div></div>
     <div class="table-wrap">
       <table>
         <thead><tr><th>Название репозитория</th><th>Ссылка на репозиторий</th><th>Ссылка на контейнер</th></tr></thead>
@@ -7569,7 +7583,7 @@ function AcSourceEditorOverlay(){
         <div class="ac-src-field">
           <label>Источник</label>
           <input class="input" id="acSrcSourceInput" placeholder="Источник" value="${escapeHtml(ed.values.source||"")}" autocomplete="off"/>
-          ${ed.sourceOpen ? `<div class="ac-src-suggest"><div class="ac-src-suggest-item" data-action="ac-src-pick-source">Prometheus-BeeInside</div></div>` : ""}
+          ${ed.sourceOpen ? `<div class="ac-src-suggest"><div class="ac-src-suggest-item" data-action="ac-src-pick-source">Prometheus-Observability</div></div>` : ""}
         </div>
       </div>
       <div class="wizard-foot">
@@ -10906,8 +10920,8 @@ function openPublishPanel(projectId, assessmentId){
     type:"publish", projectId, assessmentId,
     author: a ? a.author : ARCHITECT,
     pageTitle:"",
-    parentUrl:"https://bwiki.beeline.ru/x/6wifFQ",
-    bpUrl: a && a.bpUrl ? a.bpUrl : "https://bwiki.beeline.ru/x/POxveg",
+    parentUrl:"https://bwiki.example.ru/x/6wifFQ",
+    bpUrl: a && a.bpUrl ? a.bpUrl : "https://bwiki.example.ru/x/POxveg",
     bpText:"",
   };
   render();
@@ -11602,7 +11616,7 @@ function startHldWizard(projectId){
       tc: a.bcTc.map(x=>Object.assign({},x,{checked:true})),
       useCases: USE_CASES_POOL.map(x=>Object.assign({id:uid("uc")},x)),
       pageTitle: "HLD — " + p.name,
-      parentUrl: "https://bwiki.beeline.ru/x/6wifFQ",
+      parentUrl: "https://bwiki.example.ru/x/6wifFQ",
     },
   };
   render();
@@ -11777,7 +11791,7 @@ function finishHldAndSave(){
   const s = {
     id: uid("hld"),
     author: ARCHITECT, date: NOW_DATE,
-    confluenceUrl: "https://bwiki.beeline.ru/x/hLD" + Math.floor(1000+Math.random()*8999),
+    confluenceUrl: "https://bwiki.example.ru/x/hLD" + Math.floor(1000+Math.random()*8999),
     pageTitle: w.data.pageTitle.trim() || ("HLD — " + p.name),
     fr: w.data.fr, nfr: w.data.nfr,
     systems: w.data.systems.filter(x=>x.checked),
@@ -13162,7 +13176,7 @@ function handleInput(el){
   else if(el.id==="acE2eUcSearch"){ state.appcat.e2eUcSearch = el.value; render(); reFocus("acE2eUcSearch"); }
   else if(el.id==="acSrcSourceInput"){
     state.appcat.sourceEditor.values.source = el.value;
-    state.appcat.sourceEditor.sourceOpen = el.value.trim().length>0 && el.value!=="Prometheus-BeeInside";
+    state.appcat.sourceEditor.sourceOpen = el.value.trim().length>0 && el.value!=="Prometheus-Observability";
     render(); reFocus("acSrcSourceInput");
   }
   else if(el.id==="graphNodeSearch"){ state.graph.nodeSearch = el.value; render(); reFocus("graphNodeSearch"); }
@@ -14176,7 +14190,7 @@ function handleAction(action, el){
           level = node.level===1?"instance":node.level===2?"container":"interface";
           values[level] = node.label;
           values.template = "Prometheus-template-api-queries (spring+ histogramm)";
-          values.source = "Prometheus-BeeInside";
+          values.source = "Prometheus-Observability";
         }
       }
       state.appcat.sourceEditor = {mode, kind:"button", level, values, sourceOpen:false};
@@ -14187,7 +14201,7 @@ function handleAction(action, el){
     case "ac-src-set-kind": state.appcat.sourceEditor.kind = el.dataset.kind; render(); break;
     case "ac-src-set-level": state.appcat.sourceEditor.level = el.dataset.level; render(); break;
     case "ac-src-pick-source":
-      state.appcat.sourceEditor.values.source = "Prometheus-BeeInside";
+      state.appcat.sourceEditor.values.source = "Prometheus-Observability";
       state.appcat.sourceEditor.sourceOpen = false;
       render();
       break;
