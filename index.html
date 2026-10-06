@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261006-125221">
+<meta name="beeatlas-build" content="20261006-132501">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -4139,7 +4139,7 @@ function callTreeFor(offset, kind){
 function renderCallsTab(offset, kind){
   var k=callKey();
   var selId=state.selectedCall[k];
-  var detail = selId ? renderCallDetail() : (
+  var detail = selId ? renderCallDetail(kind) : (
     '<div class="detail-empty">'+boxSvgSmall()+'<div>Выбери вызов из списка</div></div>'
   );
   return '<div class="calls-wrap">'+
@@ -4155,12 +4155,13 @@ function boxSvgSmall(){
     '<path d="M32 30 Q70 6 108 30 L120 46 L70 26 L20 46 Z" fill="#FCD9B8"/>'+
   '</svg>';
 }
-function renderCallDetail(){
+function renderCallDetail(kind){
   var d=CALL_DETAIL;
   return ''+
     dv('Метод',d.method)+
     '<div class="dv-field"><div class="lbl">Тип</div><span class="typebadge">'+d.type+'</span></div>'+
-    dv('Стереотип',d.stereotype)+
+    // Стереотип — атрибут загруженной трассы E2E, у вызовов Use Case его нет
+    (kind==='uc' ? '' : dv('Стереотип',d.stereotype))+
     dv('Путь',d.path)+
     dv('RPS',d.rps)+
     dv('Latency',d.latency)+
