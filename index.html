@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261006-105855">
+<meta name="beeatlas-build" content="20261006-122653">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -2631,6 +2631,19 @@
 .e2ecat-scope .tab:hover{color:var(--text);}
 .e2ecat-scope .tab.on{color:var(--text);border-bottom-color:var(--accent);}
 
+/* Выбор реализации: кодов может быть много и они нечитаемые, поэтому показываем
+   первые три чипса, остальные прячем за «ещё N» — страница не пугает длинными
+   идентификаторами, но и лишних кликов за частым выбором нет. */
+.e2ecat-scope .impl-row{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:20px;}
+.e2ecat-scope .impl-lbl{font-size:13px;color:var(--text-secondary);margin-right:4px;}
+.e2ecat-scope .impl-chip{display:inline-flex;align-items:center;gap:6px;max-width:320px;height:32px;padding:0 12px;border-radius:var(--radius-pill);background:var(--bg-hover);color:var(--text);font-size:13px;line-height:16px;cursor:pointer;border:1px solid transparent;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
+.e2ecat-scope .impl-chip:hover{border-color:var(--border);}
+.e2ecat-scope .impl-chip.on{background:var(--accent);color:var(--on-accent,#000);font-weight:600;}
+.e2ecat-scope .impl-chip .ic-src{font-size:11px;opacity:.65;text-transform:uppercase;letter-spacing:.06em;}
+.e2ecat-scope .impl-more{height:32px;padding:0 12px;border-radius:var(--radius-pill);background:transparent;border:1px dashed var(--border);color:var(--link);font-size:13px;cursor:pointer;}
+.e2ecat-scope .impl-meta{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--text-secondary);margin:-8px 0 18px;}
+.e2ecat-scope .impl-empty{color:var(--text-tertiary);font-size:14px;margin:0 0 18px;}
+
 .e2ecat-scope .card{background:var(--bg-panel);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px 24px;margin-bottom:20px;box-shadow:var(--shadow-card);}
 .e2ecat-scope .card-title{font-size:15px;font-weight:700;margin:0 0 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
 .e2ecat-scope .field-grid{display:flex;flex-wrap:wrap;gap:28px 48px;margin-bottom:18px;}
@@ -2916,6 +2929,50 @@ function buildStepUc(n, stepTitle){
   };
 }
 
+/* К одному шагу может быть привязано несколько Use Case: каждый — своя реализация
+   последовательности вызовов, их сравнивают между собой. */
+var UC_EXTRA_TITLES=[
+  'Альтернативный поток: вход по паролю',
+  'Поток восстановления доступа'
+];
+function buildStepUcs(n, stepTitle){
+  var first=buildStepUc(n, stepTitle);
+  if(!first) return [];
+  var list=[first];
+  var extra=n%4;
+  for(var i=0;i<extra && i<UC_EXTRA_TITLES.length;i++){
+    var u=buildStepUc(n+i+1, UC_EXTRA_TITLES[i]);
+    if(u){ u.code='UC-'+(200+n+i); list.push(u); }
+  }
+  return list;
+}
+
+/* Реализации, пришедшие из E2E-сценариев. Код — идентификатор загрузки, как в
+   проде: читать его человеку незачем, он нужен только чтобы различать загрузки. */
+var E2E_IMPL_CODES=[
+  'curl_demo_1789544308',
+  'curl_demo_1789544593',
+  '{F9E33510-A375-4a76-A65C-75EDB6045D1E}',
+  'curl_demo_1789601145',
+  '{2B41C9A0-55D2-4F10-9C33-1A77E0B9D412}'
+];
+function buildStepE2eImpls(n){
+  var count=1+(n%4);
+  var out=[];
+  for(var i=0;i<count;i++){
+    var idx=(n+i)%E2E_IMPL_CODES.length;
+    out.push({
+      id:'e2eimpl-'+n+'-'+i,
+      kind:'e2e',
+      code:E2E_IMPL_CODES[idx],
+      source:E2E_TITLES[(n+i)%E2E_TITLES.length],
+      loadedAt:daysAgoStr(3+i*4),
+      offset:i
+    });
+  }
+  return out;
+}
+
 function pad2(n){ return (n<10?'0':'')+n; }
 function daysAgoStr(d){
   var dt=new Date(Date.now()-d*86400000);
@@ -2952,7 +3009,9 @@ var CJ_LIST=[];
           id:stepId, type:'step', parentCj:cjId, parentBi:biId,
           title:stepTitle,
           code:'STEP.00.00.'+pad2(i+1)+'.'+(stepGlobalIdx%100),
-          uc: buildStepUc(stepGlobalIdx, stepTitle)
+          uc: buildStepUc(stepGlobalIdx, stepTitle),
+          ucs: buildStepUcs(stepGlobalIdx, stepTitle),
+          e2eImpls: buildStepE2eImpls(stepGlobalIdx)
         });
       }
       cj.bi.push(bi);
@@ -3179,6 +3238,8 @@ function defaultState(){
     selected:null, /* {type,id} */
     activeTab:{}, /* entityId -> tabname */
     selectedCall:{}, /* entityKey -> callId */
+    stepImpl:{},     /* stepId+':'+kind -> id выбранной реализации */
+    implMore:{},     /* stepId+':'+kind -> раскрыт ли список «ещё N» */
     expandedCalls:{}, /* entityKey -> {callId:true} */
     dashboards:{}, /* stepId -> {link,folder,updatedAt} */
     tempDashboards:{}, /* stepId -> [names] */
@@ -3395,6 +3456,15 @@ function nowStr(){
 
 function openPanel(type,stepId){
   state.panel={type:type,stepId:stepId,value:'',err:null,success:null};
+  // Алерты строятся не по шагу вообще, а по конкретной реализации его вызовов —
+  // нужно выбрать, из E2E или из Use Case и из какой именно загрузки.
+  if(type==='createAlerts'||type==='updateAlerts'){
+    var st=findStep(stepId);
+    var kind=st&&stepImpls(st,'e2e').length?'e2e':'uc';
+    var cur=st?currentImpl(st,kind):null;
+    state.panel.srcKind=kind;
+    state.panel.srcImpl=cur?cur.id:null;
+  }
   render();
   setTimeout(function(){
     var el=document.getElementById('panel-input');
@@ -3402,6 +3472,21 @@ function openPanel(type,stepId){
   },30);
 }
 function closePanel(){ state.panel=null; render(); }
+function setPanelSrcKind(kind){
+  var p=state.panel; if(!p) return;
+  var st=findStep(p.stepId);
+  var list=st?stepImpls(st,kind):[];
+  p.srcKind=kind;
+  p.srcImpl=list.length?list[0].id:null;
+  render();
+}
+function setPanelSrcImpl(id){ if(state.panel){ state.panel.srcImpl=id; render(); } }
+function panelSrcLabel(p){
+  var st=findStep(p.stepId); if(!st) return '';
+  var impl=stepImpls(st,p.srcKind).find(function(x){return x.id===p.srcImpl;});
+  if(!impl) return '';
+  return (p.srcKind==='e2e'?'E2E':'Use Case')+' · '+impl.code;
+}
 function onPanelInput(v){ if(state.panel){ state.panel.value=v; if(state.panel.err) state.panel.err=null; render(); } }
 
 function submitPanel(){
@@ -3431,7 +3516,8 @@ function submitPanel(){
       version:version,
       date:nowStr(),
       initiator:'Константинопольский Константин Константинович',
-      comment:val
+      comment:val,
+      source:panelSrcLabel(p)
     };
     closePanel();
     toast(p.type==='createAlerts'?'Alerts создан':'Alerts обновлён');
@@ -3852,17 +3938,100 @@ function tabsBar(entityId,tabs,active){
 function renderStepPage(id){
   var step=findStep(id); if(!step) return renderEmptyState();
   var bi=findBi(step.parentBi); var cj=findCj(step.parentCj);
-  var active=state.activeTab[id]||'calls';
+  var active=state.activeTab[id]||'calls-e2e';
+  // ключи вкладок поменялись: прежний 'calls' превратился в 'calls-e2e', 'usecase' — в 'calls-uc'
+  if(active==='calls') active='calls-e2e';
+  if(active==='usecase') active='calls-uc';
   var html='<div class="crumbs"><a onclick="selectCj(\''+cj.id+'\')">'+esc(cj.title.length>40?cj.title.slice(0,40)+'…':cj.title)+'</a><span class="sep">›</span><span>'+esc(bi.title)+'</span><span class="sep">›</span></div>'+
     '<div class="page-title">'+esc(step.title)+'</div>'+
     '<div class="page-code">'+esc(step.code)+'</div>'+
-    tabsBar(id,[{key:'calls',label:'Последовательность вызовов'},{key:'diagram',label:'Диаграмма'},{key:'obs',label:'Наблюдаемость'},{key:'usecase',label:'Use Case'}],active);
+    tabsBar(id,[
+      {key:'calls-e2e',label:'Вызовы E2E'+implCountSuffix(step,'e2e')},
+      {key:'calls-uc',label:'Вызовы Use Case'+implCountSuffix(step,'uc')},
+      {key:'diagram',label:'Диаграмма'},
+      {key:'obs',label:'Наблюдаемость'}
+    ],active);
 
-  if(active==='calls') html+=renderCallsTab();
+  if(active==='calls-e2e') html+=renderStepE2eCallsTab(step);
+  else if(active==='calls-uc') html+=renderStepUcCallsTab(step);
   else if(active==='diagram') html+=renderDiagramTab();
-  else if(active==='usecase') html+=renderUseCaseTab(step);
   else html+=renderObsTab(step.id);
   return html;
+}
+
+/* ---- реализации шага: E2E и Use Case ---- */
+// Дерево вызовов строится по конкретной реализации, а не по шагу вообще: у каждой
+// загрузки свой состав вызовов, их для того и сравнивают.
+function stepImpls(step, kind){
+  if(kind==='uc'){
+    return (step.ucs||[]).map(function(u,i){
+      return {id:'ucimpl-'+step.id+'-'+i, kind:'uc', code:u.code, source:u.name, uc:u, offset:i};
+    });
+  }
+  return step.e2eImpls||[];
+}
+function implCountSuffix(step, kind){
+  var n=stepImpls(step,kind).length;
+  return n>1 ? ' ('+n+')' : '';
+}
+function implKey(stepId, kind){ return stepId+':'+kind; }
+function currentImpl(step, kind){
+  var list=stepImpls(step,kind);
+  if(!list.length) return null;
+  var sel=state.stepImpl[implKey(step.id,kind)];
+  return list.find(function(x){return x.id===sel;})||list[0];
+}
+function selectImpl(stepId, kind, implId){
+  state.stepImpl[implKey(stepId,kind)]=implId; render();
+}
+function toggleImplMore(stepId, kind){
+  var k=implKey(stepId,kind);
+  state.implMore[k]=!state.implMore[k]; render();
+}
+
+var IMPL_CHIPS_VISIBLE=3;
+function renderImplChips(step, kind){
+  var list=stepImpls(step,kind);
+  if(list.length<2) return '';
+  var k=implKey(step.id,kind);
+  var cur=currentImpl(step,kind);
+  var expanded=!!state.implMore[k];
+  var shown=expanded?list:list.slice(0,IMPL_CHIPS_VISIBLE);
+  var hidden=list.length-shown.length;
+  var chips=shown.map(function(x){
+    var label=kind==='uc' ? x.code : x.code;
+    return '<div class="impl-chip'+(cur&&cur.id===x.id?' on':'')+'" title="'+esc(x.source+' · '+x.code)+'" onclick="selectImpl(\''+step.id+'\',\''+kind+'\',\''+x.id+'\')">'+esc(label)+'</div>';
+  }).join('');
+  var more='';
+  if(hidden>0) more='<button class="impl-more" onclick="toggleImplMore(\''+step.id+'\',\''+kind+'\')">ещё '+hidden+'</button>';
+  else if(expanded && list.length>IMPL_CHIPS_VISIBLE) more='<button class="impl-more" onclick="toggleImplMore(\''+step.id+'\',\''+kind+'\')">свернуть</button>';
+  return '<div class="impl-row"><span class="impl-lbl">Реализация</span>'+chips+more+'</div>';
+}
+
+function renderStepE2eCallsTab(step){
+  var list=stepImpls(step,'e2e');
+  if(!list.length){
+    return '<div class="card"><div class="card-title">Вызовы E2E</div>'+
+      '<p class="impl-empty">К этому шагу не привязано ни одного E2E-сценария, поэтому последовательность вызовов пустая</p>'+
+    '</div>';
+  }
+  var cur=currentImpl(step,'e2e');
+  return renderImplChips(step,'e2e')+
+    '<div class="impl-meta"><span>Источник: '+esc(cur.source)+'</span><span>Загружено: '+esc(cur.loadedAt)+'</span></div>'+
+    renderCallsTab(cur.offset);
+}
+
+function renderStepUcCallsTab(step){
+  var list=stepImpls(step,'uc');
+  if(!list.length){
+    return '<div class="card">'+
+      '<div class="card-title">Вызовы Use Case</div>'+
+      '<p class="impl-empty">К этому шагу пока не привязан Use Case — сценарий описан только вызовами E2E</p>'+
+      '<div class="btnrow"><button class="btn primary" onclick="notAvail()">'+ic('plus',16)+' Привязать Use Case</button></div>'+
+    '</div>';
+  }
+  var cur=currentImpl(step,'uc');
+  return renderImplChips(step,'uc')+renderUseCaseTab(cur.uc);
 }
 
 function ucStatusPill(status){
@@ -3878,15 +4047,8 @@ function ucSplitParticipant(str){
 }
 function ucEmptyCell(){ return '<span style="color:var(--text-tertiary);">—</span>'; }
 
-function renderUseCaseTab(step){
-  var uc=step.uc;
-  if(!uc){
-    return '<div class="card">'+
-      '<div class="card-title">Use Case</div>'+
-      '<p style="color:var(--text-tertiary);font-size:14px;margin:0 0 16px;">К этому шагу пока не привязан Use Case — сценарий описан только последовательностью вызовов</p>'+
-      '<div class="btnrow"><button class="btn primary" onclick="notAvail()">'+ic('plus',16)+' Привязать Use Case</button></div>'+
-    '</div>';
-  }
+function renderUseCaseTab(uc){
+  if(!uc) return '';
   var rows=uc.scenarios.map(function(s){
     var pp=ucSplitParticipant(s.participant);
     return '<tr><td style="white-space:nowrap;">'+esc(s.part)+'</td>'+
@@ -3899,7 +4061,10 @@ function renderUseCaseTab(step){
       '<td>'+ucStatusPill(s.status)+'</td></tr>';
   }).join('');
   return '<div class="card">'+
-    '<div class="card-title"><span><a onclick="notAvail()" style="color:var(--link);cursor:pointer;">'+esc(uc.name)+'</a> <span style="color:var(--text-tertiary);font-weight:500;">'+esc(uc.code)+'</span></span>'+ucStatusPill(uc.status)+'</div>'+
+    '<div class="card-title"><span>'+esc(uc.name)+' <span style="color:var(--text-tertiary);font-weight:500;">'+esc(uc.code)+'</span></span>'+ucStatusPill(uc.status)+'</div>'+
+    // с вызовов Use Case нужен переход на сам Use Case: по вызову здесь не видно,
+    // из какого он решения и что с ним дальше делают
+    '<div class="impl-meta" style="margin-top:-6px;"><a onclick="notAvail()" style="color:var(--link);cursor:pointer;">Открыть Use Case '+esc(uc.code)+'</a></div>'+
     '<div style="overflow-x:auto;"><table class="vh-table uc-table">'+
       '<colgroup>'+
         '<col style="width:5%"><col style="width:13%"><col style="width:13%"><col style="width:20%">'+
@@ -3987,14 +4152,21 @@ function renderCallRows(rows,depth){
   });
   return out;
 }
-function renderCallsTab(){
+// offset — порядковый номер реализации: у разных загрузок состав вызовов разный,
+// иначе переключение между ними выглядело бы как будто ничего не меняется
+function callTreeFor(offset){
+  if(!offset) return CALL_TREE;
+  var keep=Math.max(3, CALL_TREE.length-offset);
+  return CALL_TREE.slice(0, keep);
+}
+function renderCallsTab(offset){
   var k=callKey();
   var selId=state.selectedCall[k];
   var detail = selId ? renderCallDetail() : (
     '<div class="detail-empty">'+boxSvgSmall()+'<div>Выбери вызов из списка</div></div>'
   );
   return '<div class="calls-wrap">'+
-    '<div class="calls-list">'+renderCallRows(CALL_TREE,0)+'</div>'+
+    '<div class="calls-list">'+renderCallRows(callTreeFor(offset||0),0)+'</div>'+
     '<div class="detail-panel"><div class="card-title">Данные вызова</div>'+detail+'</div>'+
   '</div>';
 }
@@ -4128,6 +4300,7 @@ function renderObsTab(stepId){
   } else {
     html+='<div class="field-grid">'+
         '<div class="field"><div class="lbl">id</div><div class="val">'+esc(alert.id)+'</div></div>'+
+        (alert.source?('<div class="field"><div class="lbl">Источник</div><div class="val">'+esc(alert.source)+'</div></div>'):'')+
       '</div>'+
       '<div class="field-grid">'+
         '<div class="field"><div class="lbl">Версия</div><div class="val">'+alert.version+'</div></div>'+
@@ -4356,7 +4529,20 @@ function renderPanel(){
       footer='<div class="panel-foot"><button class="btn" onclick="closePanel()">Отмена</button><button class="btn primary'+(p.err?' danger-outline':'')+'" onclick="submitPanel()">Создать</button></div>';
     }
   } else if(p.type==='createAlerts' || p.type==='updateAlerts'){
-    body='<div class="formfield"><span class="lbl">Комментарий</span>'+
+    var st=findStep(p.stepId);
+    var kinds=[{k:'e2e',l:'E2E'},{k:'uc',l:'Use Case'}].filter(function(x){ return st && stepImpls(st,x.k).length; });
+    var implList=st?stepImpls(st,p.srcKind):[];
+    body='<div class="formfield"><span class="lbl">Источник вызовов шага</span>'+
+      '<div class="impl-row" style="margin-bottom:12px;">'+kinds.map(function(x){
+        return '<div class="impl-chip'+(p.srcKind===x.k?' on':'')+'" onclick="setPanelSrcKind(\''+x.k+'\')">'+x.l+'</div>';
+      }).join('')+'</div>'+
+    '</div>'+
+    '<div class="formfield"><span class="lbl">Реализация</span>'+
+      '<div class="impl-row" style="margin-bottom:12px;">'+implList.map(function(x){
+        return '<div class="impl-chip'+(p.srcImpl===x.id?' on':'')+'" title="'+esc(x.source+' · '+x.code)+'" onclick="setPanelSrcImpl(\''+x.id+'\')">'+esc(x.code)+'</div>';
+      }).join('')+(implList.length?'':'<span class="impl-empty">Нет загруженных реализаций</span>')+'</div>'+
+    '</div>'+
+    '<div class="formfield"><span class="lbl">Комментарий</span>'+
       '<textarea id="panel-input" class="ta'+(p.err?' err':'')+'" placeholder="Комментарий" oninput="onPanelInput(this.value)">'+esc(p.value)+'</textarea>'+
       (p.err?('<div class="err-box">'+ic('warn',16)+'<div>'+esc(p.err)+'</div></div>'):'')+
     '</div>';
