@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261005-162531">
+<meta name="beeatlas-build" content="20261006-105855">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -1852,6 +1852,17 @@
   .uc-choice.active{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue) inset;}
   .uc-field-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-1) var(--space-4);margin-top:var(--space-4);}
   .uc-field-grid .field-block{margin-bottom:var(--space-3);}
+  /* Поиск метода в архитектуре: своё меню подсказок под полем, как .suggest-dropdown
+     в поиске проектов — поле обёрнуто в relative, иначе список считает позицию от карточки */
+  .uc-method-field{position:relative;}
+  .uc-method-field .suggest-dropdown{max-height:264px;overflow-y:auto;}
+  .uc-method-item{padding:var(--space-3) var(--space-5);cursor:pointer;}
+  .uc-method-item:hover{background:var(--bg-alt);}
+  .uc-method-item .m-name{font-size:14.5px;color:var(--text);font-family:var(--font-family-mono),ui-monospace,monospace;}
+  .uc-method-item .m-meta{font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);margin-top:var(--space-1);}
+  .uc-method-picked{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3) var(--space-4);padding:var(--space-4);border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-alt);margin-top:var(--space-4);}
+  .uc-method-picked .pk-lbl{font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);}
+  .uc-method-picked .pk-val{font-size:15px;line-height:20px;letter-spacing:.2px;margin-top:var(--space-1);}
   .uc-card-foot{display:flex;justify-content:flex-end;margin-top:var(--space-2);}
 
   /* toast */
@@ -4781,6 +4792,27 @@ const UC_IMPORT_PART_POOL = [
 /* Приложения, которые уже рассматривались архитектором — руками выбираем только из них,
    а не из произвольной мнемоники, см. решение по use-case импорту 2026-09-28 */
 const UC_APP_POOL = ["Личный кабинет","Тарификация","Заказы","Биллинг","Уведомления","Лояльность","CRM"];
+
+/* Методы, уже описанные в спецификации архитектуры. По ним работает вариант
+   «Существует в спецификации архитектуры»: агент вызов не сопоставил, а архитектор
+   знает метод и находит его поиском. Контейнер и приложение подставляются из найденного
+   метода, а не заполняются руками — архитектор решения может не знать контейнер. */
+const UC_ARCH_METHOD_POOL = [
+  {method:"POST /api/v1/loyalty/apply", app:"Лояльность", container:"Сервис бонусов", iface:"loyalty_api.apply.LOY", tcName:"Возможность начисления бонусов", tcCode:"TC-207"},
+  {method:"GET /api/v1/loyalty/balance", app:"Лояльность", container:"Сервис бонусов", iface:"loyalty_api.balance.LOY", tcName:"Возможность получения баланса бонусов", tcCode:"TC-209"},
+  {method:"POST /api/v1/fraud/check", app:"CRM", container:"Сервис проверки мошенничества", iface:"fraud_api.check.FRD", tcName:"Возможность проверки операции на мошенничество", tcCode:"TC-311"},
+  {method:"POST /api/v1/business-mobility-order", app:"Заказы", container:"Сервис заказов", iface:"orders_api.create.ORD", tcName:"Возможность создания заказа мобильности", tcCode:"TC-142"},
+  {method:"POST /api/v1/notify/send", app:"Уведомления", container:"Сервис уведомлений", iface:"notify_api.send.NTF", tcName:"Возможность отправки уведомления", tcCode:"TC-163"},
+  {method:"GET /2.0.0/napi/sim-info", app:"Личный кабинет", container:"API Gateway", iface:"napi.sim-info.NAPI", tcName:"Возможность online-отображения информации по SIM", tcCode:"TC-402"},
+];
+
+function ucArchMethodMatches(query){
+  const q = String(query||"").trim().toLowerCase();
+  if(!q) return [];
+  return UC_ARCH_METHOD_POOL.filter(m=>
+    (m.method+" "+m.app+" "+m.container+" "+m.iface).toLowerCase().includes(q)
+  );
+}
 
 const CJ_STEP_POOL = [
   {code:"Step-00.00.02.08", name:"Пользователь оформляет заказ", cjCode:"CJ-0042", cjName:"Онлайн заказ: выбор и оплата"},
@@ -9436,7 +9468,9 @@ function ucParticipantSystems(items){
     // «Не является вызовом» — характеристика шага, а не вызова: такой шаг не делает
     // систему-участника нераспознанной, поэтому выпадает из проверки целиком.
     if(x.status==="notcall" || x.decision==="notcall") return;
-    const known = x.mapped===true || x.status==="confirmed" || x.status==="planned";
+    // decision:"existing" — архитектор сам нашёл метод в спецификации архитектуры,
+    // то есть систему мы в итоге распознали, просто не автоматически
+    const known = x.mapped===true || x.decision==="existing" || x.status==="confirmed" || x.status==="planned";
     if(!known){
       const row = rows.find(r=>r.alias===splitParticipant(x.participant).callee);
       if(row) row.recognized = false;
@@ -11604,7 +11638,7 @@ function UcStepResult(w){
   const preview = ucPreviewFromWizard(w);
   const parts = w.data.parts;
   const mappedCount = parts.filter(x=>x.mapped).length;
-  const manualConfirmedCount = parts.filter(x=>x.decision==="specified").length;
+  const manualConfirmedCount = parts.filter(x=>x.decision==="specified" || x.decision==="existing").length;
   const confirmedCount = mappedCount + manualConfirmedCount;
   const plannedCount = parts.filter(x=>x.decision==="planned").length;
   const notCallCount = parts.filter(x=>x.decision==="notcall").length;
@@ -11639,7 +11673,7 @@ function UcStepResult(w){
           <tbody>
             ${resolvedParts.map(x=>{
               const pp = splitParticipant(x.participant);
-              const confirmed = x.mapped || x.decision==="specified";
+              const confirmed = x.mapped || x.decision==="specified" || x.decision==="existing";
               return `
               <tr>
                 <td style="white-space:nowrap;">${x.part}</td>
@@ -11672,7 +11706,7 @@ function UcStepResult(w){
 // сворачивается в статус-карточку с карандашом, вместо того чтобы исчезать: пользователь видит
 // весь исходный набор несмаппированных частей и что с каждой уже решено, не считая по памяти.
 function UcResolvedUnmappedCard(x){
-  const status = x.decision==="specified" ? "confirmed" : x.decision;
+  const status = (x.decision==="specified" || x.decision==="existing") ? "confirmed" : x.decision;
   return `
     <div class="card uc-unmapped-card">
       <div class="uc-unmapped-head">
@@ -11686,7 +11720,19 @@ function UcResolvedUnmappedCard(x){
   `;
 }
 
+// выбранный метод архитектуры: сам код и всё, что из него подставилось
+function ucPartClearMethod(x){
+  x.methodCode = null; x.bc = null; x.containerName = null; x.interfaceCode = null;
+  x.tcName = null; x.tcCode = null;
+}
+// все поля решения — при смене варианта и при сбросе решения карандашом
+function ucPartClearFields(x){
+  ucPartClearMethod(x);
+  x.methodQuery = null; x.protocol = null; x.requirements = null; x.dynamic = null;
+}
+
 function ucPartCanSave(x){
+  if(x.choice==="existing") return !!x.methodCode;
   if(x.choice==="specified") return !!((x.bc||"").trim() && (x.containerName||"").trim() && (x.interfaceCode||"").trim());
   if(x.choice==="planned") return !!((x.bc||"").trim() && (x.containerName||"").trim() && (x.interfaceCode||"").trim() && (x.protocol||"").trim());
   if(x.choice==="notcall") return true;
@@ -11696,6 +11742,7 @@ function ucPartCanSave(x){
 function UcUnmappedPartCard(x){
   const choice = x.choice || "";
   const showFields = choice==="specified" || choice==="planned";
+  const methodMatches = choice==="existing" && !x.methodCode ? ucArchMethodMatches(x.methodQuery) : [];
   return `
     <div class="card uc-unmapped-card">
       <div class="uc-unmapped-head">
@@ -11705,6 +11752,10 @@ function UcUnmappedPartCard(x){
       <div class="row-sub" style="margin-bottom:var(--space-4);">${escapeHtml(x.note||"")}</div>
 
       <div class="uc-choice-group">
+        <label class="uc-choice ${choice==="existing"?"active":""}">
+          <input type="radio" name="uc-choice-${x.id}" data-action="uc-part-choice" data-id="${x.id}" data-choice="existing" ${choice==="existing"?"checked":""}/>
+          <div><b>Существует в спецификации архитектуры</b><div class="row-sub">Вызов описан в архитектуре, автоматически сопоставить его не удалось. Укажите метод поиском</div></div>
+        </label>
         <label class="uc-choice ${choice==="specified"?"active":""}">
           <input type="radio" name="uc-choice-${x.id}" data-action="uc-part-choice" data-id="${x.id}" data-choice="specified" ${choice==="specified"?"checked":""}/>
           <div><b>Существует, в спецификации архитектуры отсутствует</b><div class="row-sub">Вызов есть в системе, но в описание архитектуры не внесён</div></div>
@@ -11719,6 +11770,30 @@ function UcUnmappedPartCard(x){
         </label>
       </div>
 
+      ${choice==="existing" ? `
+        <div class="field-block uc-method-field" style="margin-top:var(--space-4);margin-bottom:0;">
+          <label class="field-label">Метод в спецификации архитектуры</label>
+          <input class="input" id="pf-methodQuery-${x.id}" data-part-field="methodQuery" data-id="${x.id}" placeholder="Начните вводить метод, например POST /api/v1/loyalty" value="${escapeHtml(x.methodQuery||"")}" autocomplete="off"/>
+          ${!x.methodCode && (x.methodQuery||"").trim() ? (methodMatches.length ? `
+            <div class="suggest-dropdown">
+              ${methodMatches.map(m=>`
+                <div class="uc-method-item" data-action="uc-part-pick-method" data-id="${x.id}" data-method="${escapeHtml(m.method)}">
+                  <div class="m-name">${escapeHtml(m.method)}</div>
+                  <div class="m-meta">${escapeHtml(m.app)} · ${escapeHtml(m.container)} · ${escapeHtml(m.iface)}</div>
+                </div>
+              `).join("")}
+            </div>
+          ` : `<div class="suggest-dropdown"><div class="suggest-empty">Нет совпадений. Если метода в архитектуре нет, выберите другой вариант</div></div>`) : ""}
+        </div>
+        ${x.methodCode ? `
+          <div class="uc-method-picked">
+            <div><div class="pk-lbl">Приложение</div><div class="pk-val">${escapeHtml(x.bc||"")}</div></div>
+            <div><div class="pk-lbl">Контейнер</div><div class="pk-val">${escapeHtml(x.containerName||"")}</div></div>
+            <div><div class="pk-lbl">Код интерфейса</div><div class="pk-val">${escapeHtml(x.interfaceCode||"")}</div></div>
+            <div><div class="pk-lbl">ТС</div><div class="pk-val">${x.tcCode ? `<span class="req-chip">${escapeHtml(x.tcCode)}</span>` : "Не определена"}</div></div>
+          </div>
+        ` : ""}
+      ` : ""}
       ${showFields ? `
         <div class="uc-field-grid">
           <div class="field-block">
@@ -11763,7 +11838,7 @@ function ucDerivedScenarios(parts){
       tcName: x.mapped ? x.tcName : (x.tcName || null),
       tcCode: x.mapped ? x.tcCode : (x.tcCode || null),
       dynamic: x.mapped ? x.dynamicCode : (x.dynamic || null),
-      status: (x.mapped || x.decision==="specified") ? "confirmed" : x.decision,
+      status: (x.mapped || x.decision==="specified" || x.decision==="existing") ? "confirmed" : x.decision,
     };
   });
 }
@@ -11829,6 +11904,7 @@ function ucConfirmApply(){
   const scenarios = ucDerivedScenarios(d.parts);
 
   const notices = d.parts.filter(x=>!x.mapped).map(x=>{
+    if(x.decision==="existing") return `${x.part}: сопоставлен архитектором с методом ${x.methodCode} (${x.containerName})`;
     if(x.decision==="specified") return `${x.part}: указан существующий интерфейс архитектором (${x.api})`;
     if(x.decision==="planned") return `${x.part}: отмечен как плановый интерфейс (${x.api})`;
     if(x.decision==="notcall") return `${x.part}: отмечен как не являющийся вызовом, остаётся информационной строкой`;
@@ -12597,7 +12673,13 @@ function handleInput(el){
   else if(el.id==="ucWizCjStep"){ state.ucWizard.data.cjStepCode = el.value; render(); }
   else if(el.dataset.partField){
     const part = state.ucWizard && state.ucWizard.data.parts.find(x=>x.id===el.dataset.id);
-    if(part){ part[el.dataset.partField] = el.value; render(); reFocus(el.id); }
+    if(part){
+      part[el.dataset.partField] = el.value;
+      // правка строки поиска сбрасывает ранее выбранный метод: иначе в решении остались бы
+      // приложение и контейнер от метода, которого в поле уже нет
+      if(el.dataset.partField==="methodQuery") ucPartClearMethod(part);
+      render(); reFocus(el.id);
+    }
   }
   else if(el.id==="ucCode"){ state.sidePanel.code = el.value; render(); reFocus("ucCode"); }
   else if(el.id==="ucName"){ state.sidePanel.name = el.value; render(); reFocus("ucName"); }
@@ -13189,7 +13271,25 @@ function handleAction(action, el){
     case "uc-wiz-restart": ucWizardRestart(); break;
     case "uc-part-choice": {
       const part = state.ucWizard.data.parts.find(x=>x.id===el.dataset.id);
-      if(part) part.choice = el.dataset.choice;
+      if(part){
+        // поля у вариантов разные, поэтому при смене варианта заполненное ранее не переносим
+        if(part.choice !== el.dataset.choice) ucPartClearFields(part);
+        part.choice = el.dataset.choice;
+      }
+      render(); break;
+    }
+    case "uc-part-pick-method": {
+      const part = state.ucWizard.data.parts.find(x=>x.id===el.dataset.id);
+      const m = UC_ARCH_METHOD_POOL.find(o=>o.method===el.dataset.method);
+      if(part && m){
+        part.methodCode = m.method;
+        part.methodQuery = m.method;
+        part.bc = m.app;
+        part.containerName = m.container;
+        part.interfaceCode = m.iface;
+        part.tcName = m.tcName;
+        part.tcCode = m.tcCode;
+      }
       render(); break;
     }
     case "uc-part-set-app": {
@@ -13206,7 +13306,10 @@ function handleAction(action, el){
       const part = state.ucWizard.data.parts.find(x=>x.id===el.dataset.id);
       if(!part || !ucPartCanSave(part)) break;
       part.decision = part.choice;
-      if(part.decision==="specified"){
+      if(part.decision==="existing"){
+        // метод найден в архитектуре, поэтому ТС и динамика берутся из него, а не выдумываются
+        part.dynamic = "SEQ-" + Math.floor(10+Math.random()*89);
+      } else if(part.decision==="specified"){
         part.tcName = "Уточнено архитектором: " + part.api;
         part.tcCode = "TC-" + Math.floor(200+Math.random()*700);
         part.dynamic = "SEQ-" + Math.floor(10+Math.random()*89);
@@ -13224,8 +13327,8 @@ function handleAction(action, el){
     case "uc-reset-part": {
       const part = state.ucWizard.data.parts.find(x=>x.id===el.dataset.id);
       if(part){
-        part.decision=null; part.choice=null; part.tcName=null; part.tcCode=null; part.dynamic=null;
-        part.bc=null; part.containerName=null; part.interfaceCode=null; part.protocol=null; part.requirements=null;
+        part.decision=null; part.choice=null;
+        ucPartClearFields(part);
       }
       render(); break;
     }
