@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261006-195122">
+<meta name="beeatlas-build" content="20261006-200006">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -1317,20 +1317,17 @@
 
   /* filters row */
   .filters-row{display:flex;align-items:center;gap:var(--space-4);margin-bottom:var(--space-6);flex-wrap:wrap;}
-  .filters-row .search-wrap{flex:1;min-width:260px;position:relative;}
-  /* Участие в E2E процессах: поиск фиксированной ширины 648, как на «Проектах»
-     и в Use Case, — растянутое на всю строку поле выглядело чужеродно. */
-  .ac-e2e-filters .search-wrap{flex:0 0 648px;width:648px;max-width:100%;}
+  /* Поиск во всех строках фильтров — фиксированные 648 (ширина с «Проектов» и Use Case).
+     Раньше поле тянулось на всю свободную ширину и у каждой вкладки получалось своим. */
+  .filters-row .search-wrap{flex:0 0 648px;width:648px;max-width:100%;position:relative;}
   .filters-row .arch-input{width:230px;}
-  /* Use Case: поиск 648, фильтры по 260 — как на странице «Проекты». Строка не
-     переносится: если всё это в ширину не влезает, поля пропорционально ужимаются. */
-  .uc-filters{flex-wrap:nowrap;}
-  .uc-filters .search-wrap{flex:0 1 648px;min-width:240px;}
+  /* Use Case: поиск 648, фильтры по 260 — как на странице «Проекты». Если всё это
+     в ширину не влезает, на новую строку переносятся фильтры, а не ужимается поиск. */
+  .uc-filters .search-wrap{flex:0 0 648px;width:648px;max-width:100%;}
   .uc-filters .select-wrap{flex:0 1 260px;width:260px;min-width:170px;}
   .uc-filters .reset-link{flex:0 0 auto;white-space:nowrap;}
-  /* Проекты: поиск 648, фильтры по 260 — та же логика, строка не переносится */
-  .proj-filters{flex-wrap:nowrap;}
-  .proj-filters .search-wrap{flex:0 1 648px;min-width:240px;}
+  /* Проекты: поиск 648, фильтры по 260 — та же логика */
+  .proj-filters .search-wrap{flex:0 0 648px;width:648px;max-width:100%;}
   .proj-filters .arch-input,
   .proj-filters .select-wrap{flex:0 1 260px;width:260px;min-width:170px;}
   .proj-filters .toggle-wrap,
