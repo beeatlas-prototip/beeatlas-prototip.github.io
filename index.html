@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261006-132501">
+<meta name="beeatlas-build" content="20261006-175216">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -1354,6 +1354,16 @@
   .proj-link:hover{text-decoration:underline;}
   .row-sub{color:var(--text-secondary);font-size:13px;line-height:16px;letter-spacing:.2px;margin-top:var(--space-1);}
   .empty-cell{color:var(--text-tertiary);}
+
+  /* Сортировка по столбцу (ДС Table, sortable header): заголовок кликабельный,
+     повторный клик переворачивает направление. Стрелка у неактивных столбцов
+     проявляется только по ховеру, чтобы шапка не рябила. */
+  thead th.th-sort{cursor:pointer;user-select:none;}
+  .th-sort-inner{display:inline-flex;align-items:center;gap:var(--space-2);}
+  .th-sort-arrow{display:inline-flex;font-size:16px;opacity:0;transition:opacity .12s ease,transform .12s ease;}
+  thead th.th-sort:hover .th-sort-arrow{opacity:.45;}
+  thead th.th-sort.on .th-sort-arrow{opacity:1;}
+  thead th.th-sort.on.desc .th-sort-arrow{transform:rotate(180deg);}
 
   /* Таблицы с автолейаутом шире контейнера прокручиваются внутри себя, иначе они
      вылезали за .page и обрезались справа (скролл уезжал в .main и был не виден).
@@ -6289,6 +6299,9 @@ function defaultAppcatState(){
     sourceEditor:null,
     techDetail:null,
     relatedSearch:"", relatedExpanded:{"proj:proj1":true},
+    e2eSub:"e2e",
+    e2eSearch:"", e2eMethodFilter:"Все", e2eSourceFilter:"Все", e2eSort:{key:"process", dir:"asc"},
+    e2eUcSearch:"", e2eUcMethodStatusFilter:"Все", e2eUcCallStatusFilter:"Все", e2eUcSort:{key:"ucCode", dir:"asc"},
   };
 }
 
@@ -6577,6 +6590,127 @@ const AC_OBS_TREE = [
     ]},
 ];
 
+/* ============================= УЧАСТИЕ В E2E ПРОЦЕССАХ =============================
+   Вкладка отвечает архитектору системы на вопрос «в каких E2E-процессах участвует моё
+   приложение и какими методами». E2E и Use Case — физически разные сущности, поэтому
+   это две независимые таблицы, а не одна с признаком. Dynamic View у E2E-строк пока
+   пустой: на бэке связки «шаг E2E → Dynamic-диаграмма» ещё нет, колонка заведена под неё. */
+const AC_E2E_SOURCES = ["Импорт E2E из Parks", "Ручная привязка"];
+
+const AC_E2E_ROWS = [
+  {process:"Я, как клиент, переношу денежные средства между балансами", processCode:"E2E.00.00.01",
+   step:"Клиент открывает форму переноса средств", stepCode:"STEP.00.00.01.01",
+   method:"GET /bucket", tcName:"Возможность получения балансов абонента", tcCode:"TC-108",
+   dynamic:null, source:"Импорт E2E из Parks"},
+  {process:"Я, как клиент, переношу денежные средства между балансами", processCode:"E2E.00.00.01",
+   step:"Клиент подтверждает перенос средств", stepCode:"STEP.00.00.01.02",
+   method:"POST /transferBalance", tcName:"Возможность переноса средств между балансами", tcCode:"TC-150",
+   dynamic:null, source:"Импорт E2E из Parks"},
+  {process:"Я, как клиент, подключаю услугу Общий Баланс", processCode:"E2E.00.00.02",
+   step:"Клиент открывает карточку услуги", stepCode:"STEP.00.00.02.01",
+   method:"GET /bucket", tcName:"Возможность получения балансов абонента", tcCode:"TC-108",
+   dynamic:null, source:"Импорт E2E из Parks"},
+  {process:"Я, как клиент, получаю контрпредложение при попытке уменьшить абон. плату путём смены или изменения ТП в МП", processCode:"E2E.00.00.03",
+   step:"Система проверяет остаток на балансе", stepCode:"STEP.00.00.03.01",
+   method:"GET /bucket", tcName:"Возможность получения балансов абонента", tcCode:"TC-108",
+   dynamic:null, source:"Импорт E2E из Parks"},
+  {process:"Я, как клиент, получаю контрпредложение при попытке уменьшить абон. плату путём смены или изменения ТП в МП", processCode:"E2E.00.00.03",
+   step:"Система запрашивает кредитный лимит", stepCode:"STEP.00.00.03.02",
+   method:"GET /creditlimit", tcName:"Возможность получения кредитного лимита", tcCode:"TC-121",
+   dynamic:null, source:"Импорт E2E из Parks"},
+  {process:"Я, как клиент, получаю контрпредложение при попытке уменьшить абон. плату путём смены или изменения ТП в МП", processCode:"E2E.00.00.03",
+   step:"Клиент принимает контрпредложение", stepCode:"STEP.00.00.03.04",
+   method:"POST /transferBalance", tcName:"Возможность переноса средств между балансами", tcCode:"TC-150",
+   dynamic:null, source:"Ручная привязка"},
+  {process:"Я, как клиент, провожу оплату в интернете через мобильный платёж (Оплата в AppStore)", processCode:"E2E.00.00.04",
+   step:"Система резервирует средства на балансе", stepCode:"STEP.00.00.04.02",
+   method:"GET /bucket", tcName:"Возможность получения балансов абонента", tcCode:"TC-108",
+   dynamic:null, source:"Импорт E2E из Parks"},
+  {process:"Я, как клиент, провожу оплату в интернете через мобильный платёж (Оплата в AppStore)", processCode:"E2E.00.00.04",
+   step:"Система списывает сумму покупки", stepCode:"STEP.00.00.04.03",
+   method:"POST /adjustBalance", tcName:"Возможность корректировки баланса", tcCode:"TC-134",
+   dynamic:null, source:"Импорт E2E из Parks"},
+  {process:"Я, как клиент, провожу оплату в интернете через мобильный платёж (Оплата в AppStore)", processCode:"E2E.00.00.04",
+   step:"Система переносит средства на сервисный счёт", stepCode:"STEP.00.00.04.05",
+   method:"POST /transferBalance", tcName:"Возможность переноса средств между балансами", tcCode:"TC-150",
+   dynamic:null, source:"Импорт E2E из Parks"},
+  {process:"Я, как клиент, хочу выполнить смену ТП на семейства «конструктор» в МП (prepaid)", processCode:"E2E.00.00.05",
+   step:"Система проверяет баланс перед сменой ТП", stepCode:"STEP.00.00.05.01",
+   method:"GET /bucket", tcName:"Возможность получения балансов абонента", tcCode:"TC-108",
+   dynamic:null, source:"Импорт E2E из Parks"},
+  {process:"Я, как клиент, хочу выполнить смену ТП на семейства «конструктор» в МП (prepaid)", processCode:"E2E.00.00.05",
+   step:"Система проверяет кредитный лимит", stepCode:"STEP.00.00.05.02",
+   method:"GET /creditlimit", tcName:"Возможность получения кредитного лимита", tcCode:"TC-121",
+   dynamic:null, source:"Импорт E2E из Parks"},
+  {process:"Я, как клиент, хочу выполнить смену ТП на семейства «конструктор» в МП (prepaid)", processCode:"E2E.00.00.05",
+   step:"Система списывает стоимость перехода", stepCode:"STEP.00.00.05.04",
+   method:"POST /transferBalance", tcName:null, tcCode:null,
+   dynamic:null, source:"Ручная привязка"},
+];
+
+/* Та же таблица, что на странице Use Case (шаг/вызывающий/вызываемый/действие/вызов/TC/
+   Dynamic/статус вызова), плюс две колонки, которые нужны только архитектору системы:
+   из какого Use Case пришёл вызов и статус метода в архитектуре приложения. */
+const AC_E2E_METHOD_STATUSES = ["Реализовано", "Не реализовано", "Отсутствует в архитектуре"];
+
+const AC_E2E_UC_ROWS = [
+  {ucCode:"UC-014", ucName:"Перенос средств между балансами", part:"P-01",
+   caller:"Мобильное приложение", callee:"Сервис Платежи и переводы",
+   action:"Клиент открывает форму переноса, приложение запрашивает доступные балансы абонента и остаток по каждому из них.",
+   call:"GET /bucket", tcName:"Возможность получения балансов абонента", tcCode:"TC-108",
+   dynamic:"SEQ-88", status:"confirmed", methodStatus:"Реализовано"},
+  {ucCode:"UC-014", ucName:"Перенос средств между балансами", part:"P-02",
+   caller:"Мобильное приложение", callee:"Сервис Платежи и переводы",
+   action:"Клиент подтверждает перенос суммы, сервис переносит средства между балансами и возвращает результат операции.",
+   call:"POST /transferBalance", tcName:"Возможность переноса средств между балансами", tcCode:"TC-150",
+   dynamic:"SEQ-88", status:"confirmed", methodStatus:"Реализовано"},
+  {ucCode:"UC-014", ucName:"Перенос средств между балансами", part:"P-03",
+   caller:"Сервис Платежи и переводы", callee:"Сервис уведомлений",
+   action:"send_transfer_notification", call:"POST /api/v1/notify/send",
+   tcName:"Возможность отправки уведомления", tcCode:"TC-163",
+   dynamic:null, status:"planned", methodStatus:"Не реализовано"},
+  {ucCode:"UC-021", ucName:"Подключение услуги Общий Баланс", part:"P-01",
+   caller:"Мобильное приложение", callee:"Сервис Платежи и переводы",
+   action:"get_bucket_list", call:"GET /bucket",
+   tcName:"Возможность получения балансов абонента", tcCode:"TC-108",
+   dynamic:"SEQ-91", status:"confirmed", methodStatus:"Реализовано"},
+  {ucCode:"UC-021", ucName:"Подключение услуги Общий Баланс", part:"P-02",
+   caller:"Сервис Платежи и переводы", callee:"BSS Billing Engine",
+   action:"Сервис активирует опцию «Общий Баланс» в биллинге и дожидается подтверждения активации.",
+   call:"POST /billing/options/activate", tcName:"Возможность активации тарифной опции", tcCode:"TC-311",
+   dynamic:"SEQ-91", status:"confirmed", methodStatus:"Реализовано"},
+  {ucCode:"UC-021", ucName:"Подключение услуги Общий Баланс", part:"P-03",
+   caller:"Сервис Платежи и переводы", callee:"Сервис лояльности",
+   action:"apply_bonus_points", call:"POST /api/v1/loyalty/apply",
+   tcName:null, tcCode:null,
+   dynamic:null, status:"unmapped", methodStatus:"Отсутствует в архитектуре"},
+  {ucCode:"UC-033", ucName:"Оплата покупки мобильным платежом", part:"P-02",
+   caller:"Мобильное приложение", callee:"Сервис Платежи и переводы",
+   action:"Приложение резервирует сумму покупки на балансе абонента до подтверждения платежа магазином.",
+   call:"GET /bucket", tcName:"Возможность получения балансов абонента", tcCode:"TC-108",
+   dynamic:"SEQ-104", status:"confirmed", methodStatus:"Реализовано"},
+  {ucCode:"UC-033", ucName:"Оплата покупки мобильным платежом", part:"P-03",
+   caller:"Мобильное приложение", callee:"Сервис Платежи и переводы",
+   action:"adjust_balance", call:"POST /adjustBalance",
+   tcName:"Возможность корректировки баланса", tcCode:"TC-134",
+   dynamic:"SEQ-104", status:"confirmed", methodStatus:"Реализовано"},
+  {ucCode:"UC-033", ucName:"Оплата покупки мобильным платежом", part:"P-05",
+   caller:"Сервис Платежи и переводы", callee:"Сервис проверки мошенничества",
+   action:"check_fraud_score", call:"POST /api/v1/fraud/check",
+   tcName:null, tcCode:null,
+   dynamic:null, status:"unmapped", methodStatus:"Отсутствует в архитектуре"},
+  {ucCode:"UC-047", ucName:"Смена ТП на семейство «конструктор»", part:"P-01",
+   caller:"Мобильное приложение", callee:"Сервис Платежи и переводы",
+   action:"get_credit_limit", call:"GET /creditlimit",
+   tcName:"Возможность получения кредитного лимита", tcCode:"TC-121",
+   dynamic:null, status:"confirmed", methodStatus:"Реализовано"},
+  {ucCode:"UC-047", ucName:"Смена ТП на семейство «конструктор»", part:"P-04",
+   caller:"Мобильное приложение", callee:"Сервис Платежи и переводы",
+   action:"Приложение списывает стоимость перехода на новый тарифный план с основного баланса абонента.",
+   call:"POST /transferBalance", tcName:"Возможность переноса средств между балансами", tcCode:"TC-150",
+   dynamic:null, status:"planned", methodStatus:"Не реализовано"},
+];
+
 const AC_TABS = [
   {id:"general", label:"Общая информация"},
   {id:"fitness", label:"Фитнес-функции"},
@@ -6586,6 +6720,7 @@ const AC_TABS = [
   {id:"patterns", label:"Паттерны"},
   {id:"nfr", label:"Нефункциональные требования"},
   {id:"obs", label:"Настройки наблюдаемости"},
+  {id:"e2e", label:"Участие в E2E процессах"},
   {id:"related", label:"Связанные проекты"},
 ];
 
@@ -6641,6 +6776,153 @@ function rpStatusBadge(status){
   return status==="exists"
     ? '<span class="badge green">Есть в архитектуре</span>'
     : '<span class="badge orange">Требует разработки</span>';
+}
+
+/* Сортировка таблиц: заголовок — кнопка, повторный клик по тому же столбцу
+   переворачивает направление. Сравниваем как строки (localeCompare, ru) —
+   во всех сортируемых колонках лежит текст. */
+function acSortTh(label, key, sort, action){
+  const on = sort.key===key;
+  return `<th class="th-sort${on?" on":""}${on&&sort.dir==="desc"?" desc":""}" data-action="${action}" data-key="${key}">`
+    + `<span class="th-sort-inner">${escapeHtml(label)}<span class="th-sort-arrow">${icon("chevronDown")}</span></span></th>`;
+}
+function acToggleSort(sort, key){
+  if(sort && sort.key===key) return {key, dir: sort.dir==="asc" ? "desc" : "asc"};
+  return {key, dir:"asc"};
+}
+function acSortRows(rows, sort, getters){
+  if(!sort || !sort.key) return rows;
+  const get = (getters||{})[sort.key] || (r=>r[sort.key]);
+  const dir = sort.dir==="desc" ? -1 : 1;
+  return rows.slice().sort((a,b)=> dir * String(get(a)||"").localeCompare(String(get(b)||""), "ru"));
+}
+/* Название + код под ним. В отличие от clampNameCell название не красим в синий:
+   шаг E2E-сценария здесь не ссылка, а подпись к строке. */
+function acNameCodeCell(name, code){
+  return `${clampCell(name)}<div class="row-sub">${escapeHtml(code)}</div>`;
+}
+function acMethodStatusBadge(s){
+  if(s==="Реализовано") return '<span class="badge green">Реализовано</span>';
+  if(s==="Не реализовано") return '<span class="badge orange">Не реализовано</span>';
+  return '<span class="badge red">Отсутствует в архитектуре</span>';
+}
+function acEmptyRow(cols){
+  return `<tr><td colspan="${cols}" style="text-align:center;color:var(--text-secondary);padding:var(--space-8);">Ничего не нашлось. Измени фильтры или сбрось их</td></tr>`;
+}
+
+function AcE2eTab(app){
+  const ac = state.appcat;
+  return `
+    <div class="pill-toggle">
+      <div class="pill-item ${ac.e2eSub==="e2e"?"active":""}" data-action="ac-set-e2e-sub" data-sub="e2e">Шаги E2E-сценариев</div>
+      <div class="pill-item ${ac.e2eSub==="uc"?"active":""}" data-action="ac-set-e2e-sub" data-sub="uc">Шаги Use Case</div>
+    </div>
+    ${ac.e2eSub==="e2e" ? AcE2eStepsTable() : AcE2eUcTable()}
+  `;
+}
+
+/* Шаги E2E-сценариев: по каким методам приложение участвует в сквозных процессах.
+   Интерфейс намеренно не выводим — архитектору системы важен метод, а не транспорт. */
+function AcE2eStepsTable(){
+  const ac = state.appcat;
+  const q = ac.e2eSearch.trim().toLowerCase();
+  let rows = AC_E2E_ROWS;
+  if(q) rows = rows.filter(r=>(r.process+" "+r.step+" "+r.stepCode+" "+r.method+" "+(r.tcName||"")+" "+(r.tcCode||"")).toLowerCase().includes(q));
+  if(ac.e2eMethodFilter!=="Все") rows = rows.filter(r=>r.method===ac.e2eMethodFilter);
+  if(ac.e2eSourceFilter!=="Все") rows = rows.filter(r=>r.source===ac.e2eSourceFilter);
+  rows = acSortRows(rows, ac.e2eSort, {tc:r=>r.tcName||"ЯЯ", dynamic:r=>r.dynamic||"ЯЯ"});
+  const methods = ["Все"].concat(Array.from(new Set(AC_E2E_ROWS.map(r=>r.method))).sort());
+  return `
+    <div class="filters-row">
+      <div class="search-wrap field-with-icon">${icon("search")}<input class="input" id="acE2eSearch" placeholder="Процесс, шаг сценария, метод или техническая возможность" value="${escapeHtml(ac.e2eSearch)}" autocomplete="off"/></div>
+      ${FilterSelect({id:"ac-e2e-method", label:"Метод", value:ac.e2eMethodFilter, options:methods, action:"ac-e2e-method-filter"})}
+      ${FilterSelect({id:"ac-e2e-source", label:"Источник", value:ac.e2eSourceFilter, options:["Все"].concat(AC_E2E_SOURCES), action:"ac-e2e-source-filter"})}
+      <span class="reset-link" data-action="ac-reset-e2e">Сбросить</span>
+    </div>
+    <div class="table-wrap-fit">
+      <table class="fixed-table">
+        <colgroup><col style="width:28%"><col style="width:22%"><col style="width:15%"><col style="width:17%"><col style="width:8%"><col style="width:10%"></colgroup>
+        <thead><tr>
+          ${acSortTh("Процесс","process",ac.e2eSort,"ac-e2e-sort")}
+          ${acSortTh("Шаг сценария","step",ac.e2eSort,"ac-e2e-sort")}
+          ${acSortTh("Метод","method",ac.e2eSort,"ac-e2e-sort")}
+          ${acSortTh("Техническая возможность","tc",ac.e2eSort,"ac-e2e-sort")}
+          ${acSortTh("Dynamic View","dynamic",ac.e2eSort,"ac-e2e-sort")}
+          ${acSortTh("Источник","source",ac.e2eSort,"ac-e2e-sort")}
+        </tr></thead>
+        <tbody>
+          ${rows.length ? rows.map(r=>`
+            <tr>
+              <td><div class="proj-link" data-action="ac-open-e2e-process" data-code="${escapeHtml(r.processCode)}">${escapeHtml(r.process)}</div><div class="row-sub">${escapeHtml(r.processCode)}</div></td>
+              <td>${acNameCodeCell(r.step, r.stepCode)}</td>
+              <td>${clampCell(r.method)}</td>
+              <td>${r.tcName ? clampNameCell(r.tcName, r.tcCode) : '<span class="empty-cell">—</span>'}</td>
+              <td>${r.dynamic ? `<span class="proj-link" data-action="ac-open-e2e-dynamic" data-id="${escapeHtml(r.dynamic)}">${escapeHtml(r.dynamic)}</span>` : '<span class="empty-cell">—</span>'}</td>
+              <td>${escapeHtml(r.source)}</td>
+            </tr>
+          `).join("") : acEmptyRow(6)}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+/* Шаги Use Case: та же таблица, что на странице Use Case, плюс колонки «Use Case»
+   и «Статус метода» — по ней архитектор системы ведёт ревью вызовов к своему приложению. */
+function AcE2eUcTable(){
+  const ac = state.appcat;
+  const q = ac.e2eUcSearch.trim().toLowerCase();
+  let rows = AC_E2E_UC_ROWS;
+  if(q) rows = rows.filter(r=>(r.ucCode+" "+r.ucName+" "+r.part+" "+r.caller+" "+r.callee+" "+r.action+" "+r.call+" "+(r.tcName||"")+" "+(r.tcCode||"")).toLowerCase().includes(q));
+  if(ac.e2eUcMethodStatusFilter!=="Все") rows = rows.filter(r=>r.methodStatus===ac.e2eUcMethodStatusFilter);
+  if(ac.e2eUcCallStatusFilter!=="Все") rows = rows.filter(r=>scenarioStatusLabel(r.status)===ac.e2eUcCallStatusFilter);
+  rows = acSortRows(rows, ac.e2eUcSort, {
+    tc:r=>r.tcName||"ЯЯ", dynamic:r=>r.dynamic||"ЯЯ", status:r=>scenarioStatusLabel(r.status),
+  });
+  return `
+    <div class="filters-row">
+      <div class="search-wrap field-with-icon">${icon("search")}<input class="input" id="acE2eUcSearch" placeholder="Use Case, шаг, вызов или техническая возможность" value="${escapeHtml(ac.e2eUcSearch)}" autocomplete="off"/></div>
+      ${FilterSelect({id:"ac-e2e-uc-mstatus", label:"Статус метода", value:ac.e2eUcMethodStatusFilter, options:["Все"].concat(AC_E2E_METHOD_STATUSES), action:"ac-e2e-uc-mstatus-filter"})}
+      ${FilterSelect({id:"ac-e2e-uc-cstatus", label:"Статус вызова", value:ac.e2eUcCallStatusFilter, options:["Все","Подтверждено","Планируется","Не смаппирован"], action:"ac-e2e-uc-cstatus-filter"})}
+      <span class="reset-link" data-action="ac-reset-e2e-uc">Сбросить</span>
+    </div>
+    <div class="table-wrap-fit">
+      <table class="fixed-table">
+        <colgroup>
+          <col style="width:12%"><col style="width:4%"><col style="width:9%"><col style="width:9%"><col style="width:16%">
+          <col style="width:11%"><col style="width:12%"><col style="width:6%"><col style="width:10%"><col style="width:11%">
+        </colgroup>
+        <thead><tr>
+          ${acSortTh("Use Case","ucCode",ac.e2eUcSort,"ac-e2e-uc-sort")}
+          ${acSortTh("Шаг","part",ac.e2eUcSort,"ac-e2e-uc-sort")}
+          ${acSortTh("Вызывающий","caller",ac.e2eUcSort,"ac-e2e-uc-sort")}
+          ${acSortTh("Вызываемый","callee",ac.e2eUcSort,"ac-e2e-uc-sort")}
+          <th>Действие</th>
+          ${acSortTh("Вызов","call",ac.e2eUcSort,"ac-e2e-uc-sort")}
+          ${acSortTh("TC","tc",ac.e2eUcSort,"ac-e2e-uc-sort")}
+          ${acSortTh("Dynamic","dynamic",ac.e2eUcSort,"ac-e2e-uc-sort")}
+          ${acSortTh("Статус вызова","status",ac.e2eUcSort,"ac-e2e-uc-sort")}
+          ${acSortTh("Статус метода","methodStatus",ac.e2eUcSort,"ac-e2e-uc-sort")}
+        </tr></thead>
+        <tbody>
+          ${rows.length ? rows.map(r=>`
+            <tr>
+              <td><div class="proj-link" data-action="ac-open-e2e-uc" data-code="${escapeHtml(r.ucCode)}">${escapeHtml(r.ucName)}</div><div class="row-sub">${escapeHtml(r.ucCode)}</div></td>
+              <td style="white-space:nowrap;">${escapeHtml(r.part)}</td>
+              <td>${clampCell(r.caller)}</td>
+              <td>${clampCell(r.callee)}</td>
+              <td>${clampCell(r.action, "clamp-5")}</td>
+              <td>${clampCell(r.call)}</td>
+              <td>${r.tcName ? clampNameCell(r.tcName, r.tcCode) : '<span class="empty-cell">—</span>'}</td>
+              <td>${r.dynamic ? `<span class="proj-link" data-action="ac-open-e2e-dynamic" data-id="${escapeHtml(r.dynamic)}">${escapeHtml(r.dynamic)}</span>` : '<span class="empty-cell">—</span>'}</td>
+              <td>${scenarioStatusBadge(r.status)}</td>
+              <td>${acMethodStatusBadge(r.methodStatus)}</td>
+            </tr>
+          `).join("") : acEmptyRow(10)}
+        </tbody>
+      </table>
+    </div>
+  `;
 }
 
 function AcRelatedTab(app){
@@ -6819,6 +7101,7 @@ function AcTabContent(app){
     case "patterns": return AcPatternsTab(app);
     case "nfr": return AcNfrTab(app);
     case "obs": return AcObsTab(app);
+    case "e2e": return AcE2eTab(app);
     case "related": return AcRelatedTab(app);
     default: return "";
   }
@@ -9575,6 +9858,12 @@ function findUseCase(p, ucId){
   return (p.useCases||[]).find(u=>u.id===ucId);
 }
 
+function scenarioStatusLabel(status){
+  if(status==="planned") return "Планируется";
+  if(status==="confirmed") return "Подтверждено";
+  if(status==="notcall") return "Не является вызовом";
+  return "Не смаппирован";
+}
 function scenarioStatusBadge(status){
   if(status==="planned") return '<span class="badge gray">Планируется</span>';
   if(status==="confirmed") return '<span class="badge green">Подтверждено</span>';
@@ -12582,6 +12871,7 @@ function saveLocation(){
         fitnessSub: state.appcat.fitnessSub,
         ifaceMode: state.appcat.ifaceMode,
         techDetail: state.appcat.techDetail,
+        e2eSub: state.appcat.e2eSub,
       },
       // CJ_LIBRARY ids are fixed string literals (unlike Проекты's uid()-regenerated
       // project ids), so — unlike the projects deep route above — it's safe to remember
@@ -12868,6 +13158,8 @@ function handleInput(el){
   else if(el.id==="acNfrSearch"){ state.appcat.nfrSearch = el.value; render(); reFocus("acNfrSearch"); }
   else if(el.id==="acObsSearch"){ state.appcat.obsSearch = el.value; render(); reFocus("acObsSearch"); }
   else if(el.id==="acRelatedSearch"){ state.appcat.relatedSearch = el.value; render(); reFocus("acRelatedSearch"); }
+  else if(el.id==="acE2eSearch"){ state.appcat.e2eSearch = el.value; render(); reFocus("acE2eSearch"); }
+  else if(el.id==="acE2eUcSearch"){ state.appcat.e2eUcSearch = el.value; render(); reFocus("acE2eUcSearch"); }
   else if(el.id==="acSrcSourceInput"){
     state.appcat.sourceEditor.values.source = el.value;
     state.appcat.sourceEditor.sourceOpen = el.value.trim().length>0 && el.value!=="Prometheus-BeeInside";
@@ -13841,6 +14133,18 @@ function handleAction(action, el){
       render();
       break;
     case "ac-back-to-list": state.appcat.detailId = null; render(); break;
+    case "ac-set-e2e-sub": state.appcat.e2eSub = el.dataset.sub; render(); break;
+    case "ac-e2e-method-filter": state.appcat.e2eMethodFilter = el.dataset.value; state.popover=null; render(); break;
+    case "ac-e2e-source-filter": state.appcat.e2eSourceFilter = el.dataset.value; state.popover=null; render(); break;
+    case "ac-reset-e2e": state.appcat.e2eSearch=""; state.appcat.e2eMethodFilter="Все"; state.appcat.e2eSourceFilter="Все"; render(); break;
+    case "ac-e2e-sort": state.appcat.e2eSort = acToggleSort(state.appcat.e2eSort, el.dataset.key); render(); break;
+    case "ac-e2e-uc-mstatus-filter": state.appcat.e2eUcMethodStatusFilter = el.dataset.value; state.popover=null; render(); break;
+    case "ac-e2e-uc-cstatus-filter": state.appcat.e2eUcCallStatusFilter = el.dataset.value; state.popover=null; render(); break;
+    case "ac-reset-e2e-uc": state.appcat.e2eUcSearch=""; state.appcat.e2eUcMethodStatusFilter="Все"; state.appcat.e2eUcCallStatusFilter="Все"; render(); break;
+    case "ac-e2e-uc-sort": state.appcat.e2eUcSort = acToggleSort(state.appcat.e2eUcSort, el.dataset.key); render(); break;
+    case "ac-open-e2e-process": showToast(`Переход в E2E-сценарий «${el.dataset.code}» в Каталоге Е2Е — вне периметра прототипа`); break;
+    case "ac-open-e2e-uc": showToast(`Переход в Use Case «${el.dataset.code}» — вне периметра прототипа`); break;
+    case "ac-open-e2e-dynamic": showToast(`Dynamic-диаграмма «${el.dataset.id}» — вне периметра прототипа`); break;
     case "ac-set-tab": state.appcat.tab = el.dataset.tab; render(); break;
     case "ac-set-general-sub": state.appcat.generalSub = el.dataset.sub; render(); break;
     case "ac-toggle-pipeline": { const k=el.dataset.id; state.appcat.pipelineExpanded[k]=!state.appcat.pipelineExpanded[k]; render(); break; }
