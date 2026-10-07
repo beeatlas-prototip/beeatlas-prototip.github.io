@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261007-113502">
+<meta name="beeatlas-build" content="20261007-114759">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -6805,7 +6805,7 @@ const AC_TABS = [
   {id:"nfr", label:"Нефункциональные требования"},
   {id:"obs", label:"Настройки наблюдаемости"},
   {id:"cj", label:"Клиентские пути"},
-  {id:"e2e", label:"Участие в E2E процессах"},
+  {id:"e2e", label:"Участие в процессах"},
   {id:"related", label:"Связанные проекты"},
 ];
 
@@ -7107,7 +7107,7 @@ function AcCjTab(app){
   if(q) rows = rows.filter(c=>acCjMatches(c, q));
   rows = acSortRows(rows, ac.cjSort, {count:c=>c.bi.length});
   return `
-    <p class="ac-tab-note">Клиентские пути, которыми владеет приложение. Пути, в которых приложение только участвует, видны в разделе «Участие в E2E процессах».</p>
+    <p class="ac-tab-note">Клиентские пути, которыми владеет приложение. Пути, в которых приложение только участвует, видны в разделе «Участие в процессах».</p>
     ${acSearchRow("acCjSearch", ac.cjSearch, "Клиентский путь или BI", "ac-clear-cj-search")}
     <div class="table-wrap-fit">
       <table class="fixed-table">
