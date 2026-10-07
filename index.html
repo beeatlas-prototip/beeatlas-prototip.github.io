@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261006-200006">
+<meta name="beeatlas-build" content="20261007-113502">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -2305,6 +2305,18 @@
   .exp-detail .table-wrap:last-child{margin-bottom:0;}
   .exp-detail-note{font-size:13px;color:var(--text-secondary);margin-bottom:var(--space-3);}
   .exp-cell{display:flex;align-items:center;gap:var(--space-2);}
+  /* В раскрывающейся строке у названия ещё и код под ним, поэтому имя — отдельный
+     блок: без min-width:0 длинное название не даёт flex-строке сжаться и ломает
+     обрезку по ширине колонки. */
+  .exp-name{min-width:0;flex:1;}
+  /* Описание вызова читают целиком и забирают в задачу, поэтому ячейка кликабельна
+     и открывает панель; иконка справа показывает, что текст не только обрезан. */
+  .desc-cell{display:flex;align-items:center;gap:var(--space-2);cursor:pointer;}
+  .desc-cell .cell-clamp-wrap{min-width:0;flex:1;}
+  .desc-cell .desc-open{flex:0 0 auto;display:flex;align-items:center;color:var(--text-tertiary);}
+  .desc-cell:hover .cell-clamp, .desc-cell:hover .desc-open{color:var(--blue);}
+  /* Пояснение к выборке над таблицей вкладки. */
+  .ac-tab-note{margin:0 0 var(--space-4);color:var(--text-secondary);font-size:15px;line-height:18px;letter-spacing:.2px;max-width:720px;}
 
 
   .tc-card{border:1px solid var(--border);border-radius:var(--radius);padding:var(--space-5);display:flex;flex-direction:column;gap:var(--space-3);}
@@ -5951,7 +5963,7 @@ const DS_ICONS = {
   moreVertical:'more_vert', info:'info_circled', download:'download', gear:'settings',
   externalLink:'open_in_window', eye:'eye', zoomIn:'zoom_in', zoomOut:'zoom_out',
   minimize:'collapse', gitBranch:'split', gitMerge:'merge', trash:'delete', history:'clock',
-  filter:'filter'
+  filter:'filter', copy:'copy', expand:'expand'
 };
 function icon(name){
   const ds = DS_ICONS[name];
@@ -6354,8 +6366,9 @@ function defaultAppcatState(){
     techDetail:null,
     relatedSearch:"", relatedExpanded:{"proj:proj1":true},
     e2eSub:"e2e",
-    e2eSearch:"", e2eMethodFilter:"Все", e2eSourceFilter:"Все", e2eSort:{key:"process", dir:"asc"},
-    e2eUcSearch:"", e2eUcMethodStatusFilter:"Все", e2eUcCallStatusFilter:"Все", e2eUcSort:{key:"ucCode", dir:"asc"},
+    e2eSearch:"", e2eSort:{key:"name", dir:"asc"}, e2eExpanded:{"E2E.00.00.01":true},
+    e2eUcSearch:"", e2eUcSort:{key:"code", dir:"asc"}, e2eUcExpanded:{"UC-014":true},
+    cjSearch:"", cjSort:{key:"name", dir:"asc"}, cjExpanded:{"CJ.00.00.01.90":true},
   };
 }
 
@@ -6644,125 +6657,142 @@ const AC_OBS_TREE = [
     ]},
 ];
 
-/* ============================= УЧАСТИЕ В E2E ПРОЦЕССАХ =============================
-   Вкладка отвечает архитектору системы на вопрос «в каких E2E-процессах участвует моё
-   приложение и какими методами». E2E и Use Case — физически разные сущности, поэтому
-   это две независимые таблицы, а не одна с признаком. Dynamic View у E2E-строк пока
-   пустой: на бэке связки «шаг E2E → Dynamic-диаграмма» ещё нет, колонка заведена под неё. */
-const AC_E2E_SOURCES = ["Импорт из Parks", "Ручная привязка"];
+/* ============================= УЧАСТИЕ В ПРОЦЕССАХ =============================
+   Вкладки отвечают архитектору системы на вопрос «в каких процессах участвует моё
+   приложение и какими методами». E2E и Use Case — физически разные сущности (в Use
+   Case шаг может быть абстрактным, в E2E только конкретный метод), поэтому это две
+   независимые таблицы, а не одна с признаком источника.
 
-const AC_E2E_ROWS = [
-  {process:"Я, как клиент, переношу денежные средства между балансами", processCode:"E2E.00.00.01",
-   step:"Клиент открывает форму переноса средств", stepCode:"STEP.00.00.01.01",
-   method:"GET /bucket", tcName:"Возможность получения балансов абонента", tcCode:"TC-108",
-   dynamic:null, source:"Импорт из Parks"},
-  {process:"Я, как клиент, переношу денежные средства между балансами", processCode:"E2E.00.00.01",
-   step:"Клиент подтверждает перенос средств", stepCode:"STEP.00.00.01.02",
-   method:"POST /transferBalance", tcName:"Возможность переноса средств между балансами", tcCode:"TC-150",
-   dynamic:null, source:"Импорт из Parks"},
-  {process:"Я, как клиент, подключаю услугу Совместный баланс", processCode:"E2E.00.00.02",
-   step:"Клиент открывает карточку услуги", stepCode:"STEP.00.00.02.01",
-   method:"GET /bucket", tcName:"Возможность получения балансов абонента", tcCode:"TC-108",
-   dynamic:null, source:"Импорт из Parks"},
-  {process:"Я, как клиент, получаю контрпредложение при попытке уменьшить абон. плату путём смены или изменения ТП в МП", processCode:"E2E.00.00.03",
-   step:"Система проверяет остаток на балансе", stepCode:"STEP.00.00.03.01",
-   method:"GET /bucket", tcName:"Возможность получения балансов абонента", tcCode:"TC-108",
-   dynamic:null, source:"Импорт из Parks"},
-  {process:"Я, как клиент, получаю контрпредложение при попытке уменьшить абон. плату путём смены или изменения ТП в МП", processCode:"E2E.00.00.03",
-   step:"Система запрашивает кредитный лимит", stepCode:"STEP.00.00.03.02",
-   method:"GET /creditlimit", tcName:"Возможность получения кредитного лимита", tcCode:"TC-121",
-   dynamic:null, source:"Импорт из Parks"},
-  {process:"Я, как клиент, получаю контрпредложение при попытке уменьшить абон. плату путём смены или изменения ТП в МП", processCode:"E2E.00.00.03",
-   step:"Клиент принимает контрпредложение", stepCode:"STEP.00.00.03.04",
-   method:"POST /transferBalance", tcName:"Возможность переноса средств между балансами", tcCode:"TC-150",
-   dynamic:null, source:"Ручная привязка"},
-  {process:"Я, как клиент, провожу оплату в интернете через мобильный платёж (оплата в магазине приложений)", processCode:"E2E.00.00.04",
-   step:"Система резервирует средства на балансе", stepCode:"STEP.00.00.04.02",
-   method:"GET /bucket", tcName:"Возможность получения балансов абонента", tcCode:"TC-108",
-   dynamic:null, source:"Импорт из Parks"},
-  {process:"Я, как клиент, провожу оплату в интернете через мобильный платёж (оплата в магазине приложений)", processCode:"E2E.00.00.04",
-   step:"Система списывает сумму покупки", stepCode:"STEP.00.00.04.03",
-   method:"POST /adjustBalance", tcName:"Возможность корректировки баланса", tcCode:"TC-134",
-   dynamic:null, source:"Импорт из Parks"},
-  {process:"Я, как клиент, провожу оплату в интернете через мобильный платёж (оплата в магазине приложений)", processCode:"E2E.00.00.04",
-   step:"Система переносит средства на сервисный счёт", stepCode:"STEP.00.00.04.05",
-   method:"POST /transferBalance", tcName:"Возможность переноса средств между балансами", tcCode:"TC-150",
-   dynamic:null, source:"Импорт из Parks"},
-  {process:"Я, как клиент, хочу выполнить смену ТП на семейства «Гибкий» в МП (prepaid)", processCode:"E2E.00.00.05",
-   step:"Система проверяет баланс перед сменой ТП", stepCode:"STEP.00.00.05.01",
-   method:"GET /bucket", tcName:"Возможность получения балансов абонента", tcCode:"TC-108",
-   dynamic:null, source:"Импорт из Parks"},
-  {process:"Я, как клиент, хочу выполнить смену ТП на семейства «Гибкий» в МП (prepaid)", processCode:"E2E.00.00.05",
-   step:"Система проверяет кредитный лимит", stepCode:"STEP.00.00.05.02",
-   method:"GET /creditlimit", tcName:"Возможность получения кредитного лимита", tcCode:"TC-121",
-   dynamic:null, source:"Импорт из Parks"},
-  {process:"Я, как клиент, хочу выполнить смену ТП на семейства «Гибкий» в МП (prepaid)", processCode:"E2E.00.00.05",
-   step:"Система списывает стоимость перехода", stepCode:"STEP.00.00.05.04",
-   method:"POST /transferBalance", tcName:null, tcCode:null,
-   dynamic:null, source:"Ручная привязка"},
+   Решение встречи 07.10.2026: на поверхности таблиц только процесс или Use Case,
+   методы приложения — в раскрытии. Методов в одном процессе много, у каждого свой
+   ТВ и свой Dynamic; плоской таблицей это дубли верхних строк и уход по ширине.
+
+   Dynamic View у E2E пока пустой: на бэке связки «шаг E2E → Dynamic-диаграмма»
+   ещё нет, колонка заведена под неё — она нужна переделанной фитнес-функции SC.01. */
+
+const AC_E2E_PROCESSES = [
+  {code:"E2E.00.00.01", name:"Я, как клиент, переношу денежные средства между балансами", methods:[
+    {method:"GET /bucket", tcName:"Возможность получения балансов абонента", tcCode:"TC-108", dynamic:null},
+    {method:"POST /transferBalance", tcName:"Возможность переноса средств между балансами", tcCode:"TC-150", dynamic:null},
+  ]},
+  {code:"E2E.00.00.02", name:"Я, как клиент, подключаю услугу Совместный баланс", methods:[
+    {method:"GET /bucket", tcName:"Возможность получения балансов абонента", tcCode:"TC-108", dynamic:null},
+    {method:"POST /sharedBalance/activate", tcName:"Возможность активации совместного баланса", tcCode:"TC-212", dynamic:null},
+  ]},
+  {code:"E2E.00.00.03", name:"Я, как клиент, получаю контрпредложение при попытке уменьшить абонентскую плату в приложении", methods:[
+    {method:"GET /bucket", tcName:"Возможность получения балансов абонента", tcCode:"TC-108", dynamic:null},
+    {method:"GET /creditlimit", tcName:"Возможность получения кредитного лимита", tcCode:"TC-121", dynamic:null},
+    {method:"POST /transferBalance", tcName:"Возможность переноса средств между балансами", tcCode:"TC-150", dynamic:null},
+  ]},
+  {code:"E2E.00.00.04", name:"Я, как клиент, провожу оплату в интернете через мобильный платёж", methods:[
+    {method:"GET /bucket", tcName:"Возможность получения балансов абонента", tcCode:"TC-108", dynamic:null},
+    {method:"POST /adjustBalance", tcName:"Возможность корректировки баланса", tcCode:"TC-134", dynamic:null},
+    {method:"POST /transferBalance", tcName:"Возможность переноса средств между балансами", tcCode:"TC-150", dynamic:null},
+  ]},
+  {code:"E2E.00.00.05", name:"Я, как клиент, хочу выполнить смену тарифного плана на семейство «Гибкий» в приложении", methods:[
+    {method:"GET /bucket", tcName:"Возможность получения балансов абонента", tcCode:"TC-108", dynamic:null},
+    {method:"GET /creditlimit", tcName:"Возможность получения кредитного лимита", tcCode:"TC-121", dynamic:null},
+    {method:"POST /transferBalance", tcName:null, tcCode:null, dynamic:null},
+  ]},
+  {code:"E2E.00.00.06", name:"Я, как клиент, подключаю обещанный платёж в приложении", methods:[
+    {method:"GET /creditlimit", tcName:"Возможность получения кредитного лимита", tcCode:"TC-121", dynamic:null},
+    {method:"POST /promisedPayment", tcName:"Возможность подключения обещанного платежа", tcCode:"TC-172", dynamic:null},
+  ]},
+  {code:"E2E.00.00.07", name:"Я, как клиент, пополняю баланс банковской картой", methods:[
+    {method:"POST /adjustBalance", tcName:"Возможность корректировки баланса", tcCode:"TC-134", dynamic:null},
+    {method:"GET /bucket", tcName:"Возможность получения балансов абонента", tcCode:"TC-108", dynamic:null},
+  ]},
 ];
 
-/* Та же таблица, что на странице Use Case (шаг/вызывающий/вызываемый/действие/вызов/TC/
-   Dynamic/статус вызова), плюс две колонки, которые нужны только архитектору системы:
-   из какого Use Case пришёл вызов и статус метода в архитектуре приложения. */
-const AC_E2E_METHOD_STATUSES = ["Реализовано", "Не реализовано", "Отсутствует в архитектуре"];
+/* Шаги Use Case: на поверхности Use Case, в раскрытии — методы приложения, которые
+   из него вызывают. «Шаг», «Вызывающий» и «Вызываемый» не выводим: кто кого вызывает,
+   видно в карточке Use Case, а здесь архитектору системы нужен перечень своих методов.
+   Описание берётся из description вызова — у планируемого метода это по сути
+   постановка на разработку, поэтому его открывают целиком и копируют. */
+const AC_E2E_UC_CASES = [
+  {code:"UC-014", name:"Перенос средств между балансами", methods:[
+    {method:"GET /bucket",
+     desc:"Клиент открывает форму переноса, приложение запрашивает доступные балансы абонента и остаток по каждому из них.",
+     tcName:"Возможность получения балансов абонента", tcCode:"TC-108", dynamic:"SEQ-88", status:"Реализован"},
+    {method:"POST /transferBalance",
+     desc:"Клиент подтверждает перенос суммы, сервис переносит средства между балансами и возвращает результат операции.",
+     tcName:"Возможность переноса средств между балансами", tcCode:"TC-150", dynamic:"SEQ-88", status:"Реализован"},
+    {method:"POST /transferBalance/validate",
+     desc:"Метод проверяет перенос до его подтверждения и возвращает решение вместе с причиной отказа. Проверяются: принадлежность обоих балансов одному абоненту, доступный остаток на балансе-источнике с учётом уже зарезервированных сумм, суточный и месячный лимиты переносов, тип балансов (с бонусного баланса перенос запрещён) и наличие активных блокировок по номеру. На вход принимается идентификатор абонента, идентификаторы балансов источника и получателя, сумма и валюта. На выходе — признак допустимости, код причины отказа из общего справочника и, если перенос допустим, итоговая сумма с учётом комиссии. Метод вызывается на каждое изменение суммы в форме, поэтому требование по времени ответа — 200 мс в 95-м процентиле, и он не должен менять состояние балансов.",
+     tcName:"Возможность переноса средств между балансами", tcCode:"TC-150", dynamic:null, status:"Планируется"},
+    {method:"GET /bucket/history",
+     desc:"Метод возвращает историю переносов по балансам абонента за выбранный период, чтобы клиент видел в форме последние операции. Вызов пришёл в Use Case как планируемый, но метод уже отвечает на тестовом контуре, поэтому статус нужно подтвердить.",
+     tcName:"Возможность получения балансов абонента", tcCode:"TC-108", dynamic:null, status:"На ревью"},
+  ]},
+  {code:"UC-021", name:"Подключение услуги Совместный баланс", methods:[
+    {method:"GET /bucket",
+     desc:"Приложение запрашивает балансы абонента, чтобы показать, какие из них можно объединить в совместный баланс.",
+     tcName:"Возможность получения балансов абонента", tcCode:"TC-108", dynamic:"SEQ-91", status:"Реализован"},
+    {method:"POST /sharedBalance/activate",
+     desc:"Метод включает услугу «Совместный баланс» для группы номеров и возвращает состав группы с датой активации. Вызов в Use Case описан как планируемый, но метод уже выведен в продуктивную среду, поэтому статус требует подтверждения архитектором системы.",
+     tcName:"Возможность активации совместного баланса", tcCode:"TC-212", dynamic:"SEQ-91", status:"На ревью"},
+    {method:"GET /sharedBalance/participants",
+     desc:"Метод возвращает участников совместного баланса и их роли, чтобы владелец услуги видел, кто расходует общие средства. На вход принимается идентификатор группы и, опционально, признак «только активные участники». На выходе — список номеров с ролью (владелец или участник), датой подключения, лимитом расходования и фактом его исчерпания. Отдельно нужно вернуть суммарный остаток группы, иначе приложению придётся делать второй вызов. Метод вызывается при каждом открытии карточки услуги, список участников — до 20 номеров. Пагинация не нужна, сортировка — владелец первым, остальные по дате подключения.",
+     tcName:null, tcCode:null, dynamic:null, status:"Планируется"},
+  ]},
+  {code:"UC-033", name:"Оплата покупки мобильным платежом", methods:[
+    {method:"GET /bucket",
+     desc:"Приложение проверяет остаток на балансе абонента перед тем, как предложить оплату мобильным платежом.",
+     tcName:"Возможность получения балансов абонента", tcCode:"TC-108", dynamic:"SEQ-104", status:"Реализован"},
+    {method:"POST /adjustBalance",
+     desc:"Приложение списывает сумму покупки с баланса абонента после подтверждения платежа магазином приложений.",
+     tcName:"Возможность корректировки баланса", tcCode:"TC-134", dynamic:"SEQ-104", status:"Реализован"},
+    {method:"POST /bucket/reserve",
+     desc:"Метод резервирует сумму покупки на балансе абонента до подтверждения платежа магазином и освобождает её по таймауту. На вход принимается идентификатор абонента, идентификатор баланса, сумма, валюта, идентификатор платежа на стороне магазина и время жизни резерва. На выходе — идентификатор резерва и момент его автоматического снятия. Повторный вызов с тем же идентификатором платежа должен возвращать уже созданный резерв, а не создавать второй: магазин повторяет запрос при обрыве связи. Нужны отдельные методы снятия и подтверждения резерва, иначе зарезервированные средства останутся недоступными абоненту до истечения таймаута.",
+     tcName:null, tcCode:null, dynamic:null, status:"Планируется"},
+  ]},
+  {code:"UC-047", name:"Смена тарифного плана на семейство «Гибкий»", methods:[
+    {method:"GET /creditlimit",
+     desc:"Приложение запрашивает кредитный лимит абонента, чтобы понять, доступна ли смена тарифного плана при текущем балансе.",
+     tcName:"Возможность получения кредитного лимита", tcCode:"TC-121", dynamic:null, status:"Реализован"},
+    {method:"POST /transferBalance",
+     desc:"Приложение списывает стоимость перехода на новый тарифный план с основного баланса абонента. Вызов описан как планируемый, но метод уже реализован в рамках переноса средств, поэтому связку нужно подтвердить.",
+     tcName:"Возможность переноса средств между балансами", tcCode:"TC-150", dynamic:null, status:"На ревью"},
+  ]},
+  {code:"UC-052", name:"Подключение обещанного платежа", methods:[
+    {method:"GET /creditlimit",
+     desc:"Приложение проверяет кредитный лимит абонента и доступную сумму обещанного платежа.",
+     tcName:"Возможность получения кредитного лимита", tcCode:"TC-121", dynamic:"SEQ-117", status:"Реализован"},
+    {method:"POST /promisedPayment",
+     desc:"Метод подключает обещанный платёж на выбранную сумму и возвращает дату, до которой её нужно погасить. На вход принимается идентификатор абонента, сумма и источник подключения (приложение, веб или голосовое меню). На выходе — идентификатор обещанного платежа, дата погашения, размер платы за услугу и новый доступный остаток. Нужны отдельные коды ошибок на случаи: сумма больше доступного лимита, у абонента уже есть непогашенный обещанный платёж, услуга недоступна на тарифном плане. Погашение выполняется автоматически при пополнении баланса, отдельный метод для него не нужен.",
+     tcName:"Возможность подключения обещанного платежа", tcCode:"TC-172", dynamic:"SEQ-117", status:"Планируется"},
+  ]},
+];
 
-const AC_E2E_UC_ROWS = [
-  {ucCode:"UC-014", ucName:"Перенос средств между балансами", part:"P-01",
-   caller:"Мобильное приложение", callee:"Сервис Платежи и переводы",
-   action:"Клиент открывает форму переноса, приложение запрашивает доступные балансы абонента и остаток по каждому из них.",
-   call:"GET /bucket", tcName:"Возможность получения балансов абонента", tcCode:"TC-108",
-   dynamic:"SEQ-88", status:"confirmed", methodStatus:"Реализовано"},
-  {ucCode:"UC-014", ucName:"Перенос средств между балансами", part:"P-02",
-   caller:"Мобильное приложение", callee:"Сервис Платежи и переводы",
-   action:"Клиент подтверждает перенос суммы, сервис переносит средства между балансами и возвращает результат операции.",
-   call:"POST /transferBalance", tcName:"Возможность переноса средств между балансами", tcCode:"TC-150",
-   dynamic:"SEQ-88", status:"confirmed", methodStatus:"Реализовано"},
-  {ucCode:"UC-014", ucName:"Перенос средств между балансами", part:"P-03",
-   caller:"Сервис Платежи и переводы", callee:"Сервис уведомлений",
-   action:"send_transfer_notification", call:"POST /api/v1/notify/send",
-   tcName:"Возможность отправки уведомления", tcCode:"TC-163",
-   dynamic:null, status:"planned", methodStatus:"Не реализовано"},
-  {ucCode:"UC-021", ucName:"Подключение услуги Совместный баланс", part:"P-01",
-   caller:"Мобильное приложение", callee:"Сервис Платежи и переводы",
-   action:"get_bucket_list", call:"GET /bucket",
-   tcName:"Возможность получения балансов абонента", tcCode:"TC-108",
-   dynamic:"SEQ-91", status:"confirmed", methodStatus:"Реализовано"},
-  {ucCode:"UC-021", ucName:"Подключение услуги Совместный баланс", part:"P-02",
-   caller:"Сервис Платежи и переводы", callee:"BSS Billing Engine",
-   action:"Сервис активирует опцию «Совместный баланс» в биллинге и дожидается подтверждения активации.",
-   call:"POST /billing/options/activate", tcName:"Возможность активации тарифной опции", tcCode:"TC-311",
-   dynamic:"SEQ-91", status:"confirmed", methodStatus:"Реализовано"},
-  {ucCode:"UC-021", ucName:"Подключение услуги Совместный баланс", part:"P-03",
-   caller:"Сервис Платежи и переводы", callee:"Сервис лояльности",
-   action:"apply_bonus_points", call:"POST /api/v1/loyalty/apply",
-   tcName:null, tcCode:null,
-   dynamic:null, status:"unmapped", methodStatus:"Отсутствует в архитектуре"},
-  {ucCode:"UC-033", ucName:"Оплата покупки мобильным платежом", part:"P-02",
-   caller:"Мобильное приложение", callee:"Сервис Платежи и переводы",
-   action:"Приложение резервирует сумму покупки на балансе абонента до подтверждения платежа магазином.",
-   call:"GET /bucket", tcName:"Возможность получения балансов абонента", tcCode:"TC-108",
-   dynamic:"SEQ-104", status:"confirmed", methodStatus:"Реализовано"},
-  {ucCode:"UC-033", ucName:"Оплата покупки мобильным платежом", part:"P-03",
-   caller:"Мобильное приложение", callee:"Сервис Платежи и переводы",
-   action:"adjust_balance", call:"POST /adjustBalance",
-   tcName:"Возможность корректировки баланса", tcCode:"TC-134",
-   dynamic:"SEQ-104", status:"confirmed", methodStatus:"Реализовано"},
-  {ucCode:"UC-033", ucName:"Оплата покупки мобильным платежом", part:"P-05",
-   caller:"Сервис Платежи и переводы", callee:"Сервис проверки мошенничества",
-   action:"check_fraud_score", call:"POST /api/v1/fraud/check",
-   tcName:null, tcCode:null,
-   dynamic:null, status:"unmapped", methodStatus:"Отсутствует в архитектуре"},
-  {ucCode:"UC-047", ucName:"Смена ТП на семейство «Гибкий»", part:"P-01",
-   caller:"Мобильное приложение", callee:"Сервис Платежи и переводы",
-   action:"get_credit_limit", call:"GET /creditlimit",
-   tcName:"Возможность получения кредитного лимита", tcCode:"TC-121",
-   dynamic:null, status:"confirmed", methodStatus:"Реализовано"},
-  {ucCode:"UC-047", ucName:"Смена ТП на семейство «Гибкий»", part:"P-04",
-   caller:"Мобильное приложение", callee:"Сервис Платежи и переводы",
-   action:"Приложение списывает стоимость перехода на новый тарифный план с основного баланса абонента.",
-   call:"POST /transferBalance", tcName:"Возможность переноса средств между балансами", tcCode:"TC-150",
-   dynamic:null, status:"planned", methodStatus:"Не реализовано"},
+/* Клиентские пути — отдельная вкладка, а не третий раздел переключателя: содержание
+   принципиально другое, это перечень путей без методов и технических возможностей.
+   Дзюба просил три уровня детализации одной пирамидкой, но функционала «какие E2E
+   входят в Use Case» на бэке нет, поэтому пока три независимых списка.
+   Показываем пути, которыми приложение владеет; те, в которых оно только участвует,
+   архитектор находит, проваливаясь из шагов E2E-сценариев. */
+const AC_CJ_PATHS = [
+  {code:"CJ.00.00.01.90", name:"Я, как клиент, управляю балансами и переводами в приложении", status:"Опубликован", bi:[
+    {code:"BI.00.00.01.1", name:"BI Проверка баланса и доступных средств", steps:4},
+    {code:"BI.00.00.01.2", name:"BI Перенос средств между балансами", steps:6},
+    {code:"BI.00.00.01.3", name:"BI Подтверждение операции переноса", steps:3},
+  ]},
+  {code:"CJ.00.00.02.91", name:"Я, как клиент, оплачиваю покупки мобильным платежом", status:"Опубликован", bi:[
+    {code:"BI.00.00.02.1", name:"BI Выбор способа оплаты", steps:3},
+    {code:"BI.00.00.02.2", name:"BI Резервирование и списание суммы", steps:5},
+  ]},
+  {code:"CJ.00.00.03.92", name:"Я, как клиент, подключаю обещанный платёж", status:"Черновик", bi:[
+    {code:"BI.00.00.03.1", name:"BI Проверка доступной суммы", steps:2},
+    {code:"BI.00.00.03.2", name:"BI Подключение обещанного платежа", steps:4},
+  ]},
+  {code:"CJ.00.00.04.93", name:"Я, как клиент, пополняю баланс банковской картой", status:"Опубликован", bi:[
+    {code:"BI.00.00.04.1", name:"BI Ввод суммы пополнения", steps:2},
+    {code:"BI.00.00.04.2", name:"BI Оплата банковской картой", steps:5},
+    {code:"BI.00.00.04.3", name:"BI Зачисление средств на баланс", steps:3},
+  ]},
+  {code:"CJ.00.00.05.94", name:"Я, как клиент, подключаю услугу Совместный баланс", status:"Опубликован", bi:[
+    {code:"BI.00.00.05.1", name:"BI Выбор участников группы", steps:4},
+    {code:"BI.00.00.05.2", name:"BI Активация совместного баланса", steps:3},
+  ]},
 ];
 
 const AC_TABS = [
@@ -6774,6 +6804,7 @@ const AC_TABS = [
   {id:"patterns", label:"Паттерны"},
   {id:"nfr", label:"Нефункциональные требования"},
   {id:"obs", label:"Настройки наблюдаемости"},
+  {id:"cj", label:"Клиентские пути"},
   {id:"e2e", label:"Участие в E2E процессах"},
   {id:"related", label:"Связанные проекты"},
 ];
@@ -6848,7 +6879,11 @@ function acSortRows(rows, sort, getters){
   if(!sort || !sort.key) return rows;
   const get = (getters||{})[sort.key] || (r=>r[sort.key]);
   const dir = sort.dir==="desc" ? -1 : 1;
-  return rows.slice().sort((a,b)=> dir * String(get(a)||"").localeCompare(String(get(b)||""), "ru"));
+  return rows.slice().sort((a,b)=>{
+    const x = get(a), y = get(b);
+    if(typeof x==="number" && typeof y==="number") return dir * (x - y);
+    return dir * String(x==null?"":x).localeCompare(String(y==null?"":y), "ru");
+  });
 }
 /* Название + код под ним. В отличие от clampNameCell название не красим в синий:
    шаг E2E-сценария здесь не ссылка, а подпись к строке. */
@@ -6860,13 +6895,21 @@ function acNameCodeCell(name, code){
 function acTcCell(name, code){
   return name ? acNameCodeCell(name, code) : '<span class="empty-cell">—</span>';
 }
+/* Статус есть у метода, а не у вызова: «статус вызова» — остаток раннего VISION,
+   его убрали на встрече 07.10.2026. «На ревью» — метод планировался, но на него уже
+   пришёл вызов: похоже, его реализовали, и архитектор системы должен это подтвердить. */
 function acMethodStatusBadge(s){
-  if(s==="Реализовано") return '<span class="badge green">Реализовано</span>';
-  if(s==="Не реализовано") return '<span class="badge orange">Не реализовано</span>';
-  return '<span class="badge red">Отсутствует в архитектуре</span>';
+  if(s==="Реализован") return '<span class="badge green">Реализован</span>';
+  if(s==="Планируется") return '<span class="badge orange">Планируется</span>';
+  return '<span class="badge blue">На ревью</span>';
+}
+function acDynamicCell(id){
+  return id
+    ? `<span class="proj-link" style="white-space:nowrap;" data-action="ac-open-e2e-dynamic" data-id="${escapeHtml(id)}">${escapeHtml(id)}</span>`
+    : '<span class="empty-cell">—</span>';
 }
 function acEmptyRow(cols){
-  return `<tr><td colspan="${cols}" style="text-align:center;color:var(--text-secondary);padding:var(--space-8);">Ничего не нашлось. Измени фильтры или сбрось их</td></tr>`;
+  return `<tr><td colspan="${cols}" style="text-align:center;color:var(--text-secondary);padding:var(--space-8);">Ничего не нашлось. Измени запрос или сбрось его</td></tr>`;
 }
 
 function AcE2eTab(app){
@@ -6876,112 +6919,252 @@ function AcE2eTab(app){
       <div class="pill-item ${ac.e2eSub==="e2e"?"active":""}" data-action="ac-set-e2e-sub" data-sub="e2e">Шаги E2E-сценариев</div>
       <div class="pill-item ${ac.e2eSub==="uc"?"active":""}" data-action="ac-set-e2e-sub" data-sub="uc">Шаги Use Case</div>
     </div>
-    ${ac.e2eSub==="e2e" ? AcE2eStepsTable() : AcE2eUcTable()}
+    ${ac.e2eSub==="e2e" ? AcE2eProcessTable() : AcE2eUcTable()}
+  `;
+}
+
+/* Фильтров в этих таблицах нет: бэк под фильтрацию не делаем, поиск фронтовый по уже
+   загруженным данным (решение встречи 07.10.2026). Сброс — крестиком в поле. */
+function acSearchRow(id, value, placeholder, clearAction){
+  return `
+    <div class="filters-row">
+      <div class="search-wrap field-with-icon">
+        ${icon("search")}
+        <input class="input" id="${id}" placeholder="${escapeHtml(placeholder)}" value="${escapeHtml(value)}" autocomplete="off"/>
+        ${value ? `<div class="clear-x" data-action="${clearAction}">${icon("x")}</div>` : ""}
+      </div>
+    </div>
+  `;
+}
+
+/* Поиск ищет и по вложенным строкам: если совпал только метод, строка верхнего уровня
+   раскрывается сама и показывает совпавшие методы, иначе найденное не видно. */
+function acMethodText(m){
+  return (m.method+" "+(m.tcName||"")+" "+(m.tcCode||"")+" "+(m.dynamic||"")+" "+(m.desc||"")+" "+(m.status||"")).toLowerCase();
+}
+function acGroupHeadText(g){
+  return (g.name+" "+g.code).toLowerCase();
+}
+function acGroupMatches(g, q){
+  return acGroupHeadText(g).includes(q) || g.methods.some(m=>acMethodText(m).includes(q));
+}
+function acVisibleMethods(g, q){
+  if(!q || acGroupHeadText(g).includes(q)) return g.methods;
+  return g.methods.filter(m=>acMethodText(m).includes(q));
+}
+/* Название строки верхнего уровня: ссылка и код под ней, рядом с шевроном раскрытия. */
+function acExpNameCell(name, code, open, toggleAction, openAction){
+  return `
+    <div class="exp-cell">
+      <div class="exp-row-btn ${open?"open":""}" data-action="${toggleAction}" data-id="${escapeHtml(code)}">${icon("chevronRight")}</div>
+      <div class="exp-name">
+        <div class="cell-clamp-wrap"><div class="cell-clamp clamp-1 proj-link" data-action="${openAction}" data-code="${escapeHtml(code)}">${escapeHtml(name)}</div><div class="cell-tooltip">${escapeHtml(name)}</div></div>
+        <div class="row-sub">${escapeHtml(code)}</div>
+      </div>
+    </div>
   `;
 }
 
 /* Шаги E2E-сценариев: по каким методам приложение участвует в сквозных процессах.
-   Интерфейс намеренно не выводим — архитектору системы важен метод, а не транспорт. */
-function AcE2eStepsTable(){
+   «Шаг сценария» не выводим — он виден при переходе в сценарий; «Источник» привязки
+   в этой таблице не разбирают; колонки «Интерфейс» быть не должно — архитектору
+   системы важен метод, а не транспорт (требования Загребина от 06.10 и 07.10). */
+function AcE2eProcessTable(){
   const ac = state.appcat;
   const q = ac.e2eSearch.trim().toLowerCase();
-  let rows = AC_E2E_ROWS;
-  if(q) rows = rows.filter(r=>(r.process+" "+r.step+" "+r.stepCode+" "+r.method+" "+(r.tcName||"")+" "+(r.tcCode||"")).toLowerCase().includes(q));
-  if(ac.e2eMethodFilter!=="Все") rows = rows.filter(r=>r.method===ac.e2eMethodFilter);
-  if(ac.e2eSourceFilter!=="Все") rows = rows.filter(r=>r.source===ac.e2eSourceFilter);
-  rows = acSortRows(rows, ac.e2eSort, {tc:r=>r.tcName||"ЯЯ", dynamic:r=>r.dynamic||"ЯЯ"});
-  const methods = ["Все"].concat(Array.from(new Set(AC_E2E_ROWS.map(r=>r.method))).sort());
+  let rows = AC_E2E_PROCESSES;
+  if(q) rows = rows.filter(g=>acGroupMatches(g, q));
+  rows = acSortRows(rows, ac.e2eSort, {count:g=>g.methods.length});
   return `
-    <div class="filters-row ac-e2e-filters">
-      <div class="search-wrap field-with-icon">${icon("search")}<input class="input" id="acE2eSearch" placeholder="Процесс, шаг сценария, метод или техническая возможность" value="${escapeHtml(ac.e2eSearch)}" autocomplete="off"/></div>
-      ${FilterSelect({id:"ac-e2e-method", label:"Метод", value:ac.e2eMethodFilter, options:methods, action:"ac-e2e-method-filter"})}
-      ${FilterSelect({id:"ac-e2e-source", label:"Источник", value:ac.e2eSourceFilter, options:["Все"].concat(AC_E2E_SOURCES), action:"ac-e2e-source-filter"})}
-      <span class="reset-link" data-action="ac-reset-e2e">Сбросить</span>
-    </div>
+    ${acSearchRow("acE2eSearch", ac.e2eSearch, "Процесс, метод или техническая возможность", "ac-clear-e2e-search")}
     <div class="table-wrap-fit">
       <table class="fixed-table">
-        <colgroup><col style="width:25%"><col style="width:21%"><col style="width:15%"><col style="width:18%"><col style="width:7%"><col style="width:14%"></colgroup>
+        <colgroup><col style="width:76%"><col style="width:24%"></colgroup>
         <thead><tr>
-          ${acSortTh("Процесс","process",ac.e2eSort,"ac-e2e-sort")}
-          ${acSortTh("Шаг сценария","step",ac.e2eSort,"ac-e2e-sort")}
-          ${acSortTh("Метод","method",ac.e2eSort,"ac-e2e-sort")}
-          ${acSortTh("Техническая возможность","tc",ac.e2eSort,"ac-e2e-sort")}
-          ${acSortTh("Dynamic View","dynamic",ac.e2eSort,"ac-e2e-sort")}
-          ${acSortTh("Источник","source",ac.e2eSort,"ac-e2e-sort")}
+          ${acSortTh("E2E-процесс","name",ac.e2eSort,"ac-e2e-sort")}
+          ${acSortTh("Методов приложения","count",ac.e2eSort,"ac-e2e-sort")}
         </tr></thead>
         <tbody>
-          ${rows.length ? rows.map(r=>`
-            <tr>
-              <td><div class="cell-clamp-wrap"><div class="cell-clamp clamp-1 proj-link" data-action="ac-open-e2e-process" data-code="${escapeHtml(r.processCode)}">${escapeHtml(r.process)}</div><div class="cell-tooltip">${escapeHtml(r.process)}</div></div><div class="row-sub">${escapeHtml(r.processCode)}</div></td>
-              <td>${acNameCodeCell(r.step, r.stepCode)}</td>
-              <td>${clampCell(r.method, "clamp-1")}</td>
-              <td>${acTcCell(r.tcName, r.tcCode)}</td>
-              <td>${r.dynamic ? `<span class="proj-link" style="white-space:nowrap;" data-action="ac-open-e2e-dynamic" data-id="${escapeHtml(r.dynamic)}">${escapeHtml(r.dynamic)}</span>` : '<span class="empty-cell">—</span>'}</td>
-              <td>${clampCell(r.source, "clamp-1")}</td>
-            </tr>
-          `).join("") : acEmptyRow(6)}
+          ${rows.length ? rows.map(g=>AcE2eProcessRows(g, q)).join("") : acEmptyRow(2)}
         </tbody>
       </table>
     </div>
   `;
 }
 
-/* Шаги Use Case: та же таблица, что на странице Use Case, плюс колонки «Use Case»
-   и «Статус метода» — по ней архитектор системы ведёт ревью вызовов к своему приложению. */
+function AcE2eProcessRows(g, q){
+  const ac = state.appcat;
+  const methods = acVisibleMethods(g, q);
+  const open = !!ac.e2eExpanded[g.code] || (!!q && methods.length < g.methods.length);
+  let out = `
+    <tr>
+      <td>${acExpNameCell(g.name, g.code, open, "ac-toggle-e2e", "ac-open-e2e-process")}</td>
+      <td>${g.methods.length}</td>
+    </tr>
+  `;
+  if(open){
+    out += `<tr class="exp-detail-row"><td colspan="2"><div class="exp-detail">
+      <div class="table-wrap">
+        <table class="fixed-table">
+          <colgroup><col style="width:34%"><col style="width:46%"><col style="width:20%"></colgroup>
+          <thead><tr><th>Метод</th><th>Техническая возможность</th><th>Dynamic View</th></tr></thead>
+          <tbody>
+            ${methods.map(m=>`
+              <tr>
+                <td>${clampCell(m.method, "clamp-1")}</td>
+                <td>${acTcCell(m.tcName, m.tcCode)}</td>
+                <td>${acDynamicCell(m.dynamic)}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div></td></tr>`;
+  }
+  return out;
+}
+
+/* Шаги Use Case: на поверхности Use Case, в раскрытии — методы приложения, которые
+   из него вызывают. По статусу метода архитектор системы ведёт ревью вызовов. */
 function AcE2eUcTable(){
   const ac = state.appcat;
   const q = ac.e2eUcSearch.trim().toLowerCase();
-  let rows = AC_E2E_UC_ROWS;
-  if(q) rows = rows.filter(r=>(r.ucCode+" "+r.ucName+" "+r.part+" "+r.caller+" "+r.callee+" "+r.action+" "+r.call+" "+(r.tcName||"")+" "+(r.tcCode||"")).toLowerCase().includes(q));
-  if(ac.e2eUcMethodStatusFilter!=="Все") rows = rows.filter(r=>r.methodStatus===ac.e2eUcMethodStatusFilter);
-  if(ac.e2eUcCallStatusFilter!=="Все") rows = rows.filter(r=>scenarioStatusLabel(r.status)===ac.e2eUcCallStatusFilter);
-  rows = acSortRows(rows, ac.e2eUcSort, {
-    tc:r=>r.tcName||"ЯЯ", dynamic:r=>r.dynamic||"ЯЯ", status:r=>scenarioStatusLabel(r.status),
-  });
+  let rows = AC_E2E_UC_CASES;
+  if(q) rows = rows.filter(g=>acGroupMatches(g, q));
+  rows = acSortRows(rows, ac.e2eUcSort, {count:g=>g.methods.length});
   return `
-    <div class="filters-row ac-e2e-filters">
-      <div class="search-wrap field-with-icon">${icon("search")}<input class="input" id="acE2eUcSearch" placeholder="Use Case, шаг, вызов или техническая возможность" value="${escapeHtml(ac.e2eUcSearch)}" autocomplete="off"/></div>
-      ${FilterSelect({id:"ac-e2e-uc-mstatus", label:"Статус метода", value:ac.e2eUcMethodStatusFilter, options:["Все"].concat(AC_E2E_METHOD_STATUSES), action:"ac-e2e-uc-mstatus-filter"})}
-      ${FilterSelect({id:"ac-e2e-uc-cstatus", label:"Статус вызова", value:ac.e2eUcCallStatusFilter, options:["Все","Подтверждено","Планируется","Не смаппирован"], action:"ac-e2e-uc-cstatus-filter"})}
-      <span class="reset-link" data-action="ac-reset-e2e-uc">Сбросить</span>
-    </div>
-    <div class="table-scroll">
-      <table class="fixed-table" style="min-width:1932px;">
-        <colgroup>
-          <col style="width:220px"><col style="width:76px"><col style="width:190px"><col style="width:190px"><col style="width:320px">
-          <col style="width:190px"><col style="width:240px"><col style="width:96px"><col style="width:160px"><col style="width:250px">
-        </colgroup>
+    ${acSearchRow("acE2eUcSearch", ac.e2eUcSearch, "Use Case, метод, описание или техническая возможность", "ac-clear-e2e-uc-search")}
+    <div class="table-wrap-fit">
+      <table class="fixed-table">
+        <colgroup><col style="width:76%"><col style="width:24%"></colgroup>
         <thead><tr>
-          ${acSortTh("Use Case","ucCode",ac.e2eUcSort,"ac-e2e-uc-sort")}
-          ${acSortTh("Шаг","part",ac.e2eUcSort,"ac-e2e-uc-sort")}
-          ${acSortTh("Вызывающий","caller",ac.e2eUcSort,"ac-e2e-uc-sort")}
-          ${acSortTh("Вызываемый","callee",ac.e2eUcSort,"ac-e2e-uc-sort")}
-          <th>Действие</th>
-          ${acSortTh("Вызов","call",ac.e2eUcSort,"ac-e2e-uc-sort")}
-          ${acSortTh("TC","tc",ac.e2eUcSort,"ac-e2e-uc-sort")}
-          ${acSortTh("Dynamic","dynamic",ac.e2eUcSort,"ac-e2e-uc-sort")}
-          ${acSortTh("Статус вызова","status",ac.e2eUcSort,"ac-e2e-uc-sort")}
-          ${acSortTh("Статус метода","methodStatus",ac.e2eUcSort,"ac-e2e-uc-sort")}
+          ${acSortTh("Use Case","name",ac.e2eUcSort,"ac-e2e-uc-sort")}
+          ${acSortTh("Методов приложения","count",ac.e2eUcSort,"ac-e2e-uc-sort")}
         </tr></thead>
         <tbody>
-          ${rows.length ? rows.map(r=>`
-            <tr>
-              <td><div class="cell-clamp-wrap"><div class="cell-clamp clamp-1 proj-link" data-action="ac-open-e2e-uc" data-code="${escapeHtml(r.ucCode)}">${escapeHtml(r.ucName)}</div><div class="cell-tooltip">${escapeHtml(r.ucName)}</div></div><div class="row-sub">${escapeHtml(r.ucCode)}</div></td>
-              <td style="white-space:nowrap;">${escapeHtml(r.part)}</td>
-              <td>${clampCell(r.caller, "clamp-1")}</td>
-              <td>${clampCell(r.callee, "clamp-1")}</td>
-              <td>${clampCell(r.action, "clamp-1")}</td>
-              <td>${clampCell(r.call, "clamp-1")}</td>
-              <td>${acTcCell(r.tcName, r.tcCode)}</td>
-              <td>${r.dynamic ? `<span class="proj-link" style="white-space:nowrap;" data-action="ac-open-e2e-dynamic" data-id="${escapeHtml(r.dynamic)}">${escapeHtml(r.dynamic)}</span>` : '<span class="empty-cell">—</span>'}</td>
-              <td>${scenarioStatusBadge(r.status)}</td>
-              <td>${acMethodStatusBadge(r.methodStatus)}</td>
-            </tr>
-          `).join("") : acEmptyRow(10)}
+          ${rows.length ? rows.map(g=>AcE2eUcRows(g, q)).join("") : acEmptyRow(2)}
         </tbody>
       </table>
     </div>
   `;
+}
+
+function AcE2eUcRows(g, q){
+  const ac = state.appcat;
+  const methods = acVisibleMethods(g, q);
+  const open = !!ac.e2eUcExpanded[g.code] || (!!q && methods.length < g.methods.length);
+  let out = `
+    <tr>
+      <td>${acExpNameCell(g.name, g.code, open, "ac-toggle-e2e-uc", "ac-open-e2e-uc")}</td>
+      <td>${g.methods.length}</td>
+    </tr>
+  `;
+  if(open){
+    out += `<tr class="exp-detail-row"><td colspan="2"><div class="exp-detail">
+      <div class="table-wrap">
+        <table class="fixed-table">
+          <colgroup><col style="width:21%"><col style="width:29%"><col style="width:23%"><col style="width:11%"><col style="width:16%"></colgroup>
+          <thead><tr><th>Метод</th><th>Описание</th><th>Техническая возможность</th><th>Dynamic</th><th>Статус метода</th></tr></thead>
+          <tbody>
+            ${methods.map(m=>`
+              <tr>
+                <td>${clampCell(m.method, "clamp-1")}</td>
+                <td>${AcUcDescCell(g.code, m)}</td>
+                <td>${acTcCell(m.tcName, m.tcCode)}</td>
+                <td>${acDynamicCell(m.dynamic)}</td>
+                <td>${acMethodStatusBadge(m.status)}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div></td></tr>`;
+  }
+  return out;
+}
+
+/* Описание вызова: у планируемого метода это постановка на разработку, её читают
+   целиком и забирают себе в задачу. Из обрезанной ячейки текст не скопировать,
+   поэтому ячейка открывает панель с полным описанием и кнопкой «Скопировать». */
+function AcUcDescCell(ucCode, m){
+  const t = escapeHtml(m.desc);
+  return `
+    <div class="desc-cell" data-action="ac-open-method-desc" data-uc="${escapeHtml(ucCode)}" data-method="${escapeHtml(m.method)}">
+      <div class="cell-clamp-wrap"><div class="cell-clamp clamp-1">${t}</div><div class="cell-tooltip">${t}</div></div>
+      <span class="desc-open">${icon("expand")}</span>
+    </div>
+  `;
+}
+
+/* ============================= КЛИЕНТСКИЕ ПУТИ =============================
+   Отдельная вкладка: содержание принципиально другое — перечень путей без методов.
+   Показываем пути, которыми приложение владеет; пути, где оно только участвует,
+   архитектор находит, проваливаясь из шагов E2E-сценариев. */
+function AcCjTab(app){
+  const ac = state.appcat;
+  const q = ac.cjSearch.trim().toLowerCase();
+  let rows = AC_CJ_PATHS;
+  if(q) rows = rows.filter(c=>acCjMatches(c, q));
+  rows = acSortRows(rows, ac.cjSort, {count:c=>c.bi.length});
+  return `
+    <p class="ac-tab-note">Клиентские пути, которыми владеет приложение. Пути, в которых приложение только участвует, видны в разделе «Участие в E2E процессах».</p>
+    ${acSearchRow("acCjSearch", ac.cjSearch, "Клиентский путь или BI", "ac-clear-cj-search")}
+    <div class="table-wrap-fit">
+      <table class="fixed-table">
+        <colgroup><col style="width:58%"><col style="width:16%"><col style="width:26%"></colgroup>
+        <thead><tr>
+          ${acSortTh("Клиентский путь","name",ac.cjSort,"ac-cj-sort")}
+          ${acSortTh("BI","count",ac.cjSort,"ac-cj-sort")}
+          ${acSortTh("Статус","status",ac.cjSort,"ac-cj-sort")}
+        </tr></thead>
+        <tbody>
+          ${rows.length ? rows.map(c=>AcCjRows(c, q)).join("") : acEmptyRow(3)}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function acCjBiText(b){ return (b.name+" "+b.code).toLowerCase(); }
+function acCjMatches(c, q){
+  return (c.name+" "+c.code).toLowerCase().includes(q) || c.bi.some(b=>acCjBiText(b).includes(q));
+}
+function acCjVisibleBi(c, q){
+  if(!q || (c.name+" "+c.code).toLowerCase().includes(q)) return c.bi;
+  return c.bi.filter(b=>acCjBiText(b).includes(q));
+}
+
+function AcCjRows(c, q){
+  const ac = state.appcat;
+  const bis = acCjVisibleBi(c, q);
+  const open = !!ac.cjExpanded[c.code] || (!!q && bis.length < c.bi.length);
+  let out = `
+    <tr>
+      <td>${acExpNameCell(c.name, c.code, open, "ac-toggle-cj", "ac-open-cj")}</td>
+      <td>${c.bi.length}</td>
+      <td><span class="badge ${c.status==="Опубликован"?"green":"gray"}">${escapeHtml(c.status)}</span></td>
+    </tr>
+  `;
+  if(open){
+    out += `<tr class="exp-detail-row"><td colspan="3"><div class="exp-detail">
+      <div class="table-wrap">
+        <table class="fixed-table">
+          <colgroup><col style="width:58%"><col style="width:24%"><col style="width:18%"></colgroup>
+          <thead><tr><th>BI</th><th>Код</th><th>Шагов</th></tr></thead>
+          <tbody>
+            ${bis.map(b=>`
+              <tr>
+                <td>${clampCell(b.name, "clamp-1")}</td>
+                <td>${escapeHtml(b.code)}</td>
+                <td>${b.steps}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div></td></tr>`;
+  }
+  return out;
 }
 
 function AcRelatedTab(app){
@@ -7160,6 +7343,7 @@ function AcTabContent(app){
     case "patterns": return AcPatternsTab(app);
     case "nfr": return AcNfrTab(app);
     case "obs": return AcObsTab(app);
+    case "cj": return AcCjTab(app);
     case "e2e": return AcE2eTab(app);
     case "related": return AcRelatedTab(app);
     default: return "";
@@ -12839,6 +13023,40 @@ function submitAddResults(){
   }
 }
 
+/* Полное описание вызова к методу приложения. У планируемого метода это постановка
+   на разработку: её читают целиком и копируют себе в задачу. */
+function AcMethodDescPanel(){
+  const sp = state.sidePanel;
+  const m = sp.method;
+  const row = (label, value) => `
+    <div style="display:flex;gap:var(--space-4);padding:var(--space-3) 0;border-bottom:1px solid var(--border);">
+      <div style="flex:0 0 180px;color:var(--text-secondary);font-size:15px;">${label}</div>
+      <div style="flex:1;min-width:0;font-size:15px;">${value}</div>
+    </div>`;
+  return `
+    <div class="side-head">
+      <div style="min-width:0;">
+        <h2>${escapeHtml(m.method)}</h2>
+        <p class="side-desc">${escapeHtml(sp.ucName)} · ${escapeHtml(sp.ucCode)}</p>
+      </div>
+      <button class="wizard-close" data-action="close-side">${icon("x")}</button>
+    </div>
+    <div class="side-body">
+      ${row("Статус метода", acMethodStatusBadge(m.status))}
+      ${row("Техническая возможность", m.tcName ? escapeHtml(m.tcName)+' <span class="row-sub" style="display:inline;">'+escapeHtml(m.tcCode)+'</span>' : '<span class="empty-cell">—</span>')}
+      ${row("Dynamic", acDynamicCell(m.dynamic))}
+      <div style="margin-top:var(--space-6);">
+        <div style="color:var(--text-secondary);font-size:13px;line-height:16px;letter-spacing:.2px;margin-bottom:var(--space-2);">Описание</div>
+        <div style="font-size:15px;line-height:22px;letter-spacing:.2px;white-space:pre-wrap;">${escapeHtml(m.desc)}</div>
+      </div>
+    </div>
+    <div class="side-foot">
+      <button class="btn btn-outline" data-action="ac-copy-method-desc">${icon("copy")} Скопировать описание</button>
+      <button class="btn btn-primary" data-action="close-side">Закрыть</button>
+    </div>
+  `;
+}
+
 function SidePanelWrap(){
   const sp = state.sidePanel;
   let inner = "";
@@ -12847,6 +13065,7 @@ function SidePanelWrap(){
   else if(sp.type==="usecase") inner = UsecasePanel();
   else if(sp.type==="uc-dynamic") inner = UcDynamicPanel();
   else if(sp.type==="uc-cj-link") inner = UcCjLinkPanel();
+  else if(sp.type==="ac-method-desc") inner = AcMethodDescPanel();
   else if(sp.type && sp.type.indexOf("hld-")===0) inner = HldFlowPanel();
   const enterCls = sp._entered ? "" : " enter";
   sp._entered = true;
@@ -13250,6 +13469,7 @@ function handleInput(el){
   else if(el.id==="acRelatedSearch"){ state.appcat.relatedSearch = el.value; render(); reFocus("acRelatedSearch"); }
   else if(el.id==="acE2eSearch"){ state.appcat.e2eSearch = el.value; render(); reFocus("acE2eSearch"); }
   else if(el.id==="acE2eUcSearch"){ state.appcat.e2eUcSearch = el.value; render(); reFocus("acE2eUcSearch"); }
+  else if(el.id==="acCjSearch"){ state.appcat.cjSearch = el.value; render(); reFocus("acCjSearch"); }
   else if(el.id==="acSrcSourceInput"){
     state.appcat.sourceEditor.values.source = el.value;
     state.appcat.sourceEditor.sourceOpen = el.value.trim().length>0 && el.value!=="Prometheus-Observability";
@@ -14224,17 +14444,34 @@ function handleAction(action, el){
       break;
     case "ac-back-to-list": state.appcat.detailId = null; render(); break;
     case "ac-set-e2e-sub": state.appcat.e2eSub = el.dataset.sub; render(); break;
-    case "ac-e2e-method-filter": state.appcat.e2eMethodFilter = el.dataset.value; state.popover=null; render(); break;
-    case "ac-e2e-source-filter": state.appcat.e2eSourceFilter = el.dataset.value; state.popover=null; render(); break;
-    case "ac-reset-e2e": state.appcat.e2eSearch=""; state.appcat.e2eMethodFilter="Все"; state.appcat.e2eSourceFilter="Все"; render(); break;
     case "ac-e2e-sort": state.appcat.e2eSort = acToggleSort(state.appcat.e2eSort, el.dataset.key); render(); break;
-    case "ac-e2e-uc-mstatus-filter": state.appcat.e2eUcMethodStatusFilter = el.dataset.value; state.popover=null; render(); break;
-    case "ac-e2e-uc-cstatus-filter": state.appcat.e2eUcCallStatusFilter = el.dataset.value; state.popover=null; render(); break;
-    case "ac-reset-e2e-uc": state.appcat.e2eUcSearch=""; state.appcat.e2eUcMethodStatusFilter="Все"; state.appcat.e2eUcCallStatusFilter="Все"; render(); break;
     case "ac-e2e-uc-sort": state.appcat.e2eUcSort = acToggleSort(state.appcat.e2eUcSort, el.dataset.key); render(); break;
+    case "ac-cj-sort": state.appcat.cjSort = acToggleSort(state.appcat.cjSort, el.dataset.key); render(); break;
+    case "ac-toggle-e2e": { const k=el.dataset.id; state.appcat.e2eExpanded[k]=!state.appcat.e2eExpanded[k]; render(); break; }
+    case "ac-toggle-e2e-uc": { const k=el.dataset.id; state.appcat.e2eUcExpanded[k]=!state.appcat.e2eUcExpanded[k]; render(); break; }
+    case "ac-toggle-cj": { const k=el.dataset.id; state.appcat.cjExpanded[k]=!state.appcat.cjExpanded[k]; render(); break; }
+    case "ac-clear-e2e-search": state.appcat.e2eSearch=""; render(); reFocus("acE2eSearch"); break;
+    case "ac-clear-e2e-uc-search": state.appcat.e2eUcSearch=""; render(); reFocus("acE2eUcSearch"); break;
+    case "ac-clear-cj-search": state.appcat.cjSearch=""; render(); reFocus("acCjSearch"); break;
     case "ac-open-e2e-process": showToast(`Переход в E2E-сценарий «${el.dataset.code}» в Каталоге Е2Е — вне периметра прототипа`); break;
     case "ac-open-e2e-uc": showToast(`Переход в Use Case «${el.dataset.code}» — вне периметра прототипа`); break;
     case "ac-open-e2e-dynamic": showToast(`Dynamic-диаграмма «${el.dataset.id}» — вне периметра прототипа`); break;
+    case "ac-open-cj": showToast(`Переход в клиентский путь «${el.dataset.code}» в Каталоге Е2Е — вне периметра прототипа`); break;
+    /* Описание вызова открываем в боковой панели: обрезанный текст в ячейке не
+       прочитать целиком и не скопировать, а его забирают себе в задачу. */
+    case "ac-open-method-desc": {
+      const uc = AC_E2E_UC_CASES.find(c=>c.code===el.dataset.uc);
+      const m = uc && uc.methods.find(x=>x.method===el.dataset.method);
+      if(m) state.sidePanel = {type:"ac-method-desc", ucCode:uc.code, ucName:uc.name, method:m};
+      render();
+      break;
+    }
+    case "ac-copy-method-desc": {
+      const txt = state.sidePanel.method.desc;
+      if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).catch(()=>{});
+      showToast("Описание скопировано");
+      break;
+    }
     case "ac-set-tab": state.appcat.tab = el.dataset.tab; render(); break;
     case "ac-set-general-sub": state.appcat.generalSub = el.dataset.sub; render(); break;
     case "ac-toggle-pipeline": { const k=el.dataset.id; state.appcat.pipelineExpanded[k]=!state.appcat.pipelineExpanded[k]; render(); break; }
