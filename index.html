@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261007-114759">
+<meta name="beeatlas-build" content="20261008-102452">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -12096,6 +12096,7 @@ function startUcWizard(projectId, opts){
       fileDragOver: false,
       stages: UC_IMPORT_STAGES.map(s=>Object.assign({status:"pending"}, s)),
       parts: [],
+      partPage: 0,
     },
   };
   render();
@@ -12341,6 +12342,13 @@ function UcStepResult(w){
   const unresolvedParts = parts.filter(x=>!x.mapped && !x.decision);
   const resolvedParts = parts.filter(x=>x.mapped || x.decision);
   const unmappedParts = parts.filter(x=>!x.mapped);
+  // Несмаппированные части разбираются по одной — ровно как кандидаты ТС в агенте оценки:
+  // пагинатор, прогресс маппинга и счётчики по принятым решениям.
+  const partPage = Math.min(Math.max(w.data.partPage||0, 0), Math.max(unmappedParts.length-1, 0));
+  const currentPart = unmappedParts[partPage];
+  const decidedParts = unmappedParts.filter(x=>x.decision).length;
+  const partPct = unmappedParts.length ? Math.round(decidedParts / unmappedParts.length * 100) : 0;
+  const partCounts = ucPartDecisionCounts(unmappedParts);
   return `
     <div style="width:100%;">
     ${UseCaseCjCard(preview)}
@@ -12393,9 +12401,32 @@ function UcStepResult(w){
       <h3 style="margin:0;font-size:15px;">Несмаппированные части</h3>
       <span style="font-size:13px;color:var(--text-secondary);">Кол-во частей: ${unmappedParts.length}</span>
     </div>
-    ${unmappedParts.length ? `<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-5);">${unmappedParts.map(x=>x.decision ? UcResolvedUnmappedCard(x) : UcUnmappedPartCard(x)).join("")}</div>` : `<div class="card empty-state" style="padding:var(--space-7) var(--space-5);"><p style="color:var(--text-secondary);margin:0;">Несопоставленных частей не осталось</p></div>`}
+    ${unmappedParts.length ? `
+      <div class="tc-toolbar">
+        <div class="tc-pager">
+          <button class="pg-btn" data-action="uc-part-page" data-dir="-1" ${partPage===0?"disabled":""}>${icon("chevronLeft")}</button>
+          <span class="pg-pos">${partPage+1}/${unmappedParts.length}</span>
+          <button class="pg-btn" data-action="uc-part-page" data-dir="1" ${partPage>=unmappedParts.length-1?"disabled":""}>${icon("chevronRight")}</button>
+        </div>
+        <span class="tc-mapping">Маппинг: ${decidedParts} из ${unmappedParts.length} — ${partPct}%</span>
+        <span class="tc-counters">
+          <span>В спецификации: <b>${partCounts.existing}</b></span>
+          <span>Вне спецификации: <b>${partCounts.specified}</b></span>
+          <span>К разработке: <b>${partCounts.planned}</b></span>
+          <span>Не вызов: <b>${partCounts.notcall}</b></span>
+        </span>
+      </div>
+      ${currentPart ? (currentPart.decision ? UcResolvedUnmappedCard(currentPart) : UcUnmappedPartCard(currentPart)) : ""}
+    ` : `<div class="card empty-state" style="padding:var(--space-7) var(--space-5);"><p style="color:var(--text-secondary);margin:0;">Несопоставленных частей не осталось</p></div>`}
     </div>
   `;
+}
+
+// Счётчики решений по несмаппированным частям: куда каждая из них ушла.
+function ucPartDecisionCounts(parts){
+  const c = {existing:0, specified:0, planned:0, notcall:0};
+  parts.forEach(x=>{ if(x.decision && c[x.decision]!==undefined) c[x.decision]++; });
+  return c;
 }
 
 // A part stays visible here after its decision is saved (не пропадает из списка) — только
@@ -12556,6 +12587,7 @@ function ucPreviewFromWizard(w){
 function ucWizardRestart(){
   const w = state.ucWizard;
   w.data.parts = [];
+  w.data.partPage = 0;
   w.data.stages = UC_IMPORT_STAGES.map(s=>Object.assign({status:"pending"}, s));
   w.stepIndex = UC_WIZARD_STEPS.findIndex(s=>s.key==="setup");
   render();
@@ -12580,6 +12612,7 @@ function ucWizardRunImport(){
       w.timer = null;
       w.importing = false;
       w.data.parts = UC_IMPORT_PART_POOL.map((x,idx)=>Object.assign({id:uid("part"), part:"P-0"+(idx+1)}, x));
+      w.data.partPage = 0;
       render();
       setTimeout(bindTocScroll,30);
     }
@@ -14088,6 +14121,12 @@ function handleAction(action, el){
         part.tcCode = null;
         part.dynamic = null;
       }
+      render(); break;
+    }
+    case "uc-part-page": {
+      const w = state.ucWizard;
+      const n = w.data.parts.filter(x=>!x.mapped).length;
+      w.data.partPage = Math.min(Math.max((w.data.partPage||0) + Number(el.dataset.dir), 0), Math.max(n-1,0));
       render(); break;
     }
     case "uc-reset-part": {
