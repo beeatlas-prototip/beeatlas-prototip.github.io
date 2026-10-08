@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261008-102452">
+<meta name="beeatlas-build" content="20261008-103028">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -5963,7 +5963,7 @@ const DS_ICONS = {
   moreVertical:'more_vert', info:'info_circled', download:'download', gear:'settings',
   externalLink:'open_in_window', eye:'eye', zoomIn:'zoom_in', zoomOut:'zoom_out',
   minimize:'collapse', gitBranch:'split', gitMerge:'merge', trash:'delete', history:'clock',
-  filter:'filter', copy:'copy', expand:'expand'
+  filter:'filter', copy:'copy', expand:'expand', rulerPencil:'ruler_pencil'
 };
 function icon(name){
   const ds = DS_ICONS[name];
@@ -6102,7 +6102,7 @@ const NAV_GROUPS = [
       desc:"Это сводка автоматических проверок, которая показывает соответствие архитектуры стандартам."},
   ]},
   {label:"Архитектура решения", color:"gray", items:[
-    {id:"projects", label:"Проекты", icon:"mail", filled:true,
+    {id:"projects", label:"Проекты", icon:"rulerPencil", filled:true,
       desc:"Рабочее место для работы над проектами архитектуры решений — от оценки до публикации HLD."},
     {id:"companyarch", label:"Управление метамоделью", icon:"network", filled:true,
       desc:"Инструмент для оценки влияния сбойных элементов на бизнес-процессы компании."},
