@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261008-191014">
+<meta name="beeatlas-build" content="20261008-193238">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -992,7 +992,7 @@
   .home-mine-fill{height:100%;background:var(--yellow);border-radius:var(--size-border-radius-x2);}
   .home-mine-foot{margin-top:auto;display:flex;align-items:center;gap:var(--space-1);
     color:var(--blue);font-size:15px;line-height:18px;letter-spacing:.2px;cursor:pointer;padding-top:var(--space-2);}
-  .home-mine-foot .beeline-icons{width:16px;height:16px;font-size:16px;}
+  .home-mine-foot .beeline-icons{width:18px;height:18px;font-size:18px;}
   .home-mine-foot:hover{text-decoration:underline;}
 
   /* ═══ Сервисы ═══ цветная точка группы, счётчик готовых разделов, стрелка по наведению
@@ -1068,8 +1068,8 @@
   /* ДС Label: height 24, radius 12, padding 8, текст 15/500/20/0.2 */
   .badge{display:inline-flex;align-items:center;gap:var(--size-spacing-x1);height:24px;padding:0 var(--size-spacing-x2);border-radius:var(--size-border-radius-x6);
     font-size:15px;font-weight:500;line-height:20px;letter-spacing:.2px;white-space:nowrap;}
-  .badge svg{width:13px;height:13px;}
-  .badge .beeline-icons{width:13px;height:13px;font-size:13px;}
+  .badge svg{width:18px;height:18px;}
+  .badge .beeline-icons{width:18px;height:18px;font-size:18px;}
   .badge.green{background:var(--green-bg);color:var(--green-text);}
   .badge.gray{background:var(--gray-bg);color:var(--gray-text);}
   .badge.orange{background:var(--orange-bg);color:var(--orange-text);}
@@ -1350,8 +1350,8 @@
   .proj-filters .reset-link{flex:0 0 auto;white-space:nowrap;}
   .select-wrap{position:relative;width:180px;}
   .select-wrap select{appearance:none;-webkit-appearance:none;cursor:pointer;padding-top:22px;padding-bottom:6px;padding-right:var(--space-8);line-height:20px;}
-  .select-wrap svg{position:absolute;right:var(--space-4);top:50%;transform:translateY(-50%);width:16px;height:16px;pointer-events:none;color:var(--text-secondary);}
-  .select-wrap .beeline-icons{position:absolute;right:var(--space-4);top:50%;transform:translateY(-50%);width:16px;height:16px;pointer-events:none;color:var(--text-secondary);font-size:16px;}
+  .select-wrap svg{position:absolute;right:var(--space-4);top:50%;transform:translateY(-50%);width:18px;height:18px;pointer-events:none;color:var(--text-secondary);}
+  .select-wrap .beeline-icons{position:absolute;right:var(--space-4);top:50%;transform:translateY(-50%);width:18px;height:18px;pointer-events:none;color:var(--text-secondary);font-size:18px;}
   .select-wrap .ffield-label{top:6px;font-size:13px;color:var(--text-secondary);transform:none;}
   .archsuggest-item{padding:var(--space-3) var(--space-5);cursor:pointer;}
   .archsuggest-item:hover{background:var(--bg-alt);}
@@ -1375,8 +1375,8 @@
   .suggest-empty{padding:var(--space-6);color:var(--text-secondary);font-size:15px;}
   .suggest-item{padding:var(--space-3) var(--space-5);cursor:pointer;display:flex;align-items:center;gap:var(--space-3);}
   .suggest-item:hover{background:var(--bg-alt);}
-  .suggest-item svg{width:16px;height:16px;color:var(--text-tertiary);flex:0 0 auto;}
-  .suggest-item .beeline-icons{width:16px;height:16px;color:var(--text-tertiary);flex:0 0 auto;font-size:16px;}
+  .suggest-item svg{width:18px;height:18px;color:var(--text-tertiary);flex:0 0 auto;}
+  .suggest-item .beeline-icons{width:18px;height:18px;color:var(--text-tertiary);flex:0 0 auto;font-size:18px;}
   .suggest-item .s-name{font-size:15px;color:var(--text);}
 
   /* table */
@@ -1414,7 +1414,7 @@
      проявляется только по ховеру, чтобы шапка не рябила. */
   thead th.th-sort{cursor:pointer;user-select:none;}
   .th-sort-inner{display:inline-flex;align-items:center;gap:var(--space-2);}
-  .th-sort-arrow{display:inline-flex;font-size:16px;opacity:0;transition:opacity .12s ease,transform .12s ease;}
+  .th-sort-arrow{display:inline-flex;font-size:18px;opacity:0;transition:opacity .12s ease,transform .12s ease;}
   thead th.th-sort:hover .th-sort-arrow{opacity:.38;}
   thead th.th-sort.on .th-sort-arrow{opacity:1;}
   thead th.th-sort.on.desc .th-sort-arrow{transform:rotate(180deg);}
@@ -1628,7 +1628,7 @@
     max-width:560px;margin:0 auto;padding:var(--space-10) var(--space-5) var(--space-5);}
   .wiz-error .we-ico{width:64px;height:64px;border-radius:var(--size-border-radius-circle);
     display:flex;align-items:center;justify-content:center;margin-bottom:var(--space-6);}
-  .wiz-error .we-ico svg{width:28px;height:28px;}
+  .wiz-error .we-ico svg{width:24px;height:24px;}
   .wiz-error.status-error .we-ico{background:var(--color-status-error-background);color:var(--color-status-error);}
   .wiz-error.status-warning .we-ico{background:var(--color-status-warning-background);color:var(--color-status-warning);}
   .wiz-error h2{font-size:20px;line-height:28px;letter-spacing:.2px;font-weight:500;margin:0 0 var(--space-3);}
@@ -1691,8 +1691,8 @@
   .app-chip-track::-webkit-scrollbar{display:none;}
   .app-chip-track .pill-item{flex:0 0 auto;max-width:220px;overflow:hidden;text-overflow:ellipsis;}
   .chip-arrow{width:24px;height:24px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);cursor:pointer;}
-  .chip-arrow svg{width:16px;height:16px;}
-  .chip-arrow .beeline-icons{width:16px;height:16px;font-size:16px;}
+  .chip-arrow svg{width:18px;height:18px;}
+  .chip-arrow .beeline-icons{width:18px;height:18px;font-size:18px;}
 
   .bc-list{display:flex;flex-direction:column;gap:var(--space-3);margin-top:var(--space-5);}
   /* ДС Expansion panel: radius 16, шапка 12/24, контент 16/24 */
@@ -1735,8 +1735,8 @@
     background:var(--color-background-base);color:var(--color-text-active);max-width:640px;}
   .coach-note .close{cursor:pointer;flex:0 0 auto;opacity:.7;display:flex;}
   .coach-note .close:hover{opacity:1;}
-  .coach-note .close svg{width:15px;height:15px;}
-  .coach-note .close .beeline-icons{width:15px;height:15px;font-size:15px;}
+  .coach-note .close svg{width:18px;height:18px;}
+  .coach-note .close .beeline-icons{width:18px;height:18px;font-size:18px;}
 
   .with-toc{display:flex;gap:var(--space-7);align-items:flex-start;}
   .toc-col{width:230px;flex:0 0 auto;position:sticky;top:20px;}
@@ -1771,14 +1771,14 @@
   /* ДС Checkbox: 24×24, radius 6 */
   .checkbox{width:24px;height:24px;border-radius:var(--size-border-radius-x3);border:1.5px solid var(--border-strong);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto;background:var(--bg);}
   .checkbox.checked{background:var(--yellow);border-color:var(--yellow);}
-  .checkbox svg{width:16px;height:16px;display:none;color:var(--color-text-black-active);}
-  .checkbox .beeline-icons{width:16px;height:16px;display:none;color:var(--color-text-black-active);font-size:16px;}
+  .checkbox svg{width:18px;height:18px;display:none;color:var(--color-text-black-active);}
+  .checkbox .beeline-icons{width:18px;height:18px;display:none;color:var(--color-text-black-active);font-size:18px;}
   .checkbox.checked svg{display:block;}
   .checkbox.checked .beeline-icons{display:block;}
   .del-x{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);cursor:pointer;}
   .del-x:hover{background:var(--bg-alt);color:var(--text);}
-  .del-x svg{width:15px;height:15px;}
-  .del-x .beeline-icons{width:15px;height:15px;font-size:15px;}
+  .del-x svg{width:18px;height:18px;}
+  .del-x .beeline-icons{width:18px;height:18px;font-size:18px;}
 
   .risk-card{border:1px solid var(--border);border-radius:var(--radius);padding:var(--space-5) var(--space-6);display:flex;justify-content:space-between;align-items:flex-start;gap:var(--space-4);margin-bottom:var(--space-4);}
   .risk-card .r-name{font-weight:500;font-size:15px;line-height:20px;letter-spacing:.2px;margin-bottom:var(--space-2);}
@@ -1856,8 +1856,8 @@
   /* ДС Stepper: number 24×24, отступ до текста 12, пройденный шаг — цвета status-success */
   .step .circle{width:24px;height:24px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;line-height:16px;color:var(--text-secondary);flex:0 0 auto;}
   .step.done .circle{background:var(--color-status-success-background);border-color:var(--color-status-success);color:var(--color-status-success);}
-  .step.done .circle svg{width:15px;height:15px;}
-  .step.done .circle .beeline-icons{width:15px;height:15px;font-size:15px;}
+  .step.done .circle svg{width:18px;height:18px;}
+  .step.done .circle .beeline-icons{width:18px;height:18px;font-size:18px;}
   .step.active .circle{background:var(--yellow);border-color:var(--yellow);color:var(--color-text-black-active);font-weight:500;}
   .step .stxt{display:flex;flex-direction:column;justify-content:center;}
   .step .stxt .s-lbl{font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);}
@@ -2026,7 +2026,10 @@
   .cj-card-field{font-size:13px;color:var(--text-tertiary);margin-bottom:var(--space-1);}
   .cj-card-field-val{font-size:13px;color:var(--text);margin-bottom:var(--space-3);line-height:1.4;}
   .cj-card-tags{display:flex;flex-wrap:wrap;gap:var(--space-2);margin-bottom:var(--space-4);}
-  .cj-tag{background:var(--gray-bg);color:var(--gray-text);border-radius:20px;padding:2px var(--space-3);font-size:13px;font-weight:600;}
+  /* Label по ДС (components/label): 24 / радиус 12 / 15-500-20 / паддинг 8 — как .badge выше */
+  .cj-tag{background:var(--gray-bg);color:var(--gray-text);border-radius:var(--size-border-radius-x6);
+    height:24px;display:inline-flex;align-items:center;padding:0 var(--size-spacing-x2);
+    font-size:15px;line-height:20px;font-weight:500;}
   .cj-card-date{margin-top:auto;padding-top:var(--space-3);border-top:1px solid var(--border);font-size:13px;color:var(--text-tertiary);}
 
   /* ---------- CJ detail overlay ---------- */
@@ -2043,8 +2046,8 @@
   .cj-menu{position:absolute;top:42px;left:0;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow);min-width:220px;z-index:60;padding:var(--space-2);}
   .cj-menu-item{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3);border-radius:8px;font-size:15px;color:var(--text);cursor:pointer;}
   .cj-menu-item:hover{background:var(--bg-alt);}
-  .cj-menu-item svg{width:17px;height:17px;color:var(--text-secondary);}
-  .cj-menu-item .beeline-icons{width:17px;height:17px;color:var(--text-secondary);font-size:17px;}
+  .cj-menu-item svg{width:18px;height:18px;color:var(--text-secondary);}
+  .cj-menu-item .beeline-icons{width:18px;height:18px;color:var(--text-secondary);font-size:18px;}
 
   /* ---------- CJ branches (design/develop/main + user) ---------- */
   /* Меню действий Use Case (ДС: components/menu). Все действия страницы — переключение
@@ -2078,8 +2081,8 @@
     color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.4px;}
   /* Бейдж ветки в заголовке — ДС badge, тип fade, семантика neutral (.badge.gray).
      Рядом уже стоит бейдж статуса, поэтому fill здесь не годится по правилу ДС. */
-  .uc-branch-badge svg{width:15px;height:15px;}
-  .uc-branch-badge .beeline-icons{width:15px;height:15px;font-size:15px;}
+  .uc-branch-badge svg{width:18px;height:18px;}
+  .uc-branch-badge .beeline-icons{width:18px;height:18px;font-size:18px;}
   /* Блокировка и прогресс объединения — строкой под заголовком, одной группой. */
   .uc-branch-status{display:flex;align-items:center;gap:var(--space-4);flex-wrap:wrap;margin-bottom:var(--space-6);}
   .cj-branch-bar{flex:0 0 auto;display:flex;align-items:center;gap:var(--space-4);padding:var(--space-3) var(--space-6);border-bottom:1px solid var(--border);background:var(--bg-alt);flex-wrap:wrap;}
@@ -2089,8 +2092,8 @@
   .cj-branch-toggle-pill{position:absolute;top:0;left:50%;transform:translate(-50%,-50%);display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;border:none;background:var(--bg);box-shadow:var(--shadow);font-size:13px;font-weight:500;color:var(--text-secondary);cursor:pointer;white-space:nowrap;}
   .cj-branch-toggle-pill:hover{color:var(--text);}
   .cj-branch-toggle-pill .chev{display:flex;transition:transform .12s ease;}
-  .cj-branch-toggle-pill .chev svg{width:14px;height:14px;}
-  .cj-branch-toggle-pill .chev .beeline-icons{width:14px;height:14px;font-size:14px;}
+  .cj-branch-toggle-pill .chev svg{width:18px;height:18px;}
+  .cj-branch-toggle-pill .chev .beeline-icons{width:18px;height:18px;font-size:18px;}
   .cj-branch-toggle-pill .chev.open{transform:rotate(180deg);}
 
   /* field-styled custom select — trigger looks exactly like .input/.select (16px inset for
@@ -2100,18 +2103,21 @@
   .cj-branch-bar > .cj-select-field{width:260px;}
   .cj-branch-bar > .cj-select-field .cj-select-trigger{min-width:0;}
   .cj-select-field.wide{display:block;width:100%;}
+  /* Триггер повторяет Text field по ДС (components/textfield): высота medium 48,
+     паддинг 0/16, радиус 12, текст Body 2 — 17/22. До этого выходило 42–44px на паддингах. */
   .cj-select-trigger{
     display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);width:100%;min-width:160px;
+    height:var(--size-control-height-medium);
     border:1px solid transparent;background:var(--input-bg);border-radius:var(--radius-sm);
-    padding:var(--space-3) var(--space-4);font-size:15px;color:var(--text);text-align:left;
+    padding:0 var(--size-spacing-x4);font-size:17px;line-height:22px;color:var(--text);text-align:left;
   }
   .cj-select-trigger:hover{background:var(--color-control-background-hover);}
   .cj-select-trigger.open:hover{background:var(--bg);}
   /* open = same treatment as this app's other field-focus state (.ffield-box.focus) —
      surfaced background + a solid border, for consistency rather than a one-off style. */
   .cj-select-trigger.open{background:var(--bg);border-color:var(--text);}
-  .cj-select-trigger svg{width:16px;height:16px;color:var(--text-secondary);flex:0 0 auto;transition:transform .12s ease;}
-  .cj-select-trigger .beeline-icons{width:16px;height:16px;color:var(--text-secondary);flex:0 0 auto;transition:transform .12s ease;font-size:16px;}
+  .cj-select-trigger svg{width:18px;height:18px;color:var(--text-secondary);flex:0 0 auto;transition:transform .12s ease;}
+  .cj-select-trigger .beeline-icons{width:18px;height:18px;color:var(--text-secondary);flex:0 0 auto;transition:transform .12s ease;font-size:18px;}
   .cj-select-trigger.open svg{transform:rotate(180deg);}
   .cj-select-trigger.open .beeline-icons{transform:rotate(180deg);}
   /* menu is its own fully-rounded floating panel positioned under the field — небольшой
@@ -2129,8 +2135,8 @@
   .cj-select-item .name{flex:1;}
   .cj-select-item .tag{font-size:10px;color:var(--text-tertiary);border:1px solid var(--border);border-radius:6px;padding:1px 6px;}
   .cj-select-item .check{color:var(--text);flex:0 0 auto;display:flex;}
-  .cj-select-item .check svg{width:16px;height:16px;}
-  .cj-select-item .check .beeline-icons{width:16px;height:16px;font-size:16px;}
+  .cj-select-item .check svg{width:18px;height:18px;}
+  .cj-select-item .check .beeline-icons{width:18px;height:18px;font-size:18px;}
 
   .cj-branch-del-confirm{background:var(--bg-alt);border:1px solid var(--border-strong);border-radius:8px;padding:var(--space-3);margin:2px 0;}
   .cj-branch-del-confirm .txt{font-size:13px;color:var(--text);margin-bottom:var(--space-2);line-height:1.4;}
@@ -2138,8 +2144,8 @@
 
   .cj-merge-title-wrap{position:relative;display:flex;align-items:center;gap:6px;}
   .cj-merge-help-btn{width:24px;height:24px;}
-  .cj-merge-help-btn svg{width:16px;height:16px;}
-  .cj-merge-help-btn .beeline-icons{width:16px;height:16px;font-size:16px;}
+  .cj-merge-help-btn svg{width:18px;height:18px;}
+  .cj-merge-help-btn .beeline-icons{width:18px;height:18px;font-size:18px;}
   /* Настоящий Popover из ДС (развёрнутая подсказка): фон background-low, радиус 16px,
      padding 16 по бокам и сверху / 8 снизу, elevation-high, инвертированная тема. */
   .cj-merge-help-popover{
@@ -2237,8 +2243,8 @@
   .cj-stage-cell.wrap{align-items:flex-start;}
   .cj-stage-unfilled{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--space-4);padding:var(--space-8) var(--space-5);border-right:1px solid var(--border);color:var(--text-tertiary);font-size:13px;}
   .cj-stage-unfilled-add{width:36px;height:36px;border-radius:50%;border:1px solid var(--border-strong);background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--text-secondary);}
-  .cj-stage-unfilled-add svg{width:17px;height:17px;}
-  .cj-stage-unfilled-add .beeline-icons{width:17px;height:17px;font-size:17px;}
+  .cj-stage-unfilled-add svg{width:18px;height:18px;}
+  .cj-stage-unfilled-add .beeline-icons{width:18px;height:18px;font-size:18px;}
   .cj-stage-unfilled-add:hover{background:var(--bg-alt);}
   .cj-below-links{position:sticky;left:0;background:var(--bg);z-index:6;padding:var(--space-4) 0 0 var(--space-4);display:flex;gap:var(--space-5);font-size:15px;}
   .cj-below-links a{color:var(--blue);}
@@ -2253,28 +2259,28 @@
   .cj-scenario-chip:hover{background:var(--bg-alt);}
   .cj-scenario-body{border-top:1px solid var(--border);background:var(--bg-alt);padding:var(--space-3);display:flex;flex-direction:column;gap:var(--space-2);}
   .cj-scenario-chip .ic{width:26px;height:26px;border-radius:50%;background:var(--blue-bg);color:var(--blue);display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
-  .cj-scenario-chip .ic svg{width:15px;height:15px;}
-  .cj-scenario-chip .ic .beeline-icons{width:15px;height:15px;font-size:15px;}
+  .cj-scenario-chip .ic svg{width:18px;height:18px;}
+  .cj-scenario-chip .ic .beeline-icons{width:18px;height:18px;font-size:18px;}
   .cj-scenario-chip .txt{flex:1;min-width:0;}
   .cj-scenario-chip .txt .n{font-size:13px;font-weight:600;}
   .cj-scenario-chip .txt .id{font-size:13px;color:var(--text-tertiary);}
   .cj-scenario-chip .pencil{width:26px;height:26px;border-radius:var(--size-border-radius-x4);display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);flex:0 0 auto;}
   .cj-scenario-chip .pencil:hover{background:var(--bg-alt);color:var(--text);}
-  .cj-scenario-chip .pencil svg{width:15px;height:15px;}
-  .cj-scenario-chip .pencil .beeline-icons{width:15px;height:15px;font-size:15px;}
+  .cj-scenario-chip .pencil svg{width:18px;height:18px;}
+  .cj-scenario-chip .pencil .beeline-icons{width:18px;height:18px;font-size:18px;}
   .cj-scenario-chip .chev{width:16px;height:16px;color:var(--text-tertiary);flex:0 0 auto;}
-  .cj-scenario-chip .chev svg{width:16px;height:16px;}
-  .cj-scenario-chip .chev .beeline-icons{width:16px;height:16px;font-size:16px;}
-  .cj-field-col-head svg{width:14px;height:14px;}
-  .cj-field-col-head .beeline-icons{width:14px;height:14px;font-size:14px;}
-  .cj-stage-head svg{width:16px;height:16px;}
-  .cj-stage-head .beeline-icons{width:16px;height:16px;font-size:16px;}
+  .cj-scenario-chip .chev svg{width:18px;height:18px;}
+  .cj-scenario-chip .chev .beeline-icons{width:18px;height:18px;font-size:18px;}
+  .cj-field-col-head svg{width:18px;height:18px;}
+  .cj-field-col-head .beeline-icons{width:18px;height:18px;font-size:18px;}
+  .cj-stage-head svg{width:18px;height:18px;}
+  .cj-stage-head .beeline-icons{width:18px;height:18px;font-size:18px;}
 
   .cj-source-list{display:flex;flex-direction:column;gap:var(--space-2);}
   .cj-source-badge{display:flex;align-items:center;gap:var(--space-2);border:1px solid var(--border);border-radius:10px;padding:var(--space-2) var(--space-3);cursor:pointer;background:var(--bg);}
   .cj-source-badge:hover{border-color:var(--border-strong);}
-  .cj-source-badge svg{width:15px;height:15px;color:var(--text-tertiary);flex:0 0 auto;}
-  .cj-source-badge .beeline-icons{width:15px;height:15px;color:var(--text-tertiary);flex:0 0 auto;font-size:15px;}
+  .cj-source-badge svg{width:18px;height:18px;color:var(--text-tertiary);flex:0 0 auto;}
+  .cj-source-badge .beeline-icons{width:18px;height:18px;color:var(--text-tertiary);flex:0 0 auto;font-size:18px;}
   .cj-source-badge .dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto;}
   .cj-source-badge .dot.manual{background:var(--gray-text);}
   .cj-source-badge .dot.usecase{background:var(--blue);}
@@ -2287,12 +2293,12 @@
   .cj-source-badge.add .beeline-icons{color:var(--blue);}
   .cj-source-badge.add .lbl .n{color:var(--blue);}
   .cj-source-warn{display:flex;align-items:center;gap:var(--space-2);font-size:13px;color:var(--orange-text);background:var(--orange-bg);border-radius:8px;padding:var(--space-2) var(--space-3);}
-  .cj-source-warn svg{width:14px;height:14px;flex:0 0 auto;}
-  .cj-source-warn .beeline-icons{width:14px;height:14px;flex:0 0 auto;font-size:14px;}
+  .cj-source-warn svg{width:18px;height:18px;flex:0 0 auto;}
+  .cj-source-warn .beeline-icons{width:18px;height:18px;flex:0 0 auto;font-size:18px;}
 
   .cj-source-back{display:flex;align-items:center;gap:var(--space-1);color:var(--blue);font-size:13px;cursor:pointer;margin-bottom:var(--space-1);}
-  .cj-source-back svg{width:14px;height:14px;}
-  .cj-source-back .beeline-icons{width:14px;height:14px;font-size:14px;}
+  .cj-source-back svg{width:18px;height:18px;}
+  .cj-source-back .beeline-icons{width:18px;height:18px;font-size:18px;}
   .cj-call-card{border:1px solid var(--border);border-radius:10px;padding:var(--space-3) var(--space-4);background:var(--bg-alt);}
   .cj-call-card-title{font-size:10px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.03em;margin-bottom:var(--space-2);}
   /* Шапка карточки: заголовок и корзина в одной строке, заголовок переносится. */
@@ -2308,8 +2314,8 @@
   .cj-call-card .val{font-size:13px;color:var(--text);}
   .cj-call-card .val.link{color:var(--blue);}
   .readonly-note{display:flex;align-items:center;gap:var(--space-2);font-size:13px;color:var(--text-tertiary);}
-  .readonly-note svg{width:14px;height:14px;flex:0 0 auto;}
-  .readonly-note .beeline-icons{width:14px;height:14px;flex:0 0 auto;font-size:14px;}
+  .readonly-note svg{width:18px;height:18px;flex:0 0 auto;}
+  .readonly-note .beeline-icons{width:18px;height:18px;flex:0 0 auto;font-size:18px;}
   .readonly-note a{color:var(--blue);font-weight:600;}
   .cj-call-edit-group{border:1px solid var(--border);border-radius:10px;padding:var(--space-4);margin-bottom:var(--space-4);}
   .cj-call-edit-group:last-child{margin-bottom:0;}
@@ -2318,7 +2324,7 @@
   .cj-call-edit-title-row .cj-call-edit-title{margin-bottom:0;}
   .cj-call-edit-title-row .icon-btn{width:28px;height:28px;}
   .cj-call-edit-title-row .icon-btn svg{width:15px;height:15px;}
-  .cj-call-edit-title-row .icon-btn .beeline-icons{width:15px;height:15px;font-size:15px;}
+  .cj-call-edit-title-row .icon-btn .beeline-icons{width:18px;height:18px;font-size:18px;}
 
   @media (max-width:1100px){
     .agents-grid{grid-template-columns:repeat(2,1fr);}
@@ -2343,8 +2349,8 @@
 
   .exp-row-btn{width:22px;height:22px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);cursor:pointer;border-radius:6px;}
   .exp-row-btn:hover{background:var(--bg-hover);}
-  .exp-row-btn svg{width:16px;height:16px;transition:transform .12s;}
-  .exp-row-btn .beeline-icons{width:16px;height:16px;transition:transform .12s;font-size:16px;}
+  .exp-row-btn svg{width:18px;height:18px;transition:transform .12s;}
+  .exp-row-btn .beeline-icons{width:18px;height:18px;transition:transform .12s;font-size:18px;}
   .exp-row-btn.open svg{transform:rotate(90deg);}
   .exp-row-btn.open .beeline-icons{transform:rotate(90deg);}
   .exp-row-btn.none{visibility:hidden;}
@@ -2376,8 +2382,8 @@
   .tc-card .tc-domain-lbl{font-size:13px;color:var(--text-secondary);}
   .tc-card .tc-domain-val{font-size:13px;color:var(--blue);}
   .tc-card .tc-methods-head{display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-weight:600;font-size:15px;border-top:1px solid var(--border);padding-top:var(--space-3);}
-  .tc-card .tc-methods-head svg{width:16px;height:16px;color:var(--text-tertiary);transition:transform .12s;}
-  .tc-card .tc-methods-head .beeline-icons{width:16px;height:16px;color:var(--text-tertiary);transition:transform .12s;font-size:16px;}
+  .tc-card .tc-methods-head svg{width:18px;height:18px;color:var(--text-tertiary);transition:transform .12s;}
+  .tc-card .tc-methods-head .beeline-icons{width:18px;height:18px;color:var(--text-tertiary);transition:transform .12s;font-size:18px;}
   .tc-card .tc-methods-head.open svg{transform:rotate(180deg);}
   .tc-card .tc-methods-head.open .beeline-icons{transform:rotate(180deg);}
   .tc-card .tc-method-item{color:var(--blue);font-size:13px;padding:var(--space-2) 0;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;}
@@ -2400,11 +2406,11 @@
   .pipe-timeline .dot{width:10px;height:10px;border-radius:50%;background:var(--yellow);flex:0 0 auto;}
   .pipe-timeline .dot.pending{background:var(--border-strong);}
   .pipe-timeline .end{width:26px;height:26px;border-radius:50%;background:var(--green-text);color:#fff;display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
-  .pipe-timeline .end svg{width:14px;height:14px;}
-  .pipe-timeline .end .beeline-icons{width:14px;height:14px;font-size:14px;}
+  .pipe-timeline .end svg{width:18px;height:18px;}
+  .pipe-timeline .end .beeline-icons{width:18px;height:18px;font-size:18px;}
   .pipe-timeline .end.fail{background:var(--red-text);}
-  .pipe-timeline .end svg.x{width:14px;height:14px;}
-  .pipe-timeline .end .beeline-icons.x{width:14px;height:14px;font-size:14px;}
+  .pipe-timeline .end svg.x{width:18px;height:18px;}
+  .pipe-timeline .end .beeline-icons.x{width:18px;height:18px;font-size:18px;}
   .pipe-run-foot{margin-top:var(--space-2);font-size:13px;color:var(--text-secondary);}
 
   .obs-tree-row{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-3) var(--space-5);border-bottom:1px solid var(--border);font-size:15px;}
@@ -2416,8 +2422,8 @@
   .obs-tree-row .link-col{width:340px;color:var(--blue);}
   .obs-tree-row .edit-btn{width:28px;height:28px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);border-radius:6px;cursor:pointer;}
   .obs-tree-row .edit-btn:hover{background:var(--bg-hover);color:var(--text);}
-  .obs-tree-row .edit-btn svg{width:15px;height:15px;}
-  .obs-tree-row .edit-btn .beeline-icons{width:15px;height:15px;font-size:15px;}
+  .obs-tree-row .edit-btn svg{width:18px;height:18px;}
+  .obs-tree-row .edit-btn .beeline-icons{width:18px;height:18px;font-size:18px;}
   .obs-tree-group{border-left:3px solid var(--yellow);}
 
   .ac-radio-group{display:flex;flex-direction:column;gap:var(--space-4);margin-bottom:var(--space-6);}
@@ -2457,8 +2463,8 @@
   .graph-export-menu{position:absolute;left:0;top:calc(100% + 6px);background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow);padding:var(--space-2);min-width:140px;z-index:20;}
   .graph-export-menu-item{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-2) var(--space-3);border-radius:8px;font-size:15px;cursor:pointer;color:var(--text);white-space:nowrap;}
   .graph-export-menu-item:hover{background:var(--bg-alt);}
-  .graph-export-menu-item svg{width:16px;height:16px;}
-  .graph-export-menu-item .beeline-icons{width:16px;height:16px;font-size:16px;}
+  .graph-export-menu-item svg{width:18px;height:18px;}
+  .graph-export-menu-item .beeline-icons{width:18px;height:18px;font-size:18px;}
   .graph-canvas-pane.detail-open{border-right:none;border-top-right-radius:0;border-bottom-right-radius:0;}
   .graph-node-g{cursor:pointer;}
   .graph-node-g rect{transition:filter .12s, stroke-width .12s;}
@@ -2471,8 +2477,8 @@
   [data-theme="dark"] .graph-resize-handle:hover{background:rgba(255,255,255,.1);}
   .graph-panel-toggle{position:absolute;left:-13px;top:50%;transform:translateY(-50%);width:26px;height:40px;border:1px solid var(--border);background:var(--bg);border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:5;box-shadow:var(--shadow-sm);color:var(--text-secondary);}
   .graph-panel-toggle:hover{color:var(--text);background:var(--bg-alt);}
-  .graph-panel-toggle svg{width:16px;height:16px;}
-  .graph-panel-toggle .beeline-icons{width:16px;height:16px;font-size:16px;}
+  .graph-panel-toggle svg{width:18px;height:18px;}
+  .graph-panel-toggle .beeline-icons{width:18px;height:18px;font-size:18px;}
   .graph-detail{height:100%;width:100%;overflow-y:auto;background:var(--bg);border:1px solid var(--border);border-top-right-radius:var(--radius);border-bottom-right-radius:var(--radius);padding:var(--space-6);}
   .graph-detail .section:last-child{margin-bottom:0;}
   .graph-custom-node-card{border:1px solid var(--border);border-radius:var(--radius-sm);padding:var(--space-4);margin-bottom:var(--space-3);}
@@ -2493,8 +2499,8 @@
   .ac-crit-row .val{font-size:15px;font-weight:600;}
   .ac-desc{font-size:15px;line-height:1.5;color:var(--text);}
   .ac-desc-more{color:var(--blue);font-size:13px;cursor:pointer;margin-top:var(--space-2);display:inline-flex;align-items:center;gap:4px;}
-  .ac-desc-more svg{width:14px;height:14px;}
-  .ac-desc-more .beeline-icons{width:14px;height:14px;font-size:14px;}
+  .ac-desc-more svg{width:18px;height:18px;}
+  .ac-desc-more .beeline-icons{width:18px;height:18px;font-size:18px;}
   .ac-kv{display:flex;flex-direction:column;gap:var(--space-5);margin-bottom:var(--space-6);}
   .ac-kv-row{display:grid;grid-template-columns:220px 1fr;gap:var(--space-4);align-items:start;}
   .ac-kv-row .k{font-size:15px;color:var(--text-secondary);}
@@ -2526,8 +2532,8 @@
   .rp-project{border:1px solid var(--border);border-radius:var(--radius);margin-bottom:var(--space-4);overflow:hidden;}
   .rp-project-head{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-4) var(--space-5);cursor:pointer;font-size:15px;font-weight:700;}
   .rp-project-head:hover{background:var(--bg-hover);}
-  .rp-project-head svg:not(.exp-row-btn svg){width:16px;height:16px;color:var(--text-tertiary);}
-  .rp-project-head .beeline-icons:not(.exp-row-btn .beeline-icons){width:16px;height:16px;color:var(--text-tertiary);font-size:16px;}
+  .rp-project-head svg:not(.exp-row-btn svg){width:18px;height:18px;color:var(--text-tertiary);}
+  .rp-project-head .beeline-icons:not(.exp-row-btn .beeline-icons){width:18px;height:18px;color:var(--text-tertiary);font-size:18px;}
   .rp-project-title{flex:1;}
   .rp-uc-list{display:flex;flex-direction:column;gap:var(--space-4);padding:var(--space-5);background:var(--bg-alt);border-top:1px solid var(--border);}
   .rp-uc-card{padding:var(--space-4) var(--space-5);margin-bottom:0;}
@@ -2626,7 +2632,7 @@
 .e2ecat-scope a{color:var(--link);text-decoration:none;cursor:pointer;}
 .e2ecat-scope a:hover{text-decoration:underline;}
 .e2ecat-scope .icon{width:18px;height:18px;display:block;}
-.e2ecat-scope .icon-sm{width:14px;height:14px;}
+.e2ecat-scope .icon-sm{width:18px;height:18px;}
 
 /* ---------- layout ---------- */
 .e2ecat-scope .topbar{
@@ -2696,7 +2702,9 @@
 .e2ecat-scope .searchbox .clear-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;background:transparent;color:var(--text-tertiary);width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;}
 .e2ecat-scope .searchbox .clear-btn:hover{background:var(--border);color:var(--text);}
 .e2ecat-scope .chiprow{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
-.e2ecat-scope .chip{border:1px solid var(--border);background:var(--bg-panel);padding:7px 14px;border-radius:var(--radius-pill);font-size:13px;font-weight:600;color:var(--text-secondary);white-space:nowrap;}
+/* Chips по ДС (components/chips): высота 32, паддинг 12, текст 15/18, радиус 30 */
+.e2ecat-scope .chip{border:1px solid var(--border);background:var(--bg-panel);height:32px;display:inline-flex;align-items:center;
+  padding:0 12px;border-radius:var(--radius-pill);font-size:15px;line-height:18px;font-weight:500;color:var(--text-secondary);white-space:nowrap;}
 .e2ecat-scope .chip.on{background:var(--accent);border-color:var(--accent);color:var(--accent-text);}
 .e2ecat-scope .chip:hover:not(.on){background:var(--bg-hover);}
 
@@ -2927,8 +2935,8 @@
 .e2ecat-scope .elpill{display:inline-flex;align-items:center;gap:5px;font-size:13px;font-weight:700;padding:3px 10px;border-radius:var(--radius-pill);}
 .e2ecat-scope .elpill.ok{background:var(--success-bg);color:var(--success-text);}
 .e2ecat-scope .elpill.warn{background:var(--warn-bg);color:var(--warn-text);}
-.e2ecat-scope .elpill svg{width:13px;height:13px;}
-.e2ecat-scope .elpill .beeline-icons{width:13px;height:13px;font-size:13px;}
+.e2ecat-scope .elpill svg{width:18px;height:18px;}
+.e2ecat-scope .elpill .beeline-icons{width:18px;height:18px;font-size:18px;}
 
 /* Тот же Snackbar, что и глобальный .toast — цвета берём из токенов темы,
    инвертирование делает общее правило выше. */
@@ -3847,7 +3855,7 @@ function renderTopbar(){
     '</div>'+
     '<div class="topbar-spacer"></div>'+
     '<div class="topbar-right">'+
-      (showDev?('<div class="devlinks"><a onclick="notAvail()">'+ic('doc',16)+' Документация</a><a onclick="notAvail()">'+ic('code',16)+' WebIDE</a></div>'):'')+
+      (showDev?('<div class="devlinks"><a onclick="notAvail()">'+ic('doc',18)+' Документация</a><a onclick="notAvail()">'+ic('code',18)+' WebIDE</a></div>'):'')+
       '<button class="iconbtn" title="Тема" onclick="toggleTheme()">'+ic('moon')+'</button>'+
       '<div style="position:relative;">'+
         '<button class="iconbtn" title="Уведомления" onclick="toggleNotif()">'+ic('bell')+'</button>'+
@@ -3894,8 +3902,8 @@ function renderRail(){
 /* ---------------- catalog (left panel) ---------------- */
 function renderCatalog(){
   var head='<div class="catalog-head">'+
-    '<div class="catalog-title">Каталог Е2Е-сценариев</div>'+
-    '<button class="btn primary" style="width:100%;justify-content:center;margin-bottom:12px;" onclick="openCreateE2ePanel()">'+ic('plus',16)+' Создать шаг Е2Е-сценария</button>'+
+    '<div class="catalog-title" role="heading" aria-level="1">Каталог Е2Е-сценариев</div>'+
+    '<button class="btn primary" style="width:100%;justify-content:center;margin-bottom:12px;" onclick="openCreateE2ePanel()">'+ic('plus',18)+' Создать шаг Е2Е-сценария</button>'+
     '<div class="pill-toggle">'+
       '<button class="'+(state.mode==='cj'?'on':'')+'" onclick="setMode(\'cj\')">CJ</button>'+
       '<button class="'+(state.mode==='e2e'?'on':'')+'" onclick="setMode(\'e2e\')">Шаги Е2Е-сценария</button>'+
@@ -3903,18 +3911,18 @@ function renderCatalog(){
 
   if(state.mode==='cj'){
     head+='<div class="searchbox">'+
-        '<span class="s-icon">'+ic('search',16)+'</span>'+
+        '<span class="s-icon">'+ic('search',18)+'</span>'+
         '<input id="cj-search" placeholder="Название или код cj, bi, bi step" value="'+esc(state.cjSearch)+'" oninput="onCjSearch(this.value)">'+
-        (state.cjSearch?('<button class="clear-btn" onclick="clearCjSearch()">'+ic('x',14)+'</button>'):'')+
+        (state.cjSearch?('<button class="clear-btn" onclick="clearCjSearch()">'+ic('x',18)+'</button>'):'')+
       '</div>'+
       '<div class="chiprow">'+
         chip('Все','all')+chip('Опубликованные','published')+chip('Не опубликованные','unpublished')+
       '</div>';
   } else {
     head+='<div class="searchbox">'+
-        '<span class="s-icon">'+ic('search',16)+'</span>'+
+        '<span class="s-icon">'+ic('search',18)+'</span>'+
         '<input id="e2e-search" placeholder="Название E2E" value="'+esc(state.e2eSearch)+'" oninput="onE2eSearch(this.value)">'+
-        (state.e2eSearch?('<button class="clear-btn" onclick="clearE2eSearch()">'+ic('x',14)+'</button>'):'')+
+        (state.e2eSearch?('<button class="clear-btn" onclick="clearE2eSearch()">'+ic('x',18)+'</button>'):'')+
       '</div>';
   }
   head+='</div>';
@@ -3955,7 +3963,7 @@ function renderCjList(){
     var selCj = state.selected && state.selected.type==='cj' && state.selected.id===cj.id;
 
     out+='<div class="tree-row lvl-cj'+(selCj?' selected':'')+'" onclick="selectCj(\''+cj.id+'\')">'+
-      '<span class="chev '+(cjOpen?'open':'')+'" onclick="event.stopPropagation();toggleExpand(\''+cj.id+'\')">'+ic('chev',16)+'</span>'+
+      '<span class="chev '+(cjOpen?'open':'')+'" onclick="event.stopPropagation();toggleExpand(\''+cj.id+'\')">'+ic('chev',18)+'</span>'+
       '<span class="badge cj">CJ</span>'+
       '<span class="rt">'+esc(cj.title)+'</span>'+
     '</div>';
@@ -3966,7 +3974,7 @@ function renderCjList(){
         var bi=entry.bi, steps=entry.steps;
         var biOpen = forceOpen || !!state.expanded[bi.id];
         out+='<div class="tree-row lvl-bi" onclick="toggleExpand(\''+bi.id+'\')">'+
-          '<span class="chev '+(biOpen?'open':'')+(steps.length?'':' none')+'">'+ic('chev',16)+'</span>'+
+          '<span class="chev '+(biOpen?'open':'')+(steps.length?'':' none')+'">'+ic('chev',18)+'</span>'+
           '<span class="badge bi">BI</span>'+
           '<span class="rt">'+esc(bi.title)+'</span>'+
         '</div>';
@@ -3975,7 +3983,7 @@ function renderCjList(){
           steps.forEach(function(s){
             var sel = state.selected && state.selected.type==='step' && state.selected.id===s.id;
             out+='<div class="tree-row lvl-step'+(sel?' selected':'')+'" onclick="selectStep(\''+s.id+'\')">'+
-              '<span class="chev none">'+ic('chev',16)+'</span>'+
+              '<span class="chev none">'+ic('chev',18)+'</span>'+
               '<span class="badge sp">SP</span>'+
               '<span class="rt">'+esc(s.title)+'</span>'+
             '</div>';
@@ -4153,7 +4161,7 @@ function renderStepUcCallsTab(step){
     return '<div class="card">'+
       '<div class="card-title">Вызовы Use Case</div>'+
       '<p class="impl-empty">К этому шагу пока не привязан Use Case — сценарий описан только вызовами E2E</p>'+
-      '<div class="btnrow"><button class="btn primary" onclick="notAvail()">'+ic('plus',16)+' Привязать Use Case</button></div>'+
+      '<div class="btnrow"><button class="btn primary" onclick="notAvail()">'+ic('plus',18)+' Привязать Use Case</button></div>'+
     '</div>';
   }
   var cur=currentImpl(step,'uc');
@@ -4190,7 +4198,7 @@ function renderE2ePage(id){
   } else {
     titleHtml='<div class="title-edit-row">'+
       '<div class="page-title" role="heading" aria-level="1" style="margin:0;">'+esc(e.title)+'</div>'+
-      '<button class="iconghost" title="Переименовать" onclick="startRename(\''+e.id+'\')">'+ic('pencil',16)+'</button>'+
+      '<button class="iconghost" title="Переименовать" onclick="startRename(\''+e.id+'\')">'+ic('pencil',18)+'</button>'+
     '</div>';
   }
 
@@ -4224,7 +4232,7 @@ function renderPlantUmlTab(e){
       '<div class="field"><div class="lbl">Последняя валидация</div><div class="val">'+statusPillFor(e)+'</div></div>'+
     '</div>'+
     '<div class="btnrow" style="margin-top:4px;">'+
-      '<button class="btn primary" onclick="openUploadPanel(\''+e.id+'\')">'+ic('upload',16)+' Загрузить PlantUML</button>'+
+      '<button class="btn primary" onclick="openUploadPanel(\''+e.id+'\')">'+ic('upload',18)+' Загрузить PlantUML</button>'+
     '</div>'+
   '</div>';
   html+=renderVersionHistory(e);
@@ -4242,7 +4250,7 @@ function renderCallRows(rows,depth){
     var open=!!expandedMap[r.id];
     var sel=selId===r.id;
     out+='<div class="call-row'+(sel?' selected':'')+'" title="'+esc(r.tip||r.label)+'" onclick="selectCall(\''+r.id+'\')">'+
-      '<span class="chev '+(open?'open':'')+(hasKids?'':' none')+'" onclick="event.stopPropagation();toggleCallExpand(\''+r.id+'\')">'+ic('chev',14)+'</span>'+
+      '<span class="chev '+(open?'open':'')+(hasKids?'':' none')+'" onclick="event.stopPropagation();toggleCallExpand(\''+r.id+'\')">'+ic('chev',18)+'</span>'+
       '<span class="lbl'+(r.plain?' plain':'')+'">'+esc(r.label)+'</span>'+
       (r.app?('<span class="app">'+esc(r.app)+'</span>'):'')+
     '</div>';
@@ -4355,8 +4363,8 @@ function buildDiagramSvg(large){
 function renderDiagramTab(){
   return '<div class="diagram-card">'+
     '<div class="diagram-toolbar">'+
-      '<button class="btn ghost" onclick="openDiagramModal()">'+ic('expand',16)+' Развернуть</button>'+
-      '<button class="btn ghost" onclick="downloadDiagram()">'+ic('download',16)+' Скачать</button>'+
+      '<button class="btn ghost" onclick="openDiagramModal()">'+ic('expand',18)+' Развернуть</button>'+
+      '<button class="btn ghost" onclick="downloadDiagram()">'+ic('download',18)+' Скачать</button>'+
     '</div>'+
     '<div class="diagram-scroll">'+buildDiagramSvg(false)+'</div>'+
   '</div>';
@@ -4368,8 +4376,8 @@ function renderDiagramModalHtml(){
       '<div class="diagram-toolbar" style="justify-content:space-between;">'+
         '<div style="font-weight:700;font-size:15px;padding-left:6px;">Диаграмма</div>'+
         '<div style="display:flex;gap:8px;">'+
-          '<button class="btn ghost" onclick="closeDiagramModal()">'+ic('expand',16)+' Свернуть</button>'+
-          '<button class="btn ghost" onclick="downloadDiagram()">'+ic('download',16)+' Скачать</button>'+
+          '<button class="btn ghost" onclick="closeDiagramModal()">'+ic('expand',18)+' Свернуть</button>'+
+          '<button class="btn ghost" onclick="downloadDiagram()">'+ic('download',18)+' Скачать</button>'+
           '<button class="panel-close" onclick="closeDiagramModal()">'+ic('x',18)+'</button>'+
         '</div>'+
       '</div>'+
@@ -4391,10 +4399,10 @@ function renderObsTab(stepId){
       '<div class="field"><div class="lbl">Дата обновления</div><div class="val">'+esc(d.updatedAt)+'</div></div>'+
     '</div>'+
     '<div class="btnrow">'+
-      '<button class="btn" onclick="refreshDashboard(\''+stepId+'\')">'+ic('refresh',16)+' Обновить дашборд</button>'+
-      '<button class="btn" onclick="openPanel(\'createDashboard\',\''+stepId+'\')">'+ic('plus',16)+' Создать временный дашборд</button>'+
+      '<button class="btn" onclick="refreshDashboard(\''+stepId+'\')">'+ic('refresh',18)+' Обновить дашборд</button>'+
+      '<button class="btn" onclick="openPanel(\'createDashboard\',\''+stepId+'\')">'+ic('plus',18)+' Создать временный дашборд</button>'+
     '</div>'+
-    (temps.length?('<div class="templist">'+temps.map(function(t){return '<span class="templink" onclick="notAvail()">'+ic('doc',14)+esc(t)+'</span>';}).join('')+'</div>'):'')+
+    (temps.length?('<div class="templist">'+temps.map(function(t){return '<span class="templink" onclick="notAvail()">'+ic('doc',18)+esc(t)+'</span>';}).join('')+'</div>'):'')+
   '</div>';
 
   html+='<div class="card"><div class="card-title">Alerts'+(alert?'<span class="pillstat ok">Успешно</span>':'')+'</div>';
@@ -4412,7 +4420,7 @@ function renderObsTab(stepId){
         '<div class="field"><div class="lbl">Инициатор</div><div class="val">'+esc(alert.initiator)+'</div></div>'+
       '</div>'+
       '<div class="field" style="margin-bottom:18px;"><div class="lbl">Комментарий</div><div class="val">'+esc(alert.comment)+'</div></div>'+
-      '<div style="display:flex;justify-content:flex-end;"><button class="btn" onclick="openPanel(\'updateAlerts\',\''+stepId+'\')">'+ic('refresh',16)+' Обновить alerts</button></div>';
+      '<div style="display:flex;justify-content:flex-end;"><button class="btn" onclick="openPanel(\'updateAlerts\',\''+stepId+'\')">'+ic('refresh',18)+' Обновить alerts</button></div>';
   }
   html+='</div>';
   return html;
@@ -4434,7 +4442,7 @@ function renderVersionHistory(proc){
       '<td>'+pill+'</td>'+
       '<td style="text-align:right;white-space:nowrap;">'+
         '<button class="btn ghost" style="padding:6px 10px;" onclick="openVersionPanel(\''+proc.id+'\','+v.version+')">Отчёт</button>'+
-        '<button class="btn ghost" style="padding:6px 10px;" title="Скачать" onclick="downloadVersionFile(\''+proc.id+'\','+v.version+')">'+ic('download',14)+'</button>'+
+        '<button class="btn ghost" style="padding:6px 10px;" title="Скачать" onclick="downloadVersionFile(\''+proc.id+'\','+v.version+')">'+ic('download',18)+'</button>'+
       '</td>'+
     '</tr>';
   }).join('');
@@ -4474,11 +4482,11 @@ function renderResultBody(report){
   var cats=resultCategoryData(report);
   var banner;
   if(report.blocking){
-    banner='<div class="err-box" style="background:var(--danger-bg);border-color:var(--danger-border);color:var(--danger-text);">'+ic('warn',16)+'<div>'+esc(report.error)+' <b>Блокирующая ошибка</b></div></div>';
+    banner='<div class="err-box" style="background:var(--danger-bg);border-color:var(--danger-border);color:var(--danger-text);">'+ic('warn',18)+'<div>'+esc(report.error)+' <b>Блокирующая ошибка</b></div></div>';
   } else if(report.hasWarnings){
-    banner='<div class="err-box" style="background:var(--warn-bg);border-color:var(--warn-border);color:var(--warn-text);">'+ic('warn',16)+'<div>Есть замечания: часть участников или вызовов не распознана в ландшафте BeeAtlas. Версию всё равно можно сохранить.</div></div>';
+    banner='<div class="err-box" style="background:var(--warn-bg);border-color:var(--warn-border);color:var(--warn-text);">'+ic('warn',18)+'<div>Есть замечания: часть участников или вызовов не распознана в ландшафте BeeAtlas. Версию всё равно можно сохранить.</div></div>';
   } else {
-    banner='<div class="err-box" style="background:var(--success-bg);border-color:var(--success-text);color:var(--success-text);">'+ic('infoc',16)+'<div>Всё распознано, блокирующих ошибок нет</div></div>';
+    banner='<div class="err-box" style="background:var(--success-bg);border-color:var(--success-text);color:var(--success-text);">'+ic('infoc',18)+'<div>Всё распознано, блокирующих ошибок нет</div></div>';
   }
 
   var tiles='<div class="stat-grid">'+cats.map(function(c){
@@ -4498,7 +4506,7 @@ function renderResultBody(report){
     } else {
       body='<table class="result-table"><thead><tr><th class="stat">Статус</th><th>Название элемента</th></tr></thead><tbody>'+
         items.map(function(it){
-          var pill=it.ok?('<span class="elpill ok">'+ic('check',12)+' Распознан</span>'):('<span class="elpill warn">'+ic('warn',12)+' Не распознан</span>');
+          var pill=it.ok?('<span class="elpill ok">'+ic('check',18)+' Распознан</span>'):('<span class="elpill warn">'+ic('warn',18)+' Не распознан</span>');
           return '<tr><td class="stat">'+pill+'</td><td'+(it.ok?'':' style="color:var(--warn-text);"')+'>'+esc(it.label)+'</td></tr>';
         }).join('')+
       '</tbody></table>';
@@ -4528,8 +4536,8 @@ function renderFileCard(p){
       '<div class="fmeta">'+sizeMb.toFixed(1)+' Мб · '+esc(p.fileMeta.uploadedAt)+'</div>'+
     '</div>'+
     '<div class="factions">'+
-      '<button class="iconghost" title="Скачать" onclick="downloadAttachedFile()">'+ic('download',16)+'</button>'+
-      '<button class="iconghost" title="Удалить" onclick="removeUploadedFile()">'+ic('x',16)+'</button>'+
+      '<button class="iconghost" title="Скачать" onclick="downloadAttachedFile()">'+ic('download',18)+'</button>'+
+      '<button class="iconghost" title="Удалить" onclick="removeUploadedFile()">'+ic('x',18)+'</button>'+
     '</div>'+
   '</div>';
 }
@@ -4555,14 +4563,14 @@ function renderImportModal(){
         '</div>'+
         renderResultBody(v.report)+
       '</div></div>'+
-      '<div class="import-foot"><button class="btn" onclick="downloadVersionFile(\''+p.e2eId+'\','+p.version+')">'+ic('download',16)+' Скачать</button><button class="btn primary" onclick="closePanel()">Закрыть</button></div>'+
+      '<div class="import-foot"><button class="btn" onclick="downloadVersionFile(\''+p.e2eId+'\','+p.version+')">'+ic('download',18)+' Скачать</button><button class="btn primary" onclick="closePanel()">Закрыть</button></div>'+
     '</div>';
   }
 
   var stage=p.stage||'edit';
   var stepper='<div class="import-stepper">'+
     '<div class="import-step '+(stage==='edit'?'on':'done')+'" '+(stage!=='edit'?'onclick="backToEdit()"':'')+'>'+
-      '<span class="num">'+(stage!=='edit'?ic('check',13):'1')+'</span>Данные решения'+
+      '<span class="num">'+(stage!=='edit'?ic('check',18):'1')+'</span>Данные решения'+
     '</div>'+
     '<div class="import-step '+(stage==='result'?'on':'')+'"><span class="num">2</span>Результат</div>'+
   '</div>';
@@ -4593,7 +4601,7 @@ function renderImportModal(){
         '</span>'+
       '</div>'+
       '<textarea id="panel-input" class="puml'+(p.err?' err':'')+'" placeholder="PlantUml" oninput="onPanelInput(this.value)">'+esc(p.value)+'</textarea>'+
-      (p.err?('<div class="err-box" style="margin-top:14px;">'+ic('warn',16)+'<div>'+esc(p.err)+'</div></div>'):'')+
+      (p.err?('<div class="err-box" style="margin-top:14px;">'+ic('warn',18)+'<div>'+esc(p.err)+'</div></div>'):'')+
     '</div>';
     foot='<button class="btn primary" '+(hasContent?'':'disabled')+' onclick="runValidate()">Проверить</button>';
   }
@@ -4626,9 +4634,9 @@ function renderPanel(){
       body='<div class="formfield"><span class="lbl">Название</span>'+
         '<div class="input-shell'+(p.err?' err':'')+'">'+ic('gift',18)+
         '<input id="panel-input" placeholder="Название дашборда" value="'+esc(p.value)+'" oninput="onPanelInput(this.value)" onkeydown="if(event.key===\'Enter\')submitPanel()">'+
-        ic('infoc',16)+ic('eye',16)+
+        ic('infoc',18)+ic('eye',18)+
         '</div>'+
-        (p.err?('<div class="err-box">'+ic('warn',16)+'<div>'+esc(p.err)+'</div></div>'):'')+
+        (p.err?('<div class="err-box">'+ic('warn',18)+'<div>'+esc(p.err)+'</div></div>'):'')+
       '</div>';
       footer='<div class="panel-foot"><button class="btn" onclick="closePanel()">Отмена</button><button class="btn primary'+(p.err?' danger-outline':'')+'" onclick="submitPanel()">Создать</button></div>';
     }
@@ -4648,7 +4656,7 @@ function renderPanel(){
     '</div>'+
     '<div class="formfield"><span class="lbl">Комментарий</span>'+
       '<textarea id="panel-input" class="ta'+(p.err?' err':'')+'" placeholder="Комментарий" oninput="onPanelInput(this.value)">'+esc(p.value)+'</textarea>'+
-      (p.err?('<div class="err-box">'+ic('warn',16)+'<div>'+esc(p.err)+'</div></div>'):'')+
+      (p.err?('<div class="err-box">'+ic('warn',18)+'<div>'+esc(p.err)+'</div></div>'):'')+
     '</div>';
     var actionLabel = p.type==='createAlerts'?'Создать':'Обновить';
     footer='<div class="panel-foot"><button class="btn" onclick="closePanel()">Отмена</button><button class="btn primary'+(p.err?' danger-outline':'')+'" onclick="submitPanel()">'+actionLabel+'</button></div>';
@@ -4657,7 +4665,7 @@ function renderPanel(){
       '<div class="input-shell'+(p.err?' err':'')+'">'+ic('folder',18)+
       '<input id="panel-input" placeholder="Например, E2E: Оформление возврата eSIM" value="'+esc(p.value)+'" oninput="onPanelInput(this.value)" onkeydown="if(event.key===\'Enter\')submitCreateE2e()">'+
       '</div>'+
-      (p.err?('<div class="err-box">'+ic('warn',16)+'<div>'+esc(p.err)+'</div></div>'):'')+
+      (p.err?('<div class="err-box">'+ic('warn',18)+'<div>'+esc(p.err)+'</div></div>'):'')+
     '</div>';
     footer='<div class="panel-foot"><button class="btn" onclick="closePanel()">Отмена</button><button class="btn primary'+(p.err?' danger-outline':'')+'" onclick="submitCreateE2e()">Создать</button></div>';
   }
