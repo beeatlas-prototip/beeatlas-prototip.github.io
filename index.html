@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261008-162904">
+<meta name="beeatlas-build" content="20261008-163550">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -1022,7 +1022,7 @@
   .stat-tiles > *, .tshirt-grid > *, .uc-stat-cards > *,
   .grid12 > .col-3{grid-column:span 3;}
   .home-mine-row > *, .agents-grid-v2 > *, .info-grid > *, .tc-grid > *,
-  .stat-tiles.cols-3 > *, .grid12 > .col-4{grid-column:span 4;}
+  .stat-tiles.cols-3 > *, .uc-stat-cards.cols-3 > *, .grid12 > .col-4{grid-column:span 4;}
   .grid12 > .col-6{grid-column:span 6;}
   .grid12 > .col-12{grid-column:span 12;}
 
@@ -1919,15 +1919,20 @@
   @keyframes spin{to{transform:rotate(360deg);}}
 
 
+  /* Блок «Связи»: две карточки в ряд, подпись капсом, под ссылкой — код. */
+  .uc-links-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--size-spacing-x6);}
+  .uc-link-cap{font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.03em;margin-bottom:var(--space-3);}
+  .uc-link-name{display:inline-block;font-size:17px;line-height:22px;letter-spacing:.2px;}
+  .uc-link-code{font-size:15px;line-height:20px;letter-spacing:.2px;color:var(--text-secondary);margin-top:var(--space-1);}
+  /* Код Use Case идёт отдельной строкой под заголовком, до строки «Источник / Дата». */
+  .uc-code-line{font-size:17px;line-height:22px;letter-spacing:.2px;color:var(--text-secondary);margin:calc(-1 * var(--space-4)) 0 var(--space-5);}
   .uc-stat-cards{margin-bottom:var(--space-6);}
-  .uc-stat-card{border:1px solid var(--border);border-radius:var(--size-border-radius-x6);padding:var(--size-spacing-x6);background:var(--bg);}
-  .uc-stat-card .val{font-size:26px;font-weight:500;line-height:32px;letter-spacing:.2px;margin-bottom:var(--space-2);}
-  .uc-stat-card .lbl{display:flex;align-items:center;gap:var(--space-2);font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);}
-  .uc-stat-card .lbl .dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto;}
-  .uc-stat-card .lbl .dot.green{background:var(--green-text);}
-  .uc-stat-card .lbl .dot.blue{background:var(--blue);}
-  .uc-stat-card .lbl .dot.gray{background:var(--gray-text);}
-  .uc-stat-card .lbl .dot.orange{background:var(--orange-text);}
+  /* Число и подпись в одну строку, тон карточки — по статусу (макет шага «Результат»). */
+  .uc-stat-card{display:flex;align-items:center;gap:var(--size-spacing-x3);border:1px solid var(--border);border-radius:var(--size-border-radius-x6);padding:var(--size-spacing-x6);background:var(--bg);}
+  .uc-stat-card .val{font-size:26px;font-weight:500;line-height:32px;letter-spacing:.2px;flex:0 0 auto;}
+  .uc-stat-card .lbl{font-size:17px;line-height:22px;letter-spacing:.2px;color:var(--text-secondary);}
+  .uc-stat-card.green{background:var(--green-bg);border-color:var(--green-text);}
+  .uc-stat-card.orange{background:var(--orange-bg);border-color:var(--orange-text);}
 
   .uc-unmapped-card{padding:var(--size-spacing-x6);margin-bottom:var(--space-4);}
   .uc-unmapped-head{display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);margin-bottom:var(--space-1);}
@@ -9388,11 +9393,7 @@ function UcActionsMenu(p, u){
       </div>
       ${activeMeta && activeMeta.kind==="user" ? item("uc-branch-delete-ask",`data-branch="${escapeHtml(u.branch)}"`,"trash",`Удалить ветку «${escapeHtml(u.branch)}»`) : ""}
       <div class="uc-menu-divider"></div>
-      ${item("edit-usecase",`data-id="${p.id}" data-uc="${u.id}"`,"pencil","Редактировать Use Case")}
-      ${item("open-usecase-history",`data-id="${p.id}" data-uc="${u.id}"`,"history","История импорта")}
-      <div class="uc-menu-divider"></div>
-      ${item("export-uc",`data-format="puml" data-id="${p.id}" data-uc="${u.id}"`,"upload","Экспорт в PUML")}
-      ${item("export-uc",`data-format="markdown" data-id="${p.id}" data-uc="${u.id}"`,"upload","Экспорт в Markdown")}
+      ${item("open-uc-cj-link",`data-id="${p.id}" data-uc="${u.id}"`,"pencil","Изменить привязку к CJ")}
     </div>
   `;
 }
@@ -10268,21 +10269,22 @@ function UseCaseMetaRow(u, lastRun){
   `;
 }
 
-function UseCaseCjCard(u, projectId){
+/* Блок «Связи» — две карточки: CJ и шаг E2E-сценария. Пришёл на место таблицы
+   «Связь с CJ»: та же пара ссылок, но читается как связи объекта, а не как данные.
+   Перепривязка к CJ уехала в меню действий — на карточках её в макете нет. */
+function UseCaseLinksSection(u){
+  const card = (cap, name, code, href) => `
+    <div class="card uc-link-card">
+      <div class="uc-link-cap">${escapeHtml(cap)}</div>
+      <a href="${href}" target="_blank" rel="noopener" class="proj-link uc-link-name">${escapeHtml(name)}</a>
+      <div class="uc-link-code">${escapeHtml(code)}</div>
+    </div>`;
   return `
     <div class="section" id="sec-cj">
-      <h2>Связь с CJ</h2>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>CJ</th><th>BI Step</th><th></th></tr></thead>
-          <tbody>
-            <tr>
-              <td><a href="?home=cj" target="_blank" rel="noopener" class="proj-link">${escapeHtml(u.cj.name)}</a><div class="row-sub">${escapeHtml(u.cj.code)}</div></td>
-              <td><a href="?home=e2e" target="_blank" rel="noopener" class="proj-link">${escapeHtml(u.cjStep.name)}</a><div class="row-sub">${escapeHtml(u.cjStep.code)}</div></td>
-              <td style="width:44px;">${projectId ? `<button class="btn btn-outline btn-icon-only" data-action="open-uc-cj-link" data-id="${projectId}" data-uc="${u.id}" title="Изменить привязку к CJ">${icon("pencil")}</button>` : ""}</td>
-            </tr>
-          </tbody>
-        </table>
+      <h2>Связи</h2>
+      <div class="uc-links-row">
+        ${card("Связанный CJ", u.cj.name, u.cj.code, "?home=cj")}
+        ${card("Связанный шаг E2E-сценария", u.cjStep.name, u.cjStep.code, "?home=e2e")}
       </div>
     </div>
   `;
@@ -10349,7 +10351,7 @@ function UseCaseScenariosTable(u, projectId, ucId){
           <col style="width:5%"><col style="width:13%"><col style="width:13%"><col style="width:20%">
           <col style="width:16%"><col style="width:13%"><col style="width:7%"><col style="width:13%">
         </colgroup>
-        <thead><tr><th>Шаг</th><th>Вызывающий</th><th>Вызываемый</th><th>Действие</th><th>Вызов</th><th>TC</th><th>Dynamyc</th><th>Статус вызова</th></tr></thead>
+        <thead><tr><th>Шаг</th><th>Вызывающий</th><th>Вызываемый</th><th>Действие</th><th>Вызов</th><th>TC</th><th>C4 Dynamyc</th><th>Статус вызова</th></tr></thead>
         <tbody>
           ${rows.map(s=>{
             const pp = splitParticipant(s.participant);
@@ -10547,14 +10549,25 @@ function UseCaseDetailPage(projectId, ucId){
       <span class="badge gray uc-branch-badge" title="Ветка, состав которой показан на странице">${icon("gitBranch")}${escapeHtml(u.branch)}</span>
       <div class="actions">
         <div class="uc-menu-wrap">
-          <button class="btn btn-outline btn-icon-only" data-action="toggle-popover" data-popover="uc-actions" title="Действия">${icon("moreVertical")}</button>
+          <button class="btn btn-outline btn-icon-only" data-action="toggle-popover" data-popover="uc-export" title="Экспорт">${icon("upload")}</button>
+          ${state.popover==="uc-export" ? `
+            <div class="uc-menu">
+              <div class="uc-menu-item" data-action="export-uc" data-format="puml" data-id="${p.id}" data-uc="${u.id}"><span class="txt">Экспорт в PUML</span></div>
+              <div class="uc-menu-item" data-action="export-uc" data-format="markdown" data-id="${p.id}" data-uc="${u.id}"><span class="txt">Экспорт в Markdown</span></div>
+            </div>` : ""}
+        </div>
+        <button class="btn btn-outline btn-icon-only" data-action="open-usecase-history" data-id="${p.id}" data-uc="${u.id}" title="История импорта">${icon("history")}</button>
+        <button class="btn btn-outline btn-icon-only" data-action="edit-usecase" data-id="${p.id}" data-uc="${u.id}" title="Редактировать Use Case">${icon("pencil")}</button>
+        <div class="uc-menu-wrap">
+          <button class="btn btn-outline btn-icon-only" data-action="toggle-popover" data-popover="uc-actions" title="Ветки и привязка">${icon("moreVertical")}</button>
           ${state.popover==="uc-actions" ? UcActionsMenu(p, u) : ""}
         </div>
       </div>
     </div>
+    <div class="uc-code-line">${escapeHtml(u.code)}</div>
     ${UseCaseMetaRow(u, lastRun)}
     ${UcBranchStatusRow(p, u)}
-    ${UseCaseCjCard(u, p.id)}
+    ${UseCaseLinksSection(u)}
 
     <div class="section" id="sec-scenarios">
       <div class="section-head-row">
@@ -12440,13 +12453,11 @@ function UcStepImport(w){
 }
 
 function UcStepResult(w){
-  const preview = ucPreviewFromWizard(w);
   const parts = w.data.parts;
   const mappedCount = parts.filter(x=>x.mapped).length;
   const manualConfirmedCount = parts.filter(x=>x.decision==="specified" || x.decision==="existing").length;
   const confirmedCount = mappedCount + manualConfirmedCount;
   const plannedCount = parts.filter(x=>x.decision==="planned").length;
-  const notCallCount = parts.filter(x=>x.decision==="notcall").length;
   const unresolvedParts = parts.filter(x=>!x.mapped && !x.decision);
   const resolvedParts = parts.filter(x=>x.mapped || x.decision);
   const unmappedParts = parts.filter(x=>!x.mapped);
@@ -12459,13 +12470,11 @@ function UcStepResult(w){
   const partCounts = ucPartDecisionCounts(unmappedParts);
   return `
     <div style="width:100%;">
-    ${UseCaseCjCard(preview)}
-    <div class="section-head-row"><h2 style="margin:0;font-size:19px;line-height:24px;letter-spacing:.2px;font-weight:500;">Staging собрал Use Case из PlantUML</h2></div>
-    <div class="uc-stat-cards">
-      <div class="uc-stat-card"><div class="val">${confirmedCount}</div><div class="lbl"><span class="dot green"></span>Подтверждено</div></div>
-      <div class="uc-stat-card"><div class="val">${plannedCount}</div><div class="lbl"><span class="dot gray"></span>Планируется</div></div>
-      <div class="uc-stat-card"><div class="val">${unresolvedParts.length}</div><div class="lbl"><span class="dot orange"></span>Требуют решения</div></div>
-      ${notCallCount ? `<div class="uc-stat-card"><div class="val">${notCallCount}</div><div class="lbl"><span class="dot blue"></span>Не является вызовом</div></div>` : ""}
+    <div class="section-head-row"><h2 style="margin:0;font-size:19px;line-height:24px;letter-spacing:.2px;font-weight:500;">Staging собрал сценарии из PlantUML</h2></div>
+    <div class="uc-stat-cards cols-3">
+      <div class="uc-stat-card green"><div class="val">${confirmedCount}</div><div class="lbl">Подтверждено</div></div>
+      <div class="uc-stat-card orange"><div class="val">${unresolvedParts.length}</div><div class="lbl">Требуют решения</div></div>
+      <div class="uc-stat-card"><div class="val">${plannedCount}</div><div class="lbl">Планируется</div></div>
     </div>
     <div class="section-head-row" style="margin-bottom:var(--space-4);">
       <h3 style="margin:0;font-size:15px;">Список участников</h3>
@@ -12481,7 +12490,7 @@ function UcStepResult(w){
             <col style="width:5%"><col style="width:13%"><col style="width:13%"><col style="width:20%">
             <col style="width:16%"><col style="width:13%"><col style="width:7%"><col style="width:13%">
           </colgroup>
-          <thead><tr><th>Шаг</th><th>Вызывающий</th><th>Вызываемый</th><th>Действие</th><th>Вызов</th><th>TC</th><th>Dynamyc</th><th>Статус вызова</th></tr></thead>
+          <thead><tr><th>Шаг</th><th>Вызывающий</th><th>Вызываемый</th><th>Действие</th><th>Вызов</th><th>TC</th><th>C4 Dynamyc</th><th>Статус вызова</th></tr></thead>
           <tbody>
             ${resolvedParts.map(x=>{
               const pp = splitParticipant(x.participant);
@@ -12688,20 +12697,6 @@ function ucDerivedScenarios(parts){
       status: (x.mapped || x.decision==="specified" || x.decision==="existing") ? "confirmed" : x.decision,
     };
   });
-}
-
-function ucPreviewFromWizard(w){
-  const p = findProject(w.projectId);
-  const d = w.data;
-  const stepMeta = d.cjStepCode ? CJ_STEP_POOL.find(s=>s.code===d.cjStepCode) : null;
-  const existing = d.mode==="existing" ? findUseCase(p, d.existingUcId) : null;
-  return {
-    name: d.mode==="new" ? d.ucName.trim() : (existing ? existing.name : ""),
-    source: "Ручной импорт", updated: NOW_DATE,
-    cj: stepMeta ? {code:stepMeta.cjCode, name:stepMeta.cjName} : {code:"—", name:"Без привязки к CJ"},
-    cjStep: stepMeta ? {code:stepMeta.code, name:stepMeta.name} : {code:"—", name:"—"},
-    scenarios: ucDerivedScenarios(d.parts),
-  };
 }
 
 function ucWizardRestart(){
