@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261008-103028">
+<meta name="beeatlas-build" content="20261008-103423">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -5963,7 +5963,7 @@ const DS_ICONS = {
   moreVertical:'more_vert', info:'info_circled', download:'download', gear:'settings',
   externalLink:'open_in_window', eye:'eye', zoomIn:'zoom_in', zoomOut:'zoom_out',
   minimize:'collapse', gitBranch:'split', gitMerge:'merge', trash:'delete', history:'clock',
-  filter:'filter', copy:'copy', expand:'expand', rulerPencil:'ruler_pencil'
+  filter:'filter', copy:'copy', expand:'expand', rulerPencil:'ruler_pencil', integration:'integration'
 };
 function icon(name){
   const ds = DS_ICONS[name];
@@ -6108,7 +6108,7 @@ const NAV_GROUPS = [
       desc:"Инструмент для оценки влияния сбойных элементов на бизнес-процессы компании."},
   ]},
   {label:"Техническая архитектура", color:"green", items:[
-    {id:"patterns", label:"Каталог паттернов", icon:"layers",
+    {id:"patterns", label:"Каталог паттернов", icon:"integration",
       desc:"Паттерны содержат эффективные решения типовых архитектурных задач."},
     {id:"technoradar", label:"Технорадар", icon:"target",
       desc:"Диаграмма, на которой можно увидеть технологии и их жизненный цикл в компании."},
