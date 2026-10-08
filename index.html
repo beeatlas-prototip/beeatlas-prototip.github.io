@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261008-113725">
+<meta name="beeatlas-build" content="20261008-155610">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -1885,6 +1885,15 @@
 
   /* side panel */
   .backdrop{position:fixed;inset:0;background:rgba(15,15,18,.45);z-index:300;}
+  /* ДС (components/dialog): ширина 560, радиус 12, бэкдроп rgba(0,0,0,.48),
+     заголовок 20/28 500, описание 17/22, паддинги 24 по бокам, 24 сверху у шапки
+     и снизу у футера, между заголовком и описанием 16. */
+  .ds-dialog-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.48);z-index:400;display:flex;align-items:center;justify-content:center;padding:var(--size-spacing-x5);}
+  .ds-dialog-scrim{position:absolute;inset:0;}
+  .ds-dialog{position:relative;width:560px;max-width:100%;min-height:126px;max-height:455px;background:var(--bg);border-radius:var(--size-border-radius-x6);box-shadow:0 6px 38px rgba(0,0,0,.16),0 0 10px rgba(0,0,0,.08);display:flex;flex-direction:column;overflow:hidden;}
+  .ds-dialog-head{padding:var(--size-spacing-x6) var(--size-spacing-x6) 0;font-size:20px;line-height:28px;letter-spacing:.2px;font-weight:500;color:var(--text);}
+  .ds-dialog-desc{padding:var(--size-spacing-x4) var(--size-spacing-x6);font-size:17px;line-height:22px;letter-spacing:.2px;color:var(--text);flex:1;overflow-y:auto;}
+  .ds-dialog-foot{padding:0 var(--size-spacing-x6) var(--size-spacing-x6);display:flex;gap:var(--size-spacing-x3);justify-content:flex-end;}
   .backdrop.enter{animation:fadein .12s ease;}
   @keyframes fadein{from{opacity:0}to{opacity:1}}
   .side-panel{
@@ -2267,6 +2276,13 @@
   .cj-source-back .beeline-icons{width:14px;height:14px;font-size:14px;}
   .cj-call-card{border:1px solid var(--border);border-radius:10px;padding:var(--space-3) var(--space-4);background:var(--bg-alt);}
   .cj-call-card-title{font-size:11px;font-weight:700;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.03em;margin-bottom:var(--space-2);}
+  /* Шапка карточки: заголовок и корзина в одной строке, заголовок переносится. */
+  .cj-call-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-3);}
+  .cj-call-card-head .cj-call-card-title{flex:1;min-width:0;}
+  .cj-call-card-head .icon-btn{flex:0 0 auto;width:24px;height:24px;border-radius:var(--size-border-radius-x2);color:var(--text-secondary);margin-top:-2px;}
+  .cj-call-card-head .icon-btn:hover{background:transparent;color:var(--text);}
+  .cj-call-card-head .icon-btn svg{width:20px;height:20px;}
+  .cj-call-card-head .icon-btn .beeline-icons{width:20px;height:20px;font-size:20px;}
   .cj-call-card .row{display:flex;justify-content:space-between;gap:var(--space-3);margin-bottom:var(--space-2);}
   .cj-call-card .row:last-child{margin-bottom:0;}
   .cj-call-card .lbl{font-size:11px;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.03em;margin-bottom:2px;}
@@ -5377,6 +5393,7 @@ const state = {
   cjBranchPanel:null,    // {name, parent} — create-branch side panel
   cjMergePanel:null,     // {source, target, strategy, description, conflicts} — merge side panel
   cjBranchDeleteConfirm:null, // branch id pending delete confirmation
+  cjCallDelete:null,          // {stageId, scenarioId, sourceId, idx} — вызов, ждущий подтверждения удаления
   cjMergeConfirm:false,   // показан ли диалог «Объединить ветки?» поверх панели
   cjMergeRunning:null,    // {cjId, source, target, strategy} while a merge is being processed (global — only one at a time)
   cjBranchPanelOpen:true, // whether the branch bar (select + new branch + merge) is expanded
@@ -6056,6 +6073,7 @@ function renderShell(){
     ${state.graph.typeEditor ? GraphTypeEditorOverlay() : ""}
     ${state.graph.addNode ? GraphAddNodeOverlay() : ""}
     ${state.graph.addRel ? GraphAddRelOverlay() : ""}
+    ${state.cjCallDelete ? CjCallDeleteDialog() : ""}
     ${state.toast ? Toast() : ""}
   `;
   document.documentElement.setAttribute("data-theme", state.theme);
@@ -8931,9 +8949,12 @@ function CjSourcePanel(){
         <button class="wizard-close" data-action="cj-close-source-panel">${icon("x")}</button>
       </div>
       <div class="side-body">
-        ${src.calls.map((c,i)=>`
+        ${src.calls.length ? src.calls.map((c,i)=>`
           <div class="cj-call-card" style="${i>0?"margin-top:var(--space-3);":""}">
-            <div class="cj-call-card-title">Вызов ${i+1}</div>
+            <div class="cj-call-card-head">
+              <div class="cj-call-card-title">Вызов ${i+1}</div>
+              ${src.type==="manual" ? `<button class="icon-btn" data-action="cj-call-delete-ask" data-stage="${p.stageId}" data-scenario="${p.scenarioId}" data-source="${p.sourceId}" data-idx="${i}" title="Удалить вызов">${icon("trash")}</button>` : ""}
+            </div>
             <div class="row"><div><div class="lbl">Приложение</div><div class="val">${escapeHtml(c.app)}</div></div></div>
             <div class="row"><div><div class="lbl">Техническая возможность</div><div class="val">${escapeHtml(c.capability)}</div></div></div>
             <div class="row">
@@ -8941,10 +8962,34 @@ function CjSourcePanel(){
               <div><div class="lbl">Интерфейс</div><div class="val">${escapeHtml(c.iface)}</div></div>
             </div>
           </div>
-        `).join("")}
+        `).join("") : `
+          <div class="empty-state">
+            ${boxIllustration()}
+            <p style="color:var(--text-secondary);margin:0;">Нет добавленных вызовов</p>
+          </div>`}
         ${src.type!=="manual" ? `<div class="readonly-note" style="margin-top:var(--space-3);">${icon("info")} Только чтение — изменить можно в источнике: <a data-action="cj-noop">${escapeHtml(src.sourceLink||"связанный артефакт")}</a></div>` : ""}
       </div>
       ${src.type==="manual" ? `<div class="side-foot"><button class="btn btn-primary" data-action="cj-source-edit-start">${icon("pencil")} Редактировать</button></div>` : ""}
+    </div>`;
+}
+
+/* Подтверждение удаления вызова — ДС Dialog (components/dialog), тип nonScrollable.
+   Удаление необратимо, поэтому спрашиваем до, а не показываем отмену после. */
+function CjCallDeleteDialog(){
+  const d = state.cjCallDelete;
+  const src = findCjSource(d.stageId, d.scenarioId, d.sourceId);
+  if(!src || !src.calls[d.idx]) return "";
+  return `
+    <div class="ds-dialog-backdrop">
+      <div class="ds-dialog-scrim" data-action="cj-call-delete-cancel"></div>
+      <div class="ds-dialog">
+        <div class="ds-dialog-head">Удалить вызов?</div>
+        <div class="ds-dialog-desc">Удалённый вызов нельзя будет восстановить</div>
+        <div class="ds-dialog-foot">
+          <button class="btn btn-outline" data-action="cj-call-delete-cancel">Отменить</button>
+          <button class="btn btn-primary" data-action="cj-call-delete-do">Удалить</button>
+        </div>
+      </div>
     </div>`;
 }
 
@@ -13977,6 +14022,21 @@ function handleAction(action, el){
     case "cj-add-call": {
       state.cjSourcePanel.draft.calls.push({app:"", capability:"", endpoint:"", iface:""});
       render();
+      break;
+    }
+    case "cj-call-delete-ask": {
+      if(cjBranchLocked(state.cjOpen.cjId, state.cjOpen.branch)){ showToast("Ветка обновляется, дождитесь завершения объединения"); break; }
+      state.cjCallDelete = {stageId:el.dataset.stage, scenarioId:el.dataset.scenario, sourceId:el.dataset.source, idx:+el.dataset.idx};
+      render(); break;
+    }
+    case "cj-call-delete-cancel": state.cjCallDelete = null; render(); break;
+    case "cj-call-delete-do": {
+      const d = state.cjCallDelete;
+      const src = d && findCjSource(d.stageId, d.scenarioId, d.sourceId);
+      if(src) src.calls.splice(d.idx, 1);
+      state.cjCallDelete = null;
+      render();
+      showToast("Вызов удалён");
       break;
     }
     case "cj-remove-call": {
