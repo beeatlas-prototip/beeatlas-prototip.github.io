@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261008-160314">
+<meta name="beeatlas-build" content="20261008-162904">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -1937,7 +1937,7 @@
      внутри него, а не отдельной секцией внизу карточки (макет «Поведение карточки»).
      Радиокнопку оборачивает только верхняя строка: будь полями обёрнут <label>,
      клик по полю переключал бы вариант. */
-  .uc-choice{padding:var(--space-3) var(--space-4);border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);}
+  .uc-choice{padding:var(--size-spacing-x6);border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);}
   .uc-choice-main{display:flex;align-items:flex-start;gap:var(--space-3);cursor:pointer;}
   .uc-choice input[type=radio]{width:16px;height:16px;margin-top:var(--space-1);accent-color:var(--yellow);cursor:pointer;flex:0 0 auto;}
   .uc-choice b{font-size:15px;font-weight:500;}
@@ -1952,7 +1952,6 @@
   .uc-method-item:hover{background:var(--bg-alt);}
   .uc-method-item .m-name{font-size:14.5px;color:var(--text);font-family:var(--font-family-mono),ui-monospace,monospace;}
   .uc-method-item .m-meta{font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);margin-top:var(--space-1);}
-  .uc-card-foot{display:flex;justify-content:flex-end;margin-top:var(--space-2);}
 
   /* toast */
   /* Snackbar (ДС: components/snackbar) — радиус 12px, padding-left 16 / right 8,
@@ -12319,7 +12318,9 @@ function UcWizardStepFooter(w){
   if(step==="setup"){
     const modeOk = w.data.mode==="new" ? w.data.ucName.trim().length>0 : !!w.data.existingUcId;
     const canGo = modeOk && (w.data.plantUml.trim().length>0 || !!w.data.file);
-    return WizardFooter(null, "Импорт в Staging", "uc-wiz-to-import", !canGo);
+    // футер шага данных выравниваем по той же колонке, что и форма (.wizard-foot-inner),
+    // иначе кнопка уезжает к краю экрана, а поля заканчиваются сильно левее
+    return `<div class="wizard-foot-inner">${WizardFooter(null, "Импорт", "uc-wiz-to-import", !canGo)}</div>`;
   }
   if(step==="result"){
     if(w.importing){
@@ -12341,7 +12342,7 @@ function UcStepSetup(w){
   const cjOptions = [{code:"", label:"Без привязки к CJ", sub:""}].concat(CJ_STEP_POOL.map(s=>({code:s.code, label:`${s.cjName} → ${s.name}`, sub:s.code})));
   const currentCj = cjOptions.find(o=>o.code===d.cjStepCode) || cjOptions[0];
   return `
-    <div class="uc-step-setup" style="width:100%;max-width:909px;margin:0 auto;">
+    <div class="uc-step-setup" style="width:100%;max-width:908px;margin:0 auto;">
       <div class="ds-banner info" style="margin-bottom:var(--space-6);">
         ${icon("info")}
         <div class="ds-banner-text">Для добавления данных доступно два варианта: вставка текста или добавление файла</div>
@@ -12522,7 +12523,7 @@ function UcStepResult(w){
           <span>Не вызов: <b>${partCounts.notcall}</b></span>
         </span>
       </div>
-      ${currentPart ? (currentPart.decision ? UcResolvedUnmappedCard(currentPart) : UcUnmappedPartCard(currentPart)) : ""}
+      ${currentPart ? UcUnmappedPartCard(currentPart) : ""}
     ` : `<div class="card empty-state" style="padding:var(--space-7) var(--space-5);"><p style="color:var(--text-secondary);margin:0;">Несопоставленных частей не осталось</p></div>`}
     </div>
   `;
@@ -12533,24 +12534,6 @@ function ucPartDecisionCounts(parts){
   const c = {existing:0, specified:0, planned:0, notcall:0};
   parts.forEach(x=>{ if(x.decision && c[x.decision]!==undefined) c[x.decision]++; });
   return c;
-}
-
-// A part stays visible here after its decision is saved (не пропадает из списка) — только
-// сворачивается в статус-карточку с карандашом, вместо того чтобы исчезать: пользователь видит
-// весь исходный набор несмаппированных частей и что с каждой уже решено, не считая по памяти.
-function UcResolvedUnmappedCard(x){
-  const status = (x.decision==="specified" || x.decision==="existing") ? "confirmed" : x.decision;
-  return `
-    <div class="card uc-unmapped-card">
-      <div class="uc-unmapped-head">
-        <div><b><span class="uc-part-code">${x.part}</span> ${escapeHtml(x.participant)} ${escapeHtml(x.action)}</b></div>
-        <div style="display:flex;align-items:center;gap:var(--space-3);">
-          ${scenarioStatusBadge(status)}
-          <button class="btn btn-outline btn-icon-only btn-sm" data-action="uc-reset-part" data-id="${x.id}" title="Изменить решение">${icon("pencil")}</button>
-        </div>
-      </div>
-    </div>
-  `;
 }
 
 // выбранный метод архитектуры: сам код и всё, что из него подставилось
@@ -12577,6 +12560,27 @@ const UC_PART_CHOICES = [
   {key:"notcall", title:"Не является вызовом",
    desc:"Шаг останется в Use Case информационной строкой и в маппинг не пойдёт"},
 ];
+
+/* Решение применяется сразу: кнопки сохранения в карточке нет, поэтому после любого
+   изменения варианта или его полей пересобираем решение. Коды ТС и динамики ставим
+   один раз (`||`) — иначе каждый ре-рендер выдавал бы новые номера. */
+function ucPartApplyDecision(x){
+  if(!ucPartCanSave(x)){ x.decision = null; return; }
+  x.decision = x.choice;
+  if(x.decision==="existing"){
+    // метод найден в архитектуре, поэтому ТС и динамика берутся из него, а не выдумываются
+    x.dynamic = x.dynamic || ("SEQ-" + Math.floor(10+Math.random()*89));
+  } else if(x.decision==="specified"){
+    x.tcName = x.tcName || ("Уточнено архитектором: " + x.api);
+    x.tcCode = x.tcCode || ("TC-" + Math.floor(200+Math.random()*700));
+    x.dynamic = x.dynamic || ("SEQ-" + Math.floor(10+Math.random()*89));
+  } else if(x.decision==="notcall"){
+    x.tcName = null; x.tcCode = null; x.dynamic = null;
+  } else {
+    x.tcName = "Плановый интерфейс: " + (x.containerName || x.api);
+    x.tcCode = null; x.dynamic = null;
+  }
+}
 
 function ucPartCanSave(x){
   if(x.choice==="existing") return !!(x.appAlias && x.methodCode);
@@ -12654,7 +12658,7 @@ function UcUnmappedPartCard(x){
     <div class="card uc-unmapped-card">
       <div class="uc-unmapped-head">
         <div><b><span class="uc-part-code">${x.part}</span> ${escapeHtml(x.participant)} ${escapeHtml(x.action)}</b></div>
-        <span class="badge orange">Требует решения</span>
+        ${x.decision ? scenarioStatusBadge(x.decision==="existing"||x.decision==="specified" ? "confirmed" : x.decision) : `<span class="badge orange">Требует решения</span>`}
       </div>
       <div class="row-sub" style="margin-bottom:var(--space-4);">${escapeHtml(x.note||"")}</div>
 
@@ -12668,10 +12672,6 @@ function UcUnmappedPartCard(x){
             ${choice===o.key ? UcPartChoiceFields(x, o.key) : ""}
           </div>
         `).join("")}
-      </div>
-
-      <div class="uc-card-foot">
-        <button class="btn btn-primary btn-sm" data-action="uc-save-part-decision" data-id="${x.id}" ${ucPartCanSave(x)?"":"disabled"}>Сохранить решение</button>
       </div>
     </div>
   `;
@@ -13317,6 +13317,40 @@ const TIP_EDGE = 8;  /* зазор до края окна */
    и вложенная сущность действительно существуют. Сохраняется и открытый визард оценки —
    без таймеров и без экрана загрузки. */
 const LOCATION_KEY = "beeatlas_location_v1";
+/* Перезагрузка страницы не должна выкидывать из прохождения Use Case: визард кладём
+   в ту же сессионную память, что и маршрут, рядом с визардом оценки. timer — id
+   setInterval, после перезагрузки он мёртв, поэтому незавершённый прогон импорта не
+   восстанавливаем: возвращаем на шаг данных с сохранённой формой, иначе пользователь
+   попал бы на вечный спиннер или на пустой результат. */
+function ucWizardSnapshot(w){
+  const snap = Object.assign({}, w, {loading:false, importing:false, timer:null});
+  if(w.importing){
+    snap.stepIndex = UC_WIZARD_STEPS.findIndex(s=>s.key==="setup");
+    snap.data = Object.assign({}, w.data, {
+      parts: [],
+      stages: UC_IMPORT_STAGES.map(st=>Object.assign({status:"pending"}, st)),
+    });
+  }
+  return snap;
+}
+
+/* id Use Case выдаются через uid() и пересоздаются при перезагрузке (в отличие от
+   проектов с их сквозной нумерацией), поэтому ссылку на существующий UC проверяем
+   отдельно: редактирование чужого UC восстанавливать нельзя, а выбор в режиме
+   «существующий» просто откатываем на первый UC проекта. */
+function restoreUcWizard(w){
+  if(!w) return null;
+  const p = findProject(w.projectId);
+  if(!p) return null;
+  if(w.editing) return findUseCase(p, w.data.existingUcId) ? w : null;
+  if(w.data.mode==="existing" && !findUseCase(p, w.data.existingUcId)){
+    const first = (p.useCases||[])[0];
+    if(!first) return null;
+    w.data.existingUcId = first.id;
+  }
+  return w;
+}
+
 function saveLocation(){
   try{
     const snapshot = {
@@ -13326,6 +13360,7 @@ function saveLocation(){
       projectDataSubTab: state.projectDataSubTab,
       projectAgentsSubTab: state.projectAgentsSubTab,
       wizard: state.wizard ? Object.assign({}, state.wizard, {loading:false, loadingInfo:null, loadingTimer:null}) : null,
+      ucWizard: state.ucWizard ? ucWizardSnapshot(state.ucWizard) : null,
       appcat: {
         detailId: state.appcat.detailId,
         tab: state.appcat.tab,
@@ -13595,6 +13630,7 @@ function handleInput(el){
       // правка строки поиска сбрасывает ранее выбранный метод: иначе в решении остались бы
       // приложение и контейнер от метода, которого в поле уже нет
       if(el.dataset.partField==="methodQuery") ucPartClearMethod(part);
+      ucPartApplyDecision(part);
       render(); reFocus(el.id);
     }
   }
@@ -14213,6 +14249,7 @@ function handleAction(action, el){
         // поля у вариантов разные, поэтому при смене варианта заполненное ранее не переносим
         if(part.choice !== el.dataset.choice) ucPartClearFields(part);
         part.choice = el.dataset.choice;
+        ucPartApplyDecision(part);
       }
       render(); break;
     }
@@ -14228,6 +14265,7 @@ function handleAction(action, el){
         part.tcName = m.tcName;
         part.tcCode = m.tcCode;
       }
+      if(part) ucPartApplyDecision(part);
       render(); break;
     }
     case "uc-part-set-app": {
@@ -14239,29 +14277,8 @@ function handleAction(action, el){
         ucPartClearMethod(part);
         part.methodQuery = null;
       }
+      if(part) ucPartApplyDecision(part);
       state.popover = null; render(); break;
-    }
-    case "uc-save-part-decision": {
-      const part = state.ucWizard.data.parts.find(x=>x.id===el.dataset.id);
-      if(!part || !ucPartCanSave(part)) break;
-      part.decision = part.choice;
-      if(part.decision==="existing"){
-        // метод найден в архитектуре, поэтому ТС и динамика берутся из него, а не выдумываются
-        part.dynamic = "SEQ-" + Math.floor(10+Math.random()*89);
-      } else if(part.decision==="specified"){
-        part.tcName = "Уточнено архитектором: " + part.api;
-        part.tcCode = "TC-" + Math.floor(200+Math.random()*700);
-        part.dynamic = "SEQ-" + Math.floor(10+Math.random()*89);
-      } else if(part.decision==="notcall"){
-        part.tcName = null;
-        part.tcCode = null;
-        part.dynamic = null;
-      } else {
-        part.tcName = "Плановый интерфейс: " + (part.containerName || part.api);
-        part.tcCode = null;
-        part.dynamic = null;
-      }
-      render(); break;
     }
     case "uc-part-page": {
       const w = state.ucWizard;
@@ -14910,6 +14927,7 @@ document.addEventListener("scroll", ()=>{ positionDsSelectMenus(); positionToast
     if(loc.projectDataSubTab) state.projectDataSubTab = loc.projectDataSubTab;
     if(loc.projectAgentsSubTab) state.projectAgentsSubTab = loc.projectAgentsSubTab;
     if(loc.wizard && findProject(loc.wizard.projectId)) state.wizard = loc.wizard;
+    if(loc.ucWizard) state.ucWizard = restoreUcWizard(loc.ucWizard);
     if(loc.appcat) Object.assign(state.appcat, loc.appcat);
     if(loc.cj){
       const o = loc.cj.open;
