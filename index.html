@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261008-105046">
+<meta name="beeatlas-build" content="20261008-105447">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -1792,7 +1792,6 @@
   /* ═══ Визард «Проведение оценки»: геометрия снята с макетов (кадр 1440) ═══
      колонка контента 908px по центру (265…1174), оглавление вынесено в правое поле,
      футер выровнен по правому краю той же колонки, шапка с отступом 24. */
-  .wiz-col .wizard-head{padding:var(--size-spacing-x6) var(--size-spacing-x6) var(--size-spacing-x5);}
   /* Полоса степпера идёт от края до края экрана, поэтому выходит за горизонтальные
      поля .wizard-body (по 32). Ширина при этом ровно равна ширине тела — переполнения нет. */
   .wiz-col .wizard-stepper-wrap{
@@ -1860,8 +1859,18 @@
   .stepper.stepper-inline .step.active::after{background:var(--text);}
 
   .wizard-overlay{position:fixed;inset:0;background:var(--bg);z-index:200;display:flex;flex-direction:column;overflow:hidden;}
-  .wizard-head{display:flex;align-items:center;justify-content:space-between;padding:var(--space-6) var(--space-8) var(--space-5);flex:0 0 auto;border-bottom:1px solid var(--border);}
-  .wizard-head h2{font-size:19px;line-height:24px;letter-spacing:.2px;margin:0;font-weight:500;}
+  /* ДС (components/header, тип Contextual Header — шапка полноэкранного поп-апа):
+     высота контейнера 64, боковые паддинги 24, вертикальных паддингов нет —
+     высоту задаёт сам контейнер, а не сумма отступов и высоты кнопки. */
+  .wizard-head{display:flex;align-items:center;justify-content:space-between;gap:var(--size-spacing-x6);height:var(--header-h);padding:0 var(--size-spacing-x6);flex:0 0 auto;border-bottom:1px solid var(--border);}
+  .wizard-head h2{font-size:20px;line-height:28px;letter-spacing:.2px;margin:0;font-weight:500;}
+  /* Кнопка закрытия — ДС IconButton size=large: 24x24, радиус x2, без фона на hover.
+     Правило намеренно скоупнуто на шапку: тот же класс .wizard-close используется
+     в боковых панелях, их геометрию не трогаем. */
+  .wizard-head .wizard-close{width:24px;height:24px;border-radius:var(--size-border-radius-x2);color:var(--text-secondary);}
+  .wizard-head .wizard-close:hover{background:transparent;color:var(--text);}
+  .wizard-head .wizard-close svg{width:24px;height:24px;}
+  .wizard-head .wizard-close .beeline-icons{width:24px;height:24px;font-size:24px;}
   .wizard-close{width:34px;height:34px;border:none;background:transparent;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--text);}
   .wizard-close:hover{background:var(--bg-alt);}
   .wizard-close svg{width:20px;height:20px;}
