@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261008-104016">
+<meta name="beeatlas-build" content="20261008-104942">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -6017,6 +6017,9 @@ function closeToast(){ state.toast=null; clearTimeout(toastTimer); render(); }
 function renderShell(){
   const prevWizardScroll = document.querySelector(".wizard-body") ? document.querySelector(".wizard-body").scrollTop : null;
   const prevMainScroll = document.getElementById("mainScroll") ? document.getElementById("mainScroll").scrollTop : null;
+  // Сайдбар пересобирается целиком на каждом render, и его прокрутка обнулялась:
+  // у прокрученного меню нижние разделы подпрыгивали вверх от любого клика на странице.
+  const prevSidebarScroll = document.getElementById("sidebarScroll") ? document.getElementById("sidebarScroll").scrollTop : null;
   const app = document.getElementById("app");
   app.innerHTML = `
     <div data-theme="${state.theme}" style="display:flex;flex-direction:column;height:100vh;">
@@ -6047,6 +6050,7 @@ function renderShell(){
   bindGlobalEvents();
   if(prevWizardScroll!==null){ const wb = document.querySelector(".wizard-body"); if(wb) wb.scrollTop = prevWizardScroll; }
   if(prevMainScroll!==null){ const ms = document.getElementById("mainScroll"); if(ms) ms.scrollTop = prevMainScroll; }
+  if(prevSidebarScroll!==null){ const sb = document.getElementById("sidebarScroll"); if(sb) sb.scrollTop = prevSidebarScroll; }
 }
 
 function Header(){
@@ -6241,7 +6245,7 @@ function HomePage(){
 function Sidebar(){
   const collapsed = state.sidebarCollapsed;
   return `
-  <div class="sidebar ${collapsed?"collapsed":""}">
+  <div class="sidebar ${collapsed?"collapsed":""}" id="sidebarScroll">
     <button class="sidebar-toggle" data-action="toggle-sidebar" title="Свернуть меню">${icon("menu")}</button>
     ${NAV_GROUPS.map(g=>`
       <div class="navgroup">
@@ -10556,8 +10560,11 @@ function ProjectAgentsTab(p){
 }
 
 function InternalAgentsGrid(p){
+  // Use Case агентом больше не считается: работа с ним живёт во вкладке «Данные проекта»,
+  // поэтому карточки в сетке агентов у него нет. AGENT_META.usecase оставлен — по нему
+  // всё ещё берутся название и описание в других местах.
   return `<div class="agents-grid-v2">
-    ${Object.keys(AGENT_META).map(key=>{
+    ${Object.keys(AGENT_META).filter(key=>key!=="usecase").map(key=>{
       const meta = AGENT_META[key];
       return `
         <div class="card agent-card-v2">
@@ -10567,9 +10574,7 @@ function InternalAgentsGrid(p){
           </div>
           <div class="cell-clamp-wrap"><div class="agent-card-v2-sub cell-clamp">${escapeHtml(meta.desc)}</div><div class="cell-tooltip">${escapeHtml(meta.desc)}</div></div>
           <div class="agent-card-v2-foot">
-            ${key==="usecase"
-              ? `<button class="btn btn-outline btn-sm" data-action="open-project-usecase" data-id="${p.id}">Открыть Use Case</button>`
-              : `<button class="btn btn-outline btn-sm" data-action="launch-agent" data-agent="${key}" data-id="${p.id}">Запустить агента</button>`}
+            <button class="btn btn-outline btn-sm" data-action="launch-agent" data-agent="${key}" data-id="${p.id}">Запустить агента</button>
           </div>
         </div>
       `;
