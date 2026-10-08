@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261008-164833">
+<meta name="beeatlas-build" content="20261008-170401">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -1278,6 +1278,15 @@
   /* Открытое состояние самодельных селектов (FilterSelect/FloatingSelect) — та же
      подсветка рамки, что у .ds-select.open .ds-select-trigger. */
   .select-wrap.open .select{background:var(--bg);border-color:var(--text);}
+  .select-wrap.placeholder .select{color:var(--text-tertiary);}
+  /* Нативный <select> с подписью внутри рамки. По правилу прототипа нативных
+     селектов быть не должно — это отдельная задача; подпись при этом уже внутри. */
+  .nfield{position:relative;}
+  .nfield .select{padding-top:22px;padding-bottom:6px;line-height:20px;}
+  .nfield .ffield-label{top:6px;font-size:13px;color:var(--text-secondary);transform:none;}
+  /* Многострочное поле: подпись не плавает по центру — текст начинается сверху. */
+  .ffield.ftextarea .ffield-label{top:6px;font-size:13px;color:var(--text-secondary);transform:none;}
+  .ffield.ftextarea .textarea{padding-top:26px;}
   /* Диаграмма вызовов сценария — SVG из buildSequenceSvgGeneric, тот же рендерер,
      что у Dynamic-диаграммы BI Step в каталоге, но вне его CSS-скоупа. */
   .uc-diagram-card{border:1px solid var(--border);border-radius:var(--size-border-radius-x6);overflow:hidden;}
@@ -1910,7 +1919,9 @@
   .side-head h2{font-size:20px;line-height:28px;letter-spacing:.2px;font-weight:500;margin:0 0 var(--space-2);}
   .side-head .side-desc{color:var(--text-secondary);font-size:15px;line-height:18px;letter-spacing:.2px;margin:0;}
   .side-body{flex:1;overflow-y:auto;padding:var(--size-spacing-x4) var(--size-spacing-x4) var(--size-spacing-x5);}
-  .side-foot{padding:var(--size-spacing-x5) var(--size-spacing-x4);border-top:1px solid var(--border);display:flex;gap:var(--space-3);justify-content:flex-end;flex:0 0 auto;}
+  /* ДС (components/bottomActionBar): сверху 16, снизу 24, кнопки по правому краю,
+     размер medium. По бокам — горизонтальные поля сайдшита. */
+  .side-foot{padding:var(--size-spacing-x4) var(--size-spacing-x4) var(--size-spacing-x6);border-top:1px solid var(--color-divider);display:flex;gap:var(--space-3);justify-content:flex-end;flex:0 0 auto;}
 
   .search-result-card{border:1px solid var(--border);border-radius:var(--radius-sm);padding:var(--space-4) var(--space-4);display:flex;align-items:flex-start;gap:var(--space-3);margin-bottom:var(--space-3);cursor:pointer;}
   .search-result-card:hover{border-color:var(--border-strong);}
@@ -4923,7 +4934,7 @@ function makeHldSkeleton(p){
     nfr: NFR_LIST.slice(0,6).map(x=>Object.assign({},x)),
     systems: HLD_SYSTEMS_POOL.map(x=>Object.assign({id:uid("sys")},x)),
     tc: Array.from({length:9},(_,i)=>makeTcRow(i)),
-    useCases: USE_CASES_POOL.map(x=>Object.assign({id:uid("uc")},x)),
+    useCases: USE_CASES_POOL.map(x=>Object.assign({id:nextUcId()},x)),
   };
 }
 
@@ -5022,6 +5033,11 @@ function makeAssessment(name){
    собирается одинаково, поэтому такой id переживает обновление страницы — на нём
    держится восстановление открытой страницы (см. saveLocation/restoreRoute). */
 let projSeq = 0;
+/* id Use Case — сквозной счётчик, а не uid(): демо-данные пересобираются при каждой
+   загрузке, и случайные id ломали восстановление маршрута (страница UC сбрасывалась
+   на список) и восстановление визарда. Счётчик даёт те же id при той же сборке данных. */
+let ucSeq = 0;
+function nextUcId(){ return "uc-" + (++ucSeq); }
 function freshProject(name, code){
   return {
     id: "proj-" + (++projSeq),
@@ -5133,7 +5149,7 @@ order_service -> order_service: send_confirmation
 
 function makeUseCases(){
   return USE_CASES_LIST_POOL.map(x=>Object.assign({
-    id: uid("uc"),
+    id: nextUcId(),
     updated: NOW_DATE,
     cj:{code:"CJ-0042", name:"Онлайн заказ: выбор и оплата"},
     cjStep:{code:"Step-00.00.02.08", name:"Пользователь оформляет заказ"},
@@ -8363,13 +8379,15 @@ function GraphTypeEditorOverlay(){
        <div style="max-width:909px;margin:0 auto;">
         <h2 style="margin-bottom:var(--space-6);">${ed.editingCode ? "Редактировать тип" : (isNode?"Новый тип ноды":"Новый тип связи")}</h2>
 
-        <div class="field-block"><label class="field-label">Имя</label><input class="input" id="gteName" value="${escapeHtml(d.name)}" placeholder="Например, Риск"/></div>
+        <div class="field-block">${FField({id:"gteName", label:"Имя", value:d.name})}</div>
         <div class="field-block">
-          <label class="field-label">Код</label>
-          <input class="input" id="gteCode" value="${escapeHtml(d.code)}" ${ed.editingCode?"disabled":""} placeholder="${isNode?"risk":"RELIES_ON"}"/>
+          <div class="ffield${d.code?" filled":""}">
+            <div class="ffield-box"><input class="input ffield-input" id="gteCode" value="${escapeHtml(d.code)}" ${ed.editingCode?"disabled":""} autocomplete="off"/></div>
+            <label class="ffield-label">Код</label>
+          </div>
           <div style="color:var(--text-secondary);font-size:12px;margin-top:4px;">Формат: ${isNode?"^[a-z][a-z0-9_]*$":"^[A-Z][A-Z0-9_]*$"}</div>
         </div>
-        <div class="field-block"><label class="field-label">Описание</label><textarea class="textarea" id="gteDesc" placeholder="Что это за сущность" style="min-height:70px;">${escapeHtml(d.description)}</textarea></div>
+        <div class="field-block">${FTextarea({id:"gteDesc", label:"Описание", value:d.description, rows:70})}</div>
 
         <div style="font-weight:600;margin-bottom:var(--space-3);">Атрибуты</div>
         ${d.attributes.map((a,i)=>`
@@ -8390,7 +8408,7 @@ function GraphTypeEditorOverlay(){
               </div>
             `).join("")}
           </div>
-          <div class="field-block"><label class="field-label">Название связи (тип ребра Neo4j)</label><input class="input" id="gteRelType" value="${escapeHtml(d.relationshipType)}" placeholder="HAS_RISK"/></div>
+          <div class="field-block">${FField({id:"gteRelType", label:"Название связи (тип ребра Neo4j)", value:d.relationshipType})}</div>
           <div style="font-weight:600;margin-bottom:var(--space-3);">Направление</div>
           <div class="ac-radio-group" style="margin-bottom:var(--space-5);">
             <div class="ac-radio ${d.relationshipDirection==="TO_CUSTOM"?"checked":""}" data-action="graph-set-direction" data-dir="TO_CUSTOM"><div class="dot"></div>Существующая → кастомная</div>
@@ -8441,15 +8459,15 @@ function GraphAddNodeOverlay(){
         <h2 style="margin-bottom:var(--space-2);">Добавить ноду</h2>
         <div style="color:var(--text-secondary);font-size:13px;margin-bottom:var(--space-6);">Крепится к «${escapeHtml(anchor.label)}»</div>
 
-        <div class="field-block">
-          <label class="field-label">Тип</label>
+        <div class="field-block nfield">
           <select class="select" id="ganTypeSelect">
             ${options.map(o=>`<option value="${o.code}" ${st.draft.typeCode===o.code?"selected":""}>${escapeHtml(o.name)}</option>`).join("")}
           </select>
+          <label class="ffield-label">Тип</label>
         </div>
-        <div class="field-block"><label class="field-label">Имя экземпляра</label><input class="input" id="ganName" value="${escapeHtml(st.draft.name)}" placeholder="Например, Риск потери корзины"/></div>
+        <div class="field-block">${FField({id:"ganName", label:"Имя экземпляра", value:st.draft.name})}</div>
         ${type ? Object.entries(type.attributes).map(([k,label])=>`
-          <div class="field-block"><label class="field-label">${escapeHtml(label)}</label><input class="input" id="ganAttr-${escapeHtml(k)}" data-gan-attr="${escapeHtml(k)}" value="${escapeHtml(st.draft.attributes[k]||"")}"/></div>
+          <div class="field-block">${FField({id:"ganAttr-"+k, label, value:st.draft.attributes[k]||"", dataAttrs:{"gan-attr":k}})}</div>
         `).join("") : ""}
        </div>
       </div>
@@ -8490,28 +8508,28 @@ function GraphAddRelOverlay(){
         <h2 style="margin-bottom:var(--space-2);">Добавить связь</h2>
         <div style="color:var(--text-secondary);font-size:13px;margin-bottom:var(--space-6);">От «${escapeHtml(anchor.label)}»</div>
 
-        <div class="field-block">
-          <label class="field-label">Тип связи</label>
+        <div class="field-block nfield">
           <select class="select" id="garTypeSelect">
             ${options.map(o=>`<option value="${o.code}" ${st.draft.typeCode===o.code?"selected":""}>${escapeHtml(o.name)}</option>`).join("")}
           </select>
+          <label class="ffield-label">Тип связи</label>
         </div>
-        <div class="field-block">
-          <label class="field-label">Направление</label>
+        <div class="field-block nfield">
           <select class="select" id="garRoleSelect">
             ${type && type.nodePairs.some(p=>p.from===anchor.type) ? `<option value="from" ${anchorRole==="from"?"selected":""}>«${escapeHtml(anchor.label)}» → другой элемент</option>` : ""}
             ${type && type.nodePairs.some(p=>p.to===anchor.type) ? `<option value="to" ${anchorRole==="to"?"selected":""}>другой элемент → «${escapeHtml(anchor.label)}»</option>` : ""}
           </select>
+          <label class="ffield-label">Направление</label>
         </div>
-        <div class="field-block">
-          <label class="field-label">Второй элемент</label>
+        <div class="field-block nfield">
           <select class="select" id="garOtherSelect">
             <option value="">Выбрать элемент</option>
             ${otherOptions.map(o=>`<option value="${o.id}" ${st.draft.otherId===o.id?"selected":""}>${escapeHtml(o.label)} (${escapeHtml(o.type)})</option>`).join("")}
           </select>
+          <label class="ffield-label">Второй элемент</label>
         </div>
         ${type ? Object.entries(type.attributes).map(([k,label])=>`
-          <div class="field-block"><label class="field-label">${escapeHtml(label)}</label><input class="input" id="garAttr-${escapeHtml(k)}" data-gar-attr="${escapeHtml(k)}" value="${escapeHtml(st.draft.attributes[k]||"")}"/></div>
+          <div class="field-block">${FField({id:"garAttr-"+k, label, value:st.draft.attributes[k]||"", dataAttrs:{"gar-attr":k}})}</div>
         `).join("") : ""}
        </div>
       </div>
@@ -8635,41 +8653,41 @@ function CjFiltersPanel(){
           <div class="toggle ${f.withGrafana?"on":""}" data-action="cj-toggle-with-grafana"><div class="knob"></div></div>
           <span>Показать CJ с дашбордами в Grafana</span>
         </div>
-        <div class="field-block">
-          <label class="field-label">Продукт</label>
+        <div class="field-block nfield">
           <select class="select" id="cjFilterProductSelect">
             <option value="">Все</option>
             ${productOptions.map(p=>`<option value="${escapeHtml(p)}" ${f.product===p?"selected":""}>${escapeHtml(p)}</option>`).join("")}
           </select>
+          <label class="ffield-label">Продукт</label>
         </div>
-        <div class="field-block">
-          <label class="field-label">Статус</label>
+        <div class="field-block nfield">
           <select class="select" id="cjFilterStatusSelect">
             <option value="">Все</option>
             <option value="Опубликован" ${f.status==="Опубликован"?"selected":""}>Опубликован</option>
             <option value="Черновик" ${f.status==="Черновик"?"selected":""}>Черновик</option>
           </select>
+          <label class="ffield-label">Статус</label>
         </div>
-        <div class="field-block">
-          <label class="field-label">Формат</label>
+        <div class="field-block nfield">
           <select class="select" id="cjFilterFormatSelect">
             <option value="">Все</option>
             ${CJ_FILTER_FORMAT_OPTIONS.map(t=>`<option value="${t}" ${f.format===t?"selected":""}>${t}</option>`).join("")}
           </select>
+          <label class="ffield-label">Формат</label>
         </div>
-        <div class="field-block">
-          <label class="field-label">Канал</label>
+        <div class="field-block nfield">
           <select class="select" id="cjFilterChannelSelect">
             <option value="">Все</option>
             ${channelOptions.map(c=>`<option value="${escapeHtml(c)}" ${f.channel===c?"selected":""}>${escapeHtml(c)}</option>`).join("")}
           </select>
+          <label class="ffield-label">Канал</label>
         </div>
-        <div class="field-block">
-          <label class="field-label">Тип</label>
+        <div class="field-block nfield">
           <select class="select" id="cjFilterTypeSelect">
             <option value="">Все</option>
             ${CJ_FILTER_TYPE_OPTIONS.map(t=>`<option value="${t}" ${f.type===t?"selected":""}>${t}</option>`).join("")}
           </select>
+          <label class="ffield-label">Тип</label>
         </div>
       </div>
       <div class="side-foot">
@@ -8885,22 +8903,13 @@ function CjCallEditFields(calls){
         <div class="cj-call-edit-title">Вызов ${i+1}</div>
         ${calls.length>1 ? `<button class="icon-btn" data-action="cj-remove-call" data-idx="${i}" title="Удалить вызов">${icon("x")}</button>` : ""}
       </div>
-      <div class="field-block">
-        <label class="field-label">Приложение</label>
-        <input class="input" id="cjCall-${i}-app" data-call-idx="${i}" data-call-field="app" value="${escapeHtml(c.app)}" placeholder="Например, Beeatlas">
-      </div>
-      <div class="field-block">
-        <label class="field-label">Техническая возможность</label>
-        <input class="input" id="cjCall-${i}-capability" data-call-idx="${i}" data-call-field="capability" value="${escapeHtml(c.capability)}" placeholder="Что делает этот вызов">
-      </div>
-      <div class="field-block">
-        <label class="field-label">Endpoint</label>
-        <input class="input" id="cjCall-${i}-endpoint" data-call-idx="${i}" data-call-field="endpoint" value="${escapeHtml(c.endpoint)}" placeholder="POST /...">
-      </div>
-      <div class="field-block">
-        <label class="field-label">Интерфейс</label>
-        <input class="input" id="cjCall-${i}-iface" data-call-idx="${i}" data-call-field="iface" value="${escapeHtml(c.iface)}" placeholder="REST">
-      </div>
+      ${["app","capability","endpoint","iface"].map((f,fi)=>`
+        <div class="field-block">${FField({
+          id:`cjCall-${i}-${f}`,
+          label:["Приложение","Техническая возможность","Endpoint","Интерфейс"][fi],
+          value:c[f],
+          dataAttrs:{"call-idx":i, "call-field":f},
+        })}</div>`).join("")}
     </div>
   `).join("");
 }
@@ -9121,17 +9130,46 @@ function DsSelect({id, value, placeholder, options, action, dataAttrs}){
 /* Тот же принцип, что у DsSelect (своё меню, не нативный <select>), но триггер —
    поле с плавающей подписью внутри рамки (.select-wrap/.ffield-label), как у
    фильтров списков. Список опций фиксированный, поэтому value===placeholder не бывает. */
-function FilterSelect({id, label, value, options, action}){
+function FilterSelect({id, label, value, options, action, placeholder, dataAttrs}){
   const open = state.popover===id;
+  const attrs = Object.entries(dataAttrs||{}).map(([k,v])=>`data-${k}="${escapeHtml(String(v))}"`).join(" ");
+  const shown = value || placeholder || "";
   return `
-    <div class="select-wrap${open?" open":""}">
+    <div class="select-wrap${open?" open":""}${value?"":" placeholder"}">
       <label class="ffield-label" style="opacity:1;">${escapeHtml(label)}</label>
-      <button type="button" class="select" style="text-align:left;cursor:pointer;padding-top:22px;padding-bottom:6px;line-height:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" data-action="toggle-popover" data-popover="${id}">${escapeHtml(value)}</button>
+      <button type="button" class="select" style="text-align:left;cursor:pointer;padding-top:22px;padding-bottom:6px;line-height:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" data-action="toggle-popover" data-popover="${id}">${escapeHtml(shown)}</button>
       ${icon("chevronDown")}
       ${open ? `
         <div class="ds-select-menu" style="top:100%;left:0;">
-          ${options.map(o=>`<div class="ds-select-item${o===value?" selected":""}" data-action="${action}" data-value="${escapeHtml(o)}">${escapeHtml(o)}</div>`).join("")}
+          ${options.map(o=>`<div class="ds-select-item${o===value?" selected":""}" data-action="${action}" ${attrs} data-value="${escapeHtml(o)}" title="${escapeHtml(o)}">${escapeHtml(o)}</div>`).join("")}
         </div>` : ""}
+    </div>
+  `;
+}
+
+/* Текстовое поле с подписью внутри (ДС components/textfield, size=medium).
+   Подпись над полем в прототипе не используется — она всегда внутри рамки:
+   по центру, пока поле пустое и не в фокусе, и наверху, когда есть значение. */
+function FField({id, label, value, action, dataAttrs, type}){
+  const v = value == null ? "" : String(value);
+  const attrs = Object.entries(dataAttrs||{}).map(([k,v2])=>`data-${k}="${escapeHtml(String(v2))}"`).join(" ");
+  return `
+    <div class="ffield${v?" filled":""}">
+      <div class="ffield-box">
+        <input class="input ffield-input"${type?` type="${type}"`:""} id="${id}"${action?` data-action="${action}"`:""} ${attrs} value="${escapeHtml(v)}" autocomplete="off"/>
+      </div>
+      <label class="ffield-label">${escapeHtml(label)}</label>
+    </div>
+  `;
+}
+
+/* Многострочное поле с той же подписью внутри. */
+function FTextarea({id, label, value, rows}){
+  const v = value == null ? "" : String(value);
+  return `
+    <div class="ffield ftextarea${v?" filled":""}">
+      <textarea class="textarea ffield-input" id="${id}" style="min-height:${rows||96}px;">${escapeHtml(v)}</textarea>
+      <label class="ffield-label">${escapeHtml(label)}</label>
     </div>
   `;
 }
@@ -9466,13 +9504,14 @@ function UcBranchCreatePanel(){
       </div>
       <div class="side-body">
         <div class="field-block">
-          <label class="field-label">Название ветки*</label>
-          <input class="input${taken?" error":""}" id="ucBranchName" value="${escapeHtml(panel.name)}" placeholder="Например, ivanov-fraud-check" autocomplete="off">
+          <div class="ffield${panel.name?" filled":""}">
+            <div class="ffield-box${taken?" error":""}"><input class="input ffield-input" id="ucBranchName" value="${escapeHtml(panel.name)}" autocomplete="off"></div>
+            <label class="ffield-label">Название ветки*</label>
+          </div>
           ${taken?`<div style="color:var(--red-text);font-size:12.5px;margin-top:4px;">Ветка с таким названием уже существует</div>`:""}
         </div>
         <div class="field-block">
-          <label class="field-label">Клонировать состав из ветки</label>
-          ${CjSelectField({id:"uc-branch-parent", branches, activeId:panel.parent, action:"uc-branch-set-parent", wide:true})}
+          ${CjSelectField({id:"uc-branch-parent", label:"Клонировать состав из ветки", branches, activeId:panel.parent, action:"uc-branch-set-parent", wide:true})}
         </div>
         <div class="readonly-note" style="align-items:flex-start;">
           ${icon("info")}
@@ -9529,12 +9568,10 @@ function UcMergePanel(){
 
         <div style="display:flex;gap:var(--space-4);">
           <div class="field-block" style="flex:1;">
-            <label class="field-label">Откуда</label>
-            ${CjSelectField({id:"uc-merge-source", branches, activeId:m.source, action:"uc-merge-set-source", wide:true})}
+            ${CjSelectField({id:"uc-merge-source", label:"Откуда", branches, activeId:m.source, action:"uc-merge-set-source", wide:true})}
           </div>
           <div class="field-block" style="flex:1;">
-            <label class="field-label">Куда</label>
-            ${CjSelectField({id:"uc-merge-target", branches, activeId:m.target, action:"uc-merge-set-target", disabledId:m.source, disabledTitle:"Совпадает с источником", wide:true})}
+            ${CjSelectField({id:"uc-merge-target", label:"Куда", branches, activeId:m.target, action:"uc-merge-set-target", disabledId:m.source, disabledTitle:"Совпадает с источником", wide:true})}
           </div>
         </div>
 
@@ -9544,7 +9581,7 @@ function UcMergePanel(){
         </div>
 
         <div class="field-block" style="margin-top:var(--space-5);">
-          <label class="field-label">Стратегия объединения</label>
+          <div style="font-weight:600;margin-bottom:var(--space-3);">Стратегия объединения</div>
           <div class="cj-merge-strategy">
             <div class="cj-merge-strategy-card ${m.strategy==="add"?"active":""}" data-action="uc-merge-set-strategy" data-strategy="add">
               <div class="t">Добавление (add)</div>
@@ -9770,11 +9807,16 @@ function CjCreateOverlay(){
           <input type="file" id="cjBpmnFileInput" accept=".bpmn,.xml" style="display:none;">
         `}
 
-        <div class="field-block"><label class="field-label">Название*</label><input class="input" id="cjCreateName" value="${escapeHtml(cp.name)}" placeholder="Название CJ"/></div>
-        <div class="field-block"><label class="field-label">Портрет пользователя</label><input class="input" id="cjCreatePortrait" value="${escapeHtml(cp.portrait)}"/></div>
-        <div class="field-block"><label class="field-label">Владелец сценария*</label><input class="input" id="cjCreateOwner" value="${escapeHtml(cp.owner)}"/></div>
-        <div class="field-block"><label class="field-label">Приложение</label><input class="input" value="Beeatlas" disabled/></div>
-        <div class="field-block"><label class="field-label">Теги</label><input class="input" id="cjCreateTags" value="${escapeHtml(cp.tags)}" placeholder="Через запятую"/></div>
+        <div class="field-block">${FField({id:"cjCreateName", label:"Название*", value:cp.name})}</div>
+        <div class="field-block">${FField({id:"cjCreatePortrait", label:"Портрет пользователя", value:cp.portrait})}</div>
+        <div class="field-block">${FField({id:"cjCreateOwner", label:"Владелец сценария*", value:cp.owner})}</div>
+        <div class="field-block">
+          <div class="ffield filled">
+            <div class="ffield-box"><input class="input ffield-input" value="Beeatlas" disabled/></div>
+            <label class="ffield-label">Приложение</label>
+          </div>
+        </div>
+        <div class="field-block">${FField({id:"cjCreateTags", label:"Теги", value:cp.tags})}</div>
 
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-3);">
           <div style="font-weight:600;">Технический ответственный</div>
@@ -9985,17 +10027,16 @@ function CreatePanel(){
     </div>
     <div class="side-body">
       <div class="field-block">
-        <label class="field-label">Название проекта</label>
-        <input class="input ${hasError?"error":""}" id="createNameInput" value="${escapeHtml(cp.name)}" placeholder="Например, Онлайн-заказ SIM-карт"/>
+        <div class="ffield${cp.name?" filled":""}">
+          <div class="ffield-box ${hasError?"error":""}"><input class="input ffield-input" id="createNameInput" value="${escapeHtml(cp.name)}" autocomplete="off"/></div>
+          <label class="ffield-label">Название проекта</label>
+        </div>
         <div style="display:flex;justify-content:space-between;margin-top:var(--space-2);">
           <span class="error-text">${dup ? "Проект с таким названием уже существует" : (tooLong ? "Превышено допустимое количество символов" : "")}</span>
           <span class="char-counter" style="margin:0;">${counter}</span>
         </div>
       </div>
-      <div class="field-block">
-        <label class="field-label" style="display:none;"></label>
-        <input class="input" id="createJiraInput" value="${escapeHtml(cp.jira)}" placeholder="Ссылка на Jira task"/>
-      </div>
+      <div class="field-block">${FField({id:"createJiraInput", label:"Ссылка на Jira task", value:cp.jira})}</div>
     </div>
     <div class="side-foot">
       <button class="btn btn-outline" data-action="close-create">Закрыть</button>
@@ -10378,9 +10419,14 @@ function UseCaseScenariosTable(u, projectId, ucId){
 function UcDynamicPanel(){
   const sp = state.sidePanel;
   return `
-    <div class="side-head"><h2>Dynamic-диаграмма ${escapeHtml(sp.seq)}</h2><button class="wizard-close" data-action="close-side">${icon("x")}</button></div>
+    <div class="side-head">
+      <div>
+        <h2>Dynamic-диаграмма ${escapeHtml(sp.seq)}</h2>
+        <p class="side-desc">Диаграмма последовательности вызовов шага, в нотации PlantUML</p>
+      </div>
+      <button class="wizard-close" data-action="close-side">${icon("x")}</button>
+    </div>
     <div class="side-body">
-      <p style="color:var(--text-secondary);font-size:15px;margin:0 0 var(--space-4);">Диаграмма последовательности вызовов шага, в нотации PlantUML</p>
       <pre style="background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius-sm);padding:var(--space-4) var(--space-4);font-size:13px;line-height:22px;overflow-x:auto;white-space:pre;">${escapeHtml(sp.plantUml||"—")}</pre>
     </div>
     <div class="side-foot">
@@ -10448,23 +10494,22 @@ function UcCjLinkPanel(){
   const sp = state.sidePanel;
   const label = st => `${st.cjName} → ${st.name} (${st.code})`;
   const current = CJ_STEP_POOL.find(st=>st.code===sp.stepCode);
-  const open = state.popover==="ucCjLinkStep";
   return `
-    <div class="side-head"><h2>Привязка к CJ</h2><button class="wizard-close" data-action="close-side">${icon("x")}</button></div>
+    <div class="side-head">
+      <div>
+        <h2>Привязка к CJ</h2>
+        <p class="side-desc">Выбери BI Step, к которому относится этот Use Case. От привязки зависит, в какой CJ и на каком шаге путешествия клиента будет учтён сценарий.</p>
+      </div>
+      <button class="wizard-close" data-action="close-side">${icon("x")}</button>
+    </div>
     <div class="side-body">
-      <p style="color:var(--text-secondary);font-size:15px;margin:0 0 var(--space-5);">Выбери BI Step, к которому относится этот Use Case. От привязки зависит, в какой CJ и на каком шаге путешествия клиента будет учтён сценарий.</p>
       <div class="field-block">
-        <label class="field-label">BI Step Code</label>
-        <div class="ds-select${open?" open":""}">
-          <button type="button" class="ds-select-trigger${current?"":" placeholder"}" data-action="toggle-popover" data-popover="ucCjLinkStep">
-            <span class="val">${current ? escapeHtml(label(current)) : "Выбрать BI Step"}</span>
-            <span class="chev">${icon("chevronDown")}</span>
-          </button>
-          ${open ? `
-            <div class="ds-select-menu">
-              ${CJ_STEP_POOL.map(st=>`<div class="ds-select-item${st.code===sp.stepCode?" selected":""}" data-action="uc-cj-link-set-step" data-value="${st.code}" title="${escapeHtml(label(st))}">${escapeHtml(label(st))}</div>`).join("")}
-            </div>` : ""}
-        </div>
+        ${FloatingSelect({
+          id:"ucCjLinkStep",
+          label:"BI Step Code",
+          valueLabel: current ? label(current) : "Выбрать BI Step",
+          menuHtml: CJ_STEP_POOL.map(st=>`<div class="ds-select-item${st.code===sp.stepCode?" selected":""}" data-action="uc-cj-link-set-step" data-value="${st.code}" title="${escapeHtml(label(st))}">${escapeHtml(label(st))}</div>`).join(""),
+        })}
       </div>
     </div>
     <div class="side-foot">
@@ -11288,24 +11333,11 @@ function PublishPanel(){
       <button class="wizard-close" data-action="close-side">${icon("x")}</button>
     </div>
     <div class="side-body">
-      <div class="field-block">
-        <label class="field-label">Автор проведения оценки*</label>
-        <input class="input" id="pubAuthor" value="${escapeHtml(sp.author)}"/>
-      </div>
-      <div class="field-block">
-        <input class="input" id="pubTitle" placeholder="Название страницы" value="${escapeHtml(sp.pageTitle)}"/>
-      </div>
-      <div class="field-block">
-        <label class="field-label">Ссылка для публикации в confluence*</label>
-        <input class="input" id="pubParent" value="${escapeHtml(sp.parentUrl)}"/>
-      </div>
-      <div class="field-block">
-        <label class="field-label">Ссылка на бизнес-постановку в confluence*</label>
-        <input class="input" id="pubBpUrl" value="${escapeHtml(sp.bpUrl)}"/>
-      </div>
-      <div class="field-block">
-        <textarea class="textarea" id="pubBpText" placeholder="Бизнес-постановка">${escapeHtml(sp.bpText)}</textarea>
-      </div>
+      <div class="field-block">${FField({id:"pubAuthor", label:"Автор проведения оценки*", value:sp.author})}</div>
+      <div class="field-block">${FField({id:"pubTitle", label:"Название страницы", value:sp.pageTitle})}</div>
+      <div class="field-block">${FField({id:"pubParent", label:"Ссылка для публикации в confluence*", value:sp.parentUrl})}</div>
+      <div class="field-block">${FField({id:"pubBpUrl", label:"Ссылка на бизнес-постановку в confluence*", value:sp.bpUrl})}</div>
+      <div class="field-block">${FTextarea({id:"pubBpText", label:"Бизнес-постановка", value:sp.bpText})}</div>
     </div>
     <div class="side-foot">
       <button class="btn btn-outline" data-action="close-side">Закрыть</button>
@@ -11468,14 +11500,8 @@ function WizardStepBusiness(w){
       </div>
 
       <h3 style="font-size:17px;line-height:22px;letter-spacing:.2px;font-weight:500;margin:0 0 var(--space-4);">Добавить ссылку на бизнес-постановку</h3>
-      <div class="field-block">
-        <label class="field-label">Ссылка на бизнес-постановку в confluence</label>
-        <input class="input" id="wizBpUrl" placeholder="https://…" value="${escapeHtml(w.data.bpUrl)}"/>
-      </div>
-      <div class="field-block">
-        <label class="field-label">Персональный токен доступа (PAT)</label>
-        <input class="input" type="password" id="wizBpPat" placeholder="Персональный токен доступа" value="${escapeHtml(w.data.bpPat||"")}"/>
-      </div>
+      <div class="field-block">${FField({id:"wizBpUrl", label:"Ссылка на бизнес-постановку в confluence", value:w.data.bpUrl})}</div>
+      <div class="field-block">${FField({id:"wizBpPat", label:"Персональный токен доступа (PAT)", value:w.data.bpPat||"", type:"password"})}</div>
 
       <h3 style="font-size:17px;line-height:22px;letter-spacing:.2px;font-weight:500;margin:var(--space-7) 0 var(--space-4);">Вставить бизнес-постановку текстом</h3>
       <div class="field-block">
@@ -11663,8 +11689,7 @@ function TcCandidateCard(c, w){
 
     ${c.decision==="new" ? `
       <div style="margin-top:var(--space-4);max-width:320px;">
-        <label class="field-label">В какой системе создать ТС?</label>
-        ${DsSelect({id:`tcsys-${c.id}`, value:c.system||"", placeholder:"Выбрать систему", options:TC_SYSTEM_POOL, action:"tc-set-system", dataAttrs:{cid:c.id}})}
+        ${FilterSelect({id:`tcsys-${c.id}`, label:"В какой системе создать ТС?", value:c.system||"", placeholder:"Выбрать систему", options:TC_SYSTEM_POOL, action:"tc-set-system", dataAttrs:{cid:c.id}})}
       </div>
     ` : ""}
 
@@ -11964,7 +11989,7 @@ function startHldWizard(projectId){
       nfr: a.nfr.map(x=>Object.assign({},x)),
       systems: HLD_SYSTEMS_POOL.map(x=>Object.assign({id:uid("sys"), checked:true},x)),
       tc: a.bcTc.map(x=>Object.assign({},x,{checked:true})),
-      useCases: USE_CASES_POOL.map(x=>Object.assign({id:uid("uc")},x)),
+      useCases: USE_CASES_POOL.map(x=>Object.assign({id:nextUcId()},x)),
       pageTitle: "HLD — " + p.name,
       parentUrl: "https://bwiki.example.ru/x/6wifFQ",
     },
@@ -12112,14 +12137,8 @@ function HldStepPublish(w){
   return `
     <div style="max-width:640px;">
       <h3 style="font-size:17px;margin:0 0 var(--space-5);">Публикация каркаса HLD в Confluence</h3>
-      <div class="field-block">
-        <label class="field-label">Название страницы</label>
-        <input class="input" id="hldPubTitle" value="${escapeHtml(w.data.pageTitle)}"/>
-      </div>
-      <div class="field-block">
-        <label class="field-label" style="display:none;"></label>
-        <input class="input" id="hldPubParent" placeholder="URL родительской страницы" value="${escapeHtml(w.data.parentUrl)}"/>
-      </div>
+      <div class="field-block">${FField({id:"hldPubTitle", label:"Название страницы", value:w.data.pageTitle})}</div>
+      <div class="field-block">${FField({id:"hldPubParent", label:"URL родительской страницы", value:w.data.parentUrl})}</div>
     </div>
   `;
 }
@@ -12770,7 +12789,7 @@ function ucConfirmApply(){
   } else {
     code = d.ucCode;
     uc = {
-      id: uid("uc"), code, name: d.ucName.trim(), status:"published", source:"Ручной импорт",
+      id: nextUcId(), code, name: d.ucName.trim(), status:"published", source:"Ручной импорт",
       updated: NOW_DATE,
       cj: stepMeta ? {code:stepMeta.cjCode, name:stepMeta.cjName} : {code:"—", name:"Без привязки к CJ"},
       cjStep: stepMeta ? {code:stepMeta.code, name:stepMeta.name} : {code:"—", name:"—"},
@@ -12809,13 +12828,8 @@ function HldFlowPanel(){
     canSubmit = (sp.text||"").trim().length>0 || (sp.url||"").trim().length>0;
     submitLabel = "Запустить анализ";
     fields = `
-      <div class="field-block">
-        <label class="field-label">Текст новых/изменившихся требований</label>
-        <textarea class="textarea" id="hldFlowText" placeholder="Например, «Клиент оплачивает заказ частями»">${escapeHtml(sp.text||"")}</textarea>
-      </div>
-      <div class="field-block">
-        <input class="input" id="hldFlowUrl" placeholder="или ссылка на страницу Confluence" value="${escapeHtml(sp.url||"")}"/>
-      </div>
+      <div class="field-block">${FTextarea({id:"hldFlowText", label:"Текст новых/изменившихся требований", value:sp.text||""})}</div>
+      <div class="field-block">${FField({id:"hldFlowUrl", label:"или ссылка на страницу Confluence", value:sp.url||""})}</div>
     `;
   } else if(type==="validate"){
     canSubmit = sp.source==="file" ? !!sp.fileName : (sp.url||"").trim().length>0;
@@ -12868,7 +12882,7 @@ function submitUsecase(){
   const sp = state.sidePanel;
   if(!sp.name.trim()) return;
   state.hldWizard.data.useCases.push({
-    id: uid("uc"),
+    id: nextUcId(),
     code: sp.code.trim() || ("UC-0" + (state.hldWizard.data.useCases.length+1)),
     name: sp.name.trim(),
     steps: sp.steps.trim(),
@@ -12883,18 +12897,9 @@ function UsecasePanel(){
   return `
     <div class="side-head"><h2>Добавление UseCase</h2><button class="wizard-close" data-action="close-side">${icon("x")}</button></div>
     <div class="side-body">
-      <div class="field-block">
-        <label class="field-label">Код (необязательно)</label>
-        <input class="input" id="ucCode" placeholder="UC-05" value="${escapeHtml(sp.code)}"/>
-      </div>
-      <div class="field-block">
-        <label class="field-label">Название</label>
-        <input class="input" id="ucName" placeholder="Название UseCase" value="${escapeHtml(sp.name)}"/>
-      </div>
-      <div class="field-block">
-        <label class="field-label">Шаги сценария</label>
-        <textarea class="textarea" id="ucSteps" placeholder="Шаг 1; Шаг 2; Шаг 3">${escapeHtml(sp.steps)}</textarea>
-      </div>
+      <div class="field-block">${FField({id:"ucCode", label:"Код (необязательно)", value:sp.code})}</div>
+      <div class="field-block">${FField({id:"ucName", label:"Название", value:sp.name})}</div>
+      <div class="field-block">${FTextarea({id:"ucSteps", label:"Шаги сценария", value:sp.steps})}</div>
     </div>
     <div class="side-foot">
       <button class="btn btn-outline" data-action="close-side">Закрыть</button>
