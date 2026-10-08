@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261008-105447">
+<meta name="beeatlas-build" content="20261008-113725">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -1265,11 +1265,15 @@
      что центрирование), поднимается ЛИБО при заполнении, ЛИБО в фокусе — и не
      пропадает. :has() читает реальный DOM-фокус, поэтому не теряет синхронизацию
      при ре-рендере (в отличие от JS-класса, который пришлось бы вручную сверять). */
-  .uc-step-setup .ffield-label{top:14px;font-size:17px;color:var(--text-tertiary);transform:none;}
+  .uc-step-setup .ffield-label,
+  .uc-choice-fields .ffield-label{top:14px;font-size:17px;color:var(--text-tertiary);transform:none;}
   .uc-step-setup .ffield.filled .ffield-label,
   .uc-step-setup .ffield:has(.ffield-input:focus) .ffield-label,
-  .uc-step-setup .ffield:has(textarea:focus) .ffield-label{top:6px;font-size:13px;color:var(--text-secondary);}
-  .uc-step-setup .ffield-box:has(.ffield-input:focus){background:var(--bg);border-color:var(--text);}
+  .uc-step-setup .ffield:has(textarea:focus) .ffield-label,
+  .uc-choice-fields .ffield.filled .ffield-label,
+  .uc-choice-fields .ffield:has(.ffield-input:focus) .ffield-label{top:6px;font-size:13px;color:var(--text-secondary);}
+  .uc-step-setup .ffield-box:has(.ffield-input:focus),
+  .uc-choice-fields .ffield-box:has(.ffield-input:focus){background:var(--bg);border-color:var(--text);}
   .uc-step-setup .ffield textarea.textarea:focus{background:var(--bg);border-color:var(--text);outline:none;}
   /* Открытое состояние самодельных селектов (FilterSelect/FloatingSelect) — та же
      подсветка рамки, что у .ds-select.open .ds-select-trigger. */
@@ -1920,10 +1924,15 @@
   .uc-unmapped-head{display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);margin-bottom:var(--space-1);}
   .uc-part-code{font-family:var(--font-family-mono),ui-monospace,monospace;font-size:13px;color:var(--text-secondary);margin-right:var(--space-2);}
   .uc-choice-group{display:flex;flex-direction:column;gap:var(--space-2);margin-bottom:var(--space-1);}
-  .uc-choice{display:flex;align-items:flex-start;gap:var(--space-3);padding:var(--space-3) var(--space-4);border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;background:var(--bg);}
+  /* Вариант решения — блок с собственными полями: поля выбранного варианта лежат
+     внутри него, а не отдельной секцией внизу карточки (макет «Поведение карточки»).
+     Радиокнопку оборачивает только верхняя строка: будь полями обёрнут <label>,
+     клик по полю переключал бы вариант. */
+  .uc-choice{padding:var(--space-3) var(--space-4);border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg);}
+  .uc-choice-main{display:flex;align-items:flex-start;gap:var(--space-3);cursor:pointer;}
   .uc-choice input[type=radio]{width:16px;height:16px;margin-top:var(--space-1);accent-color:var(--yellow);cursor:pointer;flex:0 0 auto;}
   .uc-choice b{font-size:15px;font-weight:500;}
-  .uc-choice.active{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue) inset;}
+  .uc-choice-fields{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-4);margin-top:var(--space-4);}
   .uc-field-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-1) var(--space-4);margin-top:var(--space-4);}
   .uc-field-grid .field-block{margin-bottom:var(--space-3);}
   /* Поиск метода в архитектуре: своё меню подсказок под полем, как .suggest-dropdown
@@ -1934,9 +1943,6 @@
   .uc-method-item:hover{background:var(--bg-alt);}
   .uc-method-item .m-name{font-size:14.5px;color:var(--text);font-family:var(--font-family-mono),ui-monospace,monospace;}
   .uc-method-item .m-meta{font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);margin-top:var(--space-1);}
-  .uc-method-picked{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3) var(--space-4);padding:var(--space-4);border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--bg-alt);margin-top:var(--space-4);}
-  .uc-method-picked .pk-lbl{font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);}
-  .uc-method-picked .pk-val{font-size:15px;line-height:20px;letter-spacing:.2px;margin-top:var(--space-1);}
   .uc-card-foot{display:flex;justify-content:flex-end;margin-top:var(--space-2);}
 
   /* toast */
@@ -5038,29 +5044,27 @@ const UC_IMPORT_PART_POOL = [
   {mapped:true, participant:"order_service — notification", action:"send_confirmation", api:"notify_api", call:"POST /api/v1/notify/send", tcName:"Возможность отправки уведомления", tcCode:"TC-163"},
 ];
 
-/* Приложения, которые уже рассматривались архитектором — руками выбираем только из них,
-   а не из произвольной мнемоники, см. решение по use-case импорту 2026-09-28 */
-const UC_APP_POOL = ["Личный кабинет","Тарификация","Заказы","Биллинг","Уведомления","Лояльность","CRM"];
-
 /* Методы, уже описанные в спецификации архитектуры. По ним работает вариант
    «Существует в спецификации архитектуры»: агент вызов не сопоставил, а архитектор
    знает метод и находит его поиском. Контейнер и приложение подставляются из найденного
    метода, а не заполняются руками — архитектор решения может не знать контейнер. */
 const UC_ARCH_METHOD_POOL = [
-  {method:"POST /api/v1/loyalty/apply", app:"Лояльность", container:"Сервис бонусов", iface:"loyalty_api.apply.LOY", tcName:"Возможность начисления бонусов", tcCode:"TC-207"},
-  {method:"GET /api/v1/loyalty/balance", app:"Лояльность", container:"Сервис бонусов", iface:"loyalty_api.balance.LOY", tcName:"Возможность получения баланса бонусов", tcCode:"TC-209"},
-  {method:"POST /api/v1/fraud/check", app:"CRM", container:"Сервис проверки мошенничества", iface:"fraud_api.check.FRD", tcName:"Возможность проверки операции на мошенничество", tcCode:"TC-311"},
-  {method:"POST /api/v1/business-mobility-order", app:"Заказы", container:"Сервис заказов", iface:"orders_api.create.ORD", tcName:"Возможность создания заказа мобильности", tcCode:"TC-142"},
-  {method:"POST /api/v1/notify/send", app:"Уведомления", container:"Сервис уведомлений", iface:"notify_api.send.NTF", tcName:"Возможность отправки уведомления", tcCode:"TC-163"},
-  {method:"GET /2.0.0/napi/sim-info", app:"Личный кабинет", container:"API Gateway", iface:"napi.sim-info.NAPI", tcName:"Возможность online-отображения информации по SIM", tcCode:"TC-402"},
+  {alias:"loyalty_service", method:"POST /api/v1/loyalty/apply", app:"Лояльность", container:"Сервис бонусов", iface:"loyalty_api.apply.LOY", tcName:"Возможность начисления бонусов", tcCode:"TC-207"},
+  {alias:"loyalty_service", method:"GET /api/v1/loyalty/balance", app:"Лояльность", container:"Сервис бонусов", iface:"loyalty_api.balance.LOY", tcName:"Возможность получения баланса бонусов", tcCode:"TC-209"},
+  {alias:"fraud_check", method:"POST /api/v1/fraud/check", app:"CRM", container:"Сервис проверки мошенничества", iface:"fraud_api.check.FRD", tcName:"Возможность проверки операции на мошенничество", tcCode:"TC-311"},
+  {alias:"order_service", method:"POST /api/v1/business-mobility-order", app:"Заказы", container:"Сервис заказов", iface:"orders_api.create.ORD", tcName:"Возможность создания заказа мобильности", tcCode:"TC-142"},
+  {alias:"notification", method:"POST /api/v1/notify/send", app:"Уведомления", container:"Сервис уведомлений", iface:"notify_api.send.NTF", tcName:"Возможность отправки уведомления", tcCode:"TC-163"},
+  {alias:"ext_gateway", method:"GET /2.0.0/napi/sim-info", app:"Личный кабинет", container:"API Gateway", iface:"napi.sim-info.NAPI", tcName:"Возможность online-отображения информации по SIM", tcCode:"TC-402"},
 ];
 
-function ucArchMethodMatches(query){
+// Подсказки по полю «Метод»: сперва сужаем по выбранной мнемонике приложения,
+// потом по набранному тексту. Приложение в макете — обязательное поле и стоит
+// первым именно поэтому: без него список методов всего ландшафта бесполезен.
+function ucArchMethodMatches(query, alias){
   const q = String(query||"").trim().toLowerCase();
-  if(!q) return [];
-  return UC_ARCH_METHOD_POOL.filter(m=>
-    (m.method+" "+m.app+" "+m.container+" "+m.iface).toLowerCase().includes(q)
-  );
+  return UC_ARCH_METHOD_POOL
+    .filter(m=>!alias || m.alias===alias)
+    .filter(m=>!q || (m.method+" "+m.app+" "+m.container+" "+m.iface).toLowerCase().includes(q));
 }
 
 const CJ_STEP_POOL = [
@@ -12468,21 +12472,95 @@ function ucPartClearMethod(x){
 // все поля решения — при смене варианта и при сбросе решения карандашом
 function ucPartClearFields(x){
   ucPartClearMethod(x);
-  x.methodQuery = null; x.protocol = null; x.requirements = null; x.dynamic = null;
+  x.appAlias = null; x.methodQuery = null; x.dynamic = null;
 }
 
+/* Варианты решения по несмаппированной части. Поля есть только у двух из четырёх:
+   «существует, но не описано» и «не является вызовом» — это характеристика самого
+   вызова, уточнять по ним нечего (макет «Поведение карточки»). */
+const UC_PART_CHOICES = [
+  {key:"existing", title:"Существует в спецификации архитектуры",
+   desc:"Вызов описан в архитектуре, автоматически сопоставить его не удалось. Укажите метод поиском"},
+  {key:"specified", title:"Существует, в спецификации архитектуры отсутствует",
+   desc:"Вызов есть в системе, но в описание архитектуры не внесён"},
+  {key:"planned", title:"Необходимо разработать",
+   desc:"Интерфейс или метод создаётся в результате проекта"},
+  {key:"notcall", title:"Не является вызовом",
+   desc:"Шаг останется в Use Case информационной строкой и в маппинг не пойдёт"},
+];
+
 function ucPartCanSave(x){
-  if(x.choice==="existing") return !!x.methodCode;
-  if(x.choice==="specified") return !!((x.bc||"").trim() && (x.containerName||"").trim() && (x.interfaceCode||"").trim());
-  if(x.choice==="planned") return !!((x.bc||"").trim() && (x.containerName||"").trim() && (x.interfaceCode||"").trim() && (x.protocol||"").trim());
-  if(x.choice==="notcall") return true;
+  if(x.choice==="existing") return !!(x.appAlias && x.methodCode);
+  if(x.choice==="planned") return !!(x.appAlias && (x.containerName||"").trim());
+  if(x.choice==="specified" || x.choice==="notcall") return true;
   return false;
+}
+
+/* Мнемоники приложений ландшафта — те же, что в «Списке участников»
+   (UC_SYSTEM_ALIAS_META), чтобы архитектор выбирал из одного справочника. */
+function UcPartAppSelect(x){
+  const meta = UC_SYSTEM_ALIAS_META[x.appAlias];
+  return FloatingSelect({
+    id:`ucpf-app-${x.id}`,
+    label:"Приложение (мнемоника)*",
+    valueLabel: x.appAlias ? x.appAlias : "Выбрать приложение",
+    menuHtml: Object.keys(UC_SYSTEM_ALIAS_META).map(alias=>`
+      <div class="ds-select-item two-line${alias===x.appAlias?" selected":""}" data-action="uc-part-set-app" data-id="${x.id}" data-value="${alias}" title="${escapeHtml(UC_SYSTEM_ALIAS_META[alias].name)}">
+        <div>${escapeHtml(alias)}</div><div class="ds-select-sub">${escapeHtml(UC_SYSTEM_ALIAS_META[alias].name)}</div>
+      </div>`).join(""),
+  }) + (meta ? `<div class="row-sub" style="margin-top:var(--space-2);">${escapeHtml(meta.name)}</div>` : "");
+}
+
+function UcPartTextField(x, field, label){
+  const val = x[field] || "";
+  return `
+    <div class="ffield${val?" filled":""}">
+      <div class="ffield-box">
+        <input class="input ffield-input" id="pf-${field}-${x.id}" data-part-field="${field}" data-id="${x.id}" value="${escapeHtml(val)}" autocomplete="off"/>
+      </div>
+      <label class="ffield-label">${escapeHtml(label)}</label>
+    </div>
+  `;
+}
+
+/* Поля выбранного варианта. Подсказка по методу живёт внутри поля «Метод»:
+   внешне это обычное поле из макета, но ввод по-прежнему сопоставляется со
+   спецификацией архитектуры, откуда подставляются контейнер, интерфейс и ТС. */
+function UcPartChoiceFields(x, key){
+  if(key==="existing"){
+    const matches = x.methodCode ? [] : ucArchMethodMatches(x.methodQuery, x.appAlias);
+    return `
+      <div class="uc-choice-fields">
+        <div>${UcPartAppSelect(x)}</div>
+        <div class="uc-method-field" style="position:relative;">
+          ${UcPartTextField(x, "methodQuery", "Метод*")}
+          ${x.appAlias && !x.methodCode && (x.methodQuery||"").trim() ? (matches.length ? `
+            <div class="suggest-dropdown">
+              ${matches.map(m=>`
+                <div class="uc-method-item" data-action="uc-part-pick-method" data-id="${x.id}" data-method="${escapeHtml(m.method)}">
+                  <div class="m-name">${escapeHtml(m.method)}</div>
+                  <div class="m-meta">${escapeHtml(m.container)} · ${escapeHtml(m.iface)}</div>
+                </div>`).join("")}
+            </div>
+          ` : `<div class="suggest-dropdown"><div class="suggest-empty">Нет совпадений. Если метода в архитектуре нет, выберите другой вариант</div></div>`) : ""}
+          ${x.methodCode && x.tcCode ? `<div class="row-sub" style="margin-top:var(--space-2);">${escapeHtml(x.containerName||"")} · ТС <span class="req-chip">${escapeHtml(x.tcCode)}</span></div>` : ""}
+        </div>
+      </div>
+    `;
+  }
+  if(key==="planned"){
+    return `
+      <div class="uc-choice-fields">
+        <div>${UcPartAppSelect(x)}</div>
+        <div>${UcPartTextField(x, "containerName", "Контейнер / интерфейс")}</div>
+      </div>
+    `;
+  }
+  return "";
 }
 
 function UcUnmappedPartCard(x){
   const choice = x.choice || "";
-  const showFields = choice==="specified" || choice==="planned";
-  const methodMatches = choice==="existing" && !x.methodCode ? ucArchMethodMatches(x.methodQuery) : [];
   return `
     <div class="card uc-unmapped-card">
       <div class="uc-unmapped-head">
@@ -12492,76 +12570,16 @@ function UcUnmappedPartCard(x){
       <div class="row-sub" style="margin-bottom:var(--space-4);">${escapeHtml(x.note||"")}</div>
 
       <div class="uc-choice-group">
-        <label class="uc-choice ${choice==="existing"?"active":""}">
-          <input type="radio" name="uc-choice-${x.id}" data-action="uc-part-choice" data-id="${x.id}" data-choice="existing" ${choice==="existing"?"checked":""}/>
-          <div><b>Существует в спецификации архитектуры</b><div class="row-sub">Вызов описан в архитектуре, автоматически сопоставить его не удалось. Укажите метод поиском</div></div>
-        </label>
-        <label class="uc-choice ${choice==="specified"?"active":""}">
-          <input type="radio" name="uc-choice-${x.id}" data-action="uc-part-choice" data-id="${x.id}" data-choice="specified" ${choice==="specified"?"checked":""}/>
-          <div><b>Существует, в спецификации архитектуры отсутствует</b><div class="row-sub">Вызов есть в системе, но в описание архитектуры не внесён</div></div>
-        </label>
-        <label class="uc-choice ${choice==="planned"?"active":""}">
-          <input type="radio" name="uc-choice-${x.id}" data-action="uc-part-choice" data-id="${x.id}" data-choice="planned" ${choice==="planned"?"checked":""}/>
-          <div><b>Необходимо разработать</b><div class="row-sub">Интерфейс или метод создаётся в результате проекта</div></div>
-        </label>
-        <label class="uc-choice ${choice==="notcall"?"active":""}">
-          <input type="radio" name="uc-choice-${x.id}" data-action="uc-part-choice" data-id="${x.id}" data-choice="notcall" ${choice==="notcall"?"checked":""}/>
-          <div><b>Не является вызовом</b><div class="row-sub">Шаг останется в Use Case информационной строкой и в маппинг не пойдёт</div></div>
-        </label>
+        ${UC_PART_CHOICES.map(o=>`
+          <div class="uc-choice ${choice===o.key?"active":""}">
+            <label class="uc-choice-main">
+              <input type="radio" name="uc-choice-${x.id}" data-action="uc-part-choice" data-id="${x.id}" data-choice="${o.key}" ${choice===o.key?"checked":""}/>
+              <div><b>${escapeHtml(o.title)}</b><div class="row-sub">${escapeHtml(o.desc)}</div></div>
+            </label>
+            ${choice===o.key ? UcPartChoiceFields(x, o.key) : ""}
+          </div>
+        `).join("")}
       </div>
-
-      ${choice==="existing" ? `
-        <div class="field-block uc-method-field" style="margin-top:var(--space-4);margin-bottom:0;">
-          <label class="field-label">Метод в спецификации архитектуры</label>
-          <input class="input" id="pf-methodQuery-${x.id}" data-part-field="methodQuery" data-id="${x.id}" placeholder="Начните вводить метод, например POST /api/v1/loyalty" value="${escapeHtml(x.methodQuery||"")}" autocomplete="off"/>
-          ${!x.methodCode && (x.methodQuery||"").trim() ? (methodMatches.length ? `
-            <div class="suggest-dropdown">
-              ${methodMatches.map(m=>`
-                <div class="uc-method-item" data-action="uc-part-pick-method" data-id="${x.id}" data-method="${escapeHtml(m.method)}">
-                  <div class="m-name">${escapeHtml(m.method)}</div>
-                  <div class="m-meta">${escapeHtml(m.app)} · ${escapeHtml(m.container)} · ${escapeHtml(m.iface)}</div>
-                </div>
-              `).join("")}
-            </div>
-          ` : `<div class="suggest-dropdown"><div class="suggest-empty">Нет совпадений. Если метода в архитектуре нет, выберите другой вариант</div></div>`) : ""}
-        </div>
-        ${x.methodCode ? `
-          <div class="uc-method-picked">
-            <div><div class="pk-lbl">Приложение</div><div class="pk-val">${escapeHtml(x.bc||"")}</div></div>
-            <div><div class="pk-lbl">Контейнер</div><div class="pk-val">${escapeHtml(x.containerName||"")}</div></div>
-            <div><div class="pk-lbl">Код интерфейса</div><div class="pk-val">${escapeHtml(x.interfaceCode||"")}</div></div>
-            <div><div class="pk-lbl">ТС</div><div class="pk-val">${x.tcCode ? `<span class="req-chip">${escapeHtml(x.tcCode)}</span>` : "Не определена"}</div></div>
-          </div>
-        ` : ""}
-      ` : ""}
-      ${showFields ? `
-        <div class="uc-field-grid">
-          <div class="field-block">
-            <label class="field-label">Приложение</label>
-            ${DsSelect({id:`ucpf-app-${x.id}`, value:x.bc||"", placeholder:"Выбрать приложение", options:UC_APP_POOL, action:"uc-part-set-app", dataAttrs:{id:x.id}})}
-          </div>
-          <div class="field-block">
-            <label class="field-label">Контейнер / интерфейс</label>
-            <input class="input" id="pf-containerName-${x.id}" data-part-field="containerName" data-id="${x.id}" placeholder="Например, Сервис бонусов" value="${escapeHtml(x.containerName||"")}"/>
-          </div>
-          <div class="field-block">
-            <label class="field-label">Код интерфейса</label>
-            <input class="input" id="pf-interfaceCode-${x.id}" data-part-field="interfaceCode" data-id="${x.id}" placeholder="${escapeHtml(x.api)}.loyalty.LOY" value="${escapeHtml(x.interfaceCode||"")}"/>
-          </div>
-          ${choice==="planned" ? `
-            <div class="field-block">
-              <label class="field-label">Протокол</label>
-              ${DsSelect({id:`ucpf-protocol-${x.id}`, value:x.protocol||"", placeholder:"Выбрать протокол", options:["REST","gRPC","Kafka","SOAP"], action:"uc-part-set-protocol", dataAttrs:{id:x.id}})}
-            </div>
-          ` : ""}
-        </div>
-        ${choice==="planned" ? `
-          <div class="field-block" style="margin-top:var(--space-4);">
-            <label class="field-label">Требования к методу</label>
-            <textarea class="textarea" id="pf-requirements-${x.id}" data-part-field="requirements" data-id="${x.id}" placeholder="Что должен принимать и возвращать метод, какие атрибуты нужны" style="min-height:80px;">${escapeHtml(x.requirements||"")}</textarea>
-          </div>
-        ` : ""}
-      ` : ""}
 
       <div class="uc-card-foot">
         <button class="btn btn-primary btn-sm" data-action="uc-save-part-decision" data-id="${x.id}" ${ucPartCanSave(x)?"":"disabled"}>Сохранить решение</button>
@@ -12647,8 +12665,8 @@ function ucConfirmApply(){
 
   const notices = d.parts.filter(x=>!x.mapped).map(x=>{
     if(x.decision==="existing") return `${x.part}: сопоставлен архитектором с методом ${x.methodCode} (${x.containerName})`;
-    if(x.decision==="specified") return `${x.part}: указан существующий интерфейс архитектором (${x.api})`;
-    if(x.decision==="planned") return `${x.part}: отмечен как плановый интерфейс (${x.api})`;
+    if(x.decision==="specified") return `${x.part}: отмечен архитектором как существующий вызов вне спецификации архитектуры (${x.api})`;
+    if(x.decision==="planned") return `${x.part}: отмечен как плановый интерфейс (${x.containerName || x.api})`;
     if(x.decision==="notcall") return `${x.part}: отмечен как не являющийся вызовом, остаётся информационной строкой`;
     return `${x.part}: ${x.note || "часть не сопоставлена"}`;
   });
@@ -14106,12 +14124,13 @@ function handleAction(action, el){
     }
     case "uc-part-set-app": {
       const part = state.ucWizard.data.parts.find(x=>x.id===el.dataset.id);
-      if(part) part.bc = el.dataset.value;
-      state.popover = null; render(); break;
-    }
-    case "uc-part-set-protocol": {
-      const part = state.ucWizard.data.parts.find(x=>x.id===el.dataset.id);
-      if(part) part.protocol = el.dataset.value;
+      if(part && part.appAlias !== el.dataset.value){
+        part.appAlias = el.dataset.value;
+        // список методов сужается по приложению, поэтому ранее найденный метод
+        // другого приложения в решении остаться не может
+        ucPartClearMethod(part);
+        part.methodQuery = null;
+      }
       state.popover = null; render(); break;
     }
     case "uc-save-part-decision": {
@@ -14130,7 +14149,7 @@ function handleAction(action, el){
         part.tcCode = null;
         part.dynamic = null;
       } else {
-        part.tcName = "Плановый интерфейс: " + part.api;
+        part.tcName = "Плановый интерфейс: " + (part.containerName || part.api);
         part.tcCode = null;
         part.dynamic = null;
       }
