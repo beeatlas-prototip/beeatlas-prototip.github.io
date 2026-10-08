@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261008-155742">
+<meta name="beeatlas-build" content="20261008-160049">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -5371,6 +5371,8 @@ const state = {
   ucSearch:"",
   ucSourceFilter:"Все",
   ucStatusFilter:"Все",
+  ucScenarioSearch:"",        // поиск по вызову в блоке «Сценарий» карточки Use Case
+  ucScenarioStatusFilter:"Все",
   ucHistoryOpenId:null,
   ucWizard:null,
 
@@ -10298,8 +10300,50 @@ function scenarioDynamicCell(s, projectId, ucId){
   if(!projectId || !ucId) return escapeHtml(s.dynamic);
   return `<span class="proj-link" data-action="open-uc-dynamic" data-id="${projectId}" data-uc="${ucId}" data-part="${escapeHtml(s.part)}">${escapeHtml(s.dynamic)}</span>`;
 }
-function UseCaseScenariosTable(u, projectId, ucId){
+/* Подписи статусов берём из scenarioStatusBadge, чтобы фильтр и бейдж в таблице
+   назывались одинаково. "Все" — первый пункт, как в остальных фильтрах прототипа. */
+const UC_SCENARIO_STATUS_FILTER = ["Все","Подтверждено","Планируется","Не является вызовом","Не смаппирован"];
+function ucScenarioStatusLabel(status){
+  if(status==="confirmed") return "Подтверждено";
+  if(status==="planned") return "Планируется";
+  if(status==="notcall") return "Не является вызовом";
+  return "Не смаппирован";
+}
+function filteredUcScenarios(u){
+  const q = state.ucScenarioSearch.trim().toLowerCase();
+  return u.scenarios.filter(s=>{
+    // ищем по типу и пути метода — это поле «Вызов» («GET /api/v1/users/me»)
+    if(q && !String(s.call||"").toLowerCase().includes(q)) return false;
+    if(state.ucScenarioStatusFilter!=="Все" && ucScenarioStatusLabel(s.status)!==state.ucScenarioStatusFilter) return false;
+    return true;
+  });
+}
+
+function UcScenarioFiltersRow(){
   return `
+    <div class="filters-row uc-filters">
+      <div class="search-wrap">
+        <div class="field-with-icon">
+          ${icon("search")}
+          <input class="input" id="ucScenarioSearch" placeholder="Поиск по типу и пути метода" value="${escapeHtml(state.ucScenarioSearch)}" autocomplete="off"/>
+          ${state.ucScenarioSearch ? `<span class="clear-x" data-action="uc-scenario-search-clear">${icon("x")}</span>` : ""}
+        </div>
+      </div>
+      ${FilterSelect({id:"uc-scenario-status", label:"Статус", value:state.ucScenarioStatusFilter, options:UC_SCENARIO_STATUS_FILTER, action:"uc-scenario-status-set"})}
+      <span class="reset-link" data-action="reset-uc-scenario-filters">Сбросить</span>
+    </div>
+  `;
+}
+
+function UseCaseScenariosTable(u, projectId, ucId){
+  const rows = filteredUcScenarios(u);
+  if(!rows.length) return `
+    ${UcScenarioFiltersRow()}
+    <div class="card empty-state" style="padding:var(--space-7) var(--space-5);">
+      <p style="color:var(--text-secondary);margin:0;">По заданным условиям вызовов не нашлось</p>
+    </div>`;
+  return `
+    ${UcScenarioFiltersRow()}
     <div class="table-wrap-fit">
       <table class="fixed-table">
         <colgroup>
@@ -10308,7 +10352,7 @@ function UseCaseScenariosTable(u, projectId, ucId){
         </colgroup>
         <thead><tr><th>Шаг</th><th>Вызывающий</th><th>Вызываемый</th><th>Действие</th><th>Вызов</th><th>TC</th><th>Dynamyc</th><th>Статус вызова</th></tr></thead>
         <tbody>
-          ${u.scenarios.map(s=>{
+          ${rows.map(s=>{
             const pp = splitParticipant(s.participant);
             return `
             <tr>
@@ -13539,6 +13583,7 @@ function handleInput(el){
   else if(el.id==="hldPubTitle"){ state.hldWizard.data.pageTitle = el.value; render(); reFocus("hldPubTitle"); }
   else if(el.id==="hldPubParent"){ state.hldWizard.data.parentUrl = el.value; render(); reFocus("hldPubParent"); }
   else if(el.id==="ucListSearch"){ state.ucSearch = el.value; render(); reFocus("ucListSearch"); }
+  else if(el.id==="ucScenarioSearch"){ state.ucScenarioSearch = el.value; render(); reFocus("ucScenarioSearch"); }
   else if(el.id==="ucWizName"){ state.ucWizard.data.ucName = el.value; render(); reFocus("ucWizName"); }
   else if(el.id==="ucWizPlantUml"){ state.ucWizard.data.plantUml = el.value; render(); reFocus("ucWizPlantUml"); }
   else if(el.id==="ucWizExisting"){ state.ucWizard.data.existingUcId = el.value; render(); }
@@ -14068,6 +14113,9 @@ function handleAction(action, el){
     case "open-usecase-history": state.popover = null; go("usecase-history", {projectId: el.dataset.id, ucId: el.dataset.uc}); break;
     case "edit-usecase": state.popover = null; if(ucActiveBranchLocked(el.dataset.id, el.dataset.uc)){ render(); break; } startUcWizard(el.dataset.id, {editUcId: el.dataset.uc}); break;
     case "reset-uc-filters": state.ucSearch=""; state.ucSourceFilter="Все"; state.ucStatusFilter="Все"; render(); break;
+    case "reset-uc-scenario-filters": state.ucScenarioSearch=""; state.ucScenarioStatusFilter="Все"; render(); break;
+    case "uc-scenario-search-clear": state.ucScenarioSearch=""; render(); break;
+    case "uc-scenario-status-set": state.ucScenarioStatusFilter = el.dataset.value; state.popover=null; render(); break;
     case "uc-source-filter-set": state.ucSourceFilter = el.dataset.value; state.popover=null; render(); break;
     case "uc-status-filter-set": state.ucStatusFilter = el.dataset.value; state.popover=null; render(); break;
     case "open-hub-interface": showToast(`Переход в карточку интерфейса «${el.dataset.call}» в Хабе приложений — вне периметра прототипа`); break;
