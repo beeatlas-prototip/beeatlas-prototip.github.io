@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261008-170401">
+<meta name="beeatlas-build" content="20261008-173828">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -1880,14 +1880,12 @@
   /* Кнопка закрытия — ДС IconButton size=large: 24x24, радиус x2, без фона на hover.
      Правило намеренно скоупнуто на шапку: тот же класс .wizard-close используется
      в боковых панелях, их геометрию не трогаем. */
-  .wizard-head .wizard-close{width:24px;height:24px;border-radius:var(--size-border-radius-x2);color:var(--text-secondary);}
-  .wizard-head .wizard-close:hover{background:transparent;color:var(--text);}
-  .wizard-head .wizard-close svg{width:24px;height:24px;}
-  .wizard-head .wizard-close .beeline-icons{width:24px;height:24px;font-size:24px;}
-  .wizard-close{width:34px;height:34px;border:none;background:transparent;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--text);}
-  .wizard-close:hover{background:var(--bg-alt);}
-  .wizard-close svg{width:20px;height:20px;}
-  .wizard-close .beeline-icons{width:20px;height:20px;font-size:20px;}
+
+  /* ДС IconButton size=large: 24×24, радиус x2, без фона на hover (меняется только цвет). */
+  .wizard-close{width:24px;height:24px;padding:0;border:none;background:transparent;border-radius:var(--size-border-radius-x2);display:flex;align-items:center;justify-content:center;color:var(--text-secondary);}
+  .wizard-close:hover{background:transparent;color:var(--text);}
+  .wizard-close svg{width:24px;height:24px;}
+  .wizard-close .beeline-icons{width:24px;height:24px;font-size:24px;}
   /* Сверху 0: над телом мастера стоит собственная шапка, 32px дал бы двойной отступ */
   .wizard-body{flex:1;overflow-y:auto;padding:0 var(--size-spacing-x8) var(--size-spacing-x10);}
   .wizard-stepper-wrap{padding-top:0;}
