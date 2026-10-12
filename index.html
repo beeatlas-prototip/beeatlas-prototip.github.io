@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261012-181443">
+<meta name="beeatlas-build" content="20261012-182750">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -1291,7 +1291,7 @@
   .ffield.ftextarea .ffield-label{top:6px;font-size:13px;color:var(--text-secondary);transform:none;}
   .ffield.ftextarea .textarea{padding-top:26px;}
   /* Диаграмма вызовов сценария — SVG из buildSequenceSvgGeneric, тот же рендерер,
-     что у диаграммы Dynamics C4 BI Step в каталоге, но вне его CSS-скоупа. */
+     что у реализации BI Step в каталоге, но вне его CSS-скоупа. */
   .uc-diagram-card{border:1px solid var(--border);border-radius:var(--size-border-radius-x6);overflow:hidden;}
   .uc-diagram-card .uc-diagram-toolbar{border-bottom:1px solid var(--border);padding:var(--space-3) var(--space-4);margin-bottom:0;}
   .uc-diagram-card .uc-diagram-scroll{border:none;border-radius:0;max-height:560px;}
@@ -5126,7 +5126,7 @@ const UC_IMPORT_STAGES = [
   {key:"validate", label:"Валидация синтаксиса PlantUML"},
   {key:"participants", label:"Определение систем/контейнеров-участников"},
   {key:"api", label:"Определение API — новые/существующие"},
-  {key:"tc", label:"Поиск ТС и диаграмм Dynamics C4"},
+  {key:"tc", label:"Поиск ТС и реализаций"},
   {key:"assemble", label:"Сборка Use Case из частей"},
 ];
 
@@ -6735,7 +6735,7 @@ const AC_OBS_TREE = [
    методы приложения — в раскрытии. Методов в одном процессе много, у каждого свой
    ТВ и свой Dynamic; плоской таблицей это дубли верхних строк и уход по ширине.
 
-   Dynamics C4 у E2E пока пустой: на бэке связки «шаг E2E → диаграмма Dynamics C4»
+   Реализация у E2E пока пустая: на бэке связки «шаг E2E → реализация»
    ещё нет, колонка заведена под неё — она нужна переделанной фитнес-функции SC.01. */
 
 const AC_E2E_PROCESSES = [
@@ -7075,7 +7075,7 @@ function AcE2eProcessRows(g, q){
       <div class="table-wrap">
         <table class="fixed-table">
           <colgroup><col style="width:34%"><col style="width:46%"><col style="width:20%"></colgroup>
-          <thead><tr><th>Метод</th><th>Техническая возможность</th><th>Dynamics C4</th></tr></thead>
+          <thead><tr><th>Метод</th><th>Техническая возможность</th><th>Реализация</th></tr></thead>
           <tbody>
             ${methods.map(m=>`
               <tr>
@@ -7132,7 +7132,7 @@ function AcE2eUcRows(g, q){
       <div class="table-wrap">
         <table class="fixed-table">
           <colgroup><col style="width:21%"><col style="width:29%"><col style="width:23%"><col style="width:11%"><col style="width:16%"></colgroup>
-          <thead><tr><th>Метод</th><th>Описание</th><th>Техническая возможность</th><th>Dynamics C4</th><th>Статус метода</th></tr></thead>
+          <thead><tr><th>Метод</th><th>Описание</th><th>Техническая возможность</th><th>Реализация</th><th>Статус метода</th></tr></thead>
           <tbody>
             ${methods.map(m=>`
               <tr>
@@ -10397,7 +10397,7 @@ function UseCaseScenariosTable(u, projectId, ucId){
           <col style="width:5%"><col style="width:13%"><col style="width:13%"><col style="width:20%">
           <col style="width:16%"><col style="width:13%"><col style="width:7%"><col style="width:13%">
         </colgroup>
-        <thead><tr><th>Шаг</th><th>Вызывающий</th><th>Вызываемый</th><th>Действие</th><th>Вызов</th><th>ТС</th><th>Dynamics C4</th><th>Статус вызова</th></tr></thead>
+        <thead><tr><th>Шаг</th><th>Вызывающий</th><th>Вызываемый</th><th>Действие</th><th>Вызов</th><th>ТС</th><th>Реализация</th><th>Статус вызова</th></tr></thead>
         <tbody>
           ${rows.map(s=>{
             const pp = splitParticipant(s.participant);
@@ -10424,7 +10424,7 @@ function UcDynamicPanel(){
   return `
     <div class="side-head">
       <div>
-        <h2>Диаграмма Dynamics C4 ${escapeHtml(sp.seq)}</h2>
+        <h2>Реализация ${escapeHtml(sp.seq)}</h2>
         <p class="side-desc">Диаграмма последовательности вызовов шага, в нотации PlantUML</p>
       </div>
       <button class="wizard-close" data-action="close-side">${icon("x")}</button>
@@ -10439,7 +10439,7 @@ function UcDynamicPanel(){
 }
 
 /* Диаграмма вызовов по данным сценария — тот же рендерер (buildSequenceSvgGeneric),
-   что уже используется для диаграммы Dynamics C4 BI Step в каталоге (глобальная функция
+   что уже используется для реализации BI Step в каталоге (глобальная функция
    из первого <script> — e2ecat-scope, но сама функция вне его CSS-скоупа и не зависит
    от него: параметры цвета заданы через var(...,#fallback)). */
 function buildUcSequenceData(u){
@@ -12514,7 +12514,7 @@ function UcStepResult(w){
             <col style="width:5%"><col style="width:13%"><col style="width:13%"><col style="width:20%">
             <col style="width:16%"><col style="width:13%"><col style="width:7%"><col style="width:13%">
           </colgroup>
-          <thead><tr><th>Шаг</th><th>Вызывающий</th><th>Вызываемый</th><th>Действие</th><th>Вызов</th><th>ТС</th><th>Dynamics C4</th><th>Статус вызова</th></tr></thead>
+          <thead><tr><th>Шаг</th><th>Вызывающий</th><th>Вызываемый</th><th>Действие</th><th>Вызов</th><th>ТС</th><th>Реализация</th><th>Статус вызова</th></tr></thead>
           <tbody>
             ${resolvedParts.map(x=>{
               const pp = splitParticipant(x.participant);
@@ -13202,7 +13202,7 @@ function AcMethodDescPanel(){
     <div class="side-body">
       ${row("Статус метода", acMethodStatusBadge(m.status))}
       ${row("Техническая возможность", m.tcName ? escapeHtml(m.tcName)+' <span class="row-sub" style="display:inline;">'+escapeHtml(m.tcCode)+'</span>' : '<span class="empty-cell">—</span>')}
-      ${row("Dynamics C4", acDynamicCell(m.dynamic))}
+      ${row("Реализация", acDynamicCell(m.dynamic))}
       <div style="margin-top:var(--space-6);">
         <div style="color:var(--text-secondary);font-size:13px;line-height:16px;letter-spacing:.2px;margin-bottom:var(--space-2);">Описание</div>
         <div style="font-size:15px;line-height:22px;letter-spacing:.2px;white-space:pre-wrap;">${escapeHtml(m.desc)}</div>
@@ -14653,7 +14653,7 @@ function handleAction(action, el){
     case "ac-clear-cj-search": state.appcat.cjSearch=""; render(); reFocus("acCjSearch"); break;
     case "ac-open-e2e-process": showToast(`Переход в E2E-сценарий «${el.dataset.code}» в Каталоге Е2Е — вне периметра прототипа`); break;
     case "ac-open-e2e-uc": showToast(`Переход в Use Case «${el.dataset.code}» — вне периметра прототипа`); break;
-    case "ac-open-e2e-dynamic": showToast(`Диаграмма Dynamics C4 «${el.dataset.id}» — вне периметра прототипа`); break;
+    case "ac-open-e2e-dynamic": showToast(`Реализация «${el.dataset.id}» — вне периметра прототипа`); break;
     case "ac-open-cj": showToast(`Переход в клиентский путь «${el.dataset.code}» в Каталоге Е2Е — вне периметра прототипа`); break;
     /* Описание вызова открываем в боковой панели: обрезанный текст в ячейке не
        прочитать целиком и не скопировать, а его забирают себе в задачу. */
