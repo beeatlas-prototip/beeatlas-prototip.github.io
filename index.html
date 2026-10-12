@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261008-193238">
+<meta name="beeatlas-build" content="20261012-170754">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -10397,7 +10397,7 @@ function UseCaseScenariosTable(u, projectId, ucId){
           <col style="width:5%"><col style="width:13%"><col style="width:13%"><col style="width:20%">
           <col style="width:16%"><col style="width:13%"><col style="width:7%"><col style="width:13%">
         </colgroup>
-        <thead><tr><th>Шаг</th><th>Вызывающий</th><th>Вызываемый</th><th>Действие</th><th>Вызов</th><th>TC</th><th>C4 Dynamyc</th><th>Статус вызова</th></tr></thead>
+        <thead><tr><th>Шаг</th><th>Вызывающий</th><th>Вызываемый</th><th>Действие</th><th>Вызов</th><th>TC</th><th>C4 Dynamic</th><th>Статус вызова</th></tr></thead>
         <tbody>
           ${rows.map(s=>{
             const pp = splitParticipant(s.participant);
@@ -10623,7 +10623,7 @@ function UseCaseDetailPage(projectId, ucId){
       <div class="section-head-row">
         <h2 style="margin:0;">Сценарий</h2>
         <div class="view-toggle">
-          <button class="view-toggle-btn ${state.ucScenariosView==="table"?"active":""}" data-action="set-uc-scenarios-view" data-mode="table" title="Табличный вид">${icon("menu")}</button>
+          <button class="view-toggle-btn ${state.ucScenariosView==="table"?"active":""}" data-action="set-uc-scenarios-view" data-mode="table" title="Таблица">${icon("menu")}</button>
           <button class="view-toggle-btn ${state.ucScenariosView==="diagram"?"active":""}" data-action="set-uc-scenarios-view" data-mode="diagram" title="Диаграмма">${icon("flow")}</button>
         </div>
       </div>
@@ -12514,7 +12514,7 @@ function UcStepResult(w){
             <col style="width:5%"><col style="width:13%"><col style="width:13%"><col style="width:20%">
             <col style="width:16%"><col style="width:13%"><col style="width:7%"><col style="width:13%">
           </colgroup>
-          <thead><tr><th>Шаг</th><th>Вызывающий</th><th>Вызываемый</th><th>Действие</th><th>Вызов</th><th>TC</th><th>C4 Dynamyc</th><th>Статус вызова</th></tr></thead>
+          <thead><tr><th>Шаг</th><th>Вызывающий</th><th>Вызываемый</th><th>Действие</th><th>Вызов</th><th>TC</th><th>C4 Dynamic</th><th>Статус вызова</th></tr></thead>
           <tbody>
             ${resolvedParts.map(x=>{
               const pp = splitParticipant(x.participant);
