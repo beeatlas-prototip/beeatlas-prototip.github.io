@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261012-170754">
+<meta name="beeatlas-build" content="20261012-173945">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -5470,7 +5470,7 @@ const state = {
       notices: ["Все части сопоставлены с известными системами ландшафта автоматически"]},
   ];
   hero.business = {
-    description:"Проект предназначен для автоматизации создания, валидации и сопровождения HLD-документов архитектуры решений. Система на основе бизнес-постановки задачи и данных корпоративного ландшафта (BeeAtlas, CMDB, ФДМ) генерирует каркас HLD: подбирает BC/TC, формирует UseCase, строит компонентную диаграмму, оценивает влияние на системы и публикует результат в Confluence",
+    description:"Проект предназначен для автоматизации создания, валидации и сопровождения HLD-документов архитектуры решений. Система на основе бизнес-постановки задачи и данных корпоративного ландшафта (BeeAtlas, CMDB, ФДМ) генерирует каркас HLD: подбирает ВС/ТС, формирует Use Case, строит компонентную диаграмму, оценивает влияние на системы и публикует результат в Confluence",
     need:"Стандартизация и автоматизация процесса создания HLD-документов, сокращение Time-to-Architecture с 2 недель до 1 дня, обеспечение compliance корпоративным стандартам архитектуры",
     legal:"Требуется соответствие внутренним регламентам архитектурного комитета. Данные ландшафта (BeeAtlas, CMDB, ФДМ) — строго в рамках RBAC-политик",
     cj:[
@@ -6027,7 +6027,7 @@ const DS_ICONS = {
   moreVertical:'more_vert', info:'info_circled', download:'download', gear:'settings',
   externalLink:'open_in_window', eye:'eye', zoomIn:'zoom_in', zoomOut:'zoom_out',
   minimize:'collapse', gitBranch:'split', gitMerge:'merge', trash:'delete', history:'clock',
-  filter:'filter', copy:'copy', expand:'expand', rulerPencil:'ruler_pencil', integration:'integration', foundation:'foundation'
+  table:'table', filter:'filter', copy:'copy', expand:'expand', rulerPencil:'ruler_pencil', integration:'integration', foundation:'foundation'
 };
 function icon(name){
   const ds = DS_ICONS[name];
@@ -7075,7 +7075,7 @@ function AcE2eProcessRows(g, q){
       <div class="table-wrap">
         <table class="fixed-table">
           <colgroup><col style="width:34%"><col style="width:46%"><col style="width:20%"></colgroup>
-          <thead><tr><th>Метод</th><th>Техническая возможность</th><th>Dynamic View</th></tr></thead>
+          <thead><tr><th>Метод</th><th>Техническая возможность</th><th>Dynamic</th></tr></thead>
           <tbody>
             ${methods.map(m=>`
               <tr>
@@ -8598,7 +8598,7 @@ function CjLibraryPage(){
       ${hasReset ? `<span class="reset-link" data-action="cj-reset-search-all">Сбросить</span>` : ""}
       <div class="view-toggle">
         <button class="view-toggle-btn ${state.cjView==="grid"?"active":""}" data-action="cj-set-view" data-mode="grid" title="Карточки">${icon("grid")}</button>
-        <button class="view-toggle-btn ${state.cjView==="table"?"active":""}" data-action="cj-set-view" data-mode="table" title="Таблица">${icon("menu")}</button>
+        <button class="view-toggle-btn ${state.cjView==="table"?"active":""}" data-action="cj-set-view" data-mode="table" title="Таблица">${icon("table")}</button>
       </div>
     </div>
     ${list.length
@@ -9904,7 +9904,7 @@ function ProjectsListPage(){
       <span class="reset-link" data-action="reset-filters">Сбросить</span>
       <div class="view-toggle">
         <button class="view-toggle-btn ${state.projView==="grid"?"active":""}" data-action="proj-set-view" data-mode="grid" title="Карточки">${icon("grid")}</button>
-        <button class="view-toggle-btn ${state.projView==="table"?"active":""}" data-action="proj-set-view" data-mode="table" title="Таблица">${icon("menu")}</button>
+        <button class="view-toggle-btn ${state.projView==="table"?"active":""}" data-action="proj-set-view" data-mode="table" title="Таблица">${icon("table")}</button>
       </div>
     </div>
 
@@ -10154,7 +10154,7 @@ function UseCaseTab(p){
       <span class="reset-link" data-action="reset-uc-filters">Сбросить</span>
       <div class="view-toggle">
         <button class="view-toggle-btn ${state.ucListView==="grid"?"active":""}" data-action="uc-set-view" data-mode="grid" title="Карточки">${icon("grid")}</button>
-        <button class="view-toggle-btn ${state.ucListView==="table"?"active":""}" data-action="uc-set-view" data-mode="table" title="Таблица">${icon("menu")}</button>
+        <button class="view-toggle-btn ${state.ucListView==="table"?"active":""}" data-action="uc-set-view" data-mode="table" title="Таблица">${icon("table")}</button>
       </div>
       <button class="btn btn-primary btn-sm" data-action="uc-create" data-id="${p.id}">Создать Use Case</button>
     </div>
@@ -10397,7 +10397,7 @@ function UseCaseScenariosTable(u, projectId, ucId){
           <col style="width:5%"><col style="width:13%"><col style="width:13%"><col style="width:20%">
           <col style="width:16%"><col style="width:13%"><col style="width:7%"><col style="width:13%">
         </colgroup>
-        <thead><tr><th>Шаг</th><th>Вызывающий</th><th>Вызываемый</th><th>Действие</th><th>Вызов</th><th>TC</th><th>C4 Dynamic</th><th>Статус вызова</th></tr></thead>
+        <thead><tr><th>Шаг</th><th>Вызывающий</th><th>Вызываемый</th><th>Действие</th><th>Вызов</th><th>ТС</th><th>C4 Dynamic</th><th>Статус вызова</th></tr></thead>
         <tbody>
           ${rows.map(s=>{
             const pp = splitParticipant(s.participant);
@@ -10623,7 +10623,7 @@ function UseCaseDetailPage(projectId, ucId){
       <div class="section-head-row">
         <h2 style="margin:0;">Сценарий</h2>
         <div class="view-toggle">
-          <button class="view-toggle-btn ${state.ucScenariosView==="table"?"active":""}" data-action="set-uc-scenarios-view" data-mode="table" title="Таблица">${icon("menu")}</button>
+          <button class="view-toggle-btn ${state.ucScenariosView==="table"?"active":""}" data-action="set-uc-scenarios-view" data-mode="table" title="Таблица">${icon("table")}</button>
           <button class="view-toggle-btn ${state.ucScenariosView==="diagram"?"active":""}" data-action="set-uc-scenarios-view" data-mode="diagram" title="Диаграмма">${icon("flow")}</button>
         </div>
       </div>
@@ -10648,7 +10648,7 @@ function UseCaseZeroState(p){
   return `<div class="empty-state uc-zero-state">
     ${boxIllustration()}
     <h3>Нет созданных Use Case</h3>
-    <p>Создайте Use Case из диаграммы PlantUML: шаги, системы-участники и вызовы определятся автоматически. Решения останутся только по вызовам, которые не удалось сопоставить.</p>
+    <p>Создай Use Case из диаграммы PlantUML: шаги, системы-участники и вызовы определятся автоматически. Решения останутся только по вызовам, которые не удалось сопоставить.</p>
     <button class="btn btn-primary" data-action="uc-create" data-id="${p.id}">Создать Use Case</button>
   </div>`;
 }
@@ -11272,7 +11272,7 @@ function HldSkeletonDetailPage(projectId){
     </div>
 
     <div class="section">
-      <h2>UseCase для проектирования</h2>
+      <h2>Use Case для проектирования</h2>
       ${s.useCases.map(u=>`
         <div class="risk-card">
           <div>
@@ -11627,7 +11627,7 @@ function WizardStepTc(w){
       <h2 style="margin:0;">Кандидаты ТС на основании требований</h2>
       <button class="btn btn-outline btn-sm" data-action="open-add-tc">Добавить ТС</button>
     </div>
-    <p class="tc-step-hint">Для каждого кандидата каталог выдаёт подходящие ВС и входящие в них ТС. Нажмите на ТС — и она будет переиспользована. Если ничего не подошло, вы всегда можете подобрать ТС вручную</p>
+    <p class="tc-step-hint">Для каждого кандидата каталог выдаёт подходящие ВС и входящие в них ТС. Нажми на ТС — и она будет переиспользована. Если ничего не подошло, ты всегда можешь подобрать ТС вручную</p>
   `;
 
   /* По одному кандидату на страницу, с маппингом и метаданными. */
@@ -11663,7 +11663,7 @@ function TcCandidateCard(c, w){
     <div class="card tc-cand-card" id="cand-${c.id}">
       <div class="tc-skip-banner">
         <span class="ico">${icon("info")}</span>
-        <span class="txt">ТС пропущена и не участвует в оценке. Нажмите «Вернуть», чтобы снова учитывать её при расчёте</span>
+        <span class="txt">ТС пропущена и не участвует в оценке. Нажми «Вернуть», чтобы снова учитывать её при расчёте</span>
         <button class="btn btn-outline btn-sm" data-action="tc-decide" data-cid="${c.id}" data-decision="">Вернуть</button>
       </div>
       <div class="tc-card-title">${escapeHtml(c.name)}</div>
@@ -11741,7 +11741,7 @@ function TcCandidateCard(c, w){
         `).join("")}
       </div>
     ` : `
-      <div class="empty-inline" style="margin-top:var(--space-5);">Каталог не вернул подходящих ВС для этого кандидата — отметьте ТС как новую или исключите её из оценки.</div>
+      <div class="empty-inline" style="margin-top:var(--space-5);">Каталог не вернул подходящих ВС для этого кандидата — отметь ТС как новую или исключи её из оценки.</div>
     `}
 
     ${TcReqFoot(c)}
@@ -12118,8 +12118,8 @@ function HldStepCompose(w){
     </div>
 
     <div class="section-head-row">
-      <h2 style="margin:0;">UseCase для проектирования</h2>
-      <button class="btn btn-outline btn-sm" data-action="open-add-usecase">+ Добавить UseCase</button>
+      <h2 style="margin:0;">Use Case для проектирования</h2>
+      <button class="btn btn-outline btn-sm" data-action="open-add-usecase">+ Добавить Use Case</button>
     </div>
     <div class="qlist-box" style="margin-bottom:var(--space-7);">
       ${w.data.useCases.map(u=>`
@@ -12514,7 +12514,7 @@ function UcStepResult(w){
             <col style="width:5%"><col style="width:13%"><col style="width:13%"><col style="width:20%">
             <col style="width:16%"><col style="width:13%"><col style="width:7%"><col style="width:13%">
           </colgroup>
-          <thead><tr><th>Шаг</th><th>Вызывающий</th><th>Вызываемый</th><th>Действие</th><th>Вызов</th><th>TC</th><th>C4 Dynamic</th><th>Статус вызова</th></tr></thead>
+          <thead><tr><th>Шаг</th><th>Вызывающий</th><th>Вызываемый</th><th>Действие</th><th>Вызов</th><th>ТС</th><th>C4 Dynamic</th><th>Статус вызова</th></tr></thead>
           <tbody>
             ${resolvedParts.map(x=>{
               const pp = splitParticipant(x.participant);
@@ -12585,7 +12585,7 @@ function ucPartClearFields(x){
    вызова, уточнять по ним нечего (макет «Поведение карточки»). */
 const UC_PART_CHOICES = [
   {key:"existing", title:"Существует в спецификации архитектуры",
-   desc:"Вызов описан в архитектуре, автоматически сопоставить его не удалось. Укажите метод поиском"},
+   desc:"Вызов описан в архитектуре, автоматически сопоставить его не удалось. Укажи метод поиском"},
   {key:"specified", title:"Существует, в спецификации архитектуры отсутствует",
    desc:"Вызов есть в системе, но в описание архитектуры не внесён"},
   {key:"planned", title:"Необходимо разработать",
@@ -12668,7 +12668,7 @@ function UcPartChoiceFields(x, key){
                   <div class="m-meta">${escapeHtml(m.container)} · ${escapeHtml(m.iface)}</div>
                 </div>`).join("")}
             </div>
-          ` : `<div class="suggest-dropdown"><div class="suggest-empty">Нет совпадений. Если метода в архитектуре нет, выберите другой вариант</div></div>`) : ""}
+          ` : `<div class="suggest-dropdown"><div class="suggest-empty">Нет совпадений. Если метода в архитектуре нет, выбери другой вариант</div></div>`) : ""}
           ${x.methodCode && x.tcCode ? `<div class="row-sub" style="margin-top:var(--space-2);">${escapeHtml(x.containerName||"")} · ТС <span class="req-chip">${escapeHtml(x.tcCode)}</span></div>` : ""}
         </div>
       </div>
@@ -12898,7 +12898,7 @@ function UsecasePanel(){
   const sp = state.sidePanel;
   const canAdd = sp.name.trim().length>0;
   return `
-    <div class="side-head"><h2>Добавление UseCase</h2><button class="wizard-close" data-action="close-side">${icon("x")}</button></div>
+    <div class="side-head"><h2>Добавление Use Case</h2><button class="wizard-close" data-action="close-side">${icon("x")}</button></div>
     <div class="side-body">
       <div class="field-block">${FField({id:"ucCode", label:"Код (необязательно)", value:sp.code})}</div>
       <div class="field-block">${FField({id:"ucName", label:"Название", value:sp.name})}</div>
@@ -13010,7 +13010,7 @@ function ValidateReportBody(p, r){
       </div>` : ""}
     </div>
     <div class="section">
-      <h2>Сопоставление BC/TC с каталогом ФДМ</h2>
+      <h2>Сопоставление ВС/ТС с каталогом ФДМ</h2>
       <div class="table-wrap-fit">
         <table>
           <thead><tr><th>Название ВС</th><th>Название ТС</th><th>Соответствие ТС в %</th></tr></thead>
