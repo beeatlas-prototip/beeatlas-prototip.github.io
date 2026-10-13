@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261013-123807">
+<meta name="beeatlas-build" content="20261013-130506">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -1073,11 +1073,14 @@
   .impl-meta-cap{font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-tertiary);margin-bottom:var(--space-1);}
   .impl-meta-val{font-size:15px;line-height:22px;letter-spacing:.2px;color:var(--text);}
   .impl-meta-id{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;}
-  .impl-source{
-    background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius-sm);
-    padding:var(--space-4) var(--space-4);font-size:13px;line-height:22px;
+  /* Поле исходника — Text area ДС (как ввод PlantUML в визарде импорта), только
+     для чтения: моноширинный 13/22, перенос выключен, прокрутка по обеим осям. */
+  /* Селектор с двумя классами: одиночный .impl-source проигрывал бы .textarea,
+     который объявлен ниже по файлу и задаёт свой font-size 17. */
+  .textarea.impl-source{
     font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-    overflow-x:auto;white-space:pre;margin:0;
+    font-size:13px;line-height:22px;white-space:pre;overflow:auto;
+    resize:vertical;
   }
   .page-title-row h1{font-size:26px;line-height:32px;letter-spacing:.2px;font-weight:500;margin:0;}
   .page-title-row .actions{margin-left:auto;display:flex;gap:var(--space-3);}
@@ -1349,14 +1352,22 @@
   [data-theme="dark"] .ffield-box.error{background:#2a1616;}
 
   /* filters row */
-  .filters-row{display:flex;align-items:center;gap:var(--space-4);margin-bottom:var(--space-6);flex-wrap:wrap;}
+  /* Ряд фильтров держится одной строкой. Раньше стоял flex-wrap:wrap при жёстком
+     поиске 648 — а flexbox сперва переносит и только потом ужимает, поэтому
+     «Сбросить» и переключатель вида уезжали на вторую и третью строки (на «Проектах»
+     ряду нужно 1588 при 1408 доступных на 1728).
+     Теперь nowrap: элементы ужимаются до своих min-width и остаются в строке.
+     Ниже 1300 суммы минимумов уже не хватает — там перенос разрешён снова,
+     иначе ряд вылезал бы за край страницы. */
+  .filters-row{display:flex;align-items:center;gap:var(--space-4);margin-bottom:var(--space-6);flex-wrap:nowrap;}
+  @media (max-width:1300px){ .filters-row{flex-wrap:wrap;} }
   /* Поиск во всех строках фильтров — фиксированные 648 (ширина с «Проектов» и Use Case).
      Раньше поле тянулось на всю свободную ширину и у каждой вкладки получалось своим. */
-  .filters-row .search-wrap{flex:0 0 648px;width:648px;max-width:100%;position:relative;}
+  .filters-row .search-wrap{flex:1 1 280px;width:auto;min-width:280px;max-width:648px;position:relative;}
   .filters-row .arch-input{width:230px;}
   /* Use Case: поиск 648, фильтры по 260 — как на странице «Проекты». Если всё это
      в ширину не влезает, на новую строку переносятся фильтры, а не ужимается поиск. */
-  .uc-filters .search-wrap{flex:0 0 648px;width:648px;max-width:100%;}
+  .uc-filters .search-wrap{flex:1 1 280px;width:auto;min-width:280px;max-width:648px;}
   .uc-filters .select-wrap{flex:0 1 260px;width:260px;min-width:170px;}
   .uc-filters .reset-link{flex:0 0 auto;white-space:nowrap;}
 
@@ -1376,6 +1387,12 @@
      Свой только контейнер: шаг группы у .pill-toggle — 12, а ДС для группы чипсов
      задаёт 8 (chips-group-spacing). .pill-toggle не трогаем, он держит три экрана
      Каталога приложений; расхождение известное и остаётся за ним. */
+  /* ДС components/radioButton: точка выбора 10×10, круг. Геометрия внешнего круга
+     в спеке не токенизирована — берём ту же, что у радио-карточек объединения веток. */
+  .ds-radio{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border-strong);
+    flex:0 0 auto;display:flex;align-items:center;justify-content:center;}
+  .ds-radio.checked{border-color:var(--yellow);}
+  .ds-radio.checked::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--yellow);}
   .uc-impl-chips{display:flex;align-items:center;flex-wrap:wrap;gap:var(--size-spacing-x2);}
   /* Иконка в чипсе — ДС chips-icon-size 20, отступ до текста 8 (gap задан в самом
      .pill-item выше: отдельное одноимённое правило слилось бы по каскаду).
@@ -1423,7 +1440,7 @@
   }
   .ds-popover .dsp-text b{font-weight:500;}
   /* Проекты: поиск 648, фильтры по 260 — та же логика */
-  .proj-filters .search-wrap{flex:0 0 648px;width:648px;max-width:100%;}
+  .proj-filters .search-wrap{flex:1 1 280px;width:auto;min-width:280px;max-width:648px;}
   .proj-filters .arch-input,
   .proj-filters .select-wrap{flex:0 1 260px;width:260px;min-width:170px;}
   .proj-filters .toggle-wrap,
@@ -1443,6 +1460,20 @@
   .toggle.on{background:var(--color-background-brand);}
   .toggle .knob{position:absolute;top:4px;left:4px;width:16px;height:16px;border-radius:50%;background:var(--color-background-white);transition:left .15s ease;box-shadow:var(--elevation-low);}
   .toggle.on .knob{left:24px;}
+  /* ДС components/button, type=plain size=small: фон прозрачный, текст и иконка
+     --color-button-plain, высота 40, радиус 12, padding 16, текст 15/20/500/0.2,
+     фоны на hover/pressed, в disabled — прозрачность 0.48. Раньше сброс был просто
+     синей ссылкой (.reset-link), то есть мимо компонента. */
+  .btn-plain{
+    height:var(--size-control-height-small);padding:0 var(--size-spacing-x4);
+    border:none;background:transparent;border-radius:var(--size-border-radius-x6);
+    color:var(--color-button-plain);
+    font-size:15px;font-weight:500;line-height:20px;letter-spacing:.2px;
+    display:inline-flex;align-items:center;white-space:nowrap;flex:0 0 auto;cursor:pointer;
+  }
+  .btn-plain:hover:not(:disabled){background:var(--color-button-plain-background-hover);}
+  .btn-plain:active:not(:disabled){background:var(--color-button-plain-background-pressed);}
+  .btn-plain:disabled{opacity:.48;cursor:not-allowed;}
   .reset-link{color:var(--blue);font-size:15px;cursor:pointer;white-space:nowrap;}
   .reset-link:hover{text-decoration:underline;}
 
@@ -2021,6 +2052,12 @@
 
   .search-result-card{border:1px solid var(--border);border-radius:var(--radius-sm);padding:var(--space-4) var(--space-4);display:flex;align-items:flex-start;gap:var(--space-3);margin-bottom:var(--space-3);cursor:pointer;}
   .search-result-card:hover{border-color:var(--border-strong);}
+  /* Выбранная карточка результата подсвечивается рамкой — как в панели добавления ТС
+     в «Оценке»: одной точки в радио мало, чтобы выбор читался с первого взгляда.
+     Правило стоит ПОСЛЕ :hover и с ним же по специфичности — иначе наведение
+     перекрашивало рамку обратно и выбор пропадал. */
+  .search-result-card.selected,
+  .search-result-card.selected:hover{border-color:var(--yellow);background:var(--bg-alt);}
   .search-result-card .tag{font-size:13px;color:var(--text-tertiary);margin-bottom:var(--space-1);}
   .search-result-card .name{color:var(--blue);font-weight:600;font-size:15px;margin-bottom:var(--space-1);}
   .search-result-card .code{color:var(--text-secondary);font-size:13px;}
@@ -7782,7 +7819,7 @@ function AcTcTab(app){
         <div class="toggle ${ac.tcOnlyIfaces?"on":""}" data-action="ac-toggle-tc-ifaces"><div class="knob"></div></div>
         <span style="font-size:15px;">ТС с интерфейсами</span>
       </div>
-      <span class="reset-link" data-action="ac-reset-tc">Сбросить</span>
+      ${ResetFiltersButton("ac-reset-tc", !!(state.appcat.tcSearch || state.appcat.tcOnlyIfaces))}
     </div>
     <div class="tc-grid">
       ${list.length ? list.map(AcTcCard).join("") : `<p style="color:var(--text-secondary);">Ничего не нашлось. Измени фильтры или сбрось их</p>`}
@@ -7899,7 +7936,7 @@ function AcTechTab(app){
         <div class="toggle ${ac.techKiOnly?"on":""}" data-action="ac-toggle-tech-ki"><div class="knob"></div></div>
         <span style="font-size:15px;">Допустимо КИ</span>
       </div>
-      <span class="reset-link" data-action="ac-reset-tech">Сбросить</span>
+      ${ResetFiltersButton("ac-reset-tech", !!(state.appcat.techSearch || state.appcat.techStatusFilter!=="Все" || state.appcat.techKiOnly))}
     </div>
     <div class="table-wrap">
       <table>
@@ -7970,7 +8007,7 @@ function AcPatternsTab(app){
         <select class="select" id="acPatternTypeSelect">${["Все","Успешно"].map(s=>`<option ${ac.patternTypeFilter===s?"selected":""}>${s}</option>`).join("")}</select>
         ${icon("chevronDown")}
       </div>
-      <span class="reset-link" data-action="ac-reset-patterns">Сбросить</span>
+      ${ResetFiltersButton("ac-reset-patterns", !!(state.appcat.patternSearch || state.appcat.patternTypeFilter!=="Все"))}
     </div>
     <div class="table-wrap">
       <table>
@@ -8003,7 +8040,7 @@ function AcNfrTab(app){
         <select class="select" id="acNfrSourceSelect">${["Все","Информационная безопасность","Надежность"].map(s=>`<option ${ac.nfrSourceFilter===s?"selected":""}>${s}</option>`).join("")}</select>
         ${icon("chevronDown")}
       </div>
-      <span class="reset-link" data-action="ac-reset-nfr">Сбросить</span>
+      ${ResetFiltersButton("ac-reset-nfr", !!(state.appcat.nfrSearch || state.appcat.nfrSourceFilter!=="Все"))}
       <button class="btn btn-primary" data-action="noop-doc">Кнопка</button>
     </div>
     <div class="table-wrap">
@@ -8824,7 +8861,7 @@ function CjLibraryPage(){
         <input class="input" id="cjSearchInput" placeholder="Название или ID CJ" value="${escapeHtml(state.cjSearch)}">
       </div>
       <button class="btn btn-outline" data-action="cj-open-filters">${icon("filter")} Фильтры${activeCount?` <span class="badge blue" style="margin-left:4px;">${activeCount}</span>`:""}</button>
-      ${hasReset ? `<span class="reset-link" data-action="cj-reset-search-all">Сбросить</span>` : ""}
+      ${ResetFiltersButton("cj-reset-search-all", hasReset)}
       <div class="view-toggle">
         <button class="view-toggle-btn ${state.cjView==="grid"?"active":""}" data-action="cj-set-view" data-mode="grid" title="Карточки">${icon("grid")}</button>
         <button class="view-toggle-btn ${state.cjView==="table"?"active":""}" data-action="cj-set-view" data-mode="table" title="Таблица">${icon("table")}</button>
@@ -10130,7 +10167,7 @@ function ProjectsListPage(){
         <div class="toggle ${state.onlyMine?"on":""}" data-action="toggle-mine"><div class="knob"></div></div>
         Мои проекты
       </div>
-      <span class="reset-link" data-action="reset-filters">Сбросить</span>
+      ${ResetFiltersButton("reset-filters", !!(state.search || state.archFilter || state.statusFilter!=="Все" || state.onlyMine))}
       <div class="view-toggle">
         <button class="view-toggle-btn ${state.projView==="grid"?"active":""}" data-action="proj-set-view" data-mode="grid" title="Карточки">${icon("grid")}</button>
         <button class="view-toggle-btn ${state.projView==="table"?"active":""}" data-action="proj-set-view" data-mode="table" title="Таблица">${icon("table")}</button>
@@ -10380,7 +10417,7 @@ function UseCaseTab(p){
       </div>
       ${FilterSelect({id:"uc-filter-source", label:"Источник", value:state.ucSourceFilter, options:["Все","Ручной импорт","Автоматический импорт"], action:"uc-source-filter-set"})}
       ${FilterSelect({id:"uc-filter-status", label:"Статус", value:state.ucStatusFilter, options:["Все","Опубликован","Черновик"], action:"uc-status-filter-set"})}
-      <span class="reset-link" data-action="reset-uc-filters">Сбросить</span>
+      ${ResetFiltersButton("reset-uc-filters", !!(state.ucSearch || state.ucSourceFilter!=="Все" || state.ucStatusFilter!=="Все"))}
       <div class="view-toggle">
         <button class="view-toggle-btn ${state.ucListView==="grid"?"active":""}" data-action="uc-set-view" data-mode="grid" title="Карточки">${icon("grid")}</button>
         <button class="view-toggle-btn ${state.ucListView==="table"?"active":""}" data-action="uc-set-view" data-mode="table" title="Таблица">${icon("table")}</button>
@@ -10575,6 +10612,12 @@ function scenarioCallCell(s, projectId, ucId){
    Реализаций у вызова может быть несколько, выбранная — одна. Выбор живёт в самих
    данных сценария (impl.chosen), а не в state: он относится к Use Case, а не к сессии
    просмотра, и должен переживать уход со страницы. */
+/* Сброс фильтров — ДС Button type=plain. Кнопка неактивна, пока в фильтрах ничего
+   не введено и не выбрано: сбрасывать нечего, а активная кнопка это скрывала. */
+function ResetFiltersButton(action, active){
+  return `<button class="btn-plain" data-action="${action}"${active?"":" disabled"}>Сбросить</button>`;
+}
+
 function scenarioImpls(s){ return s.impls || []; }
 /* Возвращает полную запись реализации, а не ссылку из сценария: вызывающим нужен
    источник и метаданные, а в сценарии лежит только код и признак выбора. */
@@ -10707,7 +10750,7 @@ function UcScenarioFiltersRow(){
         </div>
       </div>
       ${FilterSelect({id:"uc-scenario-status", label:"Статус", value:state.ucScenarioStatusFilter, options:UC_SCENARIO_STATUS_FILTER, action:"uc-scenario-status-set"})}
-      <span class="reset-link" data-action="reset-uc-scenario-filters">Сбросить</span>
+      ${ResetFiltersButton("reset-uc-scenario-filters", !!(state.ucScenarioSearch || state.ucScenarioStatusFilter!=="Все"))}
     </div>
   `;
 }
@@ -10900,7 +10943,7 @@ function UcImplMatchPanel(){
         ${sp.query ? `<div class="clear-x" data-action="uc-impl-match-clear-search">${icon("x")}</div>` : ""}
       </div>
       ${results.length ? results.map(r=>`
-        <div class="search-result-card" data-action="uc-impl-match-pick" data-code="${escapeHtml(r.code)}">
+        <div class="search-result-card${sp.pick===r.code?" selected":""}" data-action="uc-impl-match-pick" data-code="${escapeHtml(r.code)}">
           <div class="ds-radio ${sp.pick===r.code?"checked":""}" style="margin-top:var(--space-1);"></div>
           <div style="flex:1;">
             <div class="tag">${escapeHtml(r.code)} · ${escapeHtml(r.kind)}</div>
@@ -11003,13 +11046,19 @@ function UseCaseImplPage(projectId, ucId, part, code){
       <div class="uc-diagram-toolbar">
         <button class="btn btn-outline btn-sm" data-action="copy-impl-source">${icon("copy")} Скопировать</button>
       </div>
-      <pre class="impl-source">${escapeHtml(implPlantUml(info))}</pre>
+      <!-- ДС Text area: исходник показывается тем же компонентом, которым PlantUML
+           вводится в визарде импорта, только для чтения. -->
+      <textarea class="textarea impl-source" readonly rows="${implPlantUml(info).split("\n").length + 1}">${escapeHtml(implPlantUml(info))}</textarea>
     ` : `
-      <div class="uc-diagram-toolbar">
-        <button class="btn btn-outline btn-sm" data-action="expand-impl-diagram">${ic("expand",18)} Развернуть</button>
-        <button class="btn btn-outline btn-sm" data-action="download-impl-diagram">${ic("download",18)} Скачать</button>
+      <!-- Та же карточка, что у диаграммы в блоке «Сценарий» (UcDiagramCard):
+           рамка, панель действий в шапке с разделителем, прокрутка внутри. -->
+      <div class="uc-diagram-card">
+        <div class="uc-diagram-toolbar">
+          <button class="btn btn-outline btn-sm" data-action="expand-impl-diagram">${ic("expand",18)} Развернуть</button>
+          <button class="btn btn-outline btn-sm" data-action="download-impl-diagram">${ic("download",18)} Скачать</button>
+        </div>
+        <div class="uc-diagram-scroll">${implDiagramSvg(info, false)}</div>
       </div>
-      <div class="uc-diagram-scroll">${implDiagramSvg(info, false)}</div>
     `}
     ${state.implDiagramOpen ? ImplDiagramModal() : ""}
   `;
