@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261012-182750">
+<meta name="beeatlas-build" content="20261013-113938">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -1342,6 +1342,93 @@
   .uc-filters .search-wrap{flex:0 0 648px;width:648px;max-width:100%;}
   .uc-filters .select-wrap{flex:0 1 260px;width:260px;min-width:170px;}
   .uc-filters .reset-link{flex:0 0 auto;white-space:nowrap;}
+
+  /* ═══ Реализация вызова: 1-ко-многим ═══════════════════════════════════════
+     Ячейка колонки «Реализация» показывает только выбранную реализацию и счётчик
+     остальных: 10% ширины таблицы на список кодов не хватает. Полный список —
+     в раскрывающейся строке (.exp-row-btn / .exp-detail-row, паттерн Каталога
+     приложений), там же выбор чипсами.
+     Имя класса своё (.uc-impl-chip), а не общий .impl-chip: одноимённый класс уже
+     объявлен под .e2ecat-scope в Каталоге Е2Е, и общее правило подмешивало бы
+     свойства в его чипсы. */
+  .uc-impl-cell{display:flex;align-items:center;gap:var(--space-2);min-width:0;}
+  .uc-impl-code{font-size:15px;line-height:20px;letter-spacing:.2px;white-space:nowrap;}
+  .uc-impl-rest{color:var(--text-secondary);font-size:13px;line-height:16px;letter-spacing:.2px;white-space:nowrap;}
+
+  /* ДС components/chips: высота 32, радиус 30, текст 15/18/400/0.2,
+     padding 12 слева и справа (type=onlyText), шаг в группе 8;
+     не выбран — control-background, выбран — background-brand. */
+  .uc-impl-chips{display:flex;align-items:center;flex-wrap:wrap;gap:var(--size-spacing-x2);}
+  .uc-impl-chip{
+    height:32px;border-radius:var(--size-border-radius-x15);border:none;
+    padding:0 var(--size-spacing-x3);
+    display:inline-flex;align-items:center;gap:var(--size-spacing-x2);
+    background:var(--color-control-background);color:var(--text);
+    font-size:15px;font-weight:400;line-height:18px;letter-spacing:.2px;white-space:nowrap;
+  }
+  .uc-impl-chip:hover{background:var(--color-control-background-hover);}
+  .uc-impl-chip:active{background:var(--color-control-background-pressed);}
+  /* Текст на фоне Brand — токены text-dark-*, так их описывает tokens.md:
+     «используется в элементах с цветами фона Brand или White». Соседний .btn-primary
+     исторически красит текст на жёлтом в text-black-active (0.94 от #090b16) —
+     расхождение известное, различие глазом неразличимо, его не чиним этой правкой. */
+  .uc-impl-chip.selected{background:var(--color-background-brand);color:var(--color-text-dark-active);}
+  .uc-impl-chip.selected:hover{background:var(--color-background-brand-hover);}
+  .uc-impl-chip.selected:active{background:var(--color-background-brand-pressed);}
+  .uc-impl-chip .beeline-icons{width:20px;height:20px;font-size:20px;}
+  .uc-impl-chip-src{color:var(--text-secondary);font-size:13px;line-height:16px;letter-spacing:.2px;}
+  .uc-impl-chip.selected .uc-impl-chip-src{color:var(--color-text-dark-inactive);}
+
+  /* ДС components/radioButton: точка выбора 10×10, круг. Геометрия внешнего круга
+     в спеке не токенизирована — берём ту же, что у радио-карточек объединения веток
+     (20×20, рамка 1.5), чтобы в прототипе радио выглядело одинаково. */
+  .ds-radio{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border-strong);
+    flex:0 0 auto;display:flex;align-items:center;justify-content:center;}
+  .ds-radio.checked{border-color:var(--yellow);}
+  .ds-radio.checked::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--yellow);}
+
+  .uc-impl-detail-lbl{color:var(--text-secondary);font-size:13px;line-height:16px;letter-spacing:.2px;margin-bottom:var(--space-2);}
+  .uc-impl-detail-src{color:var(--text-secondary);font-size:15px;line-height:22px;letter-spacing:.2px;margin-top:var(--space-4);}
+  .uc-impl-detail-src b{color:var(--text);font-weight:500;}
+  .uc-impl-detail-actions{display:flex;align-items:center;gap:var(--space-5);margin-top:var(--space-4);}
+
+  /* Маркер расхождения: ДС Icon button — сама иконка 18 (small) с радиусом 4,
+     без круглой подложки. Цвет — status-warning: расхождение не ошибка данных,
+     а повод разобраться. */
+  .uc-mismatch-btn{
+    width:18px;height:18px;flex:0 0 auto;border:none;background:transparent;padding:0;
+    border-radius:var(--size-border-radius-x2);color:var(--color-status-warning);
+    display:inline-flex;align-items:center;justify-content:center;
+  }
+  .uc-mismatch-btn .beeline-icons{width:18px;height:18px;font-size:18px;}
+  .uc-mismatch-btn svg{width:18px;height:18px;}
+  .uc-mismatch-wrap{position:relative;display:inline-flex;}
+
+  /* ДС components/popover (справочная информация, по нажатию): ширина 348–480,
+     padding 16/16/8, радиус 16, elevation-high, фон background-low,
+     заголовок 20/28/500, текст helper 13/16/400/0.2, отступ от триггера 8.
+     Это именно Popover, а не Menu: у .popover выше в файле другая анатомия
+     (радиус 12, фон background-medium, пункты 46) и своё назначение. */
+  .ds-popover{
+    position:absolute;top:calc(100% + var(--size-spacing-x2));left:0;z-index:60;
+    width:348px;max-width:480px;
+    background:var(--color-background-low);border-radius:var(--size-border-radius-x8);
+    box-shadow:var(--elevation-high);
+    padding:var(--size-spacing-x4) var(--size-spacing-x4) var(--size-spacing-x2);
+    text-align:left;white-space:normal;cursor:default;
+  }
+  /* У правого края страницы поповер выравнивается по краю триггера — боковое
+     позиционирование из раздела «Расположение» спеки. */
+  .ds-popover.to-left{left:auto;right:0;}
+  .ds-popover .dsp-title{
+    color:var(--color-text-active);font-size:20px;font-weight:500;line-height:28px;
+    letter-spacing:.2px;margin:0 0 var(--size-spacing-x2);
+  }
+  .ds-popover .dsp-text{
+    color:var(--color-text-active);font-size:13px;font-weight:400;line-height:16px;
+    letter-spacing:.2px;margin:0 0 var(--size-spacing-x2);
+  }
+  .ds-popover .dsp-text b{font-weight:500;}
   /* Проекты: поиск 648, фильтры по 260 — та же логика */
   .proj-filters .search-wrap{flex:0 0 648px;width:648px;max-width:100%;}
   .proj-filters .arch-input,
@@ -5069,16 +5156,47 @@ function freshProject(name, code){
   };
 }
 
+/* Реализация вызова — связь 1-ко-многим: один и тот же вызов может быть описан
+   несколькими sequence-диаграммами (из E2E-сценария, из другого Use Case, из ветки
+   разработки). Поэтому не одна строка-значение, а список `impls` с выбранной
+   реализацией (`chosen`) и отдельным описанием расхождения `mismatch`.
+   Расхождение — это несовпадение Use Case, нарисованного архитектором, с реальной
+   цепочкой вызовов; продукт обязан его показать, а не сглаживать (встреча 07.10 15:00).
+   Типы: multiple — несколько реализаций, какая верна, не решено;
+         wrong-start — реальная цепочка начинается с другого вызова;
+         mid-chain — в реальной цепочке есть промежуточный вызов, которого нет в UC;
+         missing-system — системы из Use Case в реальной цепочке нет. */
 const UC_SCENARIOS_TEMPLATE = [
-  {part:"P-01", participant:"app — ext_gateway", action:"Пользователь вводит логин и пароль в форме приложения. Приложение передаёт учётные данные во внешний шлюз авторизации, который проверяет их в LDAP и в случае успеха возвращает токен доступа, а при ошибке — код и текст сообщения для показа пользователю.", api:"users_api", call:"GET /api/v1/users/{id}", tcName:"Возможность авторизации пользователя", tcCode:"TC-101", dynamic:"SEQ-88", status:"confirmed"},
-  {part:"P-02", participant:"app — cart_service", action:"get_cart", api:"cart_api", call:"GET /api/v1/cart/{id}", tcName:"Возможность получения корзины", tcCode:"TC-108", dynamic:"SEQ-88", status:"confirmed"},
-  {part:"P-03", participant:"app — pricing_service", action:"calc_price", api:"pricing_api", call:"POST /api/v1/price/calc", tcName:"Возможность расчёта стоимости", tcCode:"TC-114", dynamic:"SEQ-88", status:"confirmed"},
-  {part:"P-04", participant:"app — order_service", action:"Приложение формирует заказ на основании содержимого корзины и рассчитанной стоимости. Сервис заказов проверяет остатки на складе, резервирует их и создаёт заказ со статусом «Новый», возвращая его идентификатор обратно в приложение.", api:"orders_api", call:"POST /api/v1/orders", tcName:"Возможность создания заказа", tcCode:"TC-142", dynamic:"SEQ-88", status:"confirmed"},
-  {part:"P-05", participant:"order_service — billing", action:"reserve_payment", api:"billing_api", call:"POST /api/v1/payments/reserve", tcName:"Возможность резервирования оплаты", tcCode:"TC-150", dynamic:"SEQ-88", status:"confirmed"},
-  {part:"P-06", participant:"order_service — notification", action:"send_confirmation", api:"notify_api", call:"POST /api/v1/notify/send", tcName:"Возможность отправки уведомления", tcCode:"TC-163", status:"confirmed"},
-  {part:"P-07", participant:"app — order_service", action:"get_order_status", api:"orders_api", call:"GET /api/v1/orders/{id}", status:"planned"},
-  {part:"P-08", participant:"order_service — loyalty_service", action:"apply_bonus_points", api:"loyalty_api", call:"POST /api/v1/loyalty/apply"},
+  {part:"P-01", participant:"app — ext_gateway", action:"Пользователь вводит логин и пароль в форме приложения. Приложение передаёт учётные данные во внешний шлюз авторизации, который проверяет их в LDAP и в случае успеха возвращает токен доступа, а при ошибке — код и текст сообщения для показа пользователю.", api:"users_api", call:"GET /api/v1/users/{id}", tcName:"Возможность авторизации пользователя", tcCode:"TC-101", status:"confirmed",
+   impls:[
+     {code:"SEQ-88",  source:"E2E-сценарий «Онлайн заказ»", tcCode:"TC-101", chosen:true},
+     {code:"SEQ-104", source:"Use Case «Авторизация в личном кабинете»", tcCode:"TC-101", chosen:false},
+   ],
+   mismatch:{type:"multiple"}},
+  {part:"P-02", participant:"app — cart_service", action:"get_cart", api:"cart_api", call:"GET /api/v1/cart/{id}", tcName:"Возможность получения корзины", tcCode:"TC-108", status:"confirmed",
+   impls:[{code:"SEQ-88", source:"E2E-сценарий «Онлайн заказ»", tcCode:"TC-108", chosen:true}],
+   mismatch:null},
+  {part:"P-03", participant:"app — pricing_service", action:"calc_price", api:"pricing_api", call:"POST /api/v1/price/calc", tcName:"Возможность расчёта стоимости", tcCode:"TC-114", status:"confirmed",
+   impls:[{code:"SEQ-88", source:"E2E-сценарий «Онлайн заказ»", tcCode:"TC-114", chosen:true}],
+   mismatch:{type:"wrong-start", first:"GET /api/v1/catalog/offers"}},
+  {part:"P-04", participant:"app — order_service", action:"Приложение формирует заказ на основании содержимого корзины и рассчитанной стоимости. Сервис заказов проверяет остатки на складе, резервирует их и создаёт заказ со статусом «Новый», возвращая его идентификатор обратно в приложение.", api:"orders_api", call:"POST /api/v1/orders", tcName:"Возможность создания заказа", tcCode:"TC-142", status:"confirmed",
+   impls:[
+     {code:"SEQ-88",  source:"E2E-сценарий «Онлайн заказ»", tcCode:"TC-142", chosen:true},
+     {code:"SEQ-104", source:"Use Case «Оформление заказа в мобильном приложении»", tcCode:"TC-142", chosen:false},
+     {code:"SEQ-117", source:"Ветка develop, сборка от 10.10.2026", tcCode:"TC-142", chosen:false},
+     {code:"SEQ-121", source:"E2E-сценарий «Заказ оборудования»", tcCode:"TC-142", chosen:false},
+   ],
+   mismatch:{type:"multiple"}},
+  {part:"P-05", participant:"order_service — billing", action:"reserve_payment", api:"billing_api", call:"POST /api/v1/payments/reserve", tcName:"Возможность резервирования оплаты", tcCode:"TC-150", status:"confirmed",
+   impls:[{code:"SEQ-88", source:"E2E-сценарий «Онлайн заказ»", tcCode:"TC-150", chosen:true}],
+   mismatch:{type:"mid-chain", between:"POST /api/v1/limits/check"}},
+  {part:"P-06", participant:"order_service — notification", action:"send_confirmation", api:"notify_api", call:"POST /api/v1/notify/send", tcName:"Возможность отправки уведомления", tcCode:"TC-163", status:"confirmed",
+   impls:[],
+   mismatch:{type:"missing-system", system:"notification"}},
+  {part:"P-07", participant:"app — order_service", action:"get_order_status", api:"orders_api", call:"GET /api/v1/orders/{id}", status:"planned", impls:[], mismatch:null},
+  {part:"P-08", participant:"order_service — loyalty_service", action:"apply_bonus_points", api:"loyalty_api", call:"POST /api/v1/loyalty/apply", impls:[], mismatch:null},
 ];
+
 
 /* pool of candidate parts produced by a simulated UC import run; some resolve
    against known landscape containers (mapped), some don't (require a decision) */
@@ -5162,7 +5280,10 @@ function makeUseCases(){
     updated: NOW_DATE,
     cj:{code:"CJ-0042", name:"Онлайн заказ: выбор и оплата"},
     cjStep:{code:"Step-00.00.02.08", name:"Пользователь оформляет заказ"},
-    scenarios: UC_SCENARIOS_TEMPLATE.map(s=>Object.assign({},s)),
+    /* deepClone, а не Object.assign: у сценария теперь вложенные impls/mismatch,
+       и при поверхностной копии выбор реализации в одном Use Case менял бы его
+       во всех остальных — массив impls был бы один и тот же объект. */
+    scenarios: deepClone(UC_SCENARIOS_TEMPLATE),
     rawPlantUml:"",
   }, x));
 }
@@ -5405,6 +5526,10 @@ const state = {
   ucStatusFilter:"Все",
   ucScenarioSearch:"",        // поиск по вызову в блоке «Сценарий» карточки Use Case
   ucScenarioStatusFilter:"Все",
+  /* Какие строки таблицы вызовов раскрыты, ключ "<ucId>:<part>". Раскрытие —
+     состояние просмотра, в отличие от выбора реализации, который лежит в данных. */
+  ucImplExpanded:{},
+  ucImplMatch:null,
   ucHistoryOpenId:null,
   ucWizard:null,
 
@@ -10342,10 +10467,107 @@ function scenarioCallCell(s, projectId, ucId){
   if(!clickable) return clampCell(s.call);
   return `<div class="cell-clamp-wrap"><div class="cell-clamp proj-link" data-action="open-hub-interface" data-call="${t}">${t}</div><div class="cell-tooltip">${t}</div></div>`;
 }
-function scenarioDynamicCell(s, projectId, ucId){
-  if(s.status!=="confirmed" || !s.dynamic) return '<span class="empty-cell">—</span>';
-  if(!projectId || !ucId) return escapeHtml(s.dynamic);
-  return `<span class="proj-link" data-action="open-uc-dynamic" data-id="${projectId}" data-uc="${ucId}" data-part="${escapeHtml(s.part)}">${escapeHtml(s.dynamic)}</span>`;
+/* ═══ Реализация вызова ════════════════════════════════════════════════════
+   Реализаций у вызова может быть несколько, выбранная — одна. Выбор живёт в самих
+   данных сценария (impl.chosen), а не в state: он относится к Use Case, а не к сессии
+   просмотра, и должен переживать уход со страницы. */
+function scenarioImpls(s){ return s.impls || []; }
+function chosenImpl(s){
+  const list = scenarioImpls(s);
+  if(!list.length) return null;
+  return list.find(x=>x.chosen) || list[0];
+}
+function selectScenarioImpl(projectId, ucId, part, code){
+  const u = findUseCase(findProject(projectId), ucId);
+  const sc = u && u.scenarios.find(x=>x.part===part);
+  if(!sc) return;
+  scenarioImpls(sc).forEach(x=>{ x.chosen = x.code===code; });
+  render();
+}
+
+/* Четыре текста под четыре типа расхождения. Поповер, а не тултип: в нём есть ссылка,
+   по которой пользователь переходит, — спека Popover называет это «отображение
+   по нажатию» (у тултипа содержимое только для чтения). */
+function scenarioMismatchText(s){
+  const m = s.mismatch;
+  if(!m) return null;
+  if(m.type==="multiple"){
+    const n = scenarioImpls(s).length;
+    return {
+      title:"Несколько реализаций",
+      text:`У вызова ${n} ${ruPlural(n,"реализация","реализации","реализаций")}, и ни одна пока не помечена как верная. Раскрой строку и выбери ту, по которой этот вызов действительно работает, — остальные останутся в истории.`,
+    };
+  }
+  if(m.type==="wrong-start"){
+    return {
+      title:"Другое начало цепочки",
+      text:`В реальной цепочке вызовов первым идёт <b>${escapeHtml(m.first||"")}</b>, а не этот вызов. Либо Use Case описывает процесс не с самого начала, либо реализация ушла вперёд — сверь порядок шагов.`,
+    };
+  }
+  if(m.type==="mid-chain"){
+    return {
+      title:"Пропущен промежуточный вызов",
+      text:`Между этим вызовом и следующим реальная цепочка делает ещё один — <b>${escapeHtml(m.between||"")}</b>. В Use Case его нет: добавь шаг или подтверди, что он к этому сценарию не относится.`,
+    };
+  }
+  return {
+    title:"Системы нет в цепочке",
+    text:`Система <b>${escapeHtml(m.system||"")}</b> описана в Use Case, но в реальной цепочке вызовов не встречается. Реализация к вызову не привязана — сопоставь её вручную или сними вызов со сценария.`,
+  };
+}
+
+function scenarioMismatchMarker(s, projectId, ucId){
+  const info = scenarioMismatchText(s);
+  if(!info) return "";
+  const key = `uc-mm-${ucId}-${s.part}`;
+  const open = state.popover===key;
+  return `<span class="uc-mismatch-wrap">
+      <button class="uc-mismatch-btn" data-action="toggle-popover" data-popover="${key}" title="Расхождение с реальной цепочкой вызовов">${icon("alertTriangle")}</button>
+      ${open ? `<div class="ds-popover to-left">
+        <div class="dsp-title">${escapeHtml(info.title)}</div>
+        <div class="dsp-text">${info.text}</div>
+      </div>` : ""}
+    </span>`;
+}
+
+/* В ячейку помещается только выбранная реализация и счётчик остальных: колонка
+   узкая, а коды нечитаемые и длинные. Полный список и выбор — в раскрытой строке. */
+function scenarioImplCell(s, projectId, ucId){
+  const marker = scenarioMismatchMarker(s, projectId, ucId);
+  const list = scenarioImpls(s);
+  const cur = chosenImpl(s);
+  if(!cur){
+    /* Прочерк остаётся прочерком — пустое значение не маскируем ссылкой.
+       Сопоставление лежит рядом, в раскрытой строке. */
+    return `<div class="uc-impl-cell"><span class="empty-cell">—</span>${marker}</div>`;
+  }
+  const rest = list.length - 1;
+  const code = (projectId && ucId)
+    ? `<span class="proj-link uc-impl-code" data-action="open-uc-dynamic" data-id="${projectId}" data-uc="${ucId}" data-part="${escapeHtml(s.part)}">${escapeHtml(cur.code)}</span>`
+    : `<span class="uc-impl-code">${escapeHtml(cur.code)}</span>`;
+  return `<div class="uc-impl-cell">${code}${rest>0?`<span class="uc-impl-rest">+${rest}</span>`:""}${marker}</div>`;
+}
+
+/* Раскрытая строка: все реализации чипсами (ДС Chips), источник выбранной и вход
+   в ручное сопоставление. */
+function scenarioImplDetailRow(s, projectId, ucId, cols){
+  const list = scenarioImpls(s);
+  const cur = chosenImpl(s);
+  const chips = list.map(x=>`
+    <button class="uc-impl-chip${cur&&cur.code===x.code?" selected":""}" data-action="uc-select-impl" data-id="${projectId}" data-uc="${ucId}" data-part="${escapeHtml(s.part)}" data-code="${escapeHtml(x.code)}">
+      ${cur&&cur.code===x.code?icon("check"):""}${escapeHtml(x.code)}
+    </button>`).join("");
+  const body = list.length
+    ? `<div class="uc-impl-detail-lbl">${list.length} ${ruPlural(list.length,"реализация","реализации","реализаций")} вызова. Выбранная определяет, какую диаграмму открывает код в таблице.</div>
+       <div class="uc-impl-chips">${chips}</div>
+       <div class="uc-impl-detail-src">Источник выбранной: <b>${escapeHtml(cur.source)}</b></div>`
+    : `<div class="uc-impl-detail-lbl">У вызова нет ни одной реализации — агент не нашёл для него диаграмму последовательности.</div>`;
+  return `<tr class="exp-detail-row"><td colspan="${cols}"><div class="exp-detail">
+      ${body}
+      <div class="uc-impl-detail-actions">
+        <span class="proj-link" data-action="uc-open-impl-match" data-id="${projectId}" data-uc="${ucId}" data-part="${escapeHtml(s.part)}">Сопоставить вручную</span>
+      </div>
+    </div></td></tr>`;
 }
 /* Подписи статусов берём из scenarioStatusBadge, чтобы фильтр и бейдж в таблице
    назывались одинаково. "Все" — первый пункт, как в остальных фильтрах прототипа. */
@@ -10393,25 +10615,31 @@ function UseCaseScenariosTable(u, projectId, ucId){
     ${UcScenarioFiltersRow()}
     <div class="table-wrap-fit">
       <table class="fixed-table">
+        <!-- Ширины пересчитаны под новое содержимое: «Шаг» принял шеврон раскрытия
+             (22 + 8 + код), «Реализация» — код выбранной, счётчик остальных и маркер
+             расхождения. На 1440 и шире обе колонки вмещают содержимое целиком;
+             вычтено у «Действия» и «Вызова» — они и так усекаются с тултипом. -->
         <colgroup>
-          <col style="width:5%"><col style="width:13%"><col style="width:13%"><col style="width:20%">
-          <col style="width:16%"><col style="width:13%"><col style="width:7%"><col style="width:13%">
+          <col style="width:10%"><col style="width:11%"><col style="width:11%"><col style="width:15%">
+          <col style="width:14%"><col style="width:12%"><col style="width:14%"><col style="width:13%">
         </colgroup>
         <thead><tr><th>Шаг</th><th>Вызывающий</th><th>Вызываемый</th><th>Действие</th><th>Вызов</th><th>ТС</th><th>Реализация</th><th>Статус вызова</th></tr></thead>
         <tbody>
           ${rows.map(s=>{
             const pp = splitParticipant(s.participant);
+            const open = !!state.ucImplExpanded[ucId+":"+s.part];
             return `
             <tr>
-              <td style="white-space:nowrap;">${escapeHtml(s.part)}</td>
+              <td style="white-space:nowrap;"><div class="exp-cell"><div class="exp-row-btn ${open?"open":""}" data-action="uc-toggle-impl" data-uc="${ucId}" data-part="${escapeHtml(s.part)}">${icon("chevronRight")}</div>${escapeHtml(s.part)}</div></td>
               <td>${participantCell(pp.caller)}</td>
               <td>${participantCell(pp.callee)}</td>
               <td>${clampCell(s.action, "clamp-5")}</td>
               <td>${scenarioCallCell(s, projectId, ucId)}</td>
               <td>${s.tcName ? clampNameCell(s.tcName, s.tcCode) : '<span class="empty-cell">—</span>'}</td>
-              <td style="white-space:nowrap;">${scenarioDynamicCell(s, projectId, ucId)}</td>
+              <td>${scenarioImplCell(s, projectId, ucId)}</td>
               <td>${scenarioStatusBadge(s.status)}</td>
             </tr>
+            ${open ? scenarioImplDetailRow(s, projectId, ucId, 8) : ""}
           `;}).join("")}
         </tbody>
       </table>
@@ -10489,6 +10717,106 @@ function UcDiagramModal(u){
         </div>
       </div>
       <div class="uc-diagram-scroll uc-diagram-scroll-modal">${buildSequenceSvgGeneric(seq.lifelines, null, seq.messages, {large:true})}</div>
+    </div>
+  `;
+}
+
+/* ═══ R-3: ручное сопоставление реализации ════════════════════════════════
+   Агент не всегда находит для вызова диаграмму последовательности — тогда в колонке
+   «Реализация» стоит прочерк. Прочерк остаётся прочерком, но рядом есть вход в это
+   сопоставление: архитектор знает реализацию и находит её поиском по коду, методу
+   или ТС. Пул — реализации, уже загруженные в BeeAtlas из E2E-сценариев, других
+   Use Case и веток разработки. */
+const UC_IMPL_POOL = [
+  {code:"SEQ-88",  source:"E2E-сценарий «Онлайн заказ»",                        method:"POST /api/v1/orders",            tcName:"Возможность создания заказа",            tcCode:"TC-142"},
+  {code:"SEQ-91",  source:"E2E-сценарий «Онлайн заказ»",                        method:"GET /api/v1/cart/{id}",          tcName:"Возможность получения корзины",          tcCode:"TC-108"},
+  {code:"SEQ-104", source:"Use Case «Оформление заказа в мобильном приложении»", method:"POST /api/v1/orders",            tcName:"Возможность создания заказа",            tcCode:"TC-142"},
+  {code:"SEQ-109", source:"Use Case «Авторизация в личном кабинете»",            method:"GET /api/v1/users/{id}",         tcName:"Возможность авторизации пользователя",   tcCode:"TC-101"},
+  {code:"SEQ-117", source:"Ветка develop, сборка от 10.10.2026",                 method:"POST /api/v1/notify/send",       tcName:"Возможность отправки уведомления",       tcCode:"TC-163"},
+  {code:"SEQ-121", source:"E2E-сценарий «Заказ оборудования»",                   method:"POST /api/v1/notify/send",       tcName:"Возможность отправки уведомления",       tcCode:"TC-163"},
+  {code:"SEQ-134", source:"E2E-сценарий «Пополнение баланса»",                   method:"POST /api/v1/payments/reserve",  tcName:"Возможность резервирования оплаты",      tcCode:"TC-150"},
+  {code:"SEQ-140", source:"Ветка design, сборка от 09.10.2026",                  method:"POST /api/v1/price/calc",        tcName:"Возможность расчёта стоимости",          tcCode:"TC-114"},
+];
+
+function openUcImplMatch(projectId, ucId, part){
+  const u = findUseCase(findProject(projectId), ucId);
+  const sc = u && u.scenarios.find(x=>x.part===part);
+  if(!sc) return;
+  state.sidePanel = {
+    type:"uc-impl-match", projectId, ucId, part,
+    call: sc.call, tcCode: sc.tcCode || null,
+    /* Поиск предзаполняем кодом ТС вызова, если он известен: именно по нему
+       реализация чаще всего и находится, а пустое поле заставляло бы угадывать,
+       что вообще вводить. */
+    query: sc.tcCode || "",
+    pick: null,
+  };
+  render();
+}
+
+function ucImplMatchResults(sp){
+  const q = String(sp.query||"").trim().toLowerCase();
+  const taken = new Set((ucImplMatchScenario(sp)?.impls||[]).map(x=>x.code));
+  return UC_IMPL_POOL
+    .filter(x=>!taken.has(x.code))
+    .filter(x=>!q || (x.code+" "+x.method+" "+x.tcName+" "+x.tcCode+" "+x.source).toLowerCase().includes(q));
+}
+function ucImplMatchScenario(sp){
+  const u = findUseCase(findProject(sp.projectId), sp.ucId);
+  return u ? u.scenarios.find(x=>x.part===sp.part) : null;
+}
+
+function submitUcImplMatch(){
+  const sp = state.sidePanel;
+  const found = UC_IMPL_POOL.find(x=>x.code===sp.pick);
+  const sc = ucImplMatchScenario(sp);
+  if(!found || !sc) return;
+  sc.impls = sc.impls || [];
+  /* Сопоставленная вручную реализация становится выбранной: архитектор только что
+     указал именно её. Остальные остаются в списке невыбранными. */
+  sc.impls.forEach(x=>{ x.chosen = false; });
+  sc.impls.push({code:found.code, source:found.source, tcCode:found.tcCode, chosen:true});
+  /* Расхождение «системы нет в цепочке» снимается самим фактом сопоставления;
+     остальные типы ручной привязкой не закрываются. */
+  if(sc.mismatch && sc.mismatch.type==="missing-system") sc.mismatch = null;
+  state.ucImplExpanded[sp.ucId+":"+sp.part] = true;
+  state.sidePanel = null;
+  showToast("Реализация " + found.code + " сопоставлена с вызовом " + sc.part);
+  render();
+}
+
+function UcImplMatchPanel(){
+  const sp = state.sidePanel;
+  const results = ucImplMatchResults(sp);
+  return `
+    <div class="side-head">
+      <div>
+        <h2>Сопоставить реализацию</h2>
+        <p class="side-desc">Найди диаграмму последовательности, по которой работает вызов <b>${escapeHtml(sp.call||"")}</b>, и привяжи её к шагу ${escapeHtml(sp.part)}.</p>
+      </div>
+      <button class="wizard-close" data-action="close-side">${icon("x")}</button>
+    </div>
+    <div class="side-body">
+      <div class="field-with-icon" style="margin-bottom:var(--space-5);">
+        ${icon("search")}
+        <input class="input" id="ucImplMatchSearch" placeholder="Код реализации, метод или ТС" value="${escapeHtml(sp.query)}"/>
+        ${sp.query ? `<div class="clear-x" data-action="uc-impl-match-clear-search">${icon("x")}</div>` : ""}
+      </div>
+      ${results.length ? results.map(r=>`
+        <div class="search-result-card" data-action="uc-impl-match-pick" data-code="${escapeHtml(r.code)}">
+          <div class="ds-radio ${sp.pick===r.code?"checked":""}" style="margin-top:var(--space-1);"></div>
+          <div style="flex:1;">
+            <div class="tag">${escapeHtml(r.code)}</div>
+            <div class="name">${escapeHtml(r.method)}</div>
+            <div class="code">${escapeHtml(r.tcName)} · ${escapeHtml(r.tcCode)}</div>
+            <div class="code">${escapeHtml(r.source)}</div>
+          </div>
+        </div>
+      `).join("") : `<div style="color:var(--text-secondary);font-size:13px;">По запросу «${escapeHtml(sp.query)}» реализаций не нашлось. Попробуй код ТС или путь метода.</div>`}
+    </div>
+    <div class="side-foot">
+      <button class="btn btn-outline" data-action="close-side">Отмена</button>
+      <button class="btn btn-primary" data-action="submit-uc-impl-match" ${sp.pick?"":"disabled"}>Сопоставить</button>
     </div>
   `;
 }
@@ -13223,6 +13551,7 @@ function SidePanelWrap(){
   else if(sp.type==="usecase") inner = UsecasePanel();
   else if(sp.type==="uc-dynamic") inner = UcDynamicPanel();
   else if(sp.type==="uc-cj-link") inner = UcCjLinkPanel();
+  else if(sp.type==="uc-impl-match") inner = UcImplMatchPanel();
   else if(sp.type==="ac-method-desc") inner = AcMethodDescPanel();
   else if(sp.type && sp.type.indexOf("hld-")===0) inner = HldFlowPanel();
   const enterCls = sp._entered ? "" : " enter";
@@ -13415,7 +13744,7 @@ function bindGlobalEvents(){
     const t = e.target.closest("[data-action]");
     if(!t) {
       // clicks inside an open popover (e.g. a search input) shouldn't dismiss it
-      if(e.target.closest(".popover")) return;
+      if(e.target.closest(".popover, .ds-popover")) return;
       // close popovers on outside click
       if(state.popover){ state.popover=null; render(); }
       return;
@@ -13599,6 +13928,7 @@ function handleInput(el){
   }
   else if(el.id==="createNameInput"){ state.createPanel.name = el.value; render(); reFocus("createNameInput"); }
   else if(el.id==="createJiraInput"){ state.createPanel.jira = el.value; render(); reFocus("createJiraInput"); }
+  else if(el.id==="ucImplMatchSearch"){ state.sidePanel.query = el.value; render(); reFocus("ucImplMatchSearch"); }
   else if(el.id==="panelSearchInput"){
     state.sidePanel.query = el.value;
     render(); reFocus("panelSearchInput");
@@ -14161,10 +14491,27 @@ function handleAction(action, el){
       const p = findProject(el.dataset.id);
       const u = findUseCase(p, el.dataset.uc);
       const s = u.scenarios.find(x=>x.part===el.dataset.part);
-      state.sidePanel = {type:"uc-dynamic", seq: s.dynamic, plantUml: u.rawPlantUml || UC_SAMPLE_PLANTUML};
+      const impl = chosenImpl(s);
+      if(!impl) break;
+      state.sidePanel = {type:"uc-dynamic", seq: impl.code, plantUml: u.rawPlantUml || UC_SAMPLE_PLANTUML};
       render();
       break;
     }
+    case "uc-toggle-impl": {
+      const k = el.dataset.uc+":"+el.dataset.part;
+      state.ucImplExpanded[k] = !state.ucImplExpanded[k];
+      render();
+      break;
+    }
+    case "uc-select-impl":
+      selectScenarioImpl(el.dataset.id, el.dataset.uc, el.dataset.part, el.dataset.code);
+      break;
+    case "uc-open-impl-match":
+      openUcImplMatch(el.dataset.id, el.dataset.uc, el.dataset.part);
+      break;
+    case "uc-impl-match-pick": state.sidePanel.pick = el.dataset.code; render(); break;
+    case "uc-impl-match-clear-search": state.sidePanel.query = ""; render(); break;
+    case "submit-uc-impl-match": submitUcImplMatch(); break;
     case "set-uc-scenarios-view": state.ucScenariosView = el.dataset.mode; render(); break;
     case "expand-uc-diagram": state.ucDiagramModalOpen = true; render(); break;
     case "collapse-uc-diagram": state.ucDiagramModalOpen = false; render(); break;
