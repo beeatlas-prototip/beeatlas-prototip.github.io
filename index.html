@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261013-133754">
+<meta name="beeatlas-build" content="20261013-150611">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -1449,6 +1449,8 @@
   .ds-radio.checked{border-color:var(--yellow);}
   .ds-radio.checked::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--yellow);}
   .uc-impl-chips{display:flex;align-items:center;flex-wrap:wrap;gap:var(--size-spacing-x2);}
+  /* 24px от чипсов до данных: 12 здесь + 12 собственного верхнего падинга ДС-листа. */
+  .exp-detail .uc-impl-chips{margin-bottom:var(--space-3);}
   /* Иконка в чипсе — ДС chips-icon-size 20, отступ до текста 8 (gap задан в самом
      .pill-item выше: отдельное одноимённое правило слилось бы по каскаду).
      Ни один существующий .pill-item иконку не содержит — им это ничего не меняет. */
@@ -1591,7 +1593,9 @@
   }
   tbody td{padding:17px var(--size-spacing-x6);border-bottom:1px solid var(--color-divider);vertical-align:top;}
   tbody tr:last-child td{border-bottom:none;}
-  tbody tr:hover{background:var(--color-background-base-hover);}
+  /* Раскрытая часть — панель, а не строка данных: наведение на неё не должно
+     её подкрашивать (выглядело как тень, наползающая на содержимое). */
+  tbody tr:not(.exp-detail-row):hover{background:var(--color-background-base-hover);}
   .proj-link{color:var(--blue);font-weight:500;cursor:pointer;}
   .proj-link:hover{text-decoration:underline;}
   .row-sub{color:var(--text-secondary);font-size:13px;line-height:16px;letter-spacing:.2px;margin-top:var(--space-1);}
@@ -1619,7 +1623,12 @@
      и столбцов»: у закреплённого столбца при скролле тень Low. */
   .table-scroll{border:1px solid var(--border);border-radius:var(--size-border-radius-x6);overflow-x:auto;overflow-y:hidden;}
   .table-scroll thead th:first-child,
-  .table-scroll tbody td:first-child{position:sticky;left:0;z-index:2;background:var(--bg);box-shadow:var(--elevation-low);}
+  .table-scroll tbody td:first-child{position:sticky;left:0;z-index:2;background:var(--bg);}
+  /* Тень появляется только когда столбец реально что-то перекрывает: класс ставит
+     markStickyScrolled() по scrollLeft. Безусловная тень читалась как лишний
+     разделитель между первой и второй колонкой на непрокрученной таблице. */
+  .table-scroll.is-xscrolled thead th:first-child,
+  .table-scroll.is-xscrolled tbody td:first-child{box-shadow:var(--elevation-low);}
   /* Подсветка раскрытой строки на закреплённой ячейке: обычное правило
      tbody tr.exp-open > td проигрывает .table-scroll tbody td:first-child по
      специфичности, и первая колонка оставалась белой. Токен полупрозрачный,
@@ -1631,8 +1640,15 @@
   }
   /* Токен ховера полупрозрачный: если положить его на sticky-ячейку одним цветом,
      сквозь неё видно уезжающие под низ ячейки. Кладём его слоем поверх фона страницы. */
-  .table-scroll tbody tr:hover td:first-child{
+  .table-scroll tbody tr:not(.exp-detail-row):hover td:first-child{
     background:linear-gradient(var(--color-background-base-hover),var(--color-background-base-hover)), var(--bg);
+  }
+  /* У раскрытой строки ховер ложится ПОВЕРХ выделения: иначе закреплённая первая
+     колонка получала чистый hover и оказывалась светлее остальных ячеек, где
+     hover строки и selected ячейки складываются. */
+  .table-scroll tbody tr.exp-open:hover td:first-child{
+    background:linear-gradient(var(--color-background-base-hover),var(--color-background-base-hover)),
+               linear-gradient(var(--color-background-base-selected),var(--color-background-base-selected)), var(--bg);
   }
   /* Таблица прокручивается, поэтому абсолютный тултип обрезался её краем. Внутри
      такой таблицы он позиционируется фиксированно — координаты считает positionCellTooltips(). */
@@ -2577,14 +2593,15 @@
      — раскрытая строка 1 уровня имеет фон Background/Base Selected;
      — последующие уровни свой цвет при разворачивании НЕ меняют, поэтому у вложенного
        блока заливки нет (раньше стоял bg-alt и получался тёмный прямоугольник);
-     — жёлтая полоса-индикатор подчёркивает начало и конец дочерней информации
-       и идёт по высоте внутреннего уровня;
+     — жёлтая полоса-индикатор подчёркивает начало и конец дочерней информации,
+       идёт по высоте внутреннего уровня и прижата к краю таблицы: в отступе она
+       висела в воздухе и читалась как самостоятельный элемент;
      — дочерние строки выравниваются по тексту в Expandable cell родителя:
        24 падинга ячейки + 22 шеврон + 8 зазор = 54. */
   tbody tr.exp-open > td{background:var(--color-background-base-selected);}
   .exp-detail{position:relative;background:transparent;
     padding:var(--space-5) var(--space-5) var(--space-5) 54px;}
-  .exp-detail::before{content:"";position:absolute;left:24px;top:0;bottom:0;width:3px;background:var(--yellow);}
+  .exp-detail::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--yellow);}
   .exp-detail .table-wrap{background:var(--bg);margin-bottom:var(--space-4);}
   .exp-detail .table-wrap:last-child{margin-bottom:0;}
   .exp-detail-note{font-size:13px;color:var(--text-secondary);margin-bottom:var(--space-3);}
@@ -3265,10 +3282,10 @@ var UC_PARTICIPANT_POOL=[
   'app — order_service','order_service — billing','order_service — notification'
 ];
 var UC_TC_POOL=[
-  {name:'Возможность авторизации пользователя', code:'TC-101'},
-  {name:'Возможность получения корзины', code:'TC-108'},
-  {name:'Возможность расчёта стоимости', code:'TC-114'},
-  {name:'Возможность создания заказа', code:'TC-142'}
+  {name:'Возможность авторизации пользователя', code:'ТС-101'},
+  {name:'Возможность получения корзины', code:'ТС-108'},
+  {name:'Возможность расчёта стоимости', code:'ТС-114'},
+  {name:'Возможность создания заказа', code:'ТС-142'}
 ];
 function buildStepUc(n, stepTitle){
   if(n%3===0) return null;
@@ -4963,7 +4980,7 @@ function makeBcRow(i){
   return {
     id: uid("bc"),
     name:"Возможность online-отображения информации в процессе коммуникации сотрудников офисов и call-центров с абонентами",
-    code:"BC 123456",
+    code:"ВС 123456",
     match:"100%",
     checked: false,
     reqs:["FR-01 Приём текстовых сообщений от клиентов;","FR-01 Приём текстовых сообщений от клиентов;","FR-01 Приём текстовых сообщений от клиентов;"],
@@ -4976,7 +4993,7 @@ function makeTcRowFromBc(bc){
     bcName: bc.name,
     bcCode: bc.code,
     tcName: bc.name,
-    tcCode: "TC 123456",
+    tcCode: "ТС 123456",
     match: bc.match,
     apps: "Beeatlas",
     owner: ARCHITECT,
@@ -4988,9 +5005,9 @@ function makeTcRow(i){
   return {
     id: uid("tc"),
     bcName:"Возможность online-отображения информации в процессе коммуникации сотрудников офисов и call-центров с абонентами",
-    bcCode:"BC 123456",
+    bcCode:"ВС 123456",
     tcName:"Возможность online-отображения информации в процессе коммуникации сотрудников офисов и call-центров с абонентами",
-    tcCode:"TC 123456",
+    tcCode:"ТС 123456",
     match:"100%",
     apps:"Beeatlas",
     owner: ARCHITECT,
@@ -5005,7 +5022,7 @@ const RISKS = [
   {name:"Совместимость шаблонов HLD", desc:"Различия в форматах между командами", mit:"Митигация: Гибкий шаблонизатор с маппингом полей", level:"green", label:"Низкие риски"},
 ];
 
-/* ============================= TC CANDIDATES (агент «Оценка»: выявление ТС по каталогу БС) =============================
+/* ============================= ТС CANDIDATES (агент «Оценка»: выявление ТС по каталогу БС) =============================
    Новая логика (по итогам встречи 04.09.2026): агент генерирует кандидатов ТС из требований,
    затем по каждому кандидату ищет в каталоге топ-БС и вложенные в них уже существующие ТС.
    Пользователь по каждому кандидату принимает решение: Reuse (переиспользовать найденную ТС),
@@ -5029,23 +5046,23 @@ function makeTcCandidatePool(){
       ],
       analyzed:false, decision:null, system:null,
       bcMatches:[
-        {code:"BC-014069", name:"Создание инцидента", match:48, desc:"Возможность сообщить об инциденте", expanded:false, tcNested:[]},
-        {code:"BC-018314", name:"Регистрация и управление проблемами Клиентов", match:48, desc:"Возможность регистрировать, отслеживать и разрешать проблемы, возникающие у клиентов.", expanded:false, tcNested:[
-          {code:"BC-041210", name:"Автосоздание карточки проблемы из инцидента Remedy", match:49, system:"crm-support", desc:"Возможность автоматически формировать карточку проблемы клиента на основании связанного инцидента Remedy."},
-          {code:"BC-041188", name:"Массовое обновление статусов проблем", match:41, system:"crm-support", desc:"Возможность синхронно обновлять статус группы связанных проблем при изменении статуса родительского инцидента."},
+        {code:"ВС-014069", name:"Создание инцидента", match:48, desc:"Возможность сообщить об инциденте", expanded:false, tcNested:[]},
+        {code:"ВС-018314", name:"Регистрация и управление проблемами Клиентов", match:48, desc:"Возможность регистрировать, отслеживать и разрешать проблемы, возникающие у клиентов.", expanded:false, tcNested:[
+          {code:"ВС-041210", name:"Автосоздание карточки проблемы из инцидента Remedy", match:49, system:"crm-support", desc:"Возможность автоматически формировать карточку проблемы клиента на основании связанного инцидента Remedy."},
+          {code:"ВС-041188", name:"Массовое обновление статусов проблем", match:41, system:"crm-support", desc:"Возможность синхронно обновлять статус группы связанных проблем при изменении статуса родительского инцидента."},
         ]},
-        {code:"BC-014070", name:"Фиксация всех действий по инциденту", match:48, desc:"Возможность фиксации всех действий по инциденту", expanded:false, tcNested:[]},
-        {code:"BC-018316", name:"Решение инцидентов", match:46, desc:"", expanded:false, tcNested:[]},
-        {code:"BC-014063", name:"Связывание проблемы с артефактами других процессов", match:45, desc:"Возможность связать проблему с артефактами других процессов", expanded:false, tcNested:[]},
-        {code:"BC-009994", name:"Возможность поиска и определения аномалий в собранных данных журналов", match:45, desc:"", expanded:false, tcNested:[
-          {code:"BC-044492", name:"API-интеграция для внешнего запроса RCA-информации", match:51, system:"lk-cloud", desc:"Возможность предоставлять, получать, экспортировать данные о первопричинах инцидентов через программный интерфейс для интеграции с внешними системами мониторинга."},
-          {code:"BC-044503", name:"API для подачи новых метрик и запроса прогнозов", match:46, system:"lk-cloud", desc:"Возможность принимать, хранить и обрабатывать новые данные метрик, а также запрашивать прогнозы на их основе."},
-          {code:"BC-044472", name:"API для добавления новых источников метрик", match:43, system:"lk-cloud", desc:"Возможность подключать и получать данные из внешних систем мониторинга для расширения набора метрик."},
+        {code:"ВС-014070", name:"Фиксация всех действий по инциденту", match:48, desc:"Возможность фиксации всех действий по инциденту", expanded:false, tcNested:[]},
+        {code:"ВС-018316", name:"Решение инцидентов", match:46, desc:"", expanded:false, tcNested:[]},
+        {code:"ВС-014063", name:"Связывание проблемы с артефактами других процессов", match:45, desc:"Возможность связать проблему с артефактами других процессов", expanded:false, tcNested:[]},
+        {code:"ВС-009994", name:"Возможность поиска и определения аномалий в собранных данных журналов", match:45, desc:"", expanded:false, tcNested:[
+          {code:"ВС-044492", name:"API-интеграция для внешнего запроса RCA-информации", match:51, system:"lk-cloud", desc:"Возможность предоставлять, получать, экспортировать данные о первопричинах инцидентов через программный интерфейс для интеграции с внешними системами мониторинга."},
+          {code:"ВС-044503", name:"API для подачи новых метрик и запроса прогнозов", match:46, system:"lk-cloud", desc:"Возможность принимать, хранить и обрабатывать новые данные метрик, а также запрашивать прогнозы на их основе."},
+          {code:"ВС-044472", name:"API для добавления новых источников метрик", match:43, system:"lk-cloud", desc:"Возможность подключать и получать данные из внешних систем мониторинга для расширения набора метрик."},
         ]},
-        {code:"BC-014818", name:"Управление ресурсными инцидентами", match:44, desc:"", expanded:false, tcNested:[]},
-        {code:"BC-014071", name:"Распределение инцидентов между ответственными", match:44, desc:"Возможность распределять инциденты между ответственными специалистами и командами.", expanded:false, tcNested:[]},
-        {code:"BC-018315", name:"Управление жизненным циклом инцидента", match:44, desc:"", expanded:false, tcNested:[]},
-        {code:"BC-001825", name:"Возможность унифицировать клиентский опыт за счёт каталогизации переиспользуемых элементов CJ", match:43, desc:"", expanded:false, tcNested:[]},
+        {code:"ВС-014818", name:"Управление ресурсными инцидентами", match:44, desc:"", expanded:false, tcNested:[]},
+        {code:"ВС-014071", name:"Распределение инцидентов между ответственными", match:44, desc:"Возможность распределять инциденты между ответственными специалистами и командами.", expanded:false, tcNested:[]},
+        {code:"ВС-018315", name:"Управление жизненным циклом инцидента", match:44, desc:"", expanded:false, tcNested:[]},
+        {code:"ВС-001825", name:"Возможность унифицировать клиентский опыт за счёт каталогизации переиспользуемых элементов CJ", match:43, desc:"", expanded:false, tcNested:[]},
       ],
     },
     {
@@ -5068,7 +5085,7 @@ function makeTcCandidatePool(){
       fr:[{code:"FR-11", desc:"Расширение полей формы инцидента атрибутами E2E"}],
       analyzed:false, decision:null, system:null,
       bcMatches:[
-        {code:"BC-009990", name:"Возможность нотификации по событиям системы мониторинга", match:34, desc:"Проверено БС 6 из 8 — совпадение низкое, похоже на ложное срабатывание", expanded:false, tcNested:[]},
+        {code:"ВС-009990", name:"Возможность нотификации по событиям системы мониторинга", match:34, desc:"Проверено БС 6 из 8 — совпадение низкое, похоже на ложное срабатывание", expanded:false, tcNested:[]},
       ],
     },
     {
@@ -5397,38 +5414,38 @@ function implPlantUml(info){
          mid-chain — в реальной цепочке есть промежуточный вызов, которого нет в UC;
          missing-system — системы из Use Case в реальной цепочке нет. */
 const UC_SCENARIOS_TEMPLATE = [
-  {part:"P-01", participant:"app — ext_gateway", action:"Пользователь вводит логин и пароль в форме приложения. Приложение передаёт учётные данные во внешний шлюз авторизации, который проверяет их в LDAP и в случае успеха возвращает токен доступа, а при ошибке — код и текст сообщения для показа пользователю.", api:"users_api", call:"GET /api/v1/users/{id}", tcName:"Возможность авторизации пользователя", tcCode:"TC-101", status:"confirmed",
+  {part:"P-01", participant:"app — ext_gateway", action:"Пользователь вводит логин и пароль в форме приложения. Приложение передаёт учётные данные во внешний шлюз авторизации, который проверяет их в LDAP и в случае успеха возвращает токен доступа, а при ошибке — код и текст сообщения для показа пользователю.", api:"users_api", call:"GET /api/v1/users/{id}", tcName:"Возможность авторизации пользователя", tcCode:"ТС-101", status:"confirmed",
    impls:[{code:"SEQ-88", chosen:true}, {code:"SEQ-109", chosen:false}],
    mismatch:{type:"multiple"}},
-  {part:"P-02", participant:"app — cart_service", action:"get_cart", api:"cart_api", call:"GET /api/v1/cart/{id}", tcName:"Возможность получения корзины", tcCode:"TC-108", status:"confirmed",
+  {part:"P-02", participant:"app — cart_service", action:"Приложение запрашивает у сервиса корзины её содержимое: позиции, количество и параметры доставки.", api:"cart_api", call:"GET /api/v1/cart/{id}", tcName:"Возможность получения корзины", tcCode:"ТС-108", status:"confirmed",
    impls:[{code:"SEQ-88", chosen:true}],
    mismatch:null},
-  {part:"P-03", participant:"app — pricing_service", action:"calc_price", api:"pricing_api", call:"POST /api/v1/price/calc", tcName:"Возможность расчёта стоимости", tcCode:"TC-114", status:"confirmed",
+  {part:"P-03", participant:"app — pricing_service", action:"Приложение передаёт состав корзины в сервис расчёта, который применяет тарифы и скидки и возвращает итоговую стоимость.", api:"pricing_api", call:"POST /api/v1/price/calc", tcName:"Возможность расчёта стоимости", tcCode:"ТС-114", status:"confirmed",
    impls:[{code:"SEQ-88", chosen:true}],
    mismatch:{type:"wrong-start", first:"GET /api/v1/catalog/offers"}},
-  {part:"P-04", participant:"app — order_service", action:"Приложение формирует заказ на основании содержимого корзины и рассчитанной стоимости. Сервис заказов проверяет остатки на складе, резервирует их и создаёт заказ со статусом «Новый», возвращая его идентификатор обратно в приложение.", api:"orders_api", call:"POST /api/v1/orders", tcName:"Возможность создания заказа", tcCode:"TC-142", status:"confirmed",
+  {part:"P-04", participant:"app — order_service", action:"Приложение формирует заказ на основании содержимого корзины и рассчитанной стоимости. Сервис заказов проверяет остатки на складе, резервирует их и создаёт заказ со статусом «Новый», возвращая его идентификатор обратно в приложение.", api:"orders_api", call:"POST /api/v1/orders", tcName:"Возможность создания заказа", tcCode:"ТС-142", status:"confirmed",
    impls:[{code:"SEQ-88", chosen:true}, {code:"SEQ-104", chosen:false}, {code:"SEQ-117", chosen:false}, {code:"SEQ-121", chosen:false}],
    mismatch:{type:"multiple"}},
-  {part:"P-05", participant:"order_service — billing", action:"reserve_payment", api:"billing_api", call:"POST /api/v1/payments/reserve", tcName:"Возможность резервирования оплаты", tcCode:"TC-150", status:"confirmed",
+  {part:"P-05", participant:"order_service — billing", action:"Сервис заказов просит биллинг зарезервировать сумму заказа и получает в ответ идентификатор резерва.", api:"billing_api", call:"POST /api/v1/payments/reserve", tcName:"Возможность резервирования оплаты", tcCode:"ТС-150", status:"confirmed",
    impls:[{code:"SEQ-88", chosen:true}],
    mismatch:{type:"mid-chain", between:"POST /api/v1/limits/check"}},
-  {part:"P-06", participant:"order_service — notification", action:"send_confirmation", api:"notify_api", call:"POST /api/v1/notify/send", tcName:"Возможность отправки уведомления", tcCode:"TC-163", status:"confirmed",
+  {part:"P-06", participant:"order_service — notification", action:"Сервис заказов передаёт в сервис уведомлений адресата и текст подтверждения о созданном заказе.", api:"notify_api", call:"POST /api/v1/notify/send", tcName:"Возможность отправки уведомления", tcCode:"ТС-163", status:"confirmed",
    impls:[],
    mismatch:{type:"missing-system", system:"notification"}},
-  {part:"P-07", participant:"app — order_service", action:"get_order_status", api:"orders_api", call:"GET /api/v1/orders/{id}", status:"planned", impls:[], mismatch:null},
-  {part:"P-08", participant:"order_service — loyalty_service", action:"apply_bonus_points", api:"loyalty_api", call:"POST /api/v1/loyalty/apply", impls:[], mismatch:null},
+  {part:"P-07", participant:"app — order_service", action:"Приложение запрашивает у сервиса заказов текущий статус, чтобы показать клиенту ход обработки.", api:"orders_api", call:"GET /api/v1/orders/{id}", status:"planned", impls:[], mismatch:null},
+  {part:"P-08", participant:"order_service — loyalty_service", action:"Сервис заказов списывает бонусные баллы в программе лояльности и уменьшает сумму к оплате.", api:"loyalty_api", call:"POST /api/v1/loyalty/apply", impls:[], mismatch:null},
 ];
 
 /* pool of candidate parts produced by a simulated UC import run; some resolve
    against known landscape containers (mapped), some don't (require a decision) */
 const UC_IMPORT_PART_POOL = [
-  {mapped:true, participant:"app — ext_gateway", action:"authorize_user", api:"users_api", call:"GET /api/v1/users/{id}", tcName:"Возможность авторизации пользователя", tcCode:"TC-101"},
-  {mapped:true, participant:"app — cart_service", action:"get_cart", api:"cart_api", call:"GET /api/v1/cart/{id}", tcName:"Возможность получения корзины", tcCode:"TC-108"},
-  {mapped:true, participant:"app — pricing_service", action:"calc_price", api:"pricing_api", call:"POST /api/v1/price/calc", tcName:"Возможность расчёта стоимости", tcCode:"TC-114"},
-  {mapped:true, participant:"app — order_service", action:"create_order", api:"orders_api", call:"POST /api/v1/orders", tcName:"Возможность создания заказа", tcCode:"TC-142"},
-  {mapped:false, participant:"order_service — loyalty_service", action:"apply_bonus_points", api:"loyalty_api", call:"POST /api/v1/loyalty/apply", note:"Система «loyalty_service» не найдена в ландшафте BeeAtlas"},
-  {mapped:false, participant:"order_service — fraud_check", action:"check_fraud_score", api:"fraud_api", call:"POST /api/v1/fraud/check", note:"Интерфейс «fraud_api» не описан ни в одной из известных систем"},
-  {mapped:true, participant:"order_service — notification", action:"send_confirmation", api:"notify_api", call:"POST /api/v1/notify/send", tcName:"Возможность отправки уведомления", tcCode:"TC-163"},
+  {mapped:true, participant:"app — ext_gateway", action:"Приложение передаёт учётные данные во внешний шлюз авторизации и получает токен доступа.", api:"users_api", call:"GET /api/v1/users/{id}", tcName:"Возможность авторизации пользователя", tcCode:"ТС-101"},
+  {mapped:true, participant:"app — cart_service", action:"Приложение запрашивает у сервиса корзины её содержимое: позиции, количество и параметры доставки.", api:"cart_api", call:"GET /api/v1/cart/{id}", tcName:"Возможность получения корзины", tcCode:"ТС-108"},
+  {mapped:true, participant:"app — pricing_service", action:"Приложение передаёт состав корзины в сервис расчёта, который применяет тарифы и скидки и возвращает итоговую стоимость.", api:"pricing_api", call:"POST /api/v1/price/calc", tcName:"Возможность расчёта стоимости", tcCode:"ТС-114"},
+  {mapped:true, participant:"app — order_service", action:"Приложение формирует заказ по содержимому корзины, сервис заказов резервирует остатки и создаёт заказ.", api:"orders_api", call:"POST /api/v1/orders", tcName:"Возможность создания заказа", tcCode:"ТС-142"},
+  {mapped:false, participant:"order_service — loyalty_service", action:"Сервис заказов списывает бонусные баллы в программе лояльности и уменьшает сумму к оплате.", api:"loyalty_api", call:"POST /api/v1/loyalty/apply", note:"Система «loyalty_service» не найдена в ландшафте BeeAtlas"},
+  {mapped:false, participant:"order_service — fraud_check", action:"Сервис заказов отправляет параметры заказа на проверку мошенничества и получает оценку риска.", api:"fraud_api", call:"POST /api/v1/fraud/check", note:"Интерфейс «fraud_api» не описан ни в одной из известных систем"},
+  {mapped:true, participant:"order_service — notification", action:"Сервис заказов передаёт в сервис уведомлений адресата и текст подтверждения о созданном заказе.", api:"notify_api", call:"POST /api/v1/notify/send", tcName:"Возможность отправки уведомления", tcCode:"ТС-163"},
 ];
 
 /* Методы, уже описанные в спецификации архитектуры. По ним работает вариант
@@ -5436,12 +5453,12 @@ const UC_IMPORT_PART_POOL = [
    знает метод и находит его поиском. Контейнер и приложение подставляются из найденного
    метода, а не заполняются руками — архитектор решения может не знать контейнер. */
 const UC_ARCH_METHOD_POOL = [
-  {alias:"loyalty_service", method:"POST /api/v1/loyalty/apply", app:"Лояльность", container:"Сервис бонусов", iface:"loyalty_api.apply.LOY", tcName:"Возможность начисления бонусов", tcCode:"TC-207"},
-  {alias:"loyalty_service", method:"GET /api/v1/loyalty/balance", app:"Лояльность", container:"Сервис бонусов", iface:"loyalty_api.balance.LOY", tcName:"Возможность получения баланса бонусов", tcCode:"TC-209"},
-  {alias:"fraud_check", method:"POST /api/v1/fraud/check", app:"CRM", container:"Сервис проверки мошенничества", iface:"fraud_api.check.FRD", tcName:"Возможность проверки операции на мошенничество", tcCode:"TC-311"},
-  {alias:"order_service", method:"POST /api/v1/business-mobility-order", app:"Заказы", container:"Сервис заказов", iface:"orders_api.create.ORD", tcName:"Возможность создания заказа мобильности", tcCode:"TC-142"},
-  {alias:"notification", method:"POST /api/v1/notify/send", app:"Уведомления", container:"Сервис уведомлений", iface:"notify_api.send.NTF", tcName:"Возможность отправки уведомления", tcCode:"TC-163"},
-  {alias:"ext_gateway", method:"GET /2.0.0/napi/sim-info", app:"Личный кабинет", container:"API Gateway", iface:"napi.sim-info.NAPI", tcName:"Возможность online-отображения информации по SIM", tcCode:"TC-402"},
+  {alias:"loyalty_service", method:"POST /api/v1/loyalty/apply", app:"Лояльность", container:"Сервис бонусов", iface:"loyalty_api.apply.LOY", tcName:"Возможность начисления бонусов", tcCode:"ТС-207"},
+  {alias:"loyalty_service", method:"GET /api/v1/loyalty/balance", app:"Лояльность", container:"Сервис бонусов", iface:"loyalty_api.balance.LOY", tcName:"Возможность получения баланса бонусов", tcCode:"ТС-209"},
+  {alias:"fraud_check", method:"POST /api/v1/fraud/check", app:"CRM", container:"Сервис проверки мошенничества", iface:"fraud_api.check.FRD", tcName:"Возможность проверки операции на мошенничество", tcCode:"ТС-311"},
+  {alias:"order_service", method:"POST /api/v1/business-mobility-order", app:"Заказы", container:"Сервис заказов", iface:"orders_api.create.ORD", tcName:"Возможность создания заказа мобильности", tcCode:"ТС-142"},
+  {alias:"notification", method:"POST /api/v1/notify/send", app:"Уведомления", container:"Сервис уведомлений", iface:"notify_api.send.NTF", tcName:"Возможность отправки уведомления", tcCode:"ТС-163"},
+  {alias:"ext_gateway", method:"GET /2.0.0/napi/sim-info", app:"Личный кабинет", container:"API Gateway", iface:"napi.sim-info.NAPI", tcName:"Возможность online-отображения информации по SIM", tcCode:"ТС-402"},
 ];
 
 // Подсказки по полю «Метод»: сперва сужаем по выбранной мнемонике приложения,
@@ -6374,7 +6391,8 @@ const DS_ICONS = {
   moreVertical:'more_vert', info:'info_circled', download:'download', gear:'settings',
   externalLink:'open_in_window', eye:'eye', zoomIn:'zoom_in', zoomOut:'zoom_out',
   minimize:'collapse', gitBranch:'split', gitMerge:'merge', trash:'delete', history:'clock',
-  table:'table', filter:'filter', copy:'copy', expand:'expand', rulerPencil:'ruler_pencil', integration:'integration', foundation:'foundation'
+  table:'table', filter:'filter', copy:'copy', expand:'expand', rulerPencil:'ruler_pencil', integration:'integration', foundation:'foundation',
+  structure:'view_structure_down', user:'user'
 };
 function icon(name){
   const ds = DS_ICONS[name];
@@ -6513,9 +6531,9 @@ const NAV_GROUPS = [
   {label:"Бизнес-архитектура", color:"orange", items:[
     {id:"searchfdm", label:"Поиск ФДМ", icon:"search",
       desc:"Полнотекстовый поиск бизнес-возможностей и доменов по названию, коду или описанию."},
-    {id:"fdm", label:"ФДМ", icon:"network",
+    {id:"fdm", label:"ФДМ", icon:"structure",
       desc:"Функционально-Доменная Модель — это модель бизнеса, описывающая домены и их возможности."},
-    {id:"capmap", label:"Карта возможностей", icon:"map",
+    {id:"capmap", label:"Карта возможностей", icon:"layers",
       desc:"Это инструмент, который позволяет анализировать и визуализировать бизнес-возможности компании."},
     {id:"e2e", label:"Каталог Е2Е-сценариев", icon:"folder", filled:true,
       desc:"Содержит список сценариев и подробную информацию о вызовах, диаграммах и наблюдаемости шагов."},
@@ -6523,7 +6541,7 @@ const NAV_GROUPS = [
   {label:"Архитектура приложения", color:"blue", items:[
     {id:"appcat", label:"Каталог приложений", icon:"grid", filled:true,
       desc:"Содержит список приложений и дополнительную информацию об их архитектуре."},
-    {id:"lifecat", label:"Каталог жизненных ситуаций", icon:"flow",
+    {id:"lifecat", label:"Каталог жизненных ситуаций", icon:"user",
       desc:"Жизненная ситуация связывает проблему клиента с продуктами и услугами, которые её решают."},
     {id:"fitness", label:"Аналитический отчет фитнес-функций", icon:"chart",
       desc:"Это сводка автоматических проверок, которая показывает соответствие архитектуры стандартам."},
@@ -7101,35 +7119,35 @@ const AC_OBS_TREE = [
 
 const AC_E2E_PROCESSES = [
   {code:"E2E.00.00.01", name:"Я, как клиент, переношу денежные средства между балансами", methods:[
-    {method:"GET /bucket", tcName:"Возможность получения балансов абонента", tcCode:"TC-108", dynamic:null},
-    {method:"POST /transferBalance", tcName:"Возможность переноса средств между балансами", tcCode:"TC-150", dynamic:null},
+    {method:"GET /bucket", tcName:"Возможность получения балансов абонента", tcCode:"ТС-108", dynamic:null},
+    {method:"POST /transferBalance", tcName:"Возможность переноса средств между балансами", tcCode:"ТС-150", dynamic:null},
   ]},
   {code:"E2E.00.00.02", name:"Я, как клиент, подключаю услугу Совместный баланс", methods:[
-    {method:"GET /bucket", tcName:"Возможность получения балансов абонента", tcCode:"TC-108", dynamic:null},
-    {method:"POST /sharedBalance/activate", tcName:"Возможность активации совместного баланса", tcCode:"TC-212", dynamic:null},
+    {method:"GET /bucket", tcName:"Возможность получения балансов абонента", tcCode:"ТС-108", dynamic:null},
+    {method:"POST /sharedBalance/activate", tcName:"Возможность активации совместного баланса", tcCode:"ТС-212", dynamic:null},
   ]},
   {code:"E2E.00.00.03", name:"Я, как клиент, получаю контрпредложение при попытке уменьшить абонентскую плату в приложении", methods:[
-    {method:"GET /bucket", tcName:"Возможность получения балансов абонента", tcCode:"TC-108", dynamic:null},
-    {method:"GET /creditlimit", tcName:"Возможность получения кредитного лимита", tcCode:"TC-121", dynamic:null},
-    {method:"POST /transferBalance", tcName:"Возможность переноса средств между балансами", tcCode:"TC-150", dynamic:null},
+    {method:"GET /bucket", tcName:"Возможность получения балансов абонента", tcCode:"ТС-108", dynamic:null},
+    {method:"GET /creditlimit", tcName:"Возможность получения кредитного лимита", tcCode:"ТС-121", dynamic:null},
+    {method:"POST /transferBalance", tcName:"Возможность переноса средств между балансами", tcCode:"ТС-150", dynamic:null},
   ]},
   {code:"E2E.00.00.04", name:"Я, как клиент, провожу оплату в интернете через мобильный платёж", methods:[
-    {method:"GET /bucket", tcName:"Возможность получения балансов абонента", tcCode:"TC-108", dynamic:null},
-    {method:"POST /adjustBalance", tcName:"Возможность корректировки баланса", tcCode:"TC-134", dynamic:null},
-    {method:"POST /transferBalance", tcName:"Возможность переноса средств между балансами", tcCode:"TC-150", dynamic:null},
+    {method:"GET /bucket", tcName:"Возможность получения балансов абонента", tcCode:"ТС-108", dynamic:null},
+    {method:"POST /adjustBalance", tcName:"Возможность корректировки баланса", tcCode:"ТС-134", dynamic:null},
+    {method:"POST /transferBalance", tcName:"Возможность переноса средств между балансами", tcCode:"ТС-150", dynamic:null},
   ]},
   {code:"E2E.00.00.05", name:"Я, как клиент, хочу выполнить смену тарифного плана на семейство «Гибкий» в приложении", methods:[
-    {method:"GET /bucket", tcName:"Возможность получения балансов абонента", tcCode:"TC-108", dynamic:null},
-    {method:"GET /creditlimit", tcName:"Возможность получения кредитного лимита", tcCode:"TC-121", dynamic:null},
+    {method:"GET /bucket", tcName:"Возможность получения балансов абонента", tcCode:"ТС-108", dynamic:null},
+    {method:"GET /creditlimit", tcName:"Возможность получения кредитного лимита", tcCode:"ТС-121", dynamic:null},
     {method:"POST /transferBalance", tcName:null, tcCode:null, dynamic:null},
   ]},
   {code:"E2E.00.00.06", name:"Я, как клиент, подключаю обещанный платёж в приложении", methods:[
-    {method:"GET /creditlimit", tcName:"Возможность получения кредитного лимита", tcCode:"TC-121", dynamic:null},
-    {method:"POST /promisedPayment", tcName:"Возможность подключения обещанного платежа", tcCode:"TC-172", dynamic:null},
+    {method:"GET /creditlimit", tcName:"Возможность получения кредитного лимита", tcCode:"ТС-121", dynamic:null},
+    {method:"POST /promisedPayment", tcName:"Возможность подключения обещанного платежа", tcCode:"ТС-172", dynamic:null},
   ]},
   {code:"E2E.00.00.07", name:"Я, как клиент, пополняю баланс банковской картой", methods:[
-    {method:"POST /adjustBalance", tcName:"Возможность корректировки баланса", tcCode:"TC-134", dynamic:null},
-    {method:"GET /bucket", tcName:"Возможность получения балансов абонента", tcCode:"TC-108", dynamic:null},
+    {method:"POST /adjustBalance", tcName:"Возможность корректировки баланса", tcCode:"ТС-134", dynamic:null},
+    {method:"GET /bucket", tcName:"Возможность получения балансов абонента", tcCode:"ТС-108", dynamic:null},
   ]},
 ];
 
@@ -7142,24 +7160,24 @@ const AC_E2E_UC_CASES = [
   {code:"UC-014", name:"Перенос средств между балансами", methods:[
     {method:"GET /bucket",
      desc:"Клиент открывает форму переноса, приложение запрашивает доступные балансы абонента и остаток по каждому из них.",
-     tcName:"Возможность получения балансов абонента", tcCode:"TC-108", dynamic:"SEQ-88", status:"Реализован"},
+     tcName:"Возможность получения балансов абонента", tcCode:"ТС-108", dynamic:"SEQ-88", status:"Реализован"},
     {method:"POST /transferBalance",
      desc:"Клиент подтверждает перенос суммы, сервис переносит средства между балансами и возвращает результат операции.",
-     tcName:"Возможность переноса средств между балансами", tcCode:"TC-150", dynamic:"SEQ-88", status:"Реализован"},
+     tcName:"Возможность переноса средств между балансами", tcCode:"ТС-150", dynamic:"SEQ-88", status:"Реализован"},
     {method:"POST /transferBalance/validate",
      desc:"Метод проверяет перенос до его подтверждения и возвращает решение вместе с причиной отказа. Проверяются: принадлежность обоих балансов одному абоненту, доступный остаток на балансе-источнике с учётом уже зарезервированных сумм, суточный и месячный лимиты переносов, тип балансов (с бонусного баланса перенос запрещён) и наличие активных блокировок по номеру. На вход принимается идентификатор абонента, идентификаторы балансов источника и получателя, сумма и валюта. На выходе — признак допустимости, код причины отказа из общего справочника и, если перенос допустим, итоговая сумма с учётом комиссии. Метод вызывается на каждое изменение суммы в форме, поэтому требование по времени ответа — 200 мс в 95-м процентиле, и он не должен менять состояние балансов.",
-     tcName:"Возможность переноса средств между балансами", tcCode:"TC-150", dynamic:null, status:"Планируется"},
+     tcName:"Возможность переноса средств между балансами", tcCode:"ТС-150", dynamic:null, status:"Планируется"},
     {method:"GET /bucket/history",
      desc:"Метод возвращает историю переносов по балансам абонента за выбранный период, чтобы клиент видел в форме последние операции. Вызов пришёл в Use Case как планируемый, но метод уже отвечает на тестовом контуре, поэтому статус нужно подтвердить.",
-     tcName:"Возможность получения балансов абонента", tcCode:"TC-108", dynamic:null, status:"На ревью"},
+     tcName:"Возможность получения балансов абонента", tcCode:"ТС-108", dynamic:null, status:"На ревью"},
   ]},
   {code:"UC-021", name:"Подключение услуги Совместный баланс", methods:[
     {method:"GET /bucket",
      desc:"Приложение запрашивает балансы абонента, чтобы показать, какие из них можно объединить в совместный баланс.",
-     tcName:"Возможность получения балансов абонента", tcCode:"TC-108", dynamic:"SEQ-91", status:"Реализован"},
+     tcName:"Возможность получения балансов абонента", tcCode:"ТС-108", dynamic:"SEQ-91", status:"Реализован"},
     {method:"POST /sharedBalance/activate",
      desc:"Метод включает услугу «Совместный баланс» для группы номеров и возвращает состав группы с датой активации. Вызов в Use Case описан как планируемый, но метод уже выведен в продуктивную среду, поэтому статус требует подтверждения архитектором системы.",
-     tcName:"Возможность активации совместного баланса", tcCode:"TC-212", dynamic:"SEQ-91", status:"На ревью"},
+     tcName:"Возможность активации совместного баланса", tcCode:"ТС-212", dynamic:"SEQ-91", status:"На ревью"},
     {method:"GET /sharedBalance/participants",
      desc:"Метод возвращает участников совместного баланса и их роли, чтобы владелец услуги видел, кто расходует общие средства. На вход принимается идентификатор группы и, опционально, признак «только активные участники». На выходе — список номеров с ролью (владелец или участник), датой подключения, лимитом расходования и фактом его исчерпания. Отдельно нужно вернуть суммарный остаток группы, иначе приложению придётся делать второй вызов. Метод вызывается при каждом открытии карточки услуги, список участников — до 20 номеров. Пагинация не нужна, сортировка — владелец первым, остальные по дате подключения.",
      tcName:null, tcCode:null, dynamic:null, status:"Планируется"},
@@ -7167,10 +7185,10 @@ const AC_E2E_UC_CASES = [
   {code:"UC-033", name:"Оплата покупки мобильным платежом", methods:[
     {method:"GET /bucket",
      desc:"Приложение проверяет остаток на балансе абонента перед тем, как предложить оплату мобильным платежом.",
-     tcName:"Возможность получения балансов абонента", tcCode:"TC-108", dynamic:"SEQ-104", status:"Реализован"},
+     tcName:"Возможность получения балансов абонента", tcCode:"ТС-108", dynamic:"SEQ-104", status:"Реализован"},
     {method:"POST /adjustBalance",
      desc:"Приложение списывает сумму покупки с баланса абонента после подтверждения платежа магазином приложений.",
-     tcName:"Возможность корректировки баланса", tcCode:"TC-134", dynamic:"SEQ-104", status:"Реализован"},
+     tcName:"Возможность корректировки баланса", tcCode:"ТС-134", dynamic:"SEQ-104", status:"Реализован"},
     {method:"POST /bucket/reserve",
      desc:"Метод резервирует сумму покупки на балансе абонента до подтверждения платежа магазином и освобождает её по таймауту. На вход принимается идентификатор абонента, идентификатор баланса, сумма, валюта, идентификатор платежа на стороне магазина и время жизни резерва. На выходе — идентификатор резерва и момент его автоматического снятия. Повторный вызов с тем же идентификатором платежа должен возвращать уже созданный резерв, а не создавать второй: магазин повторяет запрос при обрыве связи. Нужны отдельные методы снятия и подтверждения резерва, иначе зарезервированные средства останутся недоступными абоненту до истечения таймаута.",
      tcName:null, tcCode:null, dynamic:null, status:"Планируется"},
@@ -7178,18 +7196,18 @@ const AC_E2E_UC_CASES = [
   {code:"UC-047", name:"Смена тарифного плана на семейство «Гибкий»", methods:[
     {method:"GET /creditlimit",
      desc:"Приложение запрашивает кредитный лимит абонента, чтобы понять, доступна ли смена тарифного плана при текущем балансе.",
-     tcName:"Возможность получения кредитного лимита", tcCode:"TC-121", dynamic:null, status:"Реализован"},
+     tcName:"Возможность получения кредитного лимита", tcCode:"ТС-121", dynamic:null, status:"Реализован"},
     {method:"POST /transferBalance",
      desc:"Приложение списывает стоимость перехода на новый тарифный план с основного баланса абонента. Вызов описан как планируемый, но метод уже реализован в рамках переноса средств, поэтому связку нужно подтвердить.",
-     tcName:"Возможность переноса средств между балансами", tcCode:"TC-150", dynamic:null, status:"На ревью"},
+     tcName:"Возможность переноса средств между балансами", tcCode:"ТС-150", dynamic:null, status:"На ревью"},
   ]},
   {code:"UC-052", name:"Подключение обещанного платежа", methods:[
     {method:"GET /creditlimit",
      desc:"Приложение проверяет кредитный лимит абонента и доступную сумму обещанного платежа.",
-     tcName:"Возможность получения кредитного лимита", tcCode:"TC-121", dynamic:"SEQ-117", status:"Реализован"},
+     tcName:"Возможность получения кредитного лимита", tcCode:"ТС-121", dynamic:"SEQ-117", status:"Реализован"},
     {method:"POST /promisedPayment",
      desc:"Метод подключает обещанный платёж на выбранную сумму и возвращает дату, до которой её нужно погасить. На вход принимается идентификатор абонента, сумма и источник подключения (приложение, веб или голосовое меню). На выходе — идентификатор обещанного платежа, дата погашения, размер платы за услугу и новый доступный остаток. Нужны отдельные коды ошибок на случаи: сумма больше доступного лимита, у абонента уже есть непогашенный обещанный платёж, услуга недоступна на тарифном плане. Погашение выполняется автоматически при пополнении баланса, отдельный метод для него не нужен.",
-     tcName:"Возможность подключения обещанного платежа", tcCode:"TC-172", dynamic:"SEQ-117", status:"Планируется"},
+     tcName:"Возможность подключения обещанного платежа", tcCode:"ТС-172", dynamic:"SEQ-117", status:"Планируется"},
   ]},
 ];
 
@@ -10570,9 +10588,13 @@ function isHumanParticipant(name){
   const n = String(name||"").toLowerCase();
   return UC_HUMAN_MARKERS.some(m=>n.includes(m));
 }
+/* Алиасы систем — одно длинное слово с подчёркиваниями, и word-break рвал его
+   посередине («pricing_servic / e»). Разрешаем перенос только по подчёркиванию:
+   <wbr> даёт переносу законную границу, слово целиком остаётся читаемым.
+   В тултипе имя без подсказок переноса. */
 function participantCell(name){
   const t = escapeHtml(name);
-  return `<div class="cell-clamp-wrap"><div class="cell-clamp">${t}</div><div class="cell-tooltip">${t}</div></div>`;
+  return `<div class="cell-clamp-wrap"><div class="cell-clamp">${t.replace(/_/g,"_<wbr>")}</div><div class="cell-tooltip">${t}</div></div>`;
 }
 
 // Alias → человекочитаемое название системы, для блока "Системы-участники".
@@ -10790,9 +10812,9 @@ function scenarioImplDetailRow(s, projectId, ucId, cols){
       ${cur&&cur.code===x.code?icon("check"):""}${escapeHtml(x.code)}
     </div>`).join("");
   const body = list.length
-    ? `<div class="uc-impl-detail-lbl">${list.length} ${ruPlural(list.length,"реализация","реализации","реализаций")} вызова. Выбранная определяет, какую диаграмму открывает код в таблице.</div>
+    ? `<div class="uc-impl-detail-lbl">${list.length} ${ruPlural(list.length,"реализация","реализации","реализаций")} вызова. Выбранная определяет, какую диаграмму открывает ссылка в колонке «Реализация».</div>
        <div class="uc-impl-chips">${chips}</div>
-       ${DsList({overline:"Источник выбранной", title:cur.source, caption:"Загружено "+cur.loadedAt})}`
+       ${DsList({overline:"Источник выбранной реализации", title:cur.source, caption:"Загружено "+cur.loadedAt})}`
     : `<div class="uc-impl-detail-lbl">У вызова нет ни одной реализации — агент не нашёл для него диаграмму последовательности.</div>`;
   return `<tr class="exp-detail-row"><td colspan="${cols}"><div class="exp-detail">
       ${body}
@@ -11510,7 +11532,7 @@ function AssessmentSummaryCard(projectId, a, isCurrent){
       <div class="a-stats">
         ${miniStat("FR", a.fr.length)}
         ${miniStat("NFR", a.nfr.length)}
-        ${miniStat("TC", a.bcTc.length*2)}
+        ${miniStat("ТС", a.bcTc.length*2)}
         ${miniStat("Приложения", 9)}
       </div>
       <div class="a-meta">
@@ -13277,7 +13299,7 @@ function ucPartApplyDecision(x){
     x.dynamic = x.dynamic || ("SEQ-" + Math.floor(10+Math.random()*89));
   } else if(x.decision==="specified"){
     x.tcName = x.tcName || ("Уточнено архитектором: " + x.api);
-    x.tcCode = x.tcCode || ("TC-" + Math.floor(200+Math.random()*700));
+    x.tcCode = x.tcCode || ("ТС-" + Math.floor(200+Math.random()*700));
     x.dynamic = x.dynamic || ("SEQ-" + Math.floor(10+Math.random()*89));
   } else if(x.decision==="notcall"){
     x.tcName = null; x.tcCode = null; x.dynamic = null;
@@ -13791,7 +13813,7 @@ function runPanelSearch(){
       id: uid("res"),
       tag: sp.type==="bc" ? "ВС" : "ТС",
       name: SEARCH_POOL_NAME,
-      code: (sp.type==="bc" ? "BC" : "TC") + " 123456",
+      code: (sp.type==="bc" ? "ВС" : "ТС") + " 123456",
     }));
     render();
   }, 900);
@@ -13958,6 +13980,7 @@ function render(){
   renderShell();
   document.querySelectorAll(".table-scroll").forEach((n,i)=>{ if(scrollLefts[i]) n.scrollLeft = scrollLefts[i]; });
   fitStickyDetailRows();
+  markStickyScrolled();
   positionDsSelectMenus();
   positionTablePopovers();
   positionToast();
@@ -13978,6 +14001,21 @@ function fitStickyDetailRows(){
   document.querySelectorAll(".table-scroll").forEach(wrap=>{
     const w = wrap.clientWidth;
     wrap.querySelectorAll("tr.exp-detail-row > td > .exp-detail").forEach(d=>{ d.style.width = w + "px"; });
+  });
+}
+
+/* ДС Table, «Фиксирование шапки и столбцов»: тень Low у закреплённого столбца —
+   признак того, что под ним уезжают колонки. Пока таблица не прокручена (а часто
+   прокручивать и нечего), тени нет, иначе она читается как лишний разделитель.
+   Слушатель ставится один раз на обёртку и живёт до её удаления из DOM. */
+function markStickyScrolled(){
+  document.querySelectorAll(".table-scroll").forEach(wrap=>{
+    const sync = () => wrap.classList.toggle("is-xscrolled", wrap.scrollLeft > 0);
+    if(!wrap.dataset.xscrollBound){
+      wrap.dataset.xscrollBound = "1";
+      wrap.addEventListener("scroll", sync);
+    }
+    sync();
   });
 }
 
@@ -15641,7 +15679,7 @@ function handleAction(action, el){
 /* ============================= INIT ============================= */
 /* Прокрутка и смена размера окна сдвигают поле — пересчитываем сторону и высоту
    открытого меню. Вешается один раз: bindGlobalEvents() зовётся на каждый рендер. */
-window.addEventListener("resize", ()=>{ fitStickyDetailRows(); positionDsSelectMenus(); positionTablePopovers(); positionToast(); });
+window.addEventListener("resize", ()=>{ fitStickyDetailRows(); markStickyScrolled(); positionDsSelectMenus(); positionTablePopovers(); positionToast(); });
 document.addEventListener("scroll", ()=>{ positionDsSelectMenus(); positionToast(); }, true);
 
 (function applyDeepLinkFromUrl(){
