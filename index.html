@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261013-130506">
+<meta name="beeatlas-build" content="20261013-131754">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -1075,13 +1075,68 @@
   .impl-meta-id{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;}
   /* Поле исходника — Text area ДС (как ввод PlantUML в визарде импорта), только
      для чтения: моноширинный 13/22, перенос выключен, прокрутка по обеим осям. */
-  /* Селектор с двумя классами: одиночный .impl-source проигрывал бы .textarea,
-     который объявлен ниже по файлу и задаёт свой font-size 17. */
-  .textarea.impl-source{
-    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-    font-size:13px;line-height:22px;white-space:pre;overflow:auto;
-    resize:vertical;
+  /* ═══ Code editor (SPEC компоненты/*Code editor), вид «Нередактируемый» ══════
+     По спеке: «Компонент без возможности редактировать, только показывает.
+     Копирование доступно, визуально похоже на тулбар и текстовое поле, но это
+     отдельный вид компонента». Тулбар: язык слева, «Копировать» справа.
+     Номера строк выравниваются направо и в копирование не попадают — поэтому
+     копируем из данных, а не из DOM. Шрифт — $font-family-code. */
+  .code-editor{
+    border:1px solid var(--border);border-radius:var(--size-border-radius-x6);
+    background:var(--color-background-base);overflow:hidden;
   }
+  .code-editor-bar{
+    display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);
+    padding:var(--space-2) var(--space-2) var(--space-2) var(--size-spacing-x4);
+    border-bottom:1px solid var(--border);
+  }
+  .code-editor-lang{
+    font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);
+    font-family:var(--font-family-code);text-transform:uppercase;
+  }
+  .code-editor-body{display:flex;align-items:flex-start;overflow:auto;max-height:560px;}
+  .code-editor-gutter,.code-editor-code{
+    font-family:var(--font-family-code);font-size:13px;line-height:22px;
+    margin:0;padding:var(--size-spacing-x4) 0;white-space:pre;
+  }
+  /* Номера строк: вправо, не выделяются мышью — чтобы не попасть в ручное копирование. */
+  .code-editor-gutter{
+    flex:0 0 auto;text-align:right;color:var(--text-tertiary);
+    padding-left:var(--size-spacing-x4);padding-right:var(--size-spacing-x4);
+    user-select:none;-webkit-user-select:none;
+  }
+  .code-editor-code{flex:1 1 auto;padding-right:var(--size-spacing-x4);color:var(--text);}
+
+  /* Палитра подсветки — из «Accessability. Contrast Checker»: каждая пара
+     проверена и проходит WCAG AA, поэтому значения берём как есть, а не подбираем. */
+  .code-editor{
+    --tok-keyword:#6C00CB;   /* ключевые слова, 6.86:1 */
+    --tok-modifier:#960094;  /* модификаторы,   6.29:1 */
+    --tok-func:#0C5CC5;      /* названия функций, 5.11:1 */
+    --tok-type:#036C60;      /* названия классов / типы, 5.17:1 */
+    --tok-var:#3D3F51;       /* переменные / параметры, 8.46:1 */
+    --tok-string:#965000;    /* строки,         5.08:1 */
+    --tok-number:#066D26;    /* числа, булевы,  5.32:1 */
+    --tok-comment:#666670;   /* комментарии,    4.63:1 */
+    --tok-error:#C01616;     /* ошибки,         5.09:1 */
+  }
+  [data-theme="dark"] .code-editor{
+    --tok-keyword:#C086F4;   /* 4.71:1 */
+    --tok-modifier:#D779D6;  /* 4.5:1  */
+    --tok-func:#60A1F6;      /* 4.69:1 */
+    --tok-type:#03B09C;      /* 4.56:1 */
+    --tok-var:#C1C1D2;       /* 8.46:1 */
+    --tok-string:#FF8800;    /* 5.2:1  */
+    --tok-number:#09C344;    /* 5.32:1 */
+    --tok-comment:#9A9AB6;   /* 4.63:1 */
+    --tok-error:#FD7C7C;     /* 4.95:1 */
+  }
+  .tok-keyword{color:var(--tok-keyword);}
+  .tok-modifier{color:var(--tok-modifier);}
+  .tok-type{color:var(--tok-type);}
+  .tok-string{color:var(--tok-string);}
+  .tok-operator{color:var(--tok-var);}
+  .tok-comment{color:var(--tok-comment);}
   .page-title-row h1{font-size:26px;line-height:32px;letter-spacing:.2px;font-weight:500;margin:0;}
   .page-title-row .actions{margin-left:auto;display:flex;gap:var(--space-3);}
 
@@ -1470,7 +1525,11 @@
     color:var(--color-button-plain);
     font-size:15px;font-weight:500;line-height:20px;letter-spacing:.2px;
     display:inline-flex;align-items:center;white-space:nowrap;flex:0 0 auto;cursor:pointer;
+    /* ДС button: $button-with-icon-spacing 8, иконка size=small 18 */
+    gap:var(--size-spacing-x2);
   }
+  .btn-plain .beeline-icons{width:18px;height:18px;font-size:18px;flex:0 0 auto;}
+  .btn-plain svg{width:18px;height:18px;flex:0 0 auto;}
   .btn-plain:hover:not(:disabled){background:var(--color-button-plain-background-hover);}
   .btn-plain:active:not(:disabled){background:var(--color-button-plain-background-pressed);}
   .btn-plain:disabled{opacity:.48;cursor:not-allowed;}
@@ -11042,14 +11101,7 @@ function UseCaseImplPage(projectId, ucId, part, code){
       <div class="page-tab ${tab==="viz"?"active":""}" data-action="set-impl-tab" data-tab="viz">Визуализация</div>
     </div>
 
-    ${tab==="source" ? `
-      <div class="uc-diagram-toolbar">
-        <button class="btn btn-outline btn-sm" data-action="copy-impl-source">${icon("copy")} Скопировать</button>
-      </div>
-      <!-- ДС Text area: исходник показывается тем же компонентом, которым PlantUML
-           вводится в визарде импорта, только для чтения. -->
-      <textarea class="textarea impl-source" readonly rows="${implPlantUml(info).split("\n").length + 1}">${escapeHtml(implPlantUml(info))}</textarea>
-    ` : `
+    ${tab==="source" ? CodeEditor(implPlantUml(info), info.kind, "copy-impl-source") : `
       <!-- Та же карточка, что у диаграммы в блоке «Сценарий» (UcDiagramCard):
            рамка, панель действий в шапке с разделителем, прокрутка внутри. -->
       <div class="uc-diagram-card">
@@ -11065,6 +11117,48 @@ function UseCaseImplPage(projectId, ucId, part, code){
 }
 /* Диаграмма строится тем же рендерером, что и остальные sequence в прототипе,
    из `calls` реестра — тех же данных, что печатает закладка «исходные данные». */
+/* Подсветка PlantUML по категориям спеки Code editor. Строки разбираются
+   по форме, а не одним общим регекспом: так ни один фрагмент не подсвечивается
+   дважды и не ломается экранирование. Всё, что не распозналось, остаётся
+   обычным текстом — это честнее, чем угадывать. */
+function highlightPlantUml(src){
+  const kw   = t => `<span class="tok-keyword">${escapeHtml(t)}</span>`;
+  const mod  = t => `<span class="tok-modifier">${escapeHtml(t)}</span>`;
+  const type = t => `<span class="tok-type">${escapeHtml(t)}</span>`;
+  const str  = t => `<span class="tok-string">${escapeHtml(t)}</span>`;
+  const op   = t => `<span class="tok-operator">${escapeHtml(t)}</span>`;
+  return src.split("\n").map(line=>{
+    if(/^\s*'/.test(line)) return `<span class="tok-comment">${escapeHtml(line)}</span>`;
+    if(/^\s*@(startuml|enduml)\s*$/.test(line)) return kw(line);
+    // participant "Имя" as alias
+    let m = line.match(/^(\s*)(participant|actor|database|queue)(\s+)("[^"]*"|[\w.]+)(\s+as\s+)([\w.]+)(\s*)$/);
+    if(m) return m[1] + mod(m[2]) + m[3] + (m[4][0]==='"' ? str(m[4]) : type(m[4]))
+              + mod(m[5]) + type(m[6]) + m[7];
+    // from -> to: подпись
+    m = line.match(/^(\s*)([\w.]+)(\s*-{1,2}>\s*)([\w.]+)(\s*:\s*)(.*)$/);
+    if(m) return m[1] + type(m[2]) + op(m[3]) + type(m[4]) + op(m[5]) + escapeHtml(m[6]);
+    return escapeHtml(line);
+  }).join("\n");
+}
+
+/* Нередактируемый Code editor: тулбар с языком и копированием, номера строк
+   справа, подсветка. Копируем из данных (data-action), а не из разметки —
+   по спеке «копирование не включает в себя номера строк». */
+function CodeEditor(src, lang, copyAction){
+  const lines = src.split("\n");
+  return `
+    <div class="code-editor">
+      <div class="code-editor-bar">
+        <span class="code-editor-lang">${escapeHtml(lang)}</span>
+        <button class="btn-plain" data-action="${copyAction}">${icon("copy")} Копировать</button>
+      </div>
+      <div class="code-editor-body">
+        <div class="code-editor-gutter">${lines.map((_,i)=>i+1).join("\n")}</div>
+        <pre class="code-editor-code">${highlightPlantUml(src)}</pre>
+      </div>
+    </div>`;
+}
+
 function implDiagramSvg(info, large){
   const lifelines = [];
   info.calls.forEach(c=>{ [c.from,c.to].forEach(n=>{ if(!lifelines.includes(n)) lifelines.push(n); }); });
