@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261013-122520">
+<meta name="beeatlas-build" content="20261013-123807">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -1413,9 +1413,6 @@
     padding:var(--size-spacing-x4) var(--size-spacing-x4) var(--size-spacing-x2);
     text-align:left;white-space:normal;cursor:default;
   }
-  /* У правого края страницы поповер выравнивается по краю триггера — боковое
-     позиционирование из раздела «Расположение» спеки. */
-  .ds-popover.to-left{left:auto;right:0;}
   .ds-popover .dsp-title{
     color:var(--color-text-active);font-size:20px;font-weight:500;line-height:28px;
     letter-spacing:.2px;margin:0 0 var(--size-spacing-x2);
@@ -1523,6 +1520,20 @@
   /* Таблица прокручивается, поэтому абсолютный тултип обрезался её краем. Внутри
      такой таблицы он позиционируется фиксированно — координаты считает positionCellTooltips(). */
   .table-scroll .cell-tooltip{position:fixed;top:auto;left:auto;}
+  /* Тем же приёмом спасается и поповер расхождения: внутри прокручиваемой таблицы
+     он переходит в fixed, координаты считает positionTablePopovers() после отрисовки.
+     Без этого overflow-x:auto обрезал бы его краем таблицы. */
+  .table-scroll .ds-popover{position:fixed;top:auto;left:auto;right:auto;}
+  /* Раскрытая строка расстелена на все колонки (colspan), закреплять её «первую
+     ячейку» нечему — иначе весь её контент уезжал бы липким блоком поверх таблицы. */
+  .table-scroll tbody tr.exp-detail-row > td{position:static;box-shadow:none;background:transparent;}
+  /* Содержимое раскрытой строки — панель, а не колонки: при горизонтальной прокрутке
+     оно уезжало влево и обрезалось. Прижимаем к левому краю области просмотра,
+     ширину по ней же проставляет fitStickyDetailRows(). */
+  .table-scroll tbody tr.exp-detail-row > td > .exp-detail{position:sticky;left:0;box-sizing:border-box;}
+  /* Минимальная ширина таблицы вызовов: ниже неё колонкам перестаёт хватать
+     (см. расчёт в colgroup), поэтому вместо ужимания включается прокрутка. */
+  .uc-scenarios-table{min-width:1200px;}
   table.fixed-table thead th{white-space:normal;}
   table.fixed-table tbody td{overflow:visible;}
   .cell-clamp-wrap{position:relative;}
@@ -10619,7 +10630,7 @@ function scenarioMismatchMarker(s, projectId, ucId){
   const open = state.popover===key;
   return `<span class="uc-mismatch-wrap">
       <button class="uc-mismatch-btn" data-action="toggle-popover" data-popover="${key}" title="Расхождение с реальной цепочкой вызовов">${icon("alertTriangle")}</button>
-      ${open ? `<div class="ds-popover to-left">
+      ${open ? `<div class="ds-popover">
         <div class="dsp-title">${escapeHtml(info.title)}</div>
         <div class="dsp-text">${info.text}</div>
       </div>` : ""}
@@ -10710,17 +10721,20 @@ function UseCaseScenariosTable(u, projectId, ucId){
     </div>`;
   return `
     ${UcScenarioFiltersRow()}
-    <div class="table-wrap-fit">
-      <table class="fixed-table">
-        <!-- Ширины пересчитаны под новое содержимое: «Шаг» принял шеврон раскрытия
-             (22 + 8 + код), «Реализация» — код выбранной, счётчик остальных и маркер
-             расхождения. На 1440 и шире обе колонки вмещают содержимое целиком;
-             вычтено у «Действия» и «Вызова» — они и так усекаются с тултипом.
-             «Вызывающий»/«Вызываемый» — одно слово, перенести его заголовку некуда,
-             поэтому им нужна ширина слова целиком (114px на 1280). -->
+    <!-- Восемь колонок в ширину страницы не укладываются: только горизонтальных
+         падингов по ДС 8 × 48 = 384px. Раньше таблица ужималась и резала содержимое
+         («Не смаппирован» просил 152px при 125). Теперь она прокручивается — ДС Table,
+         «Фиксирование шапки и столбцов», первый столбец закрепляется. Проценты
+         подобраны так, чтобы при min-width каждой колонке хватало её минимума:
+         Шаг 120≥114 (шеврон + код), Вызывающий 120≥114 и Вызываемый 120≥111
+         (заголовок — одно слово, переносить его некуда), Реализация 156≥145,
+         Статус вызова 204≥200. «Действие», «Вызов» и «ТС» усекаются с тултипом,
+         поэтому им отдан остаток. -->
+    <div class="table-scroll">
+      <table class="fixed-table uc-scenarios-table">
         <colgroup>
-          <col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:13%">
-          <col style="width:11%"><col style="width:11%"><col style="width:16%"><col style="width:13%">
+          <col style="width:10%"><col style="width:10%"><col style="width:10%"><col style="width:16%">
+          <col style="width:13%"><col style="width:11%"><col style="width:13%"><col style="width:17%">
         </colgroup>
         <thead><tr><th>Шаг</th><th>Вызывающий</th><th>Вызываемый</th><th>Действие</th><th>Вызов</th><th>ТС</th><th>Реализация</th><th>Статус вызова</th></tr></thead>
         <tbody>
@@ -13769,11 +13783,51 @@ function Toast(){
 
 /* ============================= RENDER + EVENTS ============================= */
 function render(){
+  /* Прототип перерисовывает страницу целиком, и горизонтальная прокрутка таблицы
+     при этом сбрасывалась в ноль: доскроллил до «Статуса вызова», ткнул в маркер —
+     таблица прыгнула обратно влево. Позицию переносим через перерисовку.
+     Сопоставление по порядку: в пределах одной перерисовки состав таблиц не меняется,
+     а при переходе на другую страницу прокручивать всё равно нечего. */
+  const scrollLefts = [...document.querySelectorAll(".table-scroll")].map(n=>n.scrollLeft);
   renderShell();
+  document.querySelectorAll(".table-scroll").forEach((n,i)=>{ if(scrollLefts[i]) n.scrollLeft = scrollLefts[i]; });
+  fitStickyDetailRows();
   positionDsSelectMenus();
+  positionTablePopovers();
   positionToast();
   bindScrollTableTooltips();
   saveLocation();
+}
+
+/* Поповер внутри прокручиваемой таблицы обрезался бы её краем, поэтому там он
+   переведён в position:fixed (см. CSS .table-scroll .ds-popover) — тем же приёмом,
+   что и .cell-tooltip. Координаты считаются здесь, по месту триггера.
+   ДС, раздел «Расположение»: по центру под элементом; если у края экрана не
+   помещается — выравнивается по краю; если не помещается снизу — встаёт над. */
+const POPOVER_GAP = 8;   /* ДС: popover-target-spacing */
+const POPOVER_EDGE = 8;  /* зазор до края окна */
+/* Панель раскрытой строки прижата к левому краю прокрутки (CSS), но ширину ей
+   нужно знать в пикселях: ячейка под ней шире области просмотра на всю прокрутку. */
+function fitStickyDetailRows(){
+  document.querySelectorAll(".table-scroll").forEach(wrap=>{
+    const w = wrap.clientWidth;
+    wrap.querySelectorAll("tr.exp-detail-row > td > .exp-detail").forEach(d=>{ d.style.width = w + "px"; });
+  });
+}
+
+function positionTablePopovers(){
+  document.querySelectorAll(".table-scroll .ds-popover").forEach(pop=>{
+    const trigger = pop.parentElement.querySelector(".uc-mismatch-btn");
+    if(!trigger) return;
+    const t = trigger.getBoundingClientRect();
+    const w = pop.offsetWidth, h = pop.offsetHeight;
+    let left = t.left + t.width/2 - w/2;
+    left = Math.max(POPOVER_EDGE, Math.min(left, window.innerWidth - w - POPOVER_EDGE));
+    const below = t.bottom + POPOVER_GAP;
+    const top = below + h > window.innerHeight - POPOVER_EDGE ? t.top - h - POPOVER_GAP : below;
+    pop.style.left = left + "px";
+    pop.style.top  = Math.max(POPOVER_EDGE, top) + "px";
+  });
 }
 
 /* Тултип ячейки лежит внутри таблицы, а прокручиваемая таблица обрезает всё, что
@@ -15422,7 +15476,7 @@ function handleAction(action, el){
 /* ============================= INIT ============================= */
 /* Прокрутка и смена размера окна сдвигают поле — пересчитываем сторону и высоту
    открытого меню. Вешается один раз: bindGlobalEvents() зовётся на каждый рендер. */
-window.addEventListener("resize", ()=>{ positionDsSelectMenus(); positionToast(); });
+window.addEventListener("resize", ()=>{ fitStickyDetailRows(); positionDsSelectMenus(); positionTablePopovers(); positionToast(); });
 document.addEventListener("scroll", ()=>{ positionDsSelectMenus(); positionToast(); }, true);
 
 (function applyDeepLinkFromUrl(){
