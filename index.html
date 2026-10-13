@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261013-131754">
+<meta name="beeatlas-build" content="20261013-133754">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -1456,8 +1456,26 @@
   .pill-item svg{width:20px;height:20px;flex:0 0 auto;}
 
   .uc-impl-detail-lbl{color:var(--text-secondary);font-size:13px;line-height:16px;letter-spacing:.2px;margin-bottom:var(--space-2);}
-  .uc-impl-detail-src{color:var(--text-secondary);font-size:15px;line-height:22px;letter-spacing:.2px;margin-top:var(--space-4);}
-  .uc-impl-detail-src b{color:var(--text);font-weight:500;}
+  /* ДС components/list. Анатомия: Overline — подсказка-описание, Title — основной
+     текст, Caption — короткая однострочная подсказка. Вертикальный padding 12. */
+  .ds-list{padding:var(--size-spacing-x3) 0;}
+  .ds-list-overline{
+    color:var(--color-text-inactive);
+    font-size:10px;font-weight:700;line-height:16px;letter-spacing:1.2px;text-transform:uppercase;
+  }
+  .ds-list-title{
+    color:var(--color-text-active);
+    font-size:17px;font-weight:400;line-height:22px;letter-spacing:.2px;
+  }
+  .ds-list-text{
+    color:var(--color-text-inactive);
+    font-size:15px;font-weight:400;line-height:18px;letter-spacing:.2px;
+  }
+  .ds-list-caption{
+    color:var(--color-text-inactive);
+    font-size:13px;font-weight:400;line-height:16px;letter-spacing:.2px;
+    margin-top:var(--size-spacing-x2);   /* $list-caption-spacing 8 */
+  }
   .uc-impl-detail-actions{display:flex;align-items:center;gap:var(--space-5);margin-top:var(--space-4);}
 
   /* Маркер расхождения: ДС Icon button — сама иконка 18 (small) с радиусом 4,
@@ -1602,6 +1620,15 @@
   .table-scroll{border:1px solid var(--border);border-radius:var(--size-border-radius-x6);overflow-x:auto;overflow-y:hidden;}
   .table-scroll thead th:first-child,
   .table-scroll tbody td:first-child{position:sticky;left:0;z-index:2;background:var(--bg);box-shadow:var(--elevation-low);}
+  /* Подсветка раскрытой строки на закреплённой ячейке: обычное правило
+     tbody tr.exp-open > td проигрывает .table-scroll tbody td:first-child по
+     специфичности, и первая колонка оставалась белой. Токен полупрозрачный,
+     поэтому кладём его слоем поверх непрозрачного фона — иначе сквозь липкую
+     ячейку видно уезжающие под неё колонки. Правило стоит ДО ховера, чтобы
+     наведение на раскрытую строку всё ещё читалось. */
+  .table-scroll tbody tr.exp-open td:first-child{
+    background:linear-gradient(var(--color-background-base-selected),var(--color-background-base-selected)), var(--bg);
+  }
   /* Токен ховера полупрозрачный: если положить его на sticky-ячейку одним цветом,
      сквозь неё видно уезжающие под низ ячейки. Кладём его слоем поверх фона страницы. */
   .table-scroll tbody tr:hover td:first-child{
@@ -2546,8 +2573,18 @@
   .exp-row-btn.open .beeline-icons{transform:rotate(90deg);}
   .exp-row-btn.none{visibility:hidden;}
   tr.exp-detail-row > td{padding:0;border-bottom:1px solid var(--border);}
-  .exp-detail{position:relative;padding:var(--space-5) var(--space-5) var(--space-5) var(--space-6);background:var(--bg-alt);}
-  .exp-detail::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--yellow);}
+  /* ДС Table / «Уровни таблицы»:
+     — раскрытая строка 1 уровня имеет фон Background/Base Selected;
+     — последующие уровни свой цвет при разворачивании НЕ меняют, поэтому у вложенного
+       блока заливки нет (раньше стоял bg-alt и получался тёмный прямоугольник);
+     — жёлтая полоса-индикатор подчёркивает начало и конец дочерней информации
+       и идёт по высоте внутреннего уровня;
+     — дочерние строки выравниваются по тексту в Expandable cell родителя:
+       24 падинга ячейки + 22 шеврон + 8 зазор = 54. */
+  tbody tr.exp-open > td{background:var(--color-background-base-selected);}
+  .exp-detail{position:relative;background:transparent;
+    padding:var(--space-5) var(--space-5) var(--space-5) 54px;}
+  .exp-detail::before{content:"";position:absolute;left:24px;top:0;bottom:0;width:3px;background:var(--yellow);}
   .exp-detail .table-wrap{background:var(--bg);margin-bottom:var(--space-4);}
   .exp-detail .table-wrap:last-child{margin-bottom:0;}
   .exp-detail-note{font-size:13px;color:var(--text-secondary);margin-bottom:var(--space-3);}
@@ -5721,7 +5758,6 @@ const state = {
 
   cjSearch:"",
   cjView:"grid",
-  ucListView:"table",   // вид списка Use Case: "table" | "grid"
   ucScenariosView:"table",   // вид секции "Сценарии" на карточке Use Case: "table" | "diagram"
   ucDiagramModalOpen:false,
   projView:"table", // вид списка проектов: "table" | "grid"
@@ -7390,7 +7426,7 @@ function AcE2eProcessRows(g, q){
   const methods = acVisibleMethods(g, q);
   const open = !!ac.e2eExpanded[g.code] || (!!q && methods.length < g.methods.length);
   let out = `
-    <tr>
+    <tr class="${open?"exp-open":""}">
       <td>${acExpNameCell(g.name, g.code, open, "ac-toggle-e2e", "ac-open-e2e-process")}</td>
       <td>${g.methods.length}</td>
     </tr>
@@ -7447,7 +7483,7 @@ function AcE2eUcRows(g, q){
   const methods = acVisibleMethods(g, q);
   const open = !!ac.e2eUcExpanded[g.code] || (!!q && methods.length < g.methods.length);
   let out = `
-    <tr>
+    <tr class="${open?"exp-open":""}">
       <td>${acExpNameCell(g.name, g.code, open, "ac-toggle-e2e-uc", "ac-open-e2e-uc")}</td>
       <td>${g.methods.length}</td>
     </tr>
@@ -7532,7 +7568,7 @@ function AcCjRows(c, q){
   const bis = acCjVisibleBi(c, q);
   const open = !!ac.cjExpanded[c.code] || (!!q && bis.length < c.bi.length);
   let out = `
-    <tr>
+    <tr class="${open?"exp-open":""}">
       <td>${acExpNameCell(c.name, c.code, open, "ac-toggle-cj", "ac-open-cj")}</td>
       <td>${c.bi.length}</td>
       <td><span class="badge ${c.status==="Опубликован"?"green":"gray"}">${escapeHtml(c.status)}</span></td>
@@ -7843,7 +7879,7 @@ function AcFitnessTab(app){
             const key = r.code+"-"+i;
             const open = !!ac.fitnessExpanded[key] && !!r.detail;
             return `
-              <tr>
+              <tr class="${open?"exp-open":""}">
                 <td><div class="exp-cell"><div class="exp-row-btn ${r.detail?(open?"open":""):"none"}" ${r.detail?`data-action="ac-toggle-fitness" data-key="${key}"`:""}>${icon("chevronRight")}</div>${escapeHtml(r.code)}</div></td>
                 <td>${escapeHtml(r.desc)}</td>
                 <td><span class="badge ${r.statusColor}">${escapeHtml(r.status)}</span></td>
@@ -7929,7 +7965,7 @@ function AcIfaceContainerRows(c){
   const ac = state.appcat;
   const open = !!ac.ifaceExpanded[c.id] && !!c.interfaces;
   let rows = `
-    <tr>
+    <tr class="${open?"exp-open":""}">
       <td><div class="exp-cell"><div class="exp-row-btn ${c.interfaces?(open?"open":""):"none"}" ${c.interfaces?`data-action="ac-toggle-iface" data-id="${c.id}"`:""}>${icon("chevronRight")}</div>${escapeHtml(c.name)}</div></td>
       <td>${escapeHtml(c.code)}</td>
       <td>${escapeHtml(c.date)}</td>
@@ -7953,7 +7989,7 @@ function AcIfaceRow(ifc){
   const ac = state.appcat;
   const open = !!ac.ifaceExpanded[ifc.id] && !!ifc.containers;
   let out = `
-    <tr>
+    <tr class="${open?"exp-open":""}">
       <td><div class="exp-cell"><div class="exp-row-btn ${ifc.containers?(open?"open":""):"none"}" ${ifc.containers?`data-action="ac-toggle-iface" data-id="${ifc.id}"`:""}>${icon("chevronRight")}</div>${escapeHtml(ifc.name)}</div></td>
       <td><span class="badge green">${escapeHtml(ifc.status)}</span></td>
       <td>${ifc.methodCount}</td>
@@ -10477,17 +10513,11 @@ function UseCaseTab(p){
       ${FilterSelect({id:"uc-filter-source", label:"Источник", value:state.ucSourceFilter, options:["Все","Ручной импорт","Автоматический импорт"], action:"uc-source-filter-set"})}
       ${FilterSelect({id:"uc-filter-status", label:"Статус", value:state.ucStatusFilter, options:["Все","Опубликован","Черновик"], action:"uc-status-filter-set"})}
       ${ResetFiltersButton("reset-uc-filters", !!(state.ucSearch || state.ucSourceFilter!=="Все" || state.ucStatusFilter!=="Все"))}
-      <div class="view-toggle">
-        <button class="view-toggle-btn ${state.ucListView==="grid"?"active":""}" data-action="uc-set-view" data-mode="grid" title="Карточки">${icon("grid")}</button>
-        <button class="view-toggle-btn ${state.ucListView==="table"?"active":""}" data-action="uc-set-view" data-mode="table" title="Таблица">${icon("table")}</button>
-      </div>
-      <button class="btn btn-primary btn-sm" data-action="uc-create" data-id="${p.id}">Создать Use Case</button>
+      <!-- Кнопка без .btn-sm: .btn и есть размер medium по ДС (48 / 17-22-500 / padding 20),
+           тот же, что у поиска и фильтров рядом. -->
+      <button class="btn btn-primary" data-action="uc-create" data-id="${p.id}">Создать Use Case</button>
     </div>
 
-    ${state.ucListView==="grid" ? `
-      ${list.length ? `<div class="agents-grid-v2">${list.map(u=>UseCaseCard(p.id, u)).join("")}</div>`
-        : `<div class="card empty-state" style="padding:var(--space-9) var(--space-5);">${boxIllustration()}<p style="color:var(--text-secondary);margin:0;">Ничего не нашлось. Измени фильтры или сбрось их</p></div>`}
-    ` : `
     <div class="table-wrap">
       <table>
         <thead><tr><th>Use Case</th><th>Статус</th><th>Источник</th><th>Дата изменения</th><th>История</th><th></th></tr></thead>
@@ -10510,27 +10540,9 @@ function UseCaseTab(p){
         </tbody>
       </table>
     </div>
-    `}
   `;
 }
 
-/* Карточный вид списка Use Case — те же данные, что в таблице */
-function UseCaseCard(projectId, u){
-  return `
-    <div class="card uc-card">
-      <div class="uc-card-head">${ucStatusBadge(u.status)}<button class="icon-btn" data-action="edit-usecase" data-id="${projectId}" data-uc="${u.id}" title="Редактировать Use Case">${icon("pencil")}</button></div>
-      <div class="uc-card-name" data-action="open-usecase" data-id="${projectId}" data-uc="${u.id}" title="${escapeHtml(u.name)}">${escapeHtml(u.name)}</div>
-      <div class="row-sub">${escapeHtml(u.code)}</div>
-      <div class="uc-card-meta">
-        <div class="lbl">Источник</div>
-        <div class="val">${escapeHtml(u.source)}</div>
-        <div class="lbl">Дата изменения</div>
-        <div class="val">${escapeHtml(u.updated)}</div>
-        <span class="proj-link" data-action="open-usecase-history" data-id="${projectId}" data-uc="${u.id}">Посмотреть историю</span>
-      </div>
-    </div>
-  `;
-}
 
 function findUseCase(p, ucId){
   return (p.useCases||[]).find(u=>u.id===ucId);
@@ -10673,6 +10685,17 @@ function scenarioCallCell(s, projectId, ucId){
    просмотра, и должен переживать уход со страницы. */
 /* Сброс фильтров — ДС Button type=plain. Кнопка неактивна, пока в фильтрах ничего
    не введено и не выбрано: сбрасывать нечего, а активная кнопка это скрывала. */
+/* ДС components/list: текстовый блок из Overline / Title / Text / Caption.
+   Любой элемент, кроме Title, необязателен. */
+function DsList({overline, title, text, caption}){
+  return `<div class="ds-list">
+    ${overline ? `<div class="ds-list-overline">${escapeHtml(overline)}</div>` : ""}
+    <div class="ds-list-title">${escapeHtml(title)}</div>
+    ${text ? `<div class="ds-list-text">${escapeHtml(text)}</div>` : ""}
+    ${caption ? `<div class="ds-list-caption">${escapeHtml(caption)}</div>` : ""}
+  </div>`;
+}
+
 function ResetFiltersButton(action, active){
   return `<button class="btn-plain" data-action="${action}"${active?"":" disabled"}>Сбросить</button>`;
 }
@@ -10769,7 +10792,7 @@ function scenarioImplDetailRow(s, projectId, ucId, cols){
   const body = list.length
     ? `<div class="uc-impl-detail-lbl">${list.length} ${ruPlural(list.length,"реализация","реализации","реализаций")} вызова. Выбранная определяет, какую диаграмму открывает код в таблице.</div>
        <div class="uc-impl-chips">${chips}</div>
-       <div class="uc-impl-detail-src">Источник выбранной: <b>${escapeHtml(cur.source)}</b> · загружено ${escapeHtml(cur.loadedAt)}</div>`
+       ${DsList({overline:"Источник выбранной", title:cur.source, caption:"Загружено "+cur.loadedAt})}`
     : `<div class="uc-impl-detail-lbl">У вызова нет ни одной реализации — агент не нашёл для него диаграмму последовательности.</div>`;
   return `<tr class="exp-detail-row"><td colspan="${cols}"><div class="exp-detail">
       ${body}
@@ -10844,7 +10867,7 @@ function UseCaseScenariosTable(u, projectId, ucId){
             const pp = splitParticipant(s.participant);
             const open = !!state.ucImplExpanded[ucId+":"+s.part];
             return `
-            <tr>
+            <tr class="${open?"exp-open":""}">
               <td style="white-space:nowrap;"><div class="exp-cell"><div class="exp-row-btn ${open?"open":""}" data-action="uc-toggle-impl" data-uc="${ucId}" data-part="${escapeHtml(s.part)}">${icon("chevronRight")}</div>${escapeHtml(s.part)}</div></td>
               <td>${participantCell(pp.caller)}</td>
               <td>${participantCell(pp.callee)}</td>
@@ -14428,7 +14451,6 @@ function handleAction(action, el){
       render();
       break;
     case "cj-set-view": state.cjView = el.dataset.mode; render(); break;
-    case "uc-set-view": state.ucListView = el.dataset.mode; render(); break;
     case "proj-set-view": state.projView = el.dataset.mode; render(); break;
     case "cj-open-filters": state.cjFiltersOpen = true; render(); break;
     case "cj-close-filters": state.cjFiltersOpen = false; render(); break;
