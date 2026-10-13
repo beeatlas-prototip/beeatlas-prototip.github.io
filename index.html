@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261013-113938">
+<meta name="beeatlas-build" content="20261013-120418">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -1062,6 +1062,23 @@
      .page-title-row (например Каталог приложений) — без него такой h1 получал дефолт
      браузера 32px/700/normal. Отступы не трогаем: они у страниц свои. */
   h1{font-size:26px;line-height:32px;letter-spacing:.2px;font-weight:500;}
+  /* Подзаголовок страницы: текст body по ДС (15/22/0.2), цвет inactive. */
+  .page-lead{font-size:15px;line-height:22px;letter-spacing:.2px;color:var(--text-secondary);margin:var(--space-2) 0 var(--space-6);}
+  .page-lead b{color:var(--text);font-weight:500;}
+
+  /* ═══ Страница реализации (R-4, метаданные источника — R-6) ═══════════════
+     Имена классов с суффиксами (-row/-item/-cap/-val): короткий .impl-meta уже
+     занят под .e2ecat-scope в Каталоге Е2Е. */
+  .impl-meta-row{display:flex;flex-wrap:wrap;gap:var(--space-5) var(--space-8);margin-bottom:var(--space-7);}
+  .impl-meta-cap{font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-tertiary);margin-bottom:var(--space-1);}
+  .impl-meta-val{font-size:15px;line-height:22px;letter-spacing:.2px;color:var(--text);}
+  .impl-meta-id{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;}
+  .impl-source{
+    background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius-sm);
+    padding:var(--space-4) var(--space-4);font-size:13px;line-height:22px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    overflow-x:auto;white-space:pre;margin:0;
+  }
   .page-title-row h1{font-size:26px;line-height:32px;letter-spacing:.2px;font-weight:500;margin:0;}
   .page-title-row .actions{margin-left:auto;display:flex;gap:var(--space-3);}
 
@@ -1345,47 +1362,26 @@
 
   /* ═══ Реализация вызова: 1-ко-многим ═══════════════════════════════════════
      Ячейка колонки «Реализация» показывает только выбранную реализацию и счётчик
-     остальных: 10% ширины таблицы на список кодов не хватает. Полный список —
+     остальных: ширины колонки на список кодов не хватает. Полный список —
      в раскрывающейся строке (.exp-row-btn / .exp-detail-row, паттерн Каталога
-     приложений), там же выбор чипсами.
-     Имя класса своё (.uc-impl-chip), а не общий .impl-chip: одноимённый класс уже
-     объявлен под .e2ecat-scope в Каталоге Е2Е, и общее правило подмешивало бы
-     свойства в его чипсы. */
+     приложений), там же выбор чипсами (.pill-item). */
   .uc-impl-cell{display:flex;align-items:center;gap:var(--space-2);min-width:0;}
   .uc-impl-code{font-size:15px;line-height:20px;letter-spacing:.2px;white-space:nowrap;}
   .uc-impl-rest{color:var(--text-secondary);font-size:13px;line-height:16px;letter-spacing:.2px;white-space:nowrap;}
 
-  /* ДС components/chips: высота 32, радиус 30, текст 15/18/400/0.2,
-     padding 12 слева и справа (type=onlyText), шаг в группе 8;
-     не выбран — control-background, выбран — background-brand. */
+  /* Чипсы реализаций — существующий компонент .pill-item (он и есть ДС Chips:
+     32 / радиус 30 / 15-18-400-0.2 / padding 12 / control-background → brand).
+     Своего класса для них не заводим: второй компонент того же назначения
+     разъезжается с первым при первой же правке.
+     Свой только контейнер: шаг группы у .pill-toggle — 12, а ДС для группы чипсов
+     задаёт 8 (chips-group-spacing). .pill-toggle не трогаем, он держит три экрана
+     Каталога приложений; расхождение известное и остаётся за ним. */
   .uc-impl-chips{display:flex;align-items:center;flex-wrap:wrap;gap:var(--size-spacing-x2);}
-  .uc-impl-chip{
-    height:32px;border-radius:var(--size-border-radius-x15);border:none;
-    padding:0 var(--size-spacing-x3);
-    display:inline-flex;align-items:center;gap:var(--size-spacing-x2);
-    background:var(--color-control-background);color:var(--text);
-    font-size:15px;font-weight:400;line-height:18px;letter-spacing:.2px;white-space:nowrap;
-  }
-  .uc-impl-chip:hover{background:var(--color-control-background-hover);}
-  .uc-impl-chip:active{background:var(--color-control-background-pressed);}
-  /* Текст на фоне Brand — токены text-dark-*, так их описывает tokens.md:
-     «используется в элементах с цветами фона Brand или White». Соседний .btn-primary
-     исторически красит текст на жёлтом в text-black-active (0.94 от #090b16) —
-     расхождение известное, различие глазом неразличимо, его не чиним этой правкой. */
-  .uc-impl-chip.selected{background:var(--color-background-brand);color:var(--color-text-dark-active);}
-  .uc-impl-chip.selected:hover{background:var(--color-background-brand-hover);}
-  .uc-impl-chip.selected:active{background:var(--color-background-brand-pressed);}
-  .uc-impl-chip .beeline-icons{width:20px;height:20px;font-size:20px;}
-  .uc-impl-chip-src{color:var(--text-secondary);font-size:13px;line-height:16px;letter-spacing:.2px;}
-  .uc-impl-chip.selected .uc-impl-chip-src{color:var(--color-text-dark-inactive);}
-
-  /* ДС components/radioButton: точка выбора 10×10, круг. Геометрия внешнего круга
-     в спеке не токенизирована — берём ту же, что у радио-карточек объединения веток
-     (20×20, рамка 1.5), чтобы в прототипе радио выглядело одинаково. */
-  .ds-radio{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border-strong);
-    flex:0 0 auto;display:flex;align-items:center;justify-content:center;}
-  .ds-radio.checked{border-color:var(--yellow);}
-  .ds-radio.checked::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--yellow);}
+  /* Иконка в чипсе — ДС chips-icon-size 20, отступ до текста 8. Ни один существующий
+     .pill-item иконку не содержит, поэтому правило ничего из них не меняет. */
+  .pill-item{gap:var(--size-spacing-x2);}
+  .pill-item .beeline-icons{width:20px;height:20px;font-size:20px;flex:0 0 auto;}
+  .pill-item svg{width:20px;height:20px;flex:0 0 auto;}
 
   .uc-impl-detail-lbl{color:var(--text-secondary);font-size:13px;line-height:16px;letter-spacing:.2px;margin-bottom:var(--space-2);}
   .uc-impl-detail-src{color:var(--text-secondary);font-size:15px;line-height:22px;letter-spacing:.2px;margin-top:var(--space-4);}
@@ -5156,6 +5152,95 @@ function freshProject(name, code){
   };
 }
 
+/* ═══ Реестр реализаций ════════════════════════════════════════════════════
+   Одна запись на код реализации. Раньше источник лежал копией и в сценарии,
+   и в пуле поиска; странице реализации понадобились бы ещё метаданные и состав
+   вызовов — это была бы третья копия. Теперь реализация описана один раз, а
+   сценарий ссылается на неё кодом.
+   `calls` служит сразу обеим закладкам страницы: из него строится и текст
+   PlantUML («исходные данные»), и sequence-диаграмма («визуализация»), поэтому
+   разъехаться они не могут. */
+const UC_IMPL_REGISTRY = {
+  "SEQ-88": {
+    source:"E2E-сценарий «Онлайн заказ»", kind:"PlantUML",
+    loadedAt:"10.10.2026, 14:32", objectId:"e2e-seq-0088",
+    calls:[
+      {from:"app", to:"ext_gateway", label:"GET /api/v1/users/{id}"},
+      {from:"app", to:"cart_service", label:"GET /api/v1/cart/{id}"},
+      {from:"app", to:"pricing_service", label:"POST /api/v1/price/calc"},
+      {from:"app", to:"order_service", label:"POST /api/v1/orders"},
+      {from:"order_service", to:"billing", label:"POST /api/v1/payments/reserve"},
+      {from:"order_service", to:"notification", label:"POST /api/v1/notify/send"},
+    ]},
+  "SEQ-91": {
+    source:"E2E-сценарий «Онлайн заказ»", kind:"PlantUML",
+    loadedAt:"10.10.2026, 14:32", objectId:"e2e-seq-0091",
+    calls:[
+      {from:"app", to:"cart_service", label:"GET /api/v1/cart/{id}"},
+      {from:"cart_service", to:"catalog_service", label:"GET /api/v1/catalog/offers"},
+    ]},
+  "SEQ-104": {
+    source:"Use Case «Оформление заказа в мобильном приложении»", kind:"PlantUML",
+    loadedAt:"09.10.2026, 11:05", objectId:"uc-seq-0104",
+    calls:[
+      {from:"app", to:"ext_gateway", label:"GET /api/v1/users/{id}"},
+      {from:"app", to:"order_service", label:"POST /api/v1/orders"},
+      {from:"order_service", to:"billing", label:"POST /api/v1/payments/reserve"},
+    ]},
+  "SEQ-109": {
+    source:"Use Case «Авторизация в личном кабинете»", kind:"PlantUML",
+    loadedAt:"08.10.2026, 17:48", objectId:"uc-seq-0109",
+    calls:[
+      {from:"app", to:"ext_gateway", label:"GET /api/v1/users/{id}"},
+      {from:"ext_gateway", to:"ldap", label:"bind"},
+    ]},
+  "SEQ-117": {
+    source:"Ветка develop, сборка от 10.10.2026", kind:"Dynamic",
+    loadedAt:"10.10.2026, 09:14", objectId:"dyn-0117",
+    calls:[
+      {from:"order_service", to:"notification", label:"POST /api/v1/notify/send"},
+      {from:"notification", to:"sms_gateway", label:"POST /api/v1/sms"},
+    ]},
+  "SEQ-121": {
+    source:"E2E-сценарий «Заказ оборудования»", kind:"PlantUML",
+    loadedAt:"07.10.2026, 12:20", objectId:"e2e-seq-0121",
+    calls:[
+      {from:"app", to:"order_service", label:"POST /api/v1/orders"},
+      {from:"order_service", to:"notification", label:"POST /api/v1/notify/send"},
+    ]},
+  "SEQ-134": {
+    source:"E2E-сценарий «Пополнение баланса»", kind:"PlantUML",
+    loadedAt:"06.10.2026, 16:03", objectId:"e2e-seq-0134",
+    calls:[
+      {from:"app", to:"billing", label:"POST /api/v1/payments/reserve"},
+      {from:"billing", to:"ledger", label:"POST /api/v1/ledger/hold"},
+    ]},
+  "SEQ-140": {
+    source:"Ветка design, сборка от 09.10.2026", kind:"Dynamic",
+    loadedAt:"09.10.2026, 19:37", objectId:"dyn-0140",
+    calls:[
+      {from:"app", to:"pricing_service", label:"POST /api/v1/price/calc"},
+      {from:"pricing_service", to:"tariff_service", label:"GET /api/v1/tariffs"},
+    ]},
+};
+/* Полная запись реализации по коду. Сценарий хранит только код и признак выбора:
+   остальное у реализации одно на всех, кто на неё ссылается. */
+function implInfo(code){
+  const r = UC_IMPL_REGISTRY[code];
+  return r ? Object.assign({code}, r) : null;
+}
+/* Текст PlantUML собирается из того же `calls`, что и диаграмма, — так закладка
+   «исходные данные» всегда описывает ровно то, что нарисовано в «визуализации». */
+function implPlantUml(info){
+  if(!info) return "";
+  const names = [];
+  info.calls.forEach(c=>{ [c.from,c.to].forEach(n=>{ if(!names.includes(n)) names.push(n); }); });
+  return "@startuml\n" +
+    names.map(n=>`participant "${n}" as ${n}`).join("\n") + "\n\n" +
+    info.calls.map(c=>`${c.from} -> ${c.to}: ${c.label}`).join("\n") +
+    "\n@enduml";
+}
+
 /* Реализация вызова — связь 1-ко-многим: один и тот же вызов может быть описан
    несколькими sequence-диаграммами (из E2E-сценария, из другого Use Case, из ветки
    разработки). Поэтому не одна строка-значение, а список `impls` с выбранной
@@ -5168,27 +5253,19 @@ function freshProject(name, code){
          missing-system — системы из Use Case в реальной цепочке нет. */
 const UC_SCENARIOS_TEMPLATE = [
   {part:"P-01", participant:"app — ext_gateway", action:"Пользователь вводит логин и пароль в форме приложения. Приложение передаёт учётные данные во внешний шлюз авторизации, который проверяет их в LDAP и в случае успеха возвращает токен доступа, а при ошибке — код и текст сообщения для показа пользователю.", api:"users_api", call:"GET /api/v1/users/{id}", tcName:"Возможность авторизации пользователя", tcCode:"TC-101", status:"confirmed",
-   impls:[
-     {code:"SEQ-88",  source:"E2E-сценарий «Онлайн заказ»", tcCode:"TC-101", chosen:true},
-     {code:"SEQ-104", source:"Use Case «Авторизация в личном кабинете»", tcCode:"TC-101", chosen:false},
-   ],
+   impls:[{code:"SEQ-88", chosen:true}, {code:"SEQ-109", chosen:false}],
    mismatch:{type:"multiple"}},
   {part:"P-02", participant:"app — cart_service", action:"get_cart", api:"cart_api", call:"GET /api/v1/cart/{id}", tcName:"Возможность получения корзины", tcCode:"TC-108", status:"confirmed",
-   impls:[{code:"SEQ-88", source:"E2E-сценарий «Онлайн заказ»", tcCode:"TC-108", chosen:true}],
+   impls:[{code:"SEQ-88", chosen:true}],
    mismatch:null},
   {part:"P-03", participant:"app — pricing_service", action:"calc_price", api:"pricing_api", call:"POST /api/v1/price/calc", tcName:"Возможность расчёта стоимости", tcCode:"TC-114", status:"confirmed",
-   impls:[{code:"SEQ-88", source:"E2E-сценарий «Онлайн заказ»", tcCode:"TC-114", chosen:true}],
+   impls:[{code:"SEQ-88", chosen:true}],
    mismatch:{type:"wrong-start", first:"GET /api/v1/catalog/offers"}},
   {part:"P-04", participant:"app — order_service", action:"Приложение формирует заказ на основании содержимого корзины и рассчитанной стоимости. Сервис заказов проверяет остатки на складе, резервирует их и создаёт заказ со статусом «Новый», возвращая его идентификатор обратно в приложение.", api:"orders_api", call:"POST /api/v1/orders", tcName:"Возможность создания заказа", tcCode:"TC-142", status:"confirmed",
-   impls:[
-     {code:"SEQ-88",  source:"E2E-сценарий «Онлайн заказ»", tcCode:"TC-142", chosen:true},
-     {code:"SEQ-104", source:"Use Case «Оформление заказа в мобильном приложении»", tcCode:"TC-142", chosen:false},
-     {code:"SEQ-117", source:"Ветка develop, сборка от 10.10.2026", tcCode:"TC-142", chosen:false},
-     {code:"SEQ-121", source:"E2E-сценарий «Заказ оборудования»", tcCode:"TC-142", chosen:false},
-   ],
+   impls:[{code:"SEQ-88", chosen:true}, {code:"SEQ-104", chosen:false}, {code:"SEQ-117", chosen:false}, {code:"SEQ-121", chosen:false}],
    mismatch:{type:"multiple"}},
   {part:"P-05", participant:"order_service — billing", action:"reserve_payment", api:"billing_api", call:"POST /api/v1/payments/reserve", tcName:"Возможность резервирования оплаты", tcCode:"TC-150", status:"confirmed",
-   impls:[{code:"SEQ-88", source:"E2E-сценарий «Онлайн заказ»", tcCode:"TC-150", chosen:true}],
+   impls:[{code:"SEQ-88", chosen:true}],
    mismatch:{type:"mid-chain", between:"POST /api/v1/limits/check"}},
   {part:"P-06", participant:"order_service — notification", action:"send_confirmation", api:"notify_api", call:"POST /api/v1/notify/send", tcName:"Возможность отправки уведомления", tcCode:"TC-163", status:"confirmed",
    impls:[],
@@ -5196,7 +5273,6 @@ const UC_SCENARIOS_TEMPLATE = [
   {part:"P-07", participant:"app — order_service", action:"get_order_status", api:"orders_api", call:"GET /api/v1/orders/{id}", status:"planned", impls:[], mismatch:null},
   {part:"P-08", participant:"order_service — loyalty_service", action:"apply_bonus_points", api:"loyalty_api", call:"POST /api/v1/loyalty/apply", impls:[], mismatch:null},
 ];
-
 
 /* pool of candidate parts produced by a simulated UC import run; some resolve
    against known landscape containers (mapped), some don't (require a decision) */
@@ -5529,7 +5605,9 @@ const state = {
   /* Какие строки таблицы вызовов раскрыты, ключ "<ucId>:<part>". Раскрытие —
      состояние просмотра, в отличие от выбора реализации, который лежит в данных. */
   ucImplExpanded:{},
-  ucImplMatch:null,
+  /* Закладка страницы реализации и её полноэкранная диаграмма (R-4). */
+  implTab:"source",
+  implDiagramOpen:false,
   ucHistoryOpenId:null,
   ucWizard:null,
 
@@ -6167,6 +6245,18 @@ function escapeHtml(s){
   return String(s==null?"":s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
 function deepClone(x){ return JSON.parse(JSON.stringify(x)); }
+/* Выгрузка отрисованной диаграммы в файл. Один помощник на оба места выгрузки
+   (карточка Use Case и страница реализации): копия этого кода разъехалась бы. */
+function downloadSvg(svg, filename){
+  const xml = new XMLSerializer().serializeToString(svg);
+  const blob = new Blob(['<?xml version="1.0" standalone="no"?>\r\n'+xml], {type:"image/svg+xml"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 1000);
+  showToast("Диаграмма скачана");
+}
 function ruPlural(n, one, few, many){
   const mod10 = Math.abs(n)%10, mod100 = Math.abs(n)%100;
   if(mod100>10 && mod100<20) return many;
@@ -6522,6 +6612,8 @@ function renderPage(){
     html = UseCaseDetailPage(r.projectId, r.ucId);
   } else if(r.view==="usecase-history"){
     html = UseCaseHistoryPage(r.projectId, r.ucId);
+  } else if(r.view==="impl-detail"){
+    html = UseCaseImplPage(r.projectId, r.ucId, r.part, r.implCode);
   } else {
     html = ProjectsListPage();
   }
@@ -10472,10 +10564,13 @@ function scenarioCallCell(s, projectId, ucId){
    данных сценария (impl.chosen), а не в state: он относится к Use Case, а не к сессии
    просмотра, и должен переживать уход со страницы. */
 function scenarioImpls(s){ return s.impls || []; }
+/* Возвращает полную запись реализации, а не ссылку из сценария: вызывающим нужен
+   источник и метаданные, а в сценарии лежит только код и признак выбора. */
 function chosenImpl(s){
   const list = scenarioImpls(s);
   if(!list.length) return null;
-  return list.find(x=>x.chosen) || list[0];
+  const ref = list.find(x=>x.chosen) || list[0];
+  return implInfo(ref.code);
 }
 function selectScenarioImpl(projectId, ucId, part, code){
   const u = findUseCase(findProject(projectId), ucId);
@@ -10543,7 +10638,7 @@ function scenarioImplCell(s, projectId, ucId){
   }
   const rest = list.length - 1;
   const code = (projectId && ucId)
-    ? `<span class="proj-link uc-impl-code" data-action="open-uc-dynamic" data-id="${projectId}" data-uc="${ucId}" data-part="${escapeHtml(s.part)}">${escapeHtml(cur.code)}</span>`
+    ? `<span class="proj-link uc-impl-code" data-action="open-uc-impl" data-id="${projectId}" data-uc="${ucId}" data-part="${escapeHtml(s.part)}" data-code="${escapeHtml(cur.code)}">${escapeHtml(cur.code)}</span>`
     : `<span class="uc-impl-code">${escapeHtml(cur.code)}</span>`;
   return `<div class="uc-impl-cell">${code}${rest>0?`<span class="uc-impl-rest">+${rest}</span>`:""}${marker}</div>`;
 }
@@ -10554,17 +10649,18 @@ function scenarioImplDetailRow(s, projectId, ucId, cols){
   const list = scenarioImpls(s);
   const cur = chosenImpl(s);
   const chips = list.map(x=>`
-    <button class="uc-impl-chip${cur&&cur.code===x.code?" selected":""}" data-action="uc-select-impl" data-id="${projectId}" data-uc="${ucId}" data-part="${escapeHtml(s.part)}" data-code="${escapeHtml(x.code)}">
+    <div class="pill-item${cur&&cur.code===x.code?" active":""}" data-action="uc-select-impl" data-id="${projectId}" data-uc="${ucId}" data-part="${escapeHtml(s.part)}" data-code="${escapeHtml(x.code)}">
       ${cur&&cur.code===x.code?icon("check"):""}${escapeHtml(x.code)}
-    </button>`).join("");
+    </div>`).join("");
   const body = list.length
     ? `<div class="uc-impl-detail-lbl">${list.length} ${ruPlural(list.length,"реализация","реализации","реализаций")} вызова. Выбранная определяет, какую диаграмму открывает код в таблице.</div>
        <div class="uc-impl-chips">${chips}</div>
-       <div class="uc-impl-detail-src">Источник выбранной: <b>${escapeHtml(cur.source)}</b></div>`
+       <div class="uc-impl-detail-src">Источник выбранной: <b>${escapeHtml(cur.source)}</b> · загружено ${escapeHtml(cur.loadedAt)}</div>`
     : `<div class="uc-impl-detail-lbl">У вызова нет ни одной реализации — агент не нашёл для него диаграмму последовательности.</div>`;
   return `<tr class="exp-detail-row"><td colspan="${cols}"><div class="exp-detail">
       ${body}
       <div class="uc-impl-detail-actions">
+        ${cur ? `<span class="proj-link" data-action="open-uc-impl" data-id="${projectId}" data-uc="${ucId}" data-part="${escapeHtml(s.part)}" data-code="${escapeHtml(cur.code)}">Открыть реализацию ${escapeHtml(cur.code)}</span>` : ""}
         <span class="proj-link" data-action="uc-open-impl-match" data-id="${projectId}" data-uc="${ucId}" data-part="${escapeHtml(s.part)}">Сопоставить вручную</span>
       </div>
     </div></td></tr>`;
@@ -10647,25 +10743,6 @@ function UseCaseScenariosTable(u, projectId, ucId){
   `;
 }
 
-function UcDynamicPanel(){
-  const sp = state.sidePanel;
-  return `
-    <div class="side-head">
-      <div>
-        <h2>Реализация ${escapeHtml(sp.seq)}</h2>
-        <p class="side-desc">Диаграмма последовательности вызовов шага, в нотации PlantUML</p>
-      </div>
-      <button class="wizard-close" data-action="close-side">${icon("x")}</button>
-    </div>
-    <div class="side-body">
-      <pre style="background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius-sm);padding:var(--space-4) var(--space-4);font-size:13px;line-height:22px;overflow-x:auto;white-space:pre;">${escapeHtml(sp.plantUml||"—")}</pre>
-    </div>
-    <div class="side-foot">
-      <button class="btn btn-outline" data-action="close-side">Закрыть</button>
-    </div>
-  `;
-}
-
 /* Диаграмма вызовов по данным сценария — тот же рендерер (buildSequenceSvgGeneric),
    что уже используется для реализации BI Step в каталоге (глобальная функция
    из первого <script> — e2ecat-scope, но сама функция вне его CSS-скоупа и не зависит
@@ -10724,20 +10801,9 @@ function UcDiagramModal(u){
 /* ═══ R-3: ручное сопоставление реализации ════════════════════════════════
    Агент не всегда находит для вызова диаграмму последовательности — тогда в колонке
    «Реализация» стоит прочерк. Прочерк остаётся прочерком, но рядом есть вход в это
-   сопоставление: архитектор знает реализацию и находит её поиском по коду, методу
-   или ТС. Пул — реализации, уже загруженные в BeeAtlas из E2E-сценариев, других
-   Use Case и веток разработки. */
-const UC_IMPL_POOL = [
-  {code:"SEQ-88",  source:"E2E-сценарий «Онлайн заказ»",                        method:"POST /api/v1/orders",            tcName:"Возможность создания заказа",            tcCode:"TC-142"},
-  {code:"SEQ-91",  source:"E2E-сценарий «Онлайн заказ»",                        method:"GET /api/v1/cart/{id}",          tcName:"Возможность получения корзины",          tcCode:"TC-108"},
-  {code:"SEQ-104", source:"Use Case «Оформление заказа в мобильном приложении»", method:"POST /api/v1/orders",            tcName:"Возможность создания заказа",            tcCode:"TC-142"},
-  {code:"SEQ-109", source:"Use Case «Авторизация в личном кабинете»",            method:"GET /api/v1/users/{id}",         tcName:"Возможность авторизации пользователя",   tcCode:"TC-101"},
-  {code:"SEQ-117", source:"Ветка develop, сборка от 10.10.2026",                 method:"POST /api/v1/notify/send",       tcName:"Возможность отправки уведомления",       tcCode:"TC-163"},
-  {code:"SEQ-121", source:"E2E-сценарий «Заказ оборудования»",                   method:"POST /api/v1/notify/send",       tcName:"Возможность отправки уведомления",       tcCode:"TC-163"},
-  {code:"SEQ-134", source:"E2E-сценарий «Пополнение баланса»",                   method:"POST /api/v1/payments/reserve",  tcName:"Возможность резервирования оплаты",      tcCode:"TC-150"},
-  {code:"SEQ-140", source:"Ветка design, сборка от 09.10.2026",                  method:"POST /api/v1/price/calc",        tcName:"Возможность расчёта стоимости",          tcCode:"TC-114"},
-];
-
+   сопоставление: архитектор знает реализацию и находит её поиском по коду, источнику
+   или методу внутри цепочки. Искать есть где — реестр реализаций и есть всё, что
+   загружено в BeeAtlas. */
 function openUcImplMatch(projectId, ucId, part){
   const u = findUseCase(findProject(projectId), ucId);
   const sc = u && u.scenarios.find(x=>x.part===part);
@@ -10745,37 +10811,51 @@ function openUcImplMatch(projectId, ucId, part){
   state.sidePanel = {
     type:"uc-impl-match", projectId, ucId, part,
     call: sc.call, tcCode: sc.tcCode || null,
-    /* Поиск предзаполняем кодом ТС вызова, если он известен: именно по нему
-       реализация чаще всего и находится, а пустое поле заставляло бы угадывать,
-       что вообще вводить. */
-    query: sc.tcCode || "",
+    /* Поиск предзаполняем путём метода вызова: реализация ищется именно по нему,
+       а пустое поле заставляло бы угадывать, что вообще вводить. */
+    query: sc.call || "",
     pick: null,
   };
   render();
 }
 
-function ucImplMatchResults(sp){
-  const q = String(sp.query||"").trim().toLowerCase();
-  const taken = new Set((ucImplMatchScenario(sp)?.impls||[]).map(x=>x.code));
-  return UC_IMPL_POOL
-    .filter(x=>!taken.has(x.code))
-    .filter(x=>!q || (x.code+" "+x.method+" "+x.tcName+" "+x.tcCode+" "+x.source).toLowerCase().includes(q));
-}
 function ucImplMatchScenario(sp){
   const u = findUseCase(findProject(sp.projectId), sp.ucId);
   return u ? u.scenarios.find(x=>x.part===sp.part) : null;
 }
+function ucImplMatchResults(sp){
+  const q = String(sp.query||"").trim().toLowerCase();
+  const taken = new Set((ucImplMatchScenario(sp)?.impls||[]).map(x=>x.code));
+  return Object.keys(UC_IMPL_REGISTRY)
+    .filter(code=>!taken.has(code))
+    .map(implInfo)
+    .filter(x=>{
+      if(!q) return true;
+      const hay = (x.code+" "+x.source+" "+x.kind+" "+x.calls.map(c=>c.from+" "+c.to+" "+c.label).join(" ")).toLowerCase();
+      return hay.includes(q);
+    });
+}
+
+/* В карточке результата крупной строкой должен стоять тот вызов цепочки, ради
+   которого идёт сопоставление, а не первый по порядку: иначе у длинной реализации
+   на виду оказывается вызов, к делу не относящийся. */
+function implMatchedCall(r, sp){
+  const q = String(sp.query||"").trim().toLowerCase();
+  return r.calls.find(c=>c.label===sp.call)
+      || (q ? r.calls.find(c=>(c.from+" "+c.to+" "+c.label).toLowerCase().includes(q)) : null)
+      || r.calls[0];
+}
 
 function submitUcImplMatch(){
   const sp = state.sidePanel;
-  const found = UC_IMPL_POOL.find(x=>x.code===sp.pick);
+  const found = implInfo(sp.pick);
   const sc = ucImplMatchScenario(sp);
   if(!found || !sc) return;
   sc.impls = sc.impls || [];
   /* Сопоставленная вручную реализация становится выбранной: архитектор только что
      указал именно её. Остальные остаются в списке невыбранными. */
   sc.impls.forEach(x=>{ x.chosen = false; });
-  sc.impls.push({code:found.code, source:found.source, tcCode:found.tcCode, chosen:true});
+  sc.impls.push({code:found.code, chosen:true});
   /* Расхождение «системы нет в цепочке» снимается самим фактом сопоставления;
      остальные типы ручной привязкой не закрываются. */
   if(sc.mismatch && sc.mismatch.type==="missing-system") sc.mismatch = null;
@@ -10799,20 +10879,20 @@ function UcImplMatchPanel(){
     <div class="side-body">
       <div class="field-with-icon" style="margin-bottom:var(--space-5);">
         ${icon("search")}
-        <input class="input" id="ucImplMatchSearch" placeholder="Код реализации, метод или ТС" value="${escapeHtml(sp.query)}"/>
+        <input class="input" id="ucImplMatchSearch" placeholder="Код реализации, источник или метод" value="${escapeHtml(sp.query)}"/>
         ${sp.query ? `<div class="clear-x" data-action="uc-impl-match-clear-search">${icon("x")}</div>` : ""}
       </div>
       ${results.length ? results.map(r=>`
         <div class="search-result-card" data-action="uc-impl-match-pick" data-code="${escapeHtml(r.code)}">
           <div class="ds-radio ${sp.pick===r.code?"checked":""}" style="margin-top:var(--space-1);"></div>
           <div style="flex:1;">
-            <div class="tag">${escapeHtml(r.code)}</div>
-            <div class="name">${escapeHtml(r.method)}</div>
-            <div class="code">${escapeHtml(r.tcName)} · ${escapeHtml(r.tcCode)}</div>
+            <div class="tag">${escapeHtml(r.code)} · ${escapeHtml(r.kind)}</div>
+            <div class="name">${escapeHtml(implMatchedCall(r, sp).label)}</div>
             <div class="code">${escapeHtml(r.source)}</div>
+            <div class="code">${r.calls.length} ${ruPlural(r.calls.length,"вызов","вызова","вызовов")} в цепочке · загружено ${escapeHtml(r.loadedAt)}</div>
           </div>
         </div>
-      `).join("") : `<div style="color:var(--text-secondary);font-size:13px;">По запросу «${escapeHtml(sp.query)}» реализаций не нашлось. Попробуй код ТС или путь метода.</div>`}
+      `).join("") : `<div style="color:var(--text-secondary);font-size:13px;">По запросу «${escapeHtml(sp.query)}» реализаций не нашлось. Попробуй код реализации или путь метода.</div>`}
     </div>
     <div class="side-foot">
       <button class="btn btn-outline" data-action="close-side">Отмена</button>
@@ -10858,6 +10938,92 @@ function ucImportRuns(p, code){
 // продукта: "История импорта" открывается по клику на кнопку в шапке UC, со своим
 // хлебным крошем "Агент: {имя UC}". Клик по ID строки разворачивает то же самое
 // (реестр замечаний + исходный PlantUML), что раньше жило в UseCaseHistoryList.
+/* ═══ R-4: страница реализации ════════════════════════════════════════════
+   «Сайдшитом уже не отделаемся. Нам нужна полноценная страничка» (Дзюба, 07.10).
+   Сайдшит uc-dynamic снят, код реализации в таблице вызовов ведёт сюда.
+   Две закладки — исходные данные и визуализация — показывают один и тот же
+   состав вызовов: текст PlantUML и диаграмма строятся из общего `calls`. */
+function UseCaseImplPage(projectId, ucId, part, code){
+  const p = findProject(projectId);
+  if(!p) return `<div class="placeholder-page">Проект не найден</div>`;
+  const u = findUseCase(p, ucId);
+  if(!u) return `<div class="placeholder-page">Use case не найден</div>`;
+  const info = implInfo(code);
+  if(!info) return `<div class="placeholder-page">Реализация не найдена</div>`;
+  const sc = u.scenarios.find(x=>x.part===part);
+  const tab = state.implTab || "source";
+  const meta = (cap, val) => `
+    <div class="impl-meta-item">
+      <div class="impl-meta-cap">${escapeHtml(cap)}</div>
+      <div class="impl-meta-val">${val}</div>
+    </div>`;
+  return `
+    <div class="breadcrumb">
+      <a data-action="nav" data-nav="projects">Проекты</a><span class="sep">${icon("chevronRight")}</span>
+      <a data-action="open-project" data-id="${p.id}">${escapeHtml(p.name)}</a><span class="sep">${icon("chevronRight")}</span>
+      <a data-action="open-usecase" data-id="${p.id}" data-uc="${u.id}">${escapeHtml(u.name)}</a><span class="sep">${icon("chevronRight")}</span>
+      <span class="current">Реализация ${escapeHtml(info.code)}</span>
+    </div>
+    <h1>Реализация ${escapeHtml(info.code)}</h1>
+    <p class="page-lead">${sc
+      ? `Описывает вызов <b>${escapeHtml(sc.call)}</b> шага ${escapeHtml(sc.part)} в Use Case «${escapeHtml(u.name)}»`
+      : `Реализация Use Case «${escapeHtml(u.name)}»`}</p>
+
+    <div class="impl-meta-row">
+      ${meta("Источник", escapeHtml(info.source))}
+      ${meta("Тип источника", escapeHtml(info.kind))}
+      ${meta("Загружено", escapeHtml(info.loadedAt))}
+      ${meta("Идентификатор объекта", `<span class="impl-meta-id">${escapeHtml(info.objectId)}</span>`)}
+      ${meta("Вызовов в цепочке", String(info.calls.length))}
+    </div>
+
+    <div class="page-tabs">
+      <div class="page-tab ${tab==="source"?"active":""}" data-action="set-impl-tab" data-tab="source">Исходные данные</div>
+      <div class="page-tab ${tab==="viz"?"active":""}" data-action="set-impl-tab" data-tab="viz">Визуализация</div>
+    </div>
+
+    ${tab==="source" ? `
+      <div class="uc-diagram-toolbar">
+        <button class="btn btn-outline btn-sm" data-action="copy-impl-source">${icon("copy")} Скопировать</button>
+      </div>
+      <pre class="impl-source">${escapeHtml(implPlantUml(info))}</pre>
+    ` : `
+      <div class="uc-diagram-toolbar">
+        <button class="btn btn-outline btn-sm" data-action="expand-impl-diagram">${ic("expand",16)} Развернуть</button>
+        <button class="btn btn-outline btn-sm" data-action="download-impl-diagram">${ic("download",16)} Скачать</button>
+      </div>
+      <div class="uc-diagram-scroll">${implDiagramSvg(info, false)}</div>
+    `}
+    ${state.implDiagramOpen ? ImplDiagramModal() : ""}
+  `;
+}
+/* Диаграмма строится тем же рендерером, что и остальные sequence в прототипе,
+   из `calls` реестра — тех же данных, что печатает закладка «исходные данные». */
+function implDiagramSvg(info, large){
+  const lifelines = [];
+  info.calls.forEach(c=>{ [c.from,c.to].forEach(n=>{ if(!lifelines.includes(n)) lifelines.push(n); }); });
+  return buildSequenceSvgGeneric(lifelines, null, info.calls.map(c=>({from:c.from,to:c.to,label:c.label})), {large});
+}
+function ImplDiagramModal(){
+  const r = state.route;
+  const info = implInfo(r.implCode);
+  if(!info) return "";
+  return `
+    <div class="uc-diagram-backdrop" data-action="collapse-impl-diagram"></div>
+    <div class="uc-diagram-modal">
+      <div class="uc-diagram-toolbar" style="justify-content:space-between;">
+        <div style="font-weight:700;font-size:15px;padding-left:6px;">Реализация ${escapeHtml(info.code)}</div>
+        <div style="display:flex;gap:var(--space-3);">
+          <button class="btn btn-outline btn-sm" data-action="collapse-impl-diagram">${ic("expand",16)} Свернуть</button>
+          <button class="btn btn-outline btn-sm" data-action="download-impl-diagram">${ic("download",16)} Скачать</button>
+          <button class="wizard-close" data-action="collapse-impl-diagram">${icon("x")}</button>
+        </div>
+      </div>
+      <div class="uc-diagram-scroll uc-diagram-scroll-modal">${implDiagramSvg(info, true)}</div>
+    </div>
+  `;
+}
+
 function UseCaseHistoryPage(projectId, ucId){
   const p = findProject(projectId);
   if(!p) return `<div class="placeholder-page">Проект не найден</div>`;
@@ -13549,7 +13715,6 @@ function SidePanelWrap(){
   if(sp.type==="bc" || sp.type==="tc") inner = SearchPanel();
   else if(sp.type==="publish") inner = PublishPanel();
   else if(sp.type==="usecase") inner = UsecasePanel();
-  else if(sp.type==="uc-dynamic") inner = UcDynamicPanel();
   else if(sp.type==="uc-cj-link") inner = UcCjLinkPanel();
   else if(sp.type==="uc-impl-match") inner = UcImplMatchPanel();
   else if(sp.type==="ac-method-desc") inner = AcMethodDescPanel();
@@ -13726,6 +13891,7 @@ function restoreRoute(r){
   const ok =
     r.view==="assessment-detail" ? !!findAssessment(p, r.assessmentId) :
     r.view==="usecase-detail"    ? !!findUseCase(p, r.ucId) :
+    r.view==="impl-detail"       ? (!!findUseCase(p, r.ucId) && !!implInfo(r.implCode)) :
     r.view==="hld-report"        ? ((p.agents.hld.reports[r.reportType]||[]).some(x=>x.id===r.reportId)) :
     r.view==="hld-skeleton"      ? !!p.agents.hld.skeleton : true;
   return ok ? r : {view:"project", projectId:r.projectId};
@@ -14487,14 +14653,25 @@ function handleAction(action, el){
     case "uc-status-filter-set": state.ucStatusFilter = el.dataset.value; state.popover=null; render(); break;
     case "proj-status-filter-set": state.statusFilter = el.dataset.value; state.popover=null; render(); break;
     case "open-hub-interface": showToast(`Переход в карточку интерфейса «${el.dataset.call}» в Хабе приложений — вне периметра прототипа`); break;
-    case "open-uc-dynamic": {
-      const p = findProject(el.dataset.id);
-      const u = findUseCase(p, el.dataset.uc);
-      const s = u.scenarios.find(x=>x.part===el.dataset.part);
-      const impl = chosenImpl(s);
-      if(!impl) break;
-      state.sidePanel = {type:"uc-dynamic", seq: impl.code, plantUml: u.rawPlantUml || UC_SAMPLE_PLANTUML};
-      render();
+    case "open-uc-impl":
+      state.implTab = "source";
+      state.implDiagramOpen = false;
+      go("impl-detail", {projectId: el.dataset.id, ucId: el.dataset.uc, part: el.dataset.part, implCode: el.dataset.code});
+      break;
+    case "set-impl-tab": state.implTab = el.dataset.tab; render(); break;
+    case "expand-impl-diagram": state.implDiagramOpen = true; render(); break;
+    case "collapse-impl-diagram": state.implDiagramOpen = false; render(); break;
+    case "copy-impl-source": {
+      const info = implInfo(state.route.implCode);
+      if(!info) break;
+      navigator.clipboard?.writeText(implPlantUml(info));
+      showToast("Исходные данные реализации " + info.code + " скопированы");
+      break;
+    }
+    case "download-impl-diagram": {
+      const svg = document.querySelector(state.implDiagramOpen ? ".uc-diagram-scroll-modal svg" : ".uc-diagram-scroll svg");
+      if(!svg){ showToast("Диаграмма не найдена"); break; }
+      downloadSvg(svg, "implementation-" + state.route.implCode + ".svg");
       break;
     }
     case "uc-toggle-impl": {
@@ -14519,14 +14696,7 @@ function handleAction(action, el){
     case "download-uc-diagram": {
       const svg = document.querySelector(state.ucDiagramModalOpen ? ".uc-diagram-scroll-modal svg" : ".uc-diagram-scroll svg");
       if(!svg){ showToast("Диаграмма не найдена"); break; }
-      const xml = new XMLSerializer().serializeToString(svg);
-      const blob = new Blob(['<?xml version="1.0" standalone="no"?>\r\n'+xml], {type:"image/svg+xml"});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url; a.download = "diagram.svg";
-      document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      setTimeout(()=>URL.revokeObjectURL(url), 1000);
-      showToast("Диаграмма скачана");
+      downloadSvg(svg, "diagram.svg");
       break;
     }
     case "open-uc-cj-link": {
