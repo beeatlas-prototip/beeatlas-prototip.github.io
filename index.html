@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261013-151915">
+<meta name="beeatlas-build" content="20261013-173710">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -2794,6 +2794,216 @@
   .rp-uc-name{color:var(--blue);font-weight:600;font-size:15px;}
   .rp-uc-code{color:var(--text-tertiary);font-size:13px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;flex:1;}
   td.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;color:var(--text-secondary);}
+
+  /* ══════════════════════════════════════════════════════════════════════
+     ЛЕНДИНГ. Первое, что видит человек без авторизации: витрина продукта
+     и вход. Внутреннее пространство (шелл с сайдбаром) открывается только
+     после входа — см. render() и state.auth.
+     Макет снят с лендингов продуктов на Yellowbe: крупные блоки со скруглением
+     24, цветные фоны из акцентных токенов (они сами переворачиваются в тёмной
+     теме), заголовки по типографике ДС (H1 54/66, H2 44/56), шаг секций 96.
+     ══════════════════════════════════════════════════════════════════════ */
+  /* Лендинг прокручивается самим документом, а не внутренним контейнером:
+     у #app на время лендинга снимается height:100vh (см. renderLanding). */
+  .lp{min-height:100vh;background:var(--bg);color:var(--text);}
+  /* Контент лендинга шире страницы приложения: 1360 + поля 40 по краям */
+  .lp-wrap{width:100%;max-width:1440px;margin:0 auto;padding:0 var(--size-spacing-x10);}
+  .lp-header{
+    position:sticky;top:0;z-index:30;height:var(--header-h);flex:0 0 auto;
+    background:var(--bg);border-bottom:1px solid var(--border);
+  }
+  .lp-header .lp-wrap{height:100%;display:flex;align-items:center;gap:var(--size-spacing-x10);}
+  .lp-brand{font-weight:700;font-size:20px;line-height:28px;letter-spacing:.2px;white-space:nowrap;}
+  .lp-nav{display:flex;align-items:center;gap:var(--size-spacing-x6);margin-left:var(--size-spacing-x6);}
+  .lp-nav a{font-size:15px;line-height:20px;letter-spacing:.2px;color:var(--text-secondary);cursor:pointer;}
+  .lp-nav a:hover{color:var(--text);}
+  .lp-header-right{margin-left:auto;display:flex;align-items:center;gap:var(--size-spacing-x5);}
+
+  /* ── Герой ───────────────────────────────────────────────────────────── */
+  .lp-hero{
+    border-radius:var(--size-border-radius-x12);
+    background:linear-gradient(135deg,var(--color-accent-purple-background) 0%,var(--color-accent-teal-background) 100%);
+    padding:var(--layout-gap-section) var(--size-spacing-x10) 0;
+    margin-top:var(--size-spacing-x10);
+    text-align:center;overflow:hidden;
+  }
+  .lp-chips{display:flex;justify-content:center;flex-wrap:wrap;gap:var(--space-2);margin-bottom:var(--space-6);}
+  /* Плашка-роль — Chips ДС: высота 32, радиус 30, паддинги 12, текст 15/400/18/0.2,
+     фон control-background (на цветном фоне героя он читается как лёгкая подложка). */
+  .lp-chip{
+    height:32px;display:inline-flex;align-items:center;padding:0 var(--size-spacing-x3);
+    border-radius:var(--size-border-radius-x15);background:var(--color-control-background);
+    font-size:15px;font-weight:400;line-height:18px;letter-spacing:.2px;color:var(--text);
+  }
+  .lp-h1{
+    font-size:var(--font-size-h1);line-height:var(--font-line-height-h1);
+    letter-spacing:var(--font-letter-spacing-h1);font-weight:var(--font-weight-h1);
+    margin:0 0 var(--space-5);
+  }
+  .lp-h1 em{font-style:normal;color:var(--color-accent-purple);}
+  .lp-hero-sub{
+    font-size:var(--font-size-body1);line-height:var(--font-line-height-body1);letter-spacing:.2px;
+    color:var(--text-secondary);max-width:760px;margin:0 auto var(--size-spacing-x8);
+  }
+  .lp-hero-cta{display:flex;justify-content:center;gap:var(--space-3);flex-wrap:wrap;}
+  .lp-hero-note{margin-top:var(--space-4);font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-tertiary);}
+
+  /* ── Снимок продукта под героем: собран из блоков, а не картинка ─────── */
+  .lp-shot{
+    max-width:1040px;margin:var(--layout-gap-section) auto 0;text-align:left;
+    border:1px solid var(--border);border-bottom:none;
+    border-radius:var(--size-border-radius-x8) var(--size-border-radius-x8) 0 0;
+    background:var(--bg);box-shadow:0 -2px 40px rgba(0,0,0,.12);overflow:hidden;
+  }
+  .lp-shot-top{
+    height:40px;display:flex;align-items:center;gap:var(--space-3);
+    padding:0 var(--space-4);border-bottom:1px solid var(--border);
+    font-size:13px;line-height:16px;letter-spacing:.2px;font-weight:700;
+  }
+  .lp-shot-ava{
+    width:24px;height:24px;border-radius:50%;margin-left:auto;flex:0 0 auto;
+    background:var(--orange-bg);color:var(--orange-text);
+    display:flex;align-items:center;justify-content:center;font-size:13px;line-height:16px;font-weight:500;
+  }
+  .lp-shot-body{display:flex;height:320px;}
+  .lp-shot-rail{
+    width:200px;flex:0 0 auto;border-right:1px solid var(--border);
+    padding:var(--space-4);display:flex;flex-direction:column;gap:var(--space-3);
+  }
+  .lp-shot-nav{display:flex;align-items:center;gap:var(--space-2);font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);}
+  .lp-shot-nav.is-on{color:var(--text);font-weight:500;}
+  .lp-shot-nav .beeline-icons{width:18px;height:18px;font-size:18px;flex:0 0 auto;}
+  .lp-shot-main{flex:1;min-width:0;padding:var(--space-5);display:flex;flex-direction:column;gap:var(--space-4);}
+  .lp-shot-title{font-size:17px;line-height:22px;letter-spacing:.2px;font-weight:500;}
+  .lp-shot-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-3);}
+  .lp-shot-tile{border:1px solid var(--border);border-radius:var(--size-border-radius-x6);padding:var(--space-3);}
+  .lp-shot-num{font-size:20px;line-height:28px;letter-spacing:.2px;font-weight:500;}
+  .lp-shot-cap{font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);}
+  .lp-shot-row{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3) 0;border-top:1px solid var(--border);}
+  /* Полоса-заглушка лежит в своей ячейке: иначе статусы вставали бы в строках
+     на разной высоте строки — по концу полосы, а не колонкой, как в таблице. */
+  .lp-shot-barcell{flex:1;min-width:0;}
+  .lp-shot-bar{height:8px;border-radius:var(--size-border-radius-x2);background:var(--bg-alt);max-width:100%;}
+  /* Статус в снимке — настоящий Badge прототипа (.badge), а не похожая плашка:
+     снимок должен показывать продукт, а не его имитацию с другой типографикой. */
+  .lp-shot-row .badge{flex:0 0 auto;}
+
+  /* ── Секции ──────────────────────────────────────────────────────────── */
+  /* Шапка липкая и перекрыла бы начало секции при переходе по якорю */
+  .lp-sec{margin-top:var(--layout-gap-page);scroll-margin-top:88px;}
+  .lp-h2{
+    font-size:var(--font-size-h2);line-height:var(--font-line-height-h2);
+    letter-spacing:var(--font-letter-spacing-h2);font-weight:var(--font-weight-h2);margin:0;
+  }
+  .lp-sec-sub{
+    font-size:var(--font-size-body2);line-height:var(--font-line-height-body2);letter-spacing:.2px;
+    color:var(--text-secondary);max-width:760px;margin:var(--space-4) 0 0;
+  }
+  .lp-sec-head{margin-bottom:var(--size-spacing-x8);}
+
+  .lp-grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-6);}
+  .lp-grp{margin-bottom:var(--size-spacing-x8);}
+  .lp-grp:last-child{margin-bottom:0;}
+  .lp-grp-head{display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-4);}
+  .lp-grp-title{font-size:17px;line-height:22px;letter-spacing:.2px;font-weight:500;margin:0;}
+  .lp-tile{
+    background:var(--bg);border:1px solid var(--border);border-radius:var(--size-border-radius-x6);
+    padding:var(--size-spacing-x6);display:flex;flex-direction:column;gap:var(--space-3);
+  }
+  .lp-tile-top{display:flex;align-items:center;gap:var(--space-2);}
+  .lp-tile-title{font-size:17px;line-height:22px;letter-spacing:.2px;font-weight:700;overflow-wrap:anywhere;}
+  .lp-tile-desc{font-size:13px;line-height:1.5;letter-spacing:.2px;color:var(--text-secondary);overflow-wrap:anywhere;}
+  /* Строка фокуса роли — не то же, что описание: она отвечает на «зачем это мне» */
+  .lp-tile-focus{font-size:15px;line-height:20px;letter-spacing:.2px;font-weight:500;color:var(--text);}
+
+  /* ── Преимущества: цветные карточки на 12 колонок ─────────────────────── */
+  .lp-bento{display:grid;grid-template-columns:repeat(12,1fr);gap:var(--space-6);}
+  .lp-card{
+    border-radius:var(--size-border-radius-x12);padding:var(--size-spacing-x10);
+    display:flex;flex-direction:column;gap:var(--space-4);
+  }
+  .lp-card h3{font-size:var(--font-size-h4);line-height:var(--font-line-height-h4);letter-spacing:.2px;font-weight:500;margin:0;}
+  .lp-card p{font-size:15px;line-height:20px;letter-spacing:.2px;color:var(--text-secondary);margin:0;}
+  .lp-card ul{margin:0;padding-left:var(--space-5);font-size:15px;line-height:20px;letter-spacing:.2px;color:var(--text-secondary);}
+  .lp-card li+li{margin-top:var(--space-2);}
+  .lp-c5{grid-column:span 5;}
+  .lp-c7{grid-column:span 7;}
+  .lp-bg-lemon{background:var(--color-accent-lemon-background);}
+  .lp-bg-teal{background:var(--color-accent-teal-background);}
+  .lp-bg-purple{background:var(--color-accent-purple-background);}
+  .lp-bg-magenta{background:var(--color-accent-magenta-background);}
+  .lp-stats{display:flex;flex-wrap:wrap;gap:var(--size-spacing-x8);margin-top:auto;}
+  .lp-stat-num{font-size:var(--font-size-h3);line-height:var(--font-line-height-h3);letter-spacing:.3px;font-weight:500;}
+  .lp-stat-cap{font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);}
+
+  /* ── Как устроено: цепочка объектов на панели в точку ─────────────────── */
+  .lp-panel{
+    border-radius:var(--size-border-radius-x12);padding:var(--size-spacing-x10);
+    background-color:var(--bg-alt);
+    background-image:radial-gradient(var(--border-strong) 1px,transparent 1px);
+    background-size:24px 24px;
+  }
+  .lp-flow{display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-3);}
+  .lp-flow-node{
+    background:var(--bg);border:1px solid var(--border);border-radius:var(--size-border-radius-x6);
+    padding:var(--space-3) var(--space-4);font-size:15px;line-height:20px;letter-spacing:.2px;font-weight:500;
+  }
+  .lp-flow-node .lp-flow-cap{display:block;font-size:13px;line-height:16px;font-weight:400;color:var(--text-secondary);}
+  .lp-flow-arrow{color:var(--text-tertiary);display:flex;align-items:center;}
+  .lp-flow-arrow .beeline-icons{width:18px;height:18px;font-size:18px;}
+  .lp-flow-note{margin:var(--size-spacing-x6) 0 0;font-size:15px;line-height:20px;letter-spacing:.2px;color:var(--text-secondary);max-width:860px;}
+
+  /* ── Финальный блок и подвал ──────────────────────────────────────────── */
+  .lp-cta{
+    border-radius:var(--size-border-radius-x12);padding:var(--size-spacing-x10);
+    background:linear-gradient(135deg,var(--color-accent-teal-background) 0%,var(--color-accent-purple-background) 100%);
+    display:flex;align-items:center;gap:var(--size-spacing-x10);flex-wrap:wrap;
+  }
+  .lp-cta-text{flex:1 1 420px;min-width:0;}
+  .lp-cta h2{font-size:var(--font-size-h3);line-height:var(--font-line-height-h3);letter-spacing:.3px;font-weight:500;margin:0 0 var(--space-4);}
+  .lp-cta p{font-size:17px;line-height:22px;letter-spacing:.2px;color:var(--text-secondary);margin:0;}
+  .lp-footer{margin-top:var(--layout-gap-page);padding-bottom:var(--size-spacing-x10);overflow:hidden;}
+  .lp-foot-row{
+    display:flex;align-items:center;gap:var(--size-spacing-x6);flex-wrap:wrap;
+    padding-top:var(--size-spacing-x6);border-top:1px solid var(--border);
+  }
+  .lp-foot-link{display:inline-flex;align-items:center;gap:var(--space-2);color:var(--blue);font-size:15px;line-height:20px;letter-spacing:.2px;cursor:pointer;}
+  .lp-foot-link .beeline-icons{width:18px;height:18px;font-size:18px;}
+  .lp-foot-copy{margin-left:auto;font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-tertiary);}
+  /* Крупное начертание имени продукта в подвале — приём с лендингов Yellowbe.
+     Декорация, поэтому aria-hidden и без собственного смысла. */
+  .lp-mark{
+    margin-top:var(--size-spacing-x10);font-weight:700;line-height:.8;text-align:center;
+    font-size:clamp(88px,26vw,400px);letter-spacing:-.02em;color:var(--bg-alt);user-select:none;
+  }
+
+  /* ── Экран входа ──────────────────────────────────────────────────────
+     Не Dialog: components/dialog прямо запрещает размещать в диалоге Text field
+     и отправляет такие случаи в SideSheet или полноэкранный поп-ап. Берём второе —
+     вход это не боковая задача. Шапка — Contextual header ДС (64, паддинги 24),
+     поэтому переиспользуются .wizard-overlay / .wizard-head / .wizard-close. */
+  .lp-auth-body{flex:1;overflow-y:auto;display:flex;align-items:center;justify-content:center;padding:var(--size-spacing-x10) var(--size-spacing-x6);}
+  .lp-auth-form{width:480px;max-width:100%;display:flex;flex-direction:column;gap:var(--size-spacing-x4);}
+  .lp-auth-sub{font-size:15px;line-height:20px;letter-spacing:.2px;color:var(--text-secondary);margin:0;}
+  .lp-auth-or{display:flex;align-items:center;gap:var(--space-4);color:var(--text-tertiary);font-size:13px;line-height:16px;letter-spacing:.2px;}
+  .lp-auth-or::before,.lp-auth-or::after{content:"";flex:1;height:1px;background:var(--border);}
+  .lp-auth-err{color:var(--red-text);font-size:13px;line-height:16px;letter-spacing:.2px;}
+  .lp-auth-help{align-self:center;color:var(--blue);font-size:15px;line-height:20px;letter-spacing:.2px;cursor:pointer;}
+  .lp-auth-help:hover{text-decoration:underline;}
+
+  /* Ниже 1280 колонки схлопываются, иначе карточки не читаются */
+  @media (max-width:1279px){
+    .lp-grid3{grid-template-columns:repeat(2,1fr);}
+    .lp-c5,.lp-c7{grid-column:span 6;}
+    .lp-h1{font-size:var(--font-size-h2);line-height:var(--font-line-height-h2);}
+    .lp-h2{font-size:var(--font-size-h3);line-height:var(--font-line-height-h3);}
+    .lp-nav{display:none;}
+  }
+  @media (max-width:899px){
+    .lp-grid3{grid-template-columns:1fr;}
+    .lp-c5,.lp-c7{grid-column:span 12;}
+    .lp-shot-rail{display:none;}
+  }
 </style>
 <style id="e2ecat-style">
   /* Каталог E2E — изолированный островок со своими именами переменных.
@@ -5742,6 +5952,11 @@ function existingProject(i){
 
 const state = {
   theme: "light",
+  /* Пока auth пуст — показывается лендинг, внутреннее пространство не собирается.
+     Вход переживает перезагрузку вкладки (sessionStorage), но не новую вкладку:
+     тот, кто открыл ссылку впервые, всегда попадает на лендинг. */
+  auth: null,
+  authForm: null,     // {email, pass, error} — открытый экран входа
   sidebarCollapsed:false,
   route: {view:"home"},
   activeSidebar:"home",
@@ -6468,6 +6683,7 @@ function renderShell(){
   // у прокрученного меню нижние разделы подпрыгивали вверх от любого клика на странице.
   const prevSidebarScroll = document.getElementById("sidebarScroll") ? document.getElementById("sidebarScroll").scrollTop : null;
   const app = document.getElementById("app");
+  app.style.height = "";              // снято на лендинге, см. renderLanding
   app.innerHTML = `
     <div data-theme="${state.theme}" style="display:flex;flex-direction:column;height:100vh;">
       ${Header()}
@@ -6522,7 +6738,7 @@ function Header(){
       </div>
       <div style="position:relative;">
         <button class="avatar" data-action="toggle-popover" data-popover="user" style="border:none;" aria-label="Профиль: Константинопольский Константин">КК</button>
-        ${state.popover==="user" ? `<div class="popover"><div class="pv-title">Константинопольский Константин</div><div class="pv-muted" style="margin-bottom:var(--space-2);">Архитектор</div><div class="pv-item" data-action="noop-logout">Выйти</div></div>` : ""}
+        ${state.popover==="user" ? `<div class="popover"><div class="pv-title">Константинопольский Константин</div><div class="pv-muted" style="margin-bottom:var(--space-2);">Архитектор</div><div class="pv-item" data-action="logout">Выйти</div></div>` : ""}
       </div>
     </div>
   </div>`;
@@ -6688,6 +6904,353 @@ function HomePage(){
     </div>
     ${NAV_GROUPS.map(HomeServiceGroup).join("")}
   `;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ЛЕНДИНГ И ВХОД
+   Прототип до этого открывался сразу внутренним пространством — как будто
+   человек уже авторизован. Теперь первый экран внешний: витрина продукта и
+   кнопка входа, а шелл с сайдбаром собирается только после авторизации
+   (см. render() → renderLanding и state.auth).
+   Раскладка снята с лендингов продуктов Yellowbe: крупные блоки со скруглением
+   24, цветные фоны из акцентных токенов, шаг секций 96, подвал с крупным
+   начертанием имени продукта.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Кому адресован продукт — те же роли, что и внутри: архитектор ведёт проект,
+   аналитик описывает сценарий, владелец продукта смотрит состав и сроки. */
+const LP_ROLES = [
+  {icon:"rulerPencil", color:"gray",  title:"Архитектору решений",
+   focus:"Фокус — влияние изменения",
+   desc:"Видно, какие приложения и вызовы затронет проект, и чем закончились похожие оценки."},
+  {icon:"map", color:"pink", title:"Бизнес-аналитику",
+   focus:"Фокус — сценарий целиком",
+   desc:"Клиентский путь, его шаги и вызовы лежат рядом, а расхождения между описанием и реальной цепочкой подсвечены."},
+  {icon:"chart", color:"blue", title:"Владельцу продукта",
+   focus:"Фокус — состав и сроки",
+   desc:"Оценка проекта, статус разделов и история изменений собираются сами, без сбора данных по командам."},
+];
+
+/* Цепочка объектов платформы: от того, что делает клиент, до приложения,
+   которое отвечает за вызов. По этим же связям собирается анализ влияния. */
+const LP_FLOW = [
+  {name:"Клиентский путь", cap:"что проходит клиент"},
+  {name:"Бизнес-взаимодействие", cap:"где возникает ценность"},
+  {name:"Шаг", cap:"одно действие"},
+  {name:"Вызов", cap:"обращение между системами"},
+  {name:"Реализация", cap:"конкретный интерфейс"},
+  {name:"Приложение", cap:"кто отвечает"},
+];
+
+function LandingHeader(){
+  return `
+  <header class="lp-header" role="banner">
+    <div class="lp-wrap">
+      <div class="lp-brand" title="Сборка ${BUILD}">beeatlas</div>
+      <nav class="lp-nav" aria-label="Разделы лендинга">
+        <a data-action="lp-scroll" data-to="lpServices">Что внутри</a>
+        <a data-action="lp-scroll" data-to="lpAdvantages">Преимущества</a>
+        <a data-action="lp-scroll" data-to="lpFlow">Как устроено</a>
+        <a data-action="lp-scroll" data-to="lpRoles">Кому пригодится</a>
+      </nav>
+      <div class="lp-header-right">
+        <button class="icon-btn" data-action="toggle-theme" title="Тема">${icon("moon")}</button>
+        <button class="btn btn-sm btn-primary" data-action="auth-open">Войти</button>
+      </div>
+    </div>
+  </header>`;
+}
+
+/* Снимок продукта под героем собран из блоков, а не вставлен картинкой:
+   так он живёт в обеих темах и не рассыпается при смене токенов. */
+function LpAppShot(){
+  const nav = [
+    {icon:"map", label:"Библиотека CJ"},
+    {icon:"folder", label:"Каталог Е2Е-сценариев", on:true},
+    {icon:"grid", label:"Каталог приложений"},
+    {icon:"rulerPencil", label:"Проекты"},
+    {icon:"network", label:"Управление метамоделью"},
+  ];
+  const rows = [
+    {w:"62%", pill:"Реализован", cls:"green"},
+    {w:"48%", pill:"В разработке", cls:"orange"},
+    {w:"71%", pill:"Реализован", cls:"green"},
+    {w:"55%", pill:"Не размечен", cls:"gray"},
+  ];
+  return `
+  <div class="lp-shot" aria-hidden="true">
+    <div class="lp-shot-top">
+      <span>beeatlas</span>
+      <span class="lp-shot-ava">КК</span>
+    </div>
+    <div class="lp-shot-body">
+      <div class="lp-shot-rail">
+        ${nav.map(n=>`<div class="lp-shot-nav ${n.on?"is-on":""}">${icon(n.icon)}<span>${escapeHtml(n.label)}</span></div>`).join("")}
+      </div>
+      <div class="lp-shot-main">
+        <div class="lp-shot-title">Каталог Е2Е-сценариев</div>
+        <div class="lp-shot-tiles">
+          <div class="lp-shot-tile"><div class="lp-shot-num">248</div><div class="lp-shot-cap">сценариев</div></div>
+          <div class="lp-shot-tile"><div class="lp-shot-num">1 904</div><div class="lp-shot-cap">вызова</div></div>
+          <div class="lp-shot-tile"><div class="lp-shot-num">87%</div><div class="lp-shot-cap">размечено</div></div>
+        </div>
+        <div>
+          ${rows.map(r=>`
+            <div class="lp-shot-row">
+              <div class="lp-shot-barcell"><div class="lp-shot-bar" style="width:${r.w};"></div></div>
+              <span class="badge ${r.cls}">${r.pill}</span>
+            </div>`).join("")}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function LpHero(){
+  return `
+  <section class="lp-hero">
+    <div class="lp-chips">${LP_ROLES.map(r=>`<span class="lp-chip">${escapeHtml(r.title)}</span>`).join("")}</div>
+    <h1 class="lp-h1">Архитектурная платформа <em>beeatlas</em></h1>
+    <p class="lp-hero-sub">
+      Клиентские пути, сценарии, приложения и вызовы между ними живут одной связанной моделью.
+      Войди по корпоративной учётной записи — и продолжай с того места, где остановилась команда.
+    </p>
+    <div class="lp-hero-cta">
+      <button class="btn btn-primary" data-action="auth-open">Войти</button>
+      <button class="btn btn-outline" data-action="lp-scroll" data-to="lpServices">Что внутри</button>
+    </div>
+    <div class="lp-hero-note">Доступ — по корпоративной учётной записи</div>
+    ${LpAppShot()}
+  </section>`;
+}
+
+/* Разделы берутся из NAV_GROUPS — того же списка, по которому собран сайдбар.
+   Лендинг обещает ровно то, что внутри: отдельного списка-обещания нет. */
+function LpServiceTile(it, color){
+  return `
+    <div class="lp-tile">
+      <div class="lp-tile-top">
+        <div class="home-svc-icon home-svc-${color}">${icon(it.icon)}</div>
+        ${it.filled?"":'<span class="badge gray">скоро</span>'}
+      </div>
+      <div class="lp-tile-title">${escapeHtml(it.label)}</div>
+      <div class="lp-tile-desc">${escapeHtml(it.desc||"")}</div>
+    </div>`;
+}
+
+function LpServices(){
+  return `
+  <section class="lp-sec" id="lpServices">
+    <div class="lp-sec-head">
+      <h2 class="lp-h2">Что внутри</h2>
+      <p class="lp-sec-sub">
+        Пять слоёв архитектуры в одном окне — от клиентского пути до технологий.
+        Разделы со значком «скоро» в прототипе ещё не раскрыты.
+      </p>
+    </div>
+    ${NAV_GROUPS.map(g=>`
+      <div class="lp-grp">
+        <div class="lp-grp-head">
+          <span class="home-group-dot home-dot-${g.color}"></span>
+          <h3 class="lp-grp-title">${escapeHtml(g.label)}</h3>
+        </div>
+        <div class="lp-grid3">${g.items.map(it=>LpServiceTile(it, g.color)).join("")}</div>
+      </div>`).join("")}
+  </section>`;
+}
+
+function LpAdvantages(){
+  return `
+  <section class="lp-sec" id="lpAdvantages">
+    <div class="lp-sec-head"><h2 class="lp-h2">Преимущества</h2></div>
+    <div class="lp-bento">
+      <div class="lp-card lp-c7 lp-bg-lemon">
+        <h3>Одна модель вместо разрозненных документов</h3>
+        <p>
+          Сценарии, приложения и вызовы описаны один раз и ссылаются друг на друга.
+          Правка в одном месте видна везде, где этот объект используется.
+        </p>
+        <div class="lp-stats">
+          <div><div class="lp-stat-num">14</div><div class="lp-stat-cap">разделов платформы</div></div>
+          <div><div class="lp-stat-num">2 400</div><div class="lp-stat-cap">сценариев</div></div>
+          <div><div class="lp-stat-num">640</div><div class="lp-stat-cap">приложений</div></div>
+        </div>
+      </div>
+      <div class="lp-card lp-c5 lp-bg-teal">
+        <h3>Связи видно сразу</h3>
+        <p>
+          От шага клиентского пути до вызова и приложения, которое его реализует,
+          цепочка собирается по ссылкам. Расхождения между описанием и реальной
+          цепочкой подсвечиваются прямо в таблице.
+        </p>
+      </div>
+      <div class="lp-card lp-c5 lp-bg-purple">
+        <h3>Агенты-помощники</h3>
+        <p>
+          Агент разбирает Use Case, предлагает оценку и находит похожие решения.
+          Предложение остаётся предложением: итоговое решение принимает человек.
+        </p>
+      </div>
+      <div class="lp-card lp-c7 lp-bg-magenta">
+        <h3>Ветки и версии</h3>
+        <ul>
+          <li>Черновик живёт в отдельной ветке — основная модель не меняется, пока он не влит.</li>
+          <li>Слияние проверяет конфликты на живых данных и показывает их до применения.</li>
+          <li>У каждого объекта есть история версий: видно, что и когда изменилось.</li>
+        </ul>
+      </div>
+    </div>
+  </section>`;
+}
+
+function LpFlow(){
+  return `
+  <section class="lp-sec" id="lpFlow">
+    <div class="lp-sec-head"><h2 class="lp-h2">Как устроено</h2></div>
+    <div class="lp-panel">
+      <div class="lp-flow">
+        ${LP_FLOW.map((n,i)=>`
+          ${i ? `<span class="lp-flow-arrow">${icon("chevronRight")}</span>` : ""}
+          <div class="lp-flow-node">${escapeHtml(n.name)}<span class="lp-flow-cap">${escapeHtml(n.cap)}</span></div>
+        `).join("")}
+      </div>
+      <p class="lp-flow-note">
+        Каждый уровень ссылается на следующий, поэтому ответ на вопрос «кого затронет изменение»
+        собирается по связям, а не руками по почте и чатам.
+      </p>
+    </div>
+  </section>`;
+}
+
+function LpRoles(){
+  return `
+  <section class="lp-sec" id="lpRoles">
+    <div class="lp-sec-head"><h2 class="lp-h2">Кому пригодится</h2></div>
+    <div class="lp-grid3">
+      ${LP_ROLES.map(r=>`
+        <div class="lp-tile">
+          <div class="lp-tile-top"><div class="home-svc-icon home-svc-${r.color}">${icon(r.icon)}</div></div>
+          <div class="lp-tile-title">${escapeHtml(r.title)}</div>
+          <div class="lp-tile-focus">${escapeHtml(r.focus)}</div>
+          <div class="lp-tile-desc">${escapeHtml(r.desc)}</div>
+        </div>`).join("")}
+    </div>
+  </section>`;
+}
+
+function LpCta(){
+  return `
+  <section class="lp-sec">
+    <div class="lp-cta">
+      <div class="lp-cta-text">
+        <h2>Войди и продолжи работу</h2>
+        <p>
+          Платформа внутренняя: доступ выдаётся по корпоративной учётной записи.
+          Если доступа ещё нет — напиши в поддержку, подключим к нужным разделам.
+        </p>
+      </div>
+      <div class="lp-hero-cta">
+        <button class="btn btn-primary" data-action="auth-open">Войти</button>
+        <button class="btn btn-outline" data-action="lp-support">Написать в поддержку</button>
+      </div>
+    </div>
+  </section>`;
+}
+
+function LpFooter(){
+  return `
+  <footer class="lp-footer">
+    <div class="lp-wrap">
+      <div class="lp-foot-row">
+        <span class="lp-foot-link" data-action="lp-support">${icon("doc")} Документация</span>
+        <span class="lp-foot-link" data-action="lp-support">${icon("send")} Телеграм</span>
+        <span class="lp-foot-link" data-action="lp-support">${icon("mail")} Почта</span>
+        <span class="lp-foot-copy">beeatlas © 2026</span>
+      </div>
+    </div>
+    <div class="lp-mark" aria-hidden="true">beeatlas</div>
+  </footer>`;
+}
+
+function Landing(){
+  return `
+  <div class="lp">
+    ${LandingHeader()}
+    <main role="main">
+      <div class="lp-wrap">
+        ${LpHero()}
+        ${LpServices()}
+        ${LpAdvantages()}
+        ${LpFlow()}
+        ${LpRoles()}
+        ${LpCta()}
+      </div>
+    </main>
+    ${LpFooter()}
+  </div>`;
+}
+
+/* Экран входа. По components/dialog поля ввода в диалог класть нельзя, поэтому
+   это полноэкранный поп-ап: шапка Contextual header (64) и форма по центру.
+   Поля неуправляемые — значение читается при отправке, иначе каждое нажатие
+   клавиши перерисовывало бы лендинг целиком. */
+function AuthScreen(){
+  const d = state.authForm;
+  return `
+  <div class="wizard-overlay" role="dialog" aria-modal="true" aria-label="Вход в beeatlas">
+    <div class="wizard-head">
+      <h2>Вход в beeatlas</h2>
+      <button class="wizard-close" data-action="auth-close" aria-label="Закрыть">${icon("x")}</button>
+    </div>
+    <div class="lp-auth-body">
+      <div class="lp-auth-form">
+        <p class="lp-auth-sub">Платформа внутренняя: вход по корпоративной учётной записи.
+          Основной способ — единый вход, почта и пароль остаются запасным.</p>
+        <button class="btn btn-primary" data-action="auth-sso">${icon("shield")} Войти по SSO</button>
+        <div class="lp-auth-or">или по почте</div>
+        ${FField({id:"authEmail", label:"Корпоративная почта", value:d.email})}
+        ${FField({id:"authPass", label:"Пароль", value:d.pass, type:"password"})}
+        ${d.error ? `<div class="lp-auth-err">${escapeHtml(d.error)}</div>` : ""}
+        <button class="btn btn-outline" id="authSubmit" data-action="auth-submit"${(d.email&&d.pass)?"":" disabled"}>Войти</button>
+        <span class="lp-auth-help" data-action="lp-support">Нет доступа?</span>
+      </div>
+    </div>
+  </div>`;
+}
+
+function syncAuthField(el){
+  const box = el.closest(".ffield");
+  if(box) box.classList.toggle("filled", !!el.value);
+  state.authForm[el.id==="authEmail" ? "email" : "pass"] = el.value;
+  const submit = document.getElementById("authSubmit");
+  if(submit) submit.disabled = !(state.authForm.email && state.authForm.pass);
+}
+
+function doLogin(){
+  state.auth = {name:"Константинопольский Константин", role:"Архитектор"};
+  state.authForm = null;
+  render();
+}
+
+function renderLanding(){
+  const app = document.getElementById("app");
+  const prevScroll = window.scrollY;
+  /* Шелл приложения живёт в #app высотой в экран и прокручивает контент внутри себя.
+     Лендинг длинный, и прокручивать его должен документ — иначе липкая шапка цепляется
+     за внутренний контейнер, а колесо мыши работает только над ним. */
+  app.style.height = "auto";
+  app.innerHTML = `
+    <div data-theme="${state.theme}">
+      ${Landing()}
+    </div>
+    ${state.authForm ? AuthScreen() : ""}
+    ${state.toast ? Toast() : ""}
+  `;
+  document.documentElement.setAttribute("data-theme", state.theme);
+  bindGlobalEvents();
+  positionToast();
+  if(prevScroll) window.scrollTo(0, prevScroll);
+  saveLocation();
 }
 
 function Sidebar(){
@@ -13978,6 +14541,9 @@ function Toast(){
 
 /* ============================= RENDER + EVENTS ============================= */
 function render(){
+  /* До входа у приложения нет ни шапки с аватаром, ни сайдбара: внешний человек
+     видит лендинг и экран входа, и ничего больше. */
+  if(!state.auth){ renderLanding(); return; }
   /* Прототип перерисовывает страницу целиком, и горизонтальная прокрутка таблицы
      при этом сбрасывалась в ноль: доскроллил до «Статуса вызова», ткнул в маркер —
      таблица прыгнула обратно влево. Позицию переносим через перерисовку.
@@ -14116,6 +14682,7 @@ function restoreUcWizard(w){
 function saveLocation(){
   try{
     const snapshot = {
+      auth: state.auth,
       activeSidebar: state.activeSidebar,
       route: state.route ? Object.assign({}, state.route) : null,
       projectTab: state.projectTab,
@@ -14207,7 +14774,8 @@ function bindGlobalEvents(){
   };
   document.body.onkeydown = function(e){
     if(e.key === "Escape"){
-      if(state.cjMergeConfirm){ state.cjMergeConfirm=false; render(); }
+      if(state.authForm){ state.authForm=null; render(); }
+      else if(state.cjMergeConfirm){ state.cjMergeConfirm=false; render(); }
       else if(state.cjSourcePanel){ state.cjSourcePanel=null; render(); }
       else if(state.cjMergePanel){ state.cjMergePanel=null; state.cjMergeConfirm=false; render(); }
       else if(state.cjBranchPanel){ state.cjBranchPanel=null; render(); }
@@ -14333,6 +14901,8 @@ function reFocus(id){
 }
 
 function handleInput(el){
+  /* Поля входа не перерисовывают лендинг — см. syncAuthField */
+  if(el.id==="authEmail" || el.id==="authPass"){ syncAuthField(el); return; }
   if(el.id==="searchInput"){
     state.search = el.value;
     clearTimeout(searchDebTimer);
@@ -14478,8 +15048,27 @@ function handleAction(action, el){
     case "toggle-sidebar": state.sidebarCollapsed = !state.sidebarCollapsed; render(); break;
     case "toggle-theme": state.theme = state.theme==="light"?"dark":"light"; render(); break;
     case "toggle-popover": state.popover = state.popover===el.dataset.popover ? null : el.dataset.popover; render(); break;
-    case "noop-doc": case "noop-ide": case "noop-logout":
+    case "noop-doc": case "noop-ide":
       state.popover=null; showToast("Раздел вне рамок прототипа"); break;
+    /* Выход возвращает на лендинг — там же, где внешний человек оказывается впервые */
+    case "logout": state.auth=null; state.popover=null; render(); break;
+
+    /* ── Лендинг и вход ── */
+    case "lp-scroll": {
+      const sec = document.getElementById(el.dataset.to);
+      if(sec) sec.scrollIntoView({behavior:"smooth", block:"start"});
+      break;
+    }
+    case "lp-support": showToast("Раздел вне рамок прототипа"); break;
+    case "auth-open": state.authForm = {email:"", pass:"", error:""}; render(); break;
+    case "auth-close": state.authForm = null; render(); break;
+    case "auth-sso": doLogin(); break;
+    case "auth-submit": {
+      const f = state.authForm;
+      if(!f.email.includes("@")){ f.error = "Почта указана не полностью: нужен адрес вида имя@example.ru"; render(); break; }
+      doLogin();
+      break;
+    }
     case "noop-assistant": showToast("Ассистент скоро будет доступен"); break;
     /* клик внутри диалога не должен закрывать его через подложку */
     case "noop-stop": break;
@@ -15690,6 +16279,10 @@ window.addEventListener("resize", ()=>{ fitStickyDetailRows(); markStickyScrolle
 document.addEventListener("scroll", ()=>{ positionDsSelectMenus(); positionToast(); }, true);
 
 (function applyDeepLinkFromUrl(){
+  /* Вход восстанавливаем раньше разбора ?home=: иначе переход по ссылке с якорем
+     сбрасывал бы авторизацию, а после входа человек не попадал бы в нужный раздел. */
+  const saved = loadLocation();
+  if(saved && saved.auth) state.auth = saved.auth;
   try {
     const home = new URLSearchParams(location.search).get("home");
     if(["cj","e2e","projects"].includes(home)){
@@ -15699,7 +16292,7 @@ document.addEventListener("scroll", ()=>{ positionDsSelectMenus(); positionToast
     }
   } catch(e){}
   // no explicit ?home= link — fall back to wherever the user last was (see saveLocation)
-  const loc = loadLocation();
+  const loc = saved;
   if(loc){
     if(loc.activeSidebar) state.activeSidebar = loc.activeSidebar;
     if(loc.route) state.route = restoreRoute(loc.route);
