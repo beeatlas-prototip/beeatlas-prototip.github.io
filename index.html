@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261013-180646">
+<meta name="beeatlas-build" content="20261013-185603">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -2966,7 +2966,9 @@
     background:linear-gradient(135deg,var(--color-accent-teal-background) 0%,var(--color-accent-purple-background) 100%);
     display:flex;align-items:center;gap:var(--size-spacing-x10);flex-wrap:wrap;
   }
-  .lp-cta-text{flex:1 1 420px;min-width:0;}
+  /* Строка длиннее ~90 знаков читается тяжело: текст блока не тянется на всю
+     ширину, а упирается в 620 и отдаёт остальное фигуре. */
+  .lp-cta-text{flex:1 1 420px;min-width:0;max-width:620px;}
   .lp-cta h2{font-size:var(--font-size-h3);line-height:var(--font-line-height-h3);letter-spacing:.3px;font-weight:500;margin:0 0 var(--space-4);}
   .lp-cta p{font-size:17px;line-height:22px;letter-spacing:.2px;color:var(--text-secondary);margin:0;}
   .lp-footer{margin-top:var(--layout-gap-page);padding-bottom:var(--size-spacing-x10);overflow:hidden;}
@@ -3066,19 +3068,16 @@
   @keyframes lp-drift-a{to{transform:translate3d(60px,40px,0) scale(1.12);}}
   @keyframes lp-drift-b{to{transform:translate3d(-50px,60px,0) scale(1.08);}}
   @keyframes lp-drift-c{to{transform:translate3d(40px,-30px,0) scale(.9);}}
-  /* Кубик — карточка с иконкой раздела: то же, что в референсах делают
-     логотипы фреймворков по краям героя. */
-  .lp-float{
-    position:absolute;width:64px;height:64px;border-radius:var(--size-border-radius-x8);
-    background:var(--bg);box-shadow:var(--elevation-medium);
-    display:flex;align-items:center;justify-content:center;color:var(--text-secondary);
-    will-change:transform;
-  }
-  .lp-float .beeline-icons{width:24px;height:24px;font-size:24px;}
-  .lp-float-1{left:64px;top:188px;animation:lp-float-a 9s ease-in-out infinite alternate;}
-  .lp-float-2{left:140px;top:360px;animation:lp-float-b 11s ease-in-out infinite alternate;}
-  .lp-float-3{right:72px;top:148px;animation:lp-float-b 10s ease-in-out infinite alternate;}
-  .lp-float-4{right:150px;top:344px;animation:lp-float-a 13s ease-in-out infinite alternate;}
+  /* Объёмные фигуры по краям героя — там, где в референсах парят 3D-объекты.
+     Подложки у них нет: фигура висит в воздухе, как в оригинале. */
+  .lp-float{position:absolute;width:112px;height:112px;will-change:transform;}
+  .lp-obj{display:block;width:100%;height:auto;}
+  .lp-float-1{left:44px;top:156px;animation:lp-float-a 9s ease-in-out infinite alternate;}
+  .lp-float-2{left:124px;top:340px;animation:lp-float-b 11s ease-in-out infinite alternate;}
+  .lp-float-3{right:52px;top:120px;animation:lp-float-b 10s ease-in-out infinite alternate;}
+  .lp-float-4{right:132px;top:320px;animation:lp-float-a 13s ease-in-out infinite alternate;}
+  .lp-cta-figure{flex:0 0 auto;width:168px;margin-left:auto;animation:lp-float-a 12s ease-in-out infinite alternate;}
+  .lp-cta-actions{display:flex;gap:var(--space-3);flex-wrap:wrap;margin-top:var(--size-spacing-x6);}
   @keyframes lp-float-a{from{transform:translate3d(0,0,0) rotate(-6deg);}to{transform:translate3d(0,-18px,0) rotate(4deg);}}
   @keyframes lp-float-b{from{transform:translate3d(0,0,0) rotate(5deg);}to{transform:translate3d(0,-22px,0) rotate(-5deg);}}
   /* Курсоры коллег над снимком — приём из референсов: продукт показывают
@@ -7149,9 +7148,100 @@ function LpAppShot(){
    глифа нет и быть не должно. Размер 20 — по шкале ДС. */
 const LP_CURSOR_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5 3l14 7.2-6.1 1.6-2.3 6.2z"/></svg>';
 
-/* Кубики по краям героя: в референсах их место занимают 3D-объекты и логотипы.
-   У нас это иконки разделов — те же, что в меню. */
-const LP_FLOATS = ["map","grid","network","chart"];
+/* ── Объёмные фигуры ──────────────────────────────────────────────────────
+   Референсы держатся на 3D-объектах: кубики лего, глянцевый шар, стопка плит.
+   Растровых ассетов у прототипа нет и быть не должно — он остаётся одним
+   HTML-файлом, — поэтому фигуры собраны изометрией прямо в SVG: базовый цвет
+   приходит из акцентного токена через currentColor, грани затеняются чёрным
+   и белым поверх него. Поэтому одна и та же фигура держится в обеих темах,
+   а тень нарисована градиентом, а не фильтром — фильтр на анимированном
+   элементе пересчитывается каждый кадр.
+   Это декорация, а не иконки интерфейса: правило про имена из icons.md и
+   размеры 18/20/24 сюда не относится.                                      */
+function lp3dShadow(id, cy, rx){
+  return `
+    <defs>
+      <radialGradient id="${id}-sh">
+        <stop offset="0" stop-color="#000" stop-opacity=".22"/>
+        <stop offset="1" stop-color="#000" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <ellipse cx="60" cy="${cy}" rx="${rx}" ry="${Math.round(rx/4)}" fill="url(#${id}-sh)"/>`;
+}
+/* Грани куба: верх светлее базового, левая темнее правой — свет сверху слева */
+function lp3dCubeFaces(y, h){
+  return `
+    <polygon points="60,${y} 96,${y+20} 60,${y+40} 24,${y+20}" fill="currentColor"/>
+    <polygon points="60,${y} 96,${y+20} 60,${y+40} 24,${y+20}" fill="#fff" opacity=".18"/>
+    <polygon points="24,${y+20} 60,${y+40} 60,${y+40+h} 24,${y+20+h}" fill="currentColor"/>
+    <polygon points="24,${y+20} 60,${y+40} 60,${y+40+h} 24,${y+20+h}" fill="#000" opacity=".3"/>
+    <polygon points="96,${y+20} 60,${y+40} 60,${y+40+h} 96,${y+20+h}" fill="currentColor"/>
+    <polygon points="96,${y+20} 60,${y+40} 60,${y+40+h} 96,${y+20+h}" fill="#000" opacity=".15"/>`;
+}
+function Lp3dCube(token, id){
+  return `
+  <svg class="lp-obj" viewBox="0 0 120 120" style="color:var(${token});" aria-hidden="true">
+    ${lp3dShadow(id, 106, 34)}
+    ${lp3dCubeFaces(18, 34)}
+  </svg>`;
+}
+/* Кубик с шипами — тот самый «лего» из референсов */
+function Lp3dBrick(token, id){
+  const studs = [[45,33],[75,33],[45,47],[75,47]];
+  return `
+  <svg class="lp-obj" viewBox="0 0 120 120" style="color:var(${token});" aria-hidden="true">
+    ${lp3dShadow(id, 106, 34)}
+    ${lp3dCubeFaces(18, 34)}
+    ${studs.map(([x,y])=>`
+      <ellipse cx="${x}" cy="${y+2}" rx="7" ry="4" fill="#000" opacity=".16"/>
+      <ellipse cx="${x}" cy="${y}" rx="7" ry="4" fill="#fff" opacity=".4"/>`).join("")}
+  </svg>`;
+}
+/* Стопка плит — слои архитектуры, те же, что колонками в схеме */
+function Lp3dLayers(token, id, count){
+  const n = count || 3, step = 26, h = 10, top = 14;
+  const plates = [];
+  for(let i = n - 1; i >= 0; i--){
+    const y = top + i * step;
+    plates.push(`
+      <polygon points="24,${y+20} 60,${y+40} 60,${y+40+h} 24,${y+20+h}" fill="currentColor"/>
+      <polygon points="24,${y+20} 60,${y+40} 60,${y+40+h} 24,${y+20+h}" fill="#000" opacity=".32"/>
+      <polygon points="96,${y+20} 60,${y+40} 60,${y+40+h} 96,${y+20+h}" fill="currentColor"/>
+      <polygon points="96,${y+20} 60,${y+40} 60,${y+40+h} 96,${y+20+h}" fill="#000" opacity=".16"/>
+      <polygon points="60,${y} 96,${y+20} 60,${y+40} 24,${y+20}" fill="currentColor"/>
+      <polygon points="60,${y} 96,${y+20} 60,${y+40} 24,${y+20}" fill="#fff" opacity="${(0.08 + i*0.06).toFixed(2)}"/>`);
+  }
+  const bottom = top + (n-1)*step + 40 + h;
+  return `
+  <svg class="lp-obj" viewBox="0 0 120 ${bottom + 18}" style="color:var(${token});" aria-hidden="true">
+    ${lp3dShadow(id, bottom + 6, 34)}
+    ${plates.join("")}
+  </svg>`;
+}
+/* Шар — глянцевый объект, как в референсах рядом с заголовком */
+function Lp3dSphere(token, id){
+  return `
+  <svg class="lp-obj" viewBox="0 0 120 120" style="color:var(${token});" aria-hidden="true">
+    ${lp3dShadow(id, 106, 32)}
+    <defs>
+      <radialGradient id="${id}-b" cx="34%" cy="28%" r="78%">
+        <stop offset="0" stop-color="#fff" stop-opacity=".8"/>
+        <stop offset="42%" stop-color="currentColor" stop-opacity="1"/>
+        <stop offset="100%" stop-color="#000" stop-opacity=".4"/>
+      </radialGradient>
+    </defs>
+    <circle cx="60" cy="56" r="38" fill="currentColor"/>
+    <circle cx="60" cy="56" r="38" fill="url(#${id}-b)"/>
+    <ellipse cx="46" cy="36" rx="13" ry="8" fill="#fff" opacity=".5" transform="rotate(-28 46 36)"/>
+  </svg>`;
+}
+
+const LP_FLOATS = [
+  n => Lp3dCube("--color-accent-purple", "lp-o1"),
+  n => Lp3dBrick("--color-background-brand", "lp-o2"),
+  n => Lp3dSphere("--color-accent-magenta", "lp-o3"),
+  n => Lp3dLayers("--color-accent-teal", "lp-o4", 3),
+];
 
 function LpHeroDeco(){
   return `
@@ -7159,7 +7249,7 @@ function LpHeroDeco(){
     <span class="lp-blob lp-blob-1"></span>
     <span class="lp-blob lp-blob-2"></span>
     <span class="lp-blob lp-blob-3"></span>
-    ${LP_FLOATS.map((n,i)=>`<span class="lp-float lp-float-${i+1}">${icon(n)}</span>`).join("")}
+    ${LP_FLOATS.map((f,i)=>`<span class="lp-float lp-float-${i+1}">${f()}</span>`).join("")}
   </div>`;
 }
 
@@ -7401,11 +7491,12 @@ function LpCta(){
           Платформа внутренняя: доступ выдаётся по корпоративной учётной записи.
           Если доступа ещё нет — напиши в поддержку, подключим к нужным разделам.
         </p>
+        <div class="lp-cta-actions">
+          <button class="btn btn-primary" data-action="auth-open">Войти</button>
+          <button class="btn btn-outline" data-action="lp-support">Написать в поддержку</button>
+        </div>
       </div>
-      <div class="lp-hero-cta">
-        <button class="btn btn-primary" data-action="auth-open">Войти</button>
-        <button class="btn btn-outline" data-action="lp-support">Написать в поддержку</button>
-      </div>
+      <div class="lp-cta-figure" aria-hidden="true">${Lp3dLayers("--color-accent-purple", "lp-cta-obj", 5)}</div>
     </div>
   </section>`;
 }
