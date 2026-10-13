@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261013-150611">
+<meta name="beeatlas-build" content="20261013-151915">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -1433,7 +1433,13 @@
      приложений), там же выбор чипсами (.pill-item). */
   .uc-impl-cell{display:flex;align-items:center;gap:var(--space-2);min-width:0;}
   .uc-impl-code{font-size:15px;line-height:20px;letter-spacing:.2px;white-space:nowrap;}
-  .uc-impl-rest{color:var(--text-secondary);font-size:13px;line-height:16px;letter-spacing:.2px;white-space:nowrap;}
+  /* align-items:center ровняет БОКСЫ, а глаз видит чернила. Замер видимых пикселей
+     в ячейке высотой 20: код 4.50–17.50 (центр 11.00), «+N» 5.00–14.00 (центр 9.50 —
+     вверх тянет «плюс», он центрируется по математической оси), глиф предупреждения
+     2.75–17.50 (центр 10.12, в своём боксе 18px он сидит выше середины). Сдвигаем
+     счётчик и глиф к оптическому центру кода: 11.00 / 11.00 / 11.12. */
+  .uc-impl-rest{color:var(--text-secondary);font-size:13px;line-height:16px;letter-spacing:.2px;
+    white-space:nowrap;transform:translateY(1.5px);}
 
   /* Чипсы реализаций — существующий компонент .pill-item (он и есть ДС Chips:
      32 / радиус 30 / 15-18-400-0.2 / padding 12 / control-background → brand).
@@ -1487,6 +1493,7 @@
     width:18px;height:18px;flex:0 0 auto;border:none;background:transparent;padding:0;
     border-radius:var(--size-border-radius-x2);color:var(--color-status-warning);
     display:inline-flex;align-items:center;justify-content:center;
+    transform:translateY(1px);  /* оптический центр, см. комментарий у .uc-impl-rest */
   }
   .uc-mismatch-btn .beeline-icons{width:18px;height:18px;font-size:18px;}
   .uc-mismatch-btn svg{width:18px;height:18px;}
