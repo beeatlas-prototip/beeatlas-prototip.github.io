@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261013-120418">
+<meta name="beeatlas-build" content="20261013-122520">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -1377,9 +1377,9 @@
      задаёт 8 (chips-group-spacing). .pill-toggle не трогаем, он держит три экрана
      Каталога приложений; расхождение известное и остаётся за ним. */
   .uc-impl-chips{display:flex;align-items:center;flex-wrap:wrap;gap:var(--size-spacing-x2);}
-  /* Иконка в чипсе — ДС chips-icon-size 20, отступ до текста 8. Ни один существующий
-     .pill-item иконку не содержит, поэтому правило ничего из них не меняет. */
-  .pill-item{gap:var(--size-spacing-x2);}
+  /* Иконка в чипсе — ДС chips-icon-size 20, отступ до текста 8 (gap задан в самом
+     .pill-item выше: отдельное одноимённое правило слилось бы по каскаду).
+     Ни один существующий .pill-item иконку не содержит — им это ничего не меняет. */
   .pill-item .beeline-icons{width:20px;height:20px;font-size:20px;flex:0 0 auto;}
   .pill-item svg{width:20px;height:20px;flex:0 0 auto;}
 
@@ -1598,7 +1598,8 @@
 
   .pill-toggle{display:flex;gap:var(--space-3);margin-bottom:var(--space-6);flex-wrap:wrap;}
   /* ДС Chips: height 32, radius 30, текст 15/400/18/0.2, padding 12, фоны control-background → background-brand */
-  .pill-item{display:inline-flex;align-items:center;height:32px;padding:0 var(--size-spacing-x3);border-radius:30px;
+  .pill-item{display:inline-flex;align-items:center;gap:var(--size-spacing-x2);height:32px;
+    padding:0 var(--size-spacing-x3);border-radius:30px;
     font-size:15px;font-weight:400;line-height:18px;letter-spacing:.2px;cursor:pointer;
     background:var(--color-control-background);color:var(--text);white-space:nowrap;}
   .pill-item:hover{background:var(--color-control-background-hover);}
@@ -10714,10 +10715,12 @@ function UseCaseScenariosTable(u, projectId, ucId){
         <!-- Ширины пересчитаны под новое содержимое: «Шаг» принял шеврон раскрытия
              (22 + 8 + код), «Реализация» — код выбранной, счётчик остальных и маркер
              расхождения. На 1440 и шире обе колонки вмещают содержимое целиком;
-             вычтено у «Действия» и «Вызова» — они и так усекаются с тултипом. -->
+             вычтено у «Действия» и «Вызова» — они и так усекаются с тултипом.
+             «Вызывающий»/«Вызываемый» — одно слово, перенести его заголовку некуда,
+             поэтому им нужна ширина слова целиком (114px на 1280). -->
         <colgroup>
-          <col style="width:10%"><col style="width:11%"><col style="width:11%"><col style="width:15%">
-          <col style="width:14%"><col style="width:12%"><col style="width:14%"><col style="width:13%">
+          <col style="width:12%"><col style="width:12%"><col style="width:12%"><col style="width:13%">
+          <col style="width:11%"><col style="width:11%"><col style="width:16%"><col style="width:13%">
         </colgroup>
         <thead><tr><th>Шаг</th><th>Вызывающий</th><th>Вызываемый</th><th>Действие</th><th>Вызов</th><th>ТС</th><th>Реализация</th><th>Статус вызова</th></tr></thead>
         <tbody>
@@ -10772,8 +10775,8 @@ function UcDiagramCard(u){
   return `
     <div class="uc-diagram-card">
       <div class="uc-diagram-toolbar">
-        <button class="btn btn-outline btn-sm" data-action="expand-uc-diagram">${ic("expand",16)} Развернуть</button>
-        <button class="btn btn-outline btn-sm" data-action="download-uc-diagram">${ic("download",16)} Скачать</button>
+        <button class="btn btn-outline btn-sm" data-action="expand-uc-diagram">${ic("expand",18)} Развернуть</button>
+        <button class="btn btn-outline btn-sm" data-action="download-uc-diagram">${ic("download",18)} Скачать</button>
       </div>
       <div class="uc-diagram-scroll">${buildSequenceSvgGeneric(seq.lifelines, null, seq.messages, {large:false})}</div>
     </div>
@@ -10788,8 +10791,8 @@ function UcDiagramModal(u){
       <div class="uc-diagram-toolbar" style="justify-content:space-between;">
         <div style="font-weight:700;font-size:15px;padding-left:6px;">Диаграмма</div>
         <div style="display:flex;gap:var(--space-3);">
-          <button class="btn btn-outline btn-sm" data-action="collapse-uc-diagram">${ic("expand",16)} Свернуть</button>
-          <button class="btn btn-outline btn-sm" data-action="download-uc-diagram">${ic("download",16)} Скачать</button>
+          <button class="btn btn-outline btn-sm" data-action="collapse-uc-diagram">${ic("expand",18)} Свернуть</button>
+          <button class="btn btn-outline btn-sm" data-action="download-uc-diagram">${ic("download",18)} Скачать</button>
           <button class="wizard-close" data-action="collapse-uc-diagram">${icon("x")}</button>
         </div>
       </div>
@@ -10989,8 +10992,8 @@ function UseCaseImplPage(projectId, ucId, part, code){
       <pre class="impl-source">${escapeHtml(implPlantUml(info))}</pre>
     ` : `
       <div class="uc-diagram-toolbar">
-        <button class="btn btn-outline btn-sm" data-action="expand-impl-diagram">${ic("expand",16)} Развернуть</button>
-        <button class="btn btn-outline btn-sm" data-action="download-impl-diagram">${ic("download",16)} Скачать</button>
+        <button class="btn btn-outline btn-sm" data-action="expand-impl-diagram">${ic("expand",18)} Развернуть</button>
+        <button class="btn btn-outline btn-sm" data-action="download-impl-diagram">${ic("download",18)} Скачать</button>
       </div>
       <div class="uc-diagram-scroll">${implDiagramSvg(info, false)}</div>
     `}
@@ -11014,8 +11017,8 @@ function ImplDiagramModal(){
       <div class="uc-diagram-toolbar" style="justify-content:space-between;">
         <div style="font-weight:700;font-size:15px;padding-left:6px;">Реализация ${escapeHtml(info.code)}</div>
         <div style="display:flex;gap:var(--space-3);">
-          <button class="btn btn-outline btn-sm" data-action="collapse-impl-diagram">${ic("expand",16)} Свернуть</button>
-          <button class="btn btn-outline btn-sm" data-action="download-impl-diagram">${ic("download",16)} Скачать</button>
+          <button class="btn btn-outline btn-sm" data-action="collapse-impl-diagram">${ic("expand",18)} Свернуть</button>
+          <button class="btn btn-outline btn-sm" data-action="download-impl-diagram">${ic("download",18)} Скачать</button>
           <button class="wizard-close" data-action="collapse-impl-diagram">${icon("x")}</button>
         </div>
       </div>
@@ -12749,13 +12752,8 @@ function ucWizardSyncExisting(w){
   w.data.cjStepCode = uc.cjStep && CJ_STEP_POOL.some(st=>st.code===uc.cjStep.code) ? uc.cjStep.code : "";
   if(w.editing) w.data.plantUml = uc.rawPlantUml || UC_SAMPLE_PLANTUML;
 }
-function ruPlural(n, one, few, many){
-  const mod10 = n % 10, mod100 = n % 100;
-  if(mod100 > 10 && mod100 < 20) return many;
-  if(mod10 === 1) return one;
-  if(mod10 > 1 && mod10 < 5) return few;
-  return many;
-}
+/* ruPlural объявлена выше в этом же блоке; второе объявление перекрывало первое
+   по хойстингу и ничего не меняло — убрано. */
 
 // Закрытие визарда (крестик/отмена, без применения сценария) возвращает на список
 // Use Case, а не оставляет на карточке агента, откуда визард запущен — иначе после
