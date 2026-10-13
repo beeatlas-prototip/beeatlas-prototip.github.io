@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261013-173710">
+<meta name="beeatlas-build" content="20261013-180646">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -2821,6 +2821,7 @@
 
   /* ── Герой ───────────────────────────────────────────────────────────── */
   .lp-hero{
+    position:relative;                      /* под слой декора .lp-deco */
     border-radius:var(--size-border-radius-x12);
     background:linear-gradient(135deg,var(--color-accent-purple-background) 0%,var(--color-accent-teal-background) 100%);
     padding:var(--layout-gap-section) var(--size-spacing-x10) 0;
@@ -2835,9 +2836,12 @@
     border-radius:var(--size-border-radius-x15);background:var(--color-control-background);
     font-size:15px;font-weight:400;line-height:18px;letter-spacing:.2px;color:var(--text);
   }
+  /* В референсах заголовок героя набран жирным, а имя продукта стоит отдельной
+     строкой другим цветом («Дизайн-платформа / yellowbe», «Pixso on-premise»).
+     Размер остаётся дсовским H1 54/66, вес — bold из токенов. */
   .lp-h1{
     font-size:var(--font-size-h1);line-height:var(--font-line-height-h1);
-    letter-spacing:var(--font-letter-spacing-h1);font-weight:var(--font-weight-h1);
+    letter-spacing:var(--font-letter-spacing-h1);font-weight:var(--font-weight-bold);
     margin:0 0 var(--space-5);
   }
   .lp-h1 em{font-style:normal;color:var(--color-accent-purple);}
@@ -2849,8 +2853,11 @@
   .lp-hero-note{margin-top:var(--space-4);font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-tertiary);}
 
   /* ── Снимок продукта под героем: собран из блоков, а не картинка ─────── */
+  /* Курсоры лежат рядом со снимком, а не внутри: у .lp-shot overflow:hidden,
+     он срезал бы их по краю окна продукта. */
+  .lp-shot-wrap{position:relative;max-width:1040px;margin:var(--layout-gap-section) auto 0;}
   .lp-shot{
-    max-width:1040px;margin:var(--layout-gap-section) auto 0;text-align:left;
+    max-width:1040px;margin:0 auto;text-align:left;
     border:1px solid var(--border);border-bottom:none;
     border-radius:var(--size-border-radius-x8) var(--size-border-radius-x8) 0 0;
     background:var(--bg);box-shadow:0 -2px 40px rgba(0,0,0,.12);overflow:hidden;
@@ -2902,13 +2909,10 @@
   .lp-sec-head{margin-bottom:var(--size-spacing-x8);}
 
   .lp-grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-6);}
-  .lp-grp{margin-bottom:var(--size-spacing-x8);}
-  .lp-grp:last-child{margin-bottom:0;}
-  .lp-grp-head{display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-4);}
-  .lp-grp-title{font-size:17px;line-height:22px;letter-spacing:.2px;font-weight:500;margin:0;}
   .lp-tile{
     background:var(--bg);border:1px solid var(--border);border-radius:var(--size-border-radius-x6);
     padding:var(--size-spacing-x6);display:flex;flex-direction:column;gap:var(--space-3);
+    transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease;
   }
   .lp-tile-top{display:flex;align-items:center;gap:var(--space-2);}
   .lp-tile-title{font-size:17px;line-height:22px;letter-spacing:.2px;font-weight:700;overflow-wrap:anywhere;}
@@ -2920,7 +2924,7 @@
   .lp-bento{display:grid;grid-template-columns:repeat(12,1fr);gap:var(--space-6);}
   .lp-card{
     border-radius:var(--size-border-radius-x12);padding:var(--size-spacing-x10);
-    display:flex;flex-direction:column;gap:var(--space-4);
+    display:flex;flex-direction:column;gap:var(--space-4);transition:transform .2s ease;
   }
   .lp-card h3{font-size:var(--font-size-h4);line-height:var(--font-line-height-h4);letter-spacing:.2px;font-weight:500;margin:0;}
   .lp-card p{font-size:15px;line-height:20px;letter-spacing:.2px;color:var(--text-secondary);margin:0;}
@@ -2947,9 +2951,12 @@
   .lp-flow-node{
     background:var(--bg);border:1px solid var(--border);border-radius:var(--size-border-radius-x6);
     padding:var(--space-3) var(--space-4);font-size:15px;line-height:20px;letter-spacing:.2px;font-weight:500;
+    transition:transform .15s ease;
   }
   .lp-flow-node .lp-flow-cap{display:block;font-size:13px;line-height:16px;font-weight:400;color:var(--text-secondary);}
-  .lp-flow-arrow{color:var(--text-tertiary);display:flex;align-items:center;}
+  /* Стрелки цепочки подсвечиваются по очереди (задержка задаётся по месту) —
+     так читается направление потока */
+  .lp-flow-arrow{color:var(--text-tertiary);display:flex;align-items:center;animation:lp-pulse 3.6s ease-in-out infinite;}
   .lp-flow-arrow .beeline-icons{width:18px;height:18px;font-size:18px;}
   .lp-flow-note{margin:var(--size-spacing-x6) 0 0;font-size:15px;line-height:20px;letter-spacing:.2px;color:var(--text-secondary);max-width:860px;}
 
@@ -2990,6 +2997,138 @@
   .lp-auth-err{color:var(--red-text);font-size:13px;line-height:16px;letter-spacing:.2px;}
   .lp-auth-help{align-self:center;color:var(--blue);font-size:15px;line-height:20px;letter-spacing:.2px;cursor:pointer;}
   .lp-auth-help:hover{text-decoration:underline;}
+
+
+  /* ── Схема связей разделов ────────────────────────────────────────────
+     «Что внутри» — не список плиток, а карта: пять слоёв архитектуры
+     колонками (те же группы и цвета, что в сайдбаре) и связи между
+     разделами. Узлы и описания берутся из NAV_GROUPS — одного списка
+     с меню, поэтому схема не разъедется с продуктом.
+     Ниже 1120 схема не ужимается, а прокручивается внутри своей обёртки:
+     подписи узлов должны оставаться читаемыми. */
+  .lp-scheme{overflow-x:auto;padding-bottom:var(--space-2);}
+  .lp-scheme svg{display:block;width:100%;min-width:1120px;height:auto;}
+  .lp-scheme-col{font-size:13px;line-height:16px;letter-spacing:.2px;font-weight:500;fill:var(--text-secondary);}
+  .lp-node rect{fill:var(--bg);stroke:var(--border);stroke-width:1;transition:stroke .15s ease;}
+  .lp-node text{font-size:15px;line-height:20px;letter-spacing:.2px;font-weight:500;fill:var(--text);}
+  .lp-node .lp-node-bar{stroke:none;}
+  .lp-node.is-soon rect{fill:var(--bg-alt);}
+  .lp-node.is-soon text{fill:var(--text-secondary);}
+  .lp-node.is-soon .lp-node-bar{opacity:.4;}
+  .lp-node:hover rect{stroke:var(--text);}
+  /* Полоса слоя — через .lp-node, иначе её перекрывает общее правило
+     .lp-node rect (та же специфичность, но объявлено выше по файлу). */
+  .lp-node .lp-bar-pink{fill:var(--pink-text);}
+  .lp-node .lp-bar-orange{fill:var(--orange-text);}
+  .lp-node .lp-bar-blue{fill:var(--blue-text);}
+  .lp-node .lp-bar-green{fill:var(--green-text);}
+  .lp-node .lp-bar-gray{fill:var(--gray-text);}
+  .lp-link{fill:none;stroke:var(--border-strong);stroke-width:1.5;opacity:.5;}
+  /* Наконечник стрелки живёт в <marker> и цвет линии не наследует — задаём явно,
+     иначе в тёмной теме он остаётся чёрным по умолчанию и пропадает. */
+  .lp-arrow{fill:var(--border-strong);opacity:.6;}
+  .lp-link.is-dashed{stroke-dasharray:4 4;}
+  /* Бегущий пунктир по основному пути: клиентский путь → сценарий →
+     приложение → проект. Это единственное, что здесь движется постоянно. */
+  .lp-link-flow{fill:none;stroke:var(--yellow);stroke-width:2.5;stroke-dasharray:10 28;animation:lp-flow 2.4s linear infinite;}
+  @keyframes lp-flow{to{stroke-dashoffset:-38;}}
+  /* Схема не ужимается, а прокручивается (min-width 1120). Ниже 1200 это нужно
+     сказать прямо: обрезанный край сам по себе не читается как прокрутка. */
+  .lp-scheme-hint{display:none;}
+  @media (max-width:1199px){
+    .lp-scheme-hint{display:block;margin-top:var(--space-3);font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-tertiary);}
+  }
+  .lp-scheme-info{
+    margin-top:var(--space-4);min-height:40px;
+    font-size:15px;line-height:20px;letter-spacing:.2px;color:var(--text-secondary);
+  }
+  .lp-scheme-info b{color:var(--text);font-weight:500;}
+  .lp-legend{display:flex;gap:var(--size-spacing-x6);margin-top:var(--space-4);flex-wrap:wrap;}
+  .lp-legend-item{display:flex;align-items:center;gap:var(--space-2);font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);}
+  .lp-legend-sw{width:16px;height:16px;border-radius:var(--size-border-radius-x2);border:1px solid var(--border);flex:0 0 auto;}
+  .lp-legend-sw.is-soon{background:var(--bg-alt);}
+
+  /* ── Декор ────────────────────────────────────────────────────────────
+     Референсы держатся на «воздушных» деталях: мягкие цветные пятна за
+     заголовком, парящие кубики и курсоры коллег над снимком продукта.
+     3D-рендеров у нас нет, поэтому то же настроение собрано из токенов. */
+  .lp-deco{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+  .lp-blob{position:absolute;border-radius:50%;filter:blur(56px);opacity:.45;will-change:transform;}
+  .lp-blob-1{width:420px;height:420px;left:-60px;top:-80px;
+    background:radial-gradient(circle,var(--color-accent-purple) 0%,transparent 70%);
+    animation:lp-drift-a 24s ease-in-out infinite alternate;}
+  .lp-blob-2{width:360px;height:360px;right:-40px;top:40px;
+    background:radial-gradient(circle,var(--color-accent-teal) 0%,transparent 70%);
+    animation:lp-drift-b 20s ease-in-out infinite alternate;}
+  .lp-blob-3{width:300px;height:300px;left:38%;top:-120px;
+    background:radial-gradient(circle,var(--color-accent-magenta) 0%,transparent 70%);
+    animation:lp-drift-c 28s ease-in-out infinite alternate;}
+  @keyframes lp-drift-a{to{transform:translate3d(60px,40px,0) scale(1.12);}}
+  @keyframes lp-drift-b{to{transform:translate3d(-50px,60px,0) scale(1.08);}}
+  @keyframes lp-drift-c{to{transform:translate3d(40px,-30px,0) scale(.9);}}
+  /* Кубик — карточка с иконкой раздела: то же, что в референсах делают
+     логотипы фреймворков по краям героя. */
+  .lp-float{
+    position:absolute;width:64px;height:64px;border-radius:var(--size-border-radius-x8);
+    background:var(--bg);box-shadow:var(--elevation-medium);
+    display:flex;align-items:center;justify-content:center;color:var(--text-secondary);
+    will-change:transform;
+  }
+  .lp-float .beeline-icons{width:24px;height:24px;font-size:24px;}
+  .lp-float-1{left:64px;top:188px;animation:lp-float-a 9s ease-in-out infinite alternate;}
+  .lp-float-2{left:140px;top:360px;animation:lp-float-b 11s ease-in-out infinite alternate;}
+  .lp-float-3{right:72px;top:148px;animation:lp-float-b 10s ease-in-out infinite alternate;}
+  .lp-float-4{right:150px;top:344px;animation:lp-float-a 13s ease-in-out infinite alternate;}
+  @keyframes lp-float-a{from{transform:translate3d(0,0,0) rotate(-6deg);}to{transform:translate3d(0,-18px,0) rotate(4deg);}}
+  @keyframes lp-float-b{from{transform:translate3d(0,0,0) rotate(5deg);}to{transform:translate3d(0,-22px,0) rotate(-5deg);}}
+  /* Курсоры коллег над снимком — приём из референсов: продукт показывают
+     как место, где одновременно работают несколько ролей. */
+  /* Курсоры стоят по краям окна продукта, как в референсах: внутри они
+     закрывали бы подписи и статусы. */
+  .lp-cursor{position:absolute;display:flex;align-items:flex-start;gap:var(--space-1);will-change:transform;}
+  .lp-cursor svg{width:20px;height:20px;}
+  .lp-cursor-label{
+    height:24px;display:inline-flex;align-items:center;padding:0 var(--space-2);
+    border-radius:var(--size-border-radius-x4);color:var(--color-text-white-inverse);
+    font-size:13px;line-height:16px;letter-spacing:.2px;font-weight:500;white-space:nowrap;
+  }
+  /* Указатель цепляет край окна, подпись уходит наружу — как в референсах.
+     У левого курсора порядок обратный, иначе подпись легла бы на меню продукта. */
+  .lp-cursor-1{left:-78px;top:152px;flex-direction:row-reverse;color:var(--pink-text);animation:lp-cursor-a 12s ease-in-out infinite alternate;}
+  .lp-cursor-1 .lp-cursor-label{background:var(--pink-text);}
+  .lp-cursor-2{right:-86px;top:266px;color:var(--blue-text);animation:lp-cursor-b 14s ease-in-out infinite alternate;}
+  .lp-cursor-2 .lp-cursor-label{background:var(--blue-text);}
+  /* В тёмной теме статусные цвета светлее, и белая подпись на них не читается
+     (2.9:1). Чёрный текст ДС на той же плашке даёт 7:1. */
+  [data-theme="dark"] .lp-cursor-label{color:var(--color-text-black-active);}
+  /* Дрейф уводит курсоры наружу от окна продукта, а не внутрь: внутрь они
+     наезжали бы на подписи разделов и статусы. */
+  @keyframes lp-cursor-a{from{transform:translate3d(0,0,0);}to{transform:translate3d(-22px,-30px,0);}}
+  @keyframes lp-cursor-b{from{transform:translate3d(0,0,0);}to{transform:translate3d(20px,26px,0);}}
+
+  /* ── Движение ─────────────────────────────────────────────────────────
+     Только transform и opacity. Появление секций вешается один раз, на
+     первом показе лендинга: перерисовки (например, смена темы) показывают
+     содержимое сразу, иначе страница мигала бы от каждого клика. */
+  .lp-reveal{opacity:0;transform:translateY(20px);
+    transition:opacity .5s cubic-bezier(.2,.6,.2,1),transform .5s cubic-bezier(.2,.6,.2,1);}
+  .lp-reveal.is-in{opacity:1;transform:none;}
+  .lp-rise{animation:lp-rise .6s cubic-bezier(.2,.6,.2,1) both;}
+  @keyframes lp-rise{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:none;}}
+  .lp-tile:hover{transform:translateY(-2px);border-color:var(--border-strong);box-shadow:var(--elevation-low);}
+  .lp-card:hover{transform:translateY(-2px);}
+  .lp-flow-node:hover{transform:translateY(-2px);}
+  @keyframes lp-pulse{0%,70%,100%{opacity:.35;}35%{opacity:1;}}
+  .lp-shot.is-intro{animation:lp-shot-in 1s cubic-bezier(.2,.6,.2,1) both;}
+  /* Кубики стоят по краям героя — ниже 1280 места между ними и заголовком нет */
+  @media (max-width:1279px){ .lp-float,.lp-cursor{display:none;} }
+  @keyframes lp-shot-in{from{opacity:0;transform:translateY(40px);}to{opacity:1;transform:none;}}
+
+  /* Человеку, который просил систему не анимировать, страница отдаётся статикой */
+  @media (prefers-reduced-motion:reduce){
+    .lp-blob,.lp-float,.lp-cursor,.lp-link-flow,.lp-flow-arrow,.lp-shot,.lp-rise{animation:none !important;}
+    .lp-reveal{opacity:1;transform:none;transition:none;}
+  }
 
   /* Ниже 1280 колонки схлопываются, иначе карточки не читаются */
   @media (max-width:1279px){
@@ -6978,7 +7117,7 @@ function LpAppShot(){
     {w:"55%", pill:"Не размечен", cls:"gray"},
   ];
   return `
-  <div class="lp-shot" aria-hidden="true">
+  <div class="lp-shot${lpMotionPlayed?"":" is-intro"}" aria-hidden="true">
     <div class="lp-shot-top">
       <span>beeatlas</span>
       <span class="lp-shot-ava">КК</span>
@@ -7006,62 +7145,176 @@ function LpAppShot(){
   </div>`;
 }
 
+/* Указатель коллеги — декорация, а не иконка интерфейса: в icons.md такого
+   глифа нет и быть не должно. Размер 20 — по шкале ДС. */
+const LP_CURSOR_SVG = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M5 3l14 7.2-6.1 1.6-2.3 6.2z"/></svg>';
+
+/* Кубики по краям героя: в референсах их место занимают 3D-объекты и логотипы.
+   У нас это иконки разделов — те же, что в меню. */
+const LP_FLOATS = ["map","grid","network","chart"];
+
+function LpHeroDeco(){
+  return `
+  <div class="lp-deco" aria-hidden="true">
+    <span class="lp-blob lp-blob-1"></span>
+    <span class="lp-blob lp-blob-2"></span>
+    <span class="lp-blob lp-blob-3"></span>
+    ${LP_FLOATS.map((n,i)=>`<span class="lp-float lp-float-${i+1}">${icon(n)}</span>`).join("")}
+  </div>`;
+}
+
 function LpHero(){
+  /* Вступительная анимация играет один раз — на первом показе лендинга.
+     Перерисовки (смена темы, открытие входа) собирают герой уже статикой,
+     иначе страница вздрагивала бы от каждого клика. */
+  const rise = (i, cls) => lpMotionPlayed
+    ? `class="${cls}"`
+    : `class="${cls} lp-rise" style="animation-delay:${i*90}ms"`;
   return `
   <section class="lp-hero">
-    <div class="lp-chips">${LP_ROLES.map(r=>`<span class="lp-chip">${escapeHtml(r.title)}</span>`).join("")}</div>
-    <h1 class="lp-h1">Архитектурная платформа <em>beeatlas</em></h1>
-    <p class="lp-hero-sub">
+    ${LpHeroDeco()}
+    <div ${rise(0,"lp-chips")}>${LP_ROLES.map(r=>`<span class="lp-chip">${escapeHtml(r.title)}</span>`).join("")}</div>
+    <h1 ${rise(1,"lp-h1")}>Архитектурная платформа<br><em>beeatlas</em></h1>
+    <p ${rise(2,"lp-hero-sub")}>
       Клиентские пути, сценарии, приложения и вызовы между ними живут одной связанной моделью.
       Войди по корпоративной учётной записи — и продолжай с того места, где остановилась команда.
     </p>
-    <div class="lp-hero-cta">
+    <div ${rise(3,"lp-hero-cta")}>
       <button class="btn btn-primary" data-action="auth-open">Войти</button>
       <button class="btn btn-outline" data-action="lp-scroll" data-to="lpServices">Что внутри</button>
     </div>
-    <div class="lp-hero-note">Доступ — по корпоративной учётной записи</div>
-    ${LpAppShot()}
+    <div ${rise(4,"lp-hero-note")}>Доступ — по корпоративной учётной записи</div>
+    <div class="lp-shot-wrap">
+      ${LpAppShot()}
+      <div class="lp-cursor lp-cursor-1" aria-hidden="true">${LP_CURSOR_SVG}<span class="lp-cursor-label">Аналитик</span></div>
+      <div class="lp-cursor lp-cursor-2" aria-hidden="true">${LP_CURSOR_SVG}<span class="lp-cursor-label">Архитектор</span></div>
+    </div>
   </section>`;
 }
 
-/* Разделы берутся из NAV_GROUPS — того же списка, по которому собран сайдбар.
-   Лендинг обещает ровно то, что внутри: отдельного списка-обещания нет. */
-function LpServiceTile(it, color){
+/* ═══ Схема связей разделов ════════════════════════════════════════════════
+   «Что внутри» показывается картой, а не списком плиток: пять слоёв
+   архитектуры колонками (те же группы и цвета, что в сайдбаре) и связи
+   между разделами. Узлы, подписи и описания берутся из NAV_GROUPS — того же
+   списка, по которому собрано меню, поэтому схема не разъедется с продуктом.
+   Координаты — в единицах viewBox: узел 220×64, шаг колонок 276.           */
+const LP_NODE_W = 220, LP_NODE_H = 64;
+const LP_SCHEME_COLS = [
+  {label:"Проектирование CX",       color:"pink",   x:20},
+  {label:"Бизнес-архитектура",      color:"orange", x:296},
+  {label:"Архитектура приложения",  color:"blue",   x:572},
+  {label:"Техническая архитектура", color:"green",  x:848},
+  {label:"Архитектура решения",     color:"gray",   x:1124},
+];
+const LP_SCHEME_NODES = [
+  {id:"cj",          col:0, y:140},
+  {id:"bi",          col:0, y:236},
+  {id:"fdm",         col:1, y:56},
+  {id:"searchfdm",   col:1, y:152},
+  {id:"capmap",      col:1, y:248},
+  {id:"e2e",         col:1, y:344},
+  {id:"lifecat",     col:2, y:56},
+  {id:"appcat",      col:2, y:152},
+  {id:"fitness",     col:2, y:248},
+  {id:"technoradar", col:3, y:56},
+  {id:"patterns",    col:3, y:248},
+  {id:"projects",    col:4, y:152},
+  {id:"companyarch", col:4, y:344},
+];
+/* Связи заданы путями целиком: автоматическая раскладка на тринадцати узлах
+   даёт пересечения, которые всё равно пришлось бы разводить руками.
+   flow — основной путь (клиентский путь → сценарий → приложение → проект),
+   по нему бежит пунктир. */
+const LP_SCHEME_LINKS = [
+  {d:"M130,204 L130,236"},                               // CJ → BI
+  {d:"M240,172 C268,172 268,88 296,88"},                 // CJ → ФДМ
+  {d:"M240,268 C268,268 268,376 296,376", flow:true},    // BI → Каталог Е2Е
+  {d:"M406,120 L406,152"},                               // ФДМ → Поиск ФДМ
+  {d:"M296,88 C248,110 248,258 296,280"},                // ФДМ → Карта возможностей (обход слева)
+  {d:"M516,88 C544,88 544,184 572,184"},                 // ФДМ → Каталог приложений
+  {d:"M516,376 C544,376 544,184 572,184", flow:true},    // Каталог Е2Е → Каталог приложений
+  {d:"M682,120 L682,152"},                               // Жизненные ситуации → приложения
+  {d:"M682,216 L682,248"},                               // Приложения → фитнес-функции
+  {d:"M792,184 C820,184 820,88 848,88"},                 // Приложения → Технорадар
+  {d:"M792,184 L1124,184", flow:true},                   // Приложения → Проекты
+  {d:"M1068,280 C1096,280 1096,184 1124,184"},           // Паттерны → Проекты
+  {d:"M1234,344 L1234,216", dashed:true},                // Метамодель ⇢ Проекты
+  {d:"M406,408 C520,520 900,520 1180,216"},              // Каталог Е2Е → Проекты
+];
+
+function lpNavItem(id){
+  for(const g of NAV_GROUPS){ const it = g.items.find(x=>x.id===id); if(it) return it; }
+  return null;
+}
+/* Перенос подписи узла по словам: подписи приходят из NAV_GROUPS, руками их
+   здесь не дублируем — иначе название раздела разъедется с меню. */
+function lpWrapLabel(text, max){
+  const out = [];
+  for(const w of String(text).split(" ")){
+    if(out.length && (out[out.length-1]+" "+w).length <= max) out[out.length-1] += " " + w;
+    else out.push(w);
+  }
+  return out.slice(0, 2);
+}
+
+function LpSchemeNode(n){
+  const it = lpNavItem(n.id);
+  if(!it) return "";
+  const col = LP_SCHEME_COLS[n.col];
+  const lines = lpWrapLabel(it.label, 22);
+  const cy = n.y + LP_NODE_H/2;
+  const ys = lines.length > 1 ? [cy-5, cy+15] : [cy+5];
   return `
-    <div class="lp-tile">
-      <div class="lp-tile-top">
-        <div class="home-svc-icon home-svc-${color}">${icon(it.icon)}</div>
-        ${it.filled?"":'<span class="badge gray">скоро</span>'}
-      </div>
-      <div class="lp-tile-title">${escapeHtml(it.label)}</div>
-      <div class="lp-tile-desc">${escapeHtml(it.desc||"")}</div>
-    </div>`;
+    <g class="lp-node${it.filled?"":" is-soon"}" data-id="${n.id}">
+      <rect x="${col.x}" y="${n.y}" width="${LP_NODE_W}" height="${LP_NODE_H}" rx="12"/>
+      <rect class="lp-node-bar lp-bar-${col.color}" x="${col.x}" y="${n.y+16}" width="4" height="32" rx="2"/>
+      ${lines.map((l,i)=>`<text x="${col.x+20}" y="${ys[i]}">${escapeHtml(l)}</text>`).join("")}
+    </g>`;
+}
+
+function LpScheme(){
+  return `
+  <div class="lp-scheme" id="lpScheme">
+    <svg viewBox="0 0 1364 510" role="img" aria-label="Схема связей разделов платформы">
+      <defs>
+        <marker id="lpArrow" viewBox="0 0 8 8" refX="7.5" refY="4" markerWidth="6" markerHeight="6" orient="auto">
+          <path class="lp-arrow" d="M0,0 L8,4 L0,8 Z"/>
+        </marker>
+      </defs>
+      ${LP_SCHEME_COLS.map(c=>`<text class="lp-scheme-col" x="${c.x}" y="24">${escapeHtml(c.label)}</text>`).join("")}
+      ${LP_SCHEME_LINKS.map(l=>`<path class="lp-link${l.dashed?" is-dashed":""}" d="${l.d}" marker-end="url(#lpArrow)"/>`).join("")}
+      ${LP_SCHEME_LINKS.filter(l=>l.flow).map(l=>`<path class="lp-link-flow" d="${l.d}"/>`).join("")}
+      ${LP_SCHEME_NODES.map(LpSchemeNode).join("")}
+    </svg>
+  </div>
+  <div class="lp-scheme-hint">Схема шире экрана — пролистай её вбок</div>
+  <div class="lp-scheme-info" id="lpSchemeInfo">Наведи на раздел — покажу, за что он отвечает</div>
+  <div class="lp-legend">
+    <span class="lp-legend-item"><span class="lp-legend-sw"></span>Раскрыт в прототипе</span>
+    <span class="lp-legend-item"><span class="lp-legend-sw is-soon"></span>Скоро</span>
+    <span class="lp-legend-item">Цвет полосы — слой архитектуры</span>
+  </div>`;
 }
 
 function LpServices(){
+  const total = NAV_GROUPS.reduce((n,g)=>n+g.items.length, 0);
   return `
-  <section class="lp-sec" id="lpServices">
+  <section class="lp-sec lp-reveal" id="lpServices">
     <div class="lp-sec-head">
       <h2 class="lp-h2">Что внутри</h2>
       <p class="lp-sec-sub">
-        Пять слоёв архитектуры в одном окне — от клиентского пути до технологий.
-        Разделы со значком «скоро» в прототипе ещё не раскрыты.
+        ${total} разделов в пяти слоях архитектуры и связи между ними: клиентский путь
+        раскладывается на сценарии, сценарии упираются в приложения, а проект собирает
+        из этого оценку влияния.
       </p>
     </div>
-    ${NAV_GROUPS.map(g=>`
-      <div class="lp-grp">
-        <div class="lp-grp-head">
-          <span class="home-group-dot home-dot-${g.color}"></span>
-          <h3 class="lp-grp-title">${escapeHtml(g.label)}</h3>
-        </div>
-        <div class="lp-grid3">${g.items.map(it=>LpServiceTile(it, g.color)).join("")}</div>
-      </div>`).join("")}
+    ${LpScheme()}
   </section>`;
 }
 
 function LpAdvantages(){
   return `
-  <section class="lp-sec" id="lpAdvantages">
+  <section class="lp-sec lp-reveal" id="lpAdvantages">
     <div class="lp-sec-head"><h2 class="lp-h2">Преимущества</h2></div>
     <div class="lp-bento">
       <div class="lp-card lp-c7 lp-bg-lemon">
@@ -7071,9 +7324,9 @@ function LpAdvantages(){
           Правка в одном месте видна везде, где этот объект используется.
         </p>
         <div class="lp-stats">
-          <div><div class="lp-stat-num">14</div><div class="lp-stat-cap">разделов платформы</div></div>
-          <div><div class="lp-stat-num">2 400</div><div class="lp-stat-cap">сценариев</div></div>
-          <div><div class="lp-stat-num">640</div><div class="lp-stat-cap">приложений</div></div>
+          <div><div class="lp-stat-num" data-count="${NAV_GROUPS.reduce((n,g)=>n+g.items.length,0)}">0</div><div class="lp-stat-cap">разделов платформы</div></div>
+          <div><div class="lp-stat-num" data-count="2400">0</div><div class="lp-stat-cap">сценариев</div></div>
+          <div><div class="lp-stat-num" data-count="640">0</div><div class="lp-stat-cap">приложений</div></div>
         </div>
       </div>
       <div class="lp-card lp-c5 lp-bg-teal">
@@ -7105,12 +7358,12 @@ function LpAdvantages(){
 
 function LpFlow(){
   return `
-  <section class="lp-sec" id="lpFlow">
+  <section class="lp-sec lp-reveal" id="lpFlow">
     <div class="lp-sec-head"><h2 class="lp-h2">Как устроено</h2></div>
     <div class="lp-panel">
       <div class="lp-flow">
         ${LP_FLOW.map((n,i)=>`
-          ${i ? `<span class="lp-flow-arrow">${icon("chevronRight")}</span>` : ""}
+          ${i ? `<span class="lp-flow-arrow" style="animation-delay:${i*180}ms">${icon("chevronRight")}</span>` : ""}
           <div class="lp-flow-node">${escapeHtml(n.name)}<span class="lp-flow-cap">${escapeHtml(n.cap)}</span></div>
         `).join("")}
       </div>
@@ -7124,7 +7377,7 @@ function LpFlow(){
 
 function LpRoles(){
   return `
-  <section class="lp-sec" id="lpRoles">
+  <section class="lp-sec lp-reveal" id="lpRoles">
     <div class="lp-sec-head"><h2 class="lp-h2">Кому пригодится</h2></div>
     <div class="lp-grid3">
       ${LP_ROLES.map(r=>`
@@ -7140,7 +7393,7 @@ function LpRoles(){
 
 function LpCta(){
   return `
-  <section class="lp-sec">
+  <section class="lp-sec lp-reveal">
     <div class="lp-cta">
       <div class="lp-cta-text">
         <h2>Войди и продолжи работу</h2>
@@ -7232,6 +7485,66 @@ function doLogin(){
   render();
 }
 
+/* ═══ Движение ════════════════════════════════════════════════════════════
+   Только transform и opacity. Появление секций — по IntersectionObserver и
+   только на первом показе лендинга: дальше перерисовки отдают содержимое
+   сразу, иначе страница мигала бы от каждого клика по теме.
+   Человеку, который выключил анимацию в системе, всё отдаётся статикой.   */
+let lpMotionPlayed = false;
+
+function lpFmtNum(n){ return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, "\u00a0"); }
+
+function lpCountUp(root){
+  root.querySelectorAll("[data-count]").forEach(el=>{
+    const to = +el.dataset.count, t0 = performance.now(), dur = 900;
+    const step = now => {
+      const p = Math.min(1, (now - t0) / dur);
+      el.textContent = lpFmtNum(Math.round(to * (1 - Math.pow(1 - p, 3))));
+      if(p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  });
+}
+
+function setupLandingMotion(){
+  const lp = document.querySelector(".lp");
+  if(!lp) return;
+  const reveal = [...lp.querySelectorAll(".lp-reveal")];
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if(reduce || lpMotionPlayed || !("IntersectionObserver" in window)){
+    reveal.forEach(n=>n.classList.add("is-in"));
+    lp.querySelectorAll("[data-count]").forEach(el=>{ el.textContent = lpFmtNum(+el.dataset.count); });
+  } else {
+    const io = new IntersectionObserver(entries=>{
+      entries.forEach(e=>{
+        if(!e.isIntersecting) return;
+        e.target.classList.add("is-in");
+        io.unobserve(e.target);
+        if(e.target.querySelector("[data-count]")) lpCountUp(e.target);
+      });
+    }, {threshold:.12, rootMargin:"0px 0px -8% 0px"});
+    reveal.forEach(n=>io.observe(n));
+  }
+  lpMotionPlayed = true;
+
+  /* Подсказка под схемой: описание раздела — то же, что в меню (NAV_GROUPS),
+     поэтому на схеме хватает названия, а подробности показываются по наведению. */
+  const scheme = document.getElementById("lpScheme");
+  const info = document.getElementById("lpSchemeInfo");
+  if(scheme && info){
+    const base = info.innerHTML;
+    scheme.addEventListener("mouseover", e=>{
+      const g = e.target.closest(".lp-node");
+      if(!g) return;
+      const it = lpNavItem(g.dataset.id);
+      if(!it) return;
+      info.innerHTML = `<b>${escapeHtml(it.label)}</b> — ${escapeHtml(it.desc||"")}` +
+        (it.filled ? "" : " Раздел ещё не раскрыт в прототипе.");
+    });
+    scheme.addEventListener("mouseleave", ()=>{ info.innerHTML = base; });
+  }
+}
+
 function renderLanding(){
   const app = document.getElementById("app");
   const prevScroll = window.scrollY;
@@ -7248,6 +7561,7 @@ function renderLanding(){
   `;
   document.documentElement.setAttribute("data-theme", state.theme);
   bindGlobalEvents();
+  setupLandingMotion();
   positionToast();
   if(prevScroll) window.scrollTo(0, prevScroll);
   saveLocation();
