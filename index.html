@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261014-130813">
+<meta name="beeatlas-build" content="20261014-132346">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -2820,14 +2820,37 @@
   .lp-header-right{margin-left:auto;display:flex;align-items:center;gap:var(--size-spacing-x5);}
 
   /* ── Герой ───────────────────────────────────────────────────────────── */
+  /* Радиус 72 — вне шкалы ДС (она заканчивается на 30). Это витринный блок
+     лендинга, а не контрол интерфейса; внутри продукта шкала не меняется.
+     Герой собран слоями: цветной градиент и пятна декора внизу, поверх них
+     матовое стекло (.lp-hero-glass), сверху контент. */
   .lp-hero{
     position:relative;                      /* под слой декора .lp-deco */
-    border-radius:var(--size-border-radius-x12);
+    border-radius:72px;
     background:linear-gradient(135deg,var(--color-accent-purple-background) 0%,var(--color-accent-teal-background) 100%);
     padding:var(--layout-gap-section) var(--size-spacing-x10) 0;
     margin-top:var(--size-spacing-x10);
     text-align:center;overflow:hidden;
   }
+  /* Матовое стекло: размывает то, что под ним (градиент и цветные пятна),
+     добавляет белую вуаль и подсвеченный внутренний кант. saturate держит
+     цвет — без него вуаль уводит пятна в серый. */
+  .lp-hero-glass{
+    position:absolute;inset:0;z-index:1;pointer-events:none;
+    border-radius:inherit;
+    background:rgba(255,255,255,.26);
+    -webkit-backdrop-filter:blur(28px) saturate(1.5);
+    backdrop-filter:blur(28px) saturate(1.5);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.65), inset 0 0 0 1px rgba(255,255,255,.4);
+  }
+  /* В тёмной теме стекло не белит, а подсвечивает: белая вуаль там мгновенно
+     съедает фон и блок перестаёт отличаться от страницы. */
+  [data-theme="dark"] .lp-hero-glass{
+    background:rgba(255,255,255,.05);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.12), inset 0 0 0 1px rgba(255,255,255,.08);
+  }
+  /* Контент героя лежит над стеклом */
+  .lp-chips,.lp-h1,.lp-h1-sub,.lp-hero-sub,.lp-hero-cta,.lp-hero-note,.lp-shot-wrap{position:relative;z-index:2;}
   .lp-chips{display:flex;justify-content:center;flex-wrap:wrap;gap:var(--space-2);margin-bottom:var(--space-6);}
   /* Плашка-роль — Chips ДС: высота 32, радиус 30, паддинги 12, текст 15/400/18/0.2,
      фон control-background (на цветном фоне героя он читается как лёгкая подложка). */
@@ -2883,7 +2906,9 @@
     color:var(--text-secondary);max-width:760px;margin:0 auto var(--size-spacing-x8);
   }
   .lp-hero-cta{display:flex;justify-content:center;gap:var(--space-3);flex-wrap:wrap;}
-  .lp-hero-note{margin-top:var(--space-4);font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-tertiary);}
+  /* Подпись под кнопками берёт secondary, а не tertiary: tertiary — цвет
+     состояния disabled, на фоне героя он даёт 3:1, а это текст 13 px. */
+  .lp-hero-note{margin-top:var(--space-4);font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);}
 
   /* ── Снимок продукта под героем: собран из блоков, а не картинка ─────── */
   /* Курсоры лежат рядом со снимком, а не внутри: у .lp-shot overflow:hidden,
@@ -3168,7 +3193,9 @@
      заголовком, парящие кубики и курсоры коллег над снимком продукта.
      3D-рендеров у нас нет, поэтому то же настроение собрано из токенов. */
   .lp-deco{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
-  .lp-blob{position:absolute;border-radius:50%;filter:blur(56px);opacity:.45;will-change:transform;}
+  /* Пятна лежат ПОД стеклом и оно их ещё раз размывает и гасит, поэтому
+     здесь они резче и плотнее, чем выглядят в итоге. */
+  .lp-blob{position:absolute;border-radius:50%;filter:blur(32px);opacity:.62;will-change:transform;}
   .lp-blob-1{width:420px;height:420px;left:-60px;top:-80px;
     background:radial-gradient(circle,var(--color-accent-purple) 0%,transparent 70%);
     animation:lp-drift-a 24s ease-in-out infinite alternate;}
@@ -3183,7 +3210,7 @@
   @keyframes lp-drift-c{to{transform:translate3d(40px,-30px,0) scale(.9);}}
   /* Объёмные объекты парят без подложки, как в референсах. Кубики заходят на
      угол окна продукта — там же, где лего в выкладке Pixso on-premise. */
-  .lp-float{position:absolute;will-change:transform;}
+  .lp-float{position:absolute;z-index:2;will-change:transform;}
   .lp-float img,.lp-shot-lego,.lp-cta-img{display:block;width:100%;height:auto;user-select:none;}
   .lp-float-1{right:48px;top:296px;width:128px;animation:lp-float-a 10s ease-in-out infinite alternate;}
   .lp-shot-lego{position:absolute;left:-130px;top:124px;width:160px;z-index:2;
@@ -7318,13 +7345,15 @@ function LpObj(name, cls){
   return `<img class="${cls}" src="${LP_OBJ[name]}" alt="" aria-hidden="true" draggable="false">`;
 }
 
+/* Пятна лежат под матовым стеклом героя и размываются вместе с градиентом,
+   а объёмный объект — предмет НА стекле, он остаётся резким. Поэтому они
+   разведены по разным слоям: .lp-deco под стеклом, .lp-float над ним. */
 function LpHeroDeco(){
   return `
   <div class="lp-deco" aria-hidden="true">
     <span class="lp-blob lp-blob-1"></span>
     <span class="lp-blob lp-blob-2"></span>
     <span class="lp-blob lp-blob-3"></span>
-    ${LpObj("brick", "lp-float lp-float-1")}
   </div>`;
 }
 
@@ -7338,6 +7367,8 @@ function LpHero(){
   return `
   <section class="lp-hero">
     ${LpHeroDeco()}
+    <div class="lp-hero-glass" aria-hidden="true"></div>
+    ${LpObj("brick", "lp-float lp-float-1")}
     <div ${rise(0,"lp-chips")}>${LP_ROLES.map(r=>`<span class="lp-chip">${escapeHtml(r.title)}</span>`).join("")}</div>
     <h1 ${rise(1,"lp-h1")}>beeatlas</h1>
     <div ${rise(2,"lp-h1-sub")}>Архитектурная платформа</div>
