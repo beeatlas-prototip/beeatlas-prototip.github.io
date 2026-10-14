@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261014-142148">
+<meta name="beeatlas-build" content="20261014-143800">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -2814,6 +2814,18 @@
     position:sticky;top:0;z-index:30;height:var(--header-h);flex:0 0 auto;
     background:var(--bg);border-bottom:1px solid var(--border);
   }
+  /* Та же точечная сетка, что под героем, но перевёрнутая: у верхнего края
+     страницы точек почти нет, к низу шапки они набирают силу и подхватываются
+     подложкой героя. Шаг 24 — общий, иначе на стыке читались бы две разные сетки. */
+  .lp-header::after{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background-image:radial-gradient(var(--border-strong) 1px,transparent 1px);
+    background-size:24px 24px;
+    -webkit-mask-image:linear-gradient(to bottom, transparent 6%, rgba(0,0,0,.35) 48%, #000 100%);
+    mask-image:linear-gradient(to bottom, transparent 6%, rgba(0,0,0,.35) 48%, #000 100%);
+  }
+  /* Содержимое шапки лежит над сеткой */
+  .lp-header .lp-wrap{position:relative;z-index:1;}
   .lp-header .lp-wrap{height:100%;display:flex;align-items:center;gap:var(--size-spacing-x10);}
   .lp-brand{font-weight:700;font-size:20px;line-height:28px;letter-spacing:.2px;white-space:nowrap;}
   .lp-header-right{margin-left:auto;display:flex;align-items:center;gap:var(--size-spacing-x5);}
@@ -2908,26 +2920,32 @@
      Имя продукта стоит первым и набрано крупнее шкалы текстов — 72/80. Это
      леттеринг имени, а не заголовок интерфейса: тот же приём, что у крупного
      начертания в подвале. Дескриптор под ним — дсовский H3, вес 400, secondary.
-     Градиент собран только из purple и magenta: teal и aquamarine на светлом
-     фоне героя дают 2.3:1 и в тексте не читаются. Худшая точка этого
-     градиента — 4.6:1, то есть он проходит и как обычный текст, не только
-     как крупный. */
+     Светлый градиент — magenta → purple → синий status-info: двух пурпурных
+     оттенков для заметного перелива мало, они слишком близки по тону. Teal и
+     aquamarine в светлой теме брать нельзя — 2.3:1 и в тексте не читаются.
+     Худшая точка получившегося градиента — 4.2:1 на синем. Для имени продукта
+     (72 px, вес 700) это крупный текст, порог 3:1, так что запас есть; будь это
+     текст обычного размера, синий бы не подошёл. */
   .lp-h1{
     font-size:72px;line-height:80px;letter-spacing:-.5px;font-weight:var(--font-weight-bold);
     margin:0;
     background-image:linear-gradient(100deg,
-      var(--color-accent-purple) 0%, var(--color-accent-magenta) 25%,
-      var(--color-accent-purple) 50%, var(--color-accent-magenta) 75%,
-      var(--color-accent-purple) 100%);
-    background-size:200% 100%;
+      var(--color-accent-magenta) 0%, var(--color-accent-purple) 25%,
+      var(--color-status-info) 50%, var(--color-accent-purple) 75%,
+      var(--color-accent-magenta) 100%);
+    /* Тайл в пикселях, а не в процентах: имя продукта короче одного прохода,
+       и растянутый на 200 % градиент давал по буквам почти ровный цвет — перелив
+       был виден только в тёмной теме, где цвета сами по себе разнесены сильнее.
+       Крайние стопы одинаковые, поэтому повтор идёт без шва. */
+    background-size:420px 100%;
     -webkit-background-clip:text;background-clip:text;color:transparent;
-    animation:lp-h1-flow 9s linear infinite;
+    animation:lp-h1-flow 5s linear infinite;
   }
   /* Переливание двигает background-position, а не transform: градиент в тексте
      иначе не анимировать. Это осознанное исключение из «только transform и
      opacity» — перерисовывается один заголовок, слоёв и раскладки это не
      трогает. По prefers-reduced-motion анимация снимается. */
-  @keyframes lp-h1-flow{from{background-position:0% 50%;}to{background-position:200% 50%;}}
+  @keyframes lp-h1-flow{from{background-position:0 0;}to{background-position:420px 0;}}
   /* В тёмной теме к фиолетовому и мадженте добавляется teal: на тёмном фоне
      он даёт 7.7:1, а палитра перестаёт быть двухцветной. */
   [data-theme="dark"] .lp-h1{
@@ -3140,12 +3158,13 @@
   }
 
   /* ── Как устроено: цепочка объектов на панели в точку ─────────────────── */
-  /* Точечной сетки здесь больше нет: она повторяла подложку героя и читалась
-     как её кусок, уехавший вниз по странице. Плита держится на стекле. */
+  /* Прозрачное стекло с точками: цвета у плиты нет совсем, текстуру держит та же
+     сетка шагом 24, что под героем и в шапке, а форму — кант, блик и тень .lp-glass. */
   .lp-panel{
     border-radius:var(--size-border-radius-x12);padding:var(--size-spacing-x10);
-    background:var(--bg-alt);
-    background:color-mix(in srgb, var(--color-accent-teal-background) 42%, transparent);
+    background-color:transparent;
+    background-image:radial-gradient(var(--border-strong) 1px,transparent 1px);
+    background-size:24px 24px;
   }
   .lp-flow{display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-3);}
   .lp-flow-node{
@@ -3351,6 +3370,12 @@
     transition:opacity .5s cubic-bezier(.2,.6,.2,1),transform .5s cubic-bezier(.2,.6,.2,1);}
   .lp-reveal.is-in{opacity:1;transform:none;}
   .lp-rise{animation:lp-rise .6s cubic-bezier(.2,.6,.2,1) both;}
+  /* У заголовка две анимации: появление и перелив градиента. Одного свойства
+     animation на обе не хватает — .lp-rise затирала перелив целиком, и ровно
+     на первом показе лендинга (там, где на него и смотрят) имя стояло
+     одноцветным. В тёмной теме перелив было видно лишь потому, что она
+     включается перерисовкой, а в ней класса .lp-rise уже нет. */
+  .lp-h1.lp-rise{animation:lp-rise .6s cubic-bezier(.2,.6,.2,1) both, lp-h1-flow 5s linear infinite;}
   @keyframes lp-rise{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:none;}}
   .lp-tile:hover{transform:translateY(-2px);border-color:var(--border-strong);box-shadow:var(--elevation-low);}
   .lp-card:hover{transform:translateY(-2px);}
