@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261014-153829">
+<meta name="beeatlas-build" content="20261014-154719">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -3015,17 +3015,17 @@
   .lp-shot-head{display:flex;align-items:center;gap:var(--space-3);}
   .lp-shot-title{font-size:17px;line-height:22px;letter-spacing:.2px;font-weight:500;}
   /* Силуэт первичной кнопки: брендовый фон и чёрный текст, как у .btn-primary.
-     Весь снимок — экран в масштабе примерно 0.75 (заголовок 17 вместо 26,
-     число в тайле 20 вместо 32). Кнопка живёт в том же масштабе: текст 12 и
-     глиф 14 вместо 15 и 18. Шкала иконок 18/20/24 здесь не нарушена — снимок
-     декоративный, настоящих контролов в нём нет. */
+     Весь снимок — экран в масштабе примерно 0.65 (заголовок 17 вместо 26,
+     число в тайле 20 вместо 32), и кнопка живёт в том же масштабе: текст 11
+     вместо 15, высота 20 вместо 40 по ДС. Глифа здесь нет совсем — в снимке
+     он на любом размере читался крупнее самой подписи. Подпись по образцу
+     продукта: там кнопки называются «Создать CJ», «Создать проект». */
   .lp-shot-btn{
-    display:inline-flex;align-items:center;gap:2px;margin-left:auto;height:22px;
-    padding:0 var(--space-2);border-radius:var(--size-border-radius-x4);
+    display:inline-flex;align-items:center;margin-left:auto;height:20px;
+    padding:0 var(--space-3);border-radius:var(--size-border-radius-x4);
     background:var(--color-background-brand);color:var(--color-text-black-active);
-    font-size:12px;line-height:14px;letter-spacing:.2px;font-weight:500;
+    font-size:11px;line-height:14px;letter-spacing:.2px;font-weight:500;white-space:nowrap;
   }
-  .lp-shot-btn .beeline-icons{width:14px;height:14px;font-size:14px;}
   .lp-shot-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-3);}
   .lp-shot-tile{
     border:1px solid var(--border);border-radius:var(--size-border-radius-x6);
@@ -3074,10 +3074,14 @@
   .lp-sec-head{margin-bottom:var(--size-spacing-x8);}
 
   .lp-grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-6);}
+  /* Стекло: собственной границы нет — кант даёт .lp-glass, иначе поверх его
+     канта легла бы вторая рамка. Заливка полупрозрачная, фолбэк первой строкой. */
   .lp-tile{
-    background:var(--bg);border:1px solid var(--border);border-radius:var(--size-border-radius-x6);
+    background:var(--bg);
+    background:color-mix(in srgb, var(--bg) 58%, transparent);
+    border-radius:var(--size-border-radius-x6);
     padding:var(--size-spacing-x6);display:flex;flex-direction:column;gap:var(--space-3);
-    transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease;
+    transition:transform .15s ease,box-shadow .15s ease;
   }
   .lp-tile-top{display:flex;align-items:center;gap:var(--space-2);}
   .lp-tile-title{font-size:17px;line-height:22px;letter-spacing:.2px;font-weight:700;overflow-wrap:anywhere;}
@@ -3113,17 +3117,21 @@
      и затемнённый снизу дают толщину, блик сверху — отражение, тень — объём.
      color-mix идёт вторым объявлением: браузер без его поддержки оставит
      непрозрачную заливку из первой строки и просто не получит прозрачности. */
+  /* Канты и внешняя тень вынесены в переменные: карточки витрины и ролей
+     поднимаются по наведению, и их собственная тень иначе затирала бы весь
+     список box-shadow вместе с кантами — стекло на hover пропадало. */
   .lp-glass{
     position:relative;isolation:isolate;
-    -webkit-backdrop-filter:blur(16px) saturate(1.5);
-    backdrop-filter:blur(16px) saturate(1.5);
-    box-shadow:
+    --glass-edges:
       inset 0 1.5px 0 rgba(255,255,255,.9),
       inset 1.5px 0 0 rgba(255,255,255,.6),
       inset 0 -1.5px 0 rgba(120,110,160,.22),
       inset -1.5px 0 0 rgba(120,110,160,.16),
-      inset 0 0 0 1px rgba(255,255,255,.4),
-      0 24px 48px -30px rgba(60,40,110,.32);
+      inset 0 0 0 1px rgba(255,255,255,.4);
+    --glass-drop:0 24px 48px -30px rgba(60,40,110,.32);
+    -webkit-backdrop-filter:blur(16px) saturate(1.5);
+    backdrop-filter:blur(16px) saturate(1.5);
+    box-shadow:var(--glass-edges),var(--glass-drop);
   }
   /* Блик лежит отдельным слоем под контентом: у плиты есть дети, выходящие
      за её край (объект в финальном блоке), обрезать всю плиту ради блика нельзя. */
@@ -3133,13 +3141,13 @@
     pointer-events:none;
   }
   [data-theme="dark"] .lp-glass{
-    box-shadow:
+    --glass-edges:
       inset 0 1.5px 0 rgba(255,255,255,.18),
       inset 1.5px 0 0 rgba(255,255,255,.1),
       inset 0 -1.5px 0 rgba(0,0,0,.4),
       inset -1.5px 0 0 rgba(0,0,0,.3),
-      inset 0 0 0 1px rgba(255,255,255,.06),
-      0 24px 48px -30px rgba(0,0,0,.7);
+      inset 0 0 0 1px rgba(255,255,255,.06);
+    --glass-drop:0 24px 48px -30px rgba(0,0,0,.7);
   }
   [data-theme="dark"] .lp-glass::before{
     background:linear-gradient(170deg,rgba(255,255,255,.12) 0%,rgba(255,255,255,.03) 42%,rgba(255,255,255,0) 70%);
@@ -3220,13 +3228,15 @@
   .lp-svc-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:var(--space-6);}
   .lp-svc{
     grid-column:span 4;display:flex;overflow:hidden;position:relative;
-    border:1px solid var(--border);border-radius:var(--size-border-radius-x12);
+    border-radius:var(--size-border-radius-x12);
     background:var(--bg);
-    transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease;
+    background:color-mix(in srgb, var(--bg) 58%, transparent);
+    transition:transform .2s ease,box-shadow .2s ease;
   }
   .lp-svc-lead{grid-column:span 6;}
   .lp-svc[data-action]{cursor:pointer;}
-  .lp-svc[data-action]:hover{transform:translateY(-4px);border-color:var(--border-strong);box-shadow:var(--elevation-medium);}
+  .lp-svc[data-action]:hover{transform:translateY(-4px);--glass-drop:0 28px 56px -26px rgba(60,40,110,.44);}
+  [data-theme="dark"] .lp-svc[data-action]:hover{--glass-drop:0 28px 56px -26px rgba(0,0,0,.82);}
   .lp-svc[data-action]:focus-visible{outline:2px solid var(--color-border-focus);outline-offset:2px;}
   /* Тонированная половина. У крупной карточки она стоит колонкой сбоку,
      у компактной — лежит полосой сверху. */
@@ -3259,7 +3269,7 @@
      Заливку здесь не берём: это пометка, а не статус в колонке таблицы. */
   .lp-svc-soon{
     display:inline-flex;align-items:center;gap:var(--space-2);margin-top:auto;
-    font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-tertiary);
+    font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);
   }
   /* Нераскрытый раздел объект не приглушает: «скоро» сказано текстом, а
      обесцвеченные девять карточек из тринадцати гасили бы всю витрину. */
@@ -3276,11 +3286,13 @@
   .lp-svc-sm .lp-svc-title{font-size:17px;line-height:22px;}
   .lp-svc-sm .lp-svc-desc{font-size:13px;line-height:18px;}
   /* Тон половины по слою — те же цвета, что у значков разделов в продукте */
-  .lp-tone-pink .lp-svc-art{background:var(--pink-bg);}
-  .lp-tone-orange .lp-svc-art{background:var(--orange-bg);}
-  .lp-tone-blue .lp-svc-art{background:var(--blue-bg);}
-  .lp-tone-green .lp-svc-art{background:var(--green-bg);}
-  .lp-tone-gray .lp-svc-art{background:var(--gray-bg);}
+  /* Тон половины полупрозрачен: блик плиты лежит под детьми, и непрозрачная
+     заливка гасила бы стекло ровно на цветной половине карточки. */
+  .lp-tone-pink .lp-svc-art{background:var(--pink-bg);background:color-mix(in srgb, var(--pink-bg) 72%, transparent);}
+  .lp-tone-orange .lp-svc-art{background:var(--orange-bg);background:color-mix(in srgb, var(--orange-bg) 72%, transparent);}
+  .lp-tone-blue .lp-svc-art{background:var(--blue-bg);background:color-mix(in srgb, var(--blue-bg) 72%, transparent);}
+  .lp-tone-green .lp-svc-art{background:var(--green-bg);background:color-mix(in srgb, var(--green-bg) 72%, transparent);}
+  .lp-tone-gray .lp-svc-art{background:var(--gray-bg);background:color-mix(in srgb, var(--gray-bg) 72%, transparent);}
 
   /* ── Декор ────────────────────────────────────────────────────────────
      Референсы держатся на «воздушных» деталях: мягкие цветные пятна за
@@ -3365,7 +3377,10 @@
      включается перерисовкой, а в ней класса .lp-rise уже нет. */
   .lp-h1.lp-rise{animation:lp-rise .6s cubic-bezier(.2,.6,.2,1) both, lp-h1-flow 5s linear infinite;}
   @keyframes lp-rise{from{opacity:0;transform:translateY(24px);}to{opacity:1;transform:none;}}
-  .lp-tile:hover{transform:translateY(-2px);border-color:var(--border-strong);box-shadow:var(--elevation-low);}
+  /* По наведению плита приподнимается и тень становится глубже — канты стекла
+     при этом остаются на месте (меняется только --glass-drop) */
+  .lp-tile:hover{transform:translateY(-2px);--glass-drop:0 20px 40px -24px rgba(60,40,110,.42);}
+  [data-theme="dark"] .lp-tile:hover{--glass-drop:0 20px 40px -24px rgba(0,0,0,.8);}
   .lp-card:hover{transform:translateY(-2px);}
   .lp-flow-node:hover{transform:translateY(-2px);}
   @keyframes lp-pulse{0%,70%,100%{opacity:.35;}35%{opacity:1;}}
@@ -7388,7 +7403,7 @@ function LpAppShot(){
       <div class="lp-shot-main">
         <div class="lp-shot-head">
           <div class="lp-shot-title">Каталог Е2Е-сценариев</div>
-          <span class="lp-shot-btn">${icon("plus")}Сценарий</span>
+          <span class="lp-shot-btn">Создать сценарий</span>
         </div>
         <div class="lp-shot-tiles">
           <div class="lp-shot-tile">
@@ -7538,7 +7553,7 @@ function LpSvcCard(id, i){
   const it = lpNavItem(id), g = lpLayerOf(id);
   if(!it || !g) return "";
   const lead = LP_LEAD.includes(id);
-  const cls = ["lp-svc", lead ? "lp-svc-lead" : "lp-svc-sm", `lp-tone-${g.color}`,
+  const cls = ["lp-svc", "lp-glass", lead ? "lp-svc-lead" : "lp-svc-sm", `lp-tone-${g.color}`,
     lead && i % 2 ? "is-flip" : "", it.filled ? "" : "is-soon"].filter(Boolean).join(" ");
   /* Раздел на лендинге открывается через вход — внутреннее пространство
      неавторизованному не собирается (см. render и state.auth). Куда человек
@@ -7652,7 +7667,7 @@ function LpRoles(){
     <div class="lp-sec-head"><h2 class="lp-h2">Кому пригодится</h2></div>
     <div class="lp-grid3">
       ${LP_ROLES.map(r=>`
-        <div class="lp-tile">
+        <div class="lp-tile lp-glass">
           <div class="lp-tile-top"><div class="home-svc-icon home-svc-${r.color}">${icon(r.icon)}</div></div>
           <div class="lp-tile-title">${escapeHtml(r.title)}</div>
           <div class="lp-tile-focus">${escapeHtml(r.focus)}</div>
