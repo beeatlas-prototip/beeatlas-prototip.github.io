@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261014-155806">
+<meta name="beeatlas-build" content="20261014-161233">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -909,13 +909,36 @@
      не больше одного на страницу. Фон и текст берём парой overlay-токенов: в светлой
      теме это тёмная плашка с белым текстом, в тёмной — светлая с тёмным, то есть
      инверсию задаёт ДС, а не хардкод. Скругление карточки 12 (x6), padding 24 (x6). */
+  /* Плита стеклянная (.glass в разметке). Канты заданы тут собственные и
+     ОДИНАКОВЫЕ в обеих темах: сама карточка инвертирована относительно темы
+     (в светлой она тёмная, в тёмной — светлая), поэтому тёмные канты из
+     [data-theme="dark"] .glass легли бы на светлую плиту и грань пропала бы. */
   .home-agent{
     background:linear-gradient(135deg, var(--color-button-overlay-background) 0%, var(--color-button-overlay-background-pressed) 100%);
+    background:linear-gradient(135deg,
+      color-mix(in srgb, var(--color-button-overlay-background) 88%, transparent) 0%,
+      color-mix(in srgb, var(--color-button-overlay-background-pressed) 88%, transparent) 100%);
     color:var(--color-text-active-inverse);
     border-radius:var(--size-border-radius-x6);
     padding:var(--size-spacing-x6);
     margin-bottom:var(--space-9);
     display:flex;flex-direction:column;gap:var(--space-5);
+  }
+  .home-agent,[data-theme="dark"] .home-agent{
+    --glass-edges:
+      inset 0 1.5px 0 color-mix(in srgb, currentColor 34%, transparent),
+      inset 1.5px 0 0 color-mix(in srgb, currentColor 22%, transparent),
+      inset 0 -1.5px 0 rgba(0,0,0,.35),
+      inset -1.5px 0 0 rgba(0,0,0,.25),
+      inset 0 0 0 1px color-mix(in srgb, currentColor 12%, transparent);
+    --glass-drop:0 18px 36px -24px rgba(0,0,0,.5);
+  }
+  /* Блик на тёмной плите читается слабее белого — берём цвет текста карточки */
+  .home-agent.glass::before,[data-theme="dark"] .home-agent.glass::before{
+    background:linear-gradient(170deg,
+      color-mix(in srgb, currentColor 16%, transparent) 0%,
+      color-mix(in srgb, currentColor 4%, transparent) 42%,
+      transparent 70%);
   }
   .home-agent__head{display:flex;align-items:center;gap:var(--space-4);}
   .home-agent__ava{width:40px;height:40px;border-radius:var(--size-border-radius-x6);flex:0 0 auto;
@@ -959,8 +982,29 @@
 
   /* ═══ Сервисы ═══ группа — заголовок с цветной меткой, под ним плитки по три в ряд
      (сетка страницы: 12 колонок → col-4; ниже 1280 получается две, ниже 900 одна). */
-  .home-grp{margin-bottom:var(--space-7);}
+  /* Группа — стеклянная панель с точечной сеткой: тот же приём, что у секций
+     лендинга. Плитки внутри остаются плотными, иначе стекло ложилось бы на
+     стекло и текст читался бы по мутному фону. */
+  .home-grp{
+    margin-bottom:var(--space-6);
+    border-radius:var(--size-border-radius-x12);padding:var(--size-spacing-x6);
+    background-color:color-mix(in srgb, var(--text) 3.5%, transparent);
+    /* Сетка здесь бледнее, чем на лендинге: это рабочий экран, и точки в полную
+       силу спорят с содержимым плиток. */
+    background-image:radial-gradient(color-mix(in srgb, var(--border-strong) 55%, transparent) 1px,transparent 1px);
+    background-size:24px 24px;
+    --glass-ring:inset 0 0 0 1px var(--border);
+  }
   .home-grp:last-child{margin-bottom:0;}
+  /* Внутри панели плитки делят её ширину поровну по числу разделов в группе
+     (--grp-cols приходит из разметки, максимум 4), а не встают в жёсткие
+     четыре колонки сетки страницы: у групп из двух и четырёх разделов ряд
+     иначе обрывался посередине, и на панели эта дыра читалась как
+     незаполненный блок. Ниже 1280 колонок две, ниже 900 — одна. */
+  .home-grp .grid12{grid-template-columns:repeat(var(--grp-cols,3),minmax(0,1fr));}
+  .home-grp .grid12 > .col-4{grid-column:auto;}
+  @media (max-width:1279px){ .home-grp .grid12{grid-template-columns:repeat(2,minmax(0,1fr));} }
+  @media (max-width:899px){ .home-grp .grid12{grid-template-columns:minmax(0,1fr);} }
   .home-grp-head{display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-4);}
   .home-grp-title{font-size:17px;line-height:22px;letter-spacing:.2px;font-weight:500;margin:0;}
   .home-group-dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto;}
@@ -969,16 +1013,23 @@
   .home-dot-blue{background:var(--blue-text);}
   .home-dot-green{background:var(--green-text);}
   .home-dot-gray{background:var(--gray-text);}
-  .home-tile{background:var(--bg);border:1px solid var(--border);border-radius:var(--size-border-radius-x6);
+  /* Плитка на панели: своей рамки нет — её роль играет край плотной заливки
+     поверх сетки, а глубину даёт тень. Так плитка читается как предмет на
+     стекле, а не как вторая рамка внутри рамки панели. */
+  .home-tile{background:var(--bg);border-radius:var(--size-border-radius-x6);
     padding:var(--size-spacing-x6);display:flex;flex-direction:column;gap:var(--space-3);cursor:pointer;
-    transition:border-color .15s ease, box-shadow .15s ease;}
-  .home-tile:hover{border-color:var(--border-strong);box-shadow:var(--elevation-low);}
+    box-shadow:0 1px 2px rgba(25,28,52,.06), 0 8px 20px -16px rgba(25,28,52,.28);
+    transition:transform .15s ease, box-shadow .15s ease;}
+  .home-tile:hover{transform:translateY(-2px);box-shadow:0 2px 4px rgba(25,28,52,.08), 0 16px 32px -18px rgba(25,28,52,.4);}
+  [data-theme="dark"] .home-tile{box-shadow:0 1px 2px rgba(0,0,0,.5), 0 8px 20px -16px rgba(0,0,0,.8);}
+  [data-theme="dark"] .home-tile:hover{box-shadow:0 2px 4px rgba(0,0,0,.6), 0 16px 32px -18px rgba(0,0,0,.9);}
   .home-tile-top{display:flex;align-items:center;gap:var(--space-2);}
   .home-tile-title{font-size:17px;line-height:22px;letter-spacing:.2px;font-weight:700;overflow-wrap:anywhere;}
   .home-tile-desc{font-size:13px;line-height:1.5;color:var(--text-secondary);overflow-wrap:anywhere;
     display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
   .home-tile.is-soon{cursor:default;}
-  .home-tile.is-soon:hover{border-color:var(--border);box-shadow:none;}
+  .home-tile.is-soon:hover{transform:none;box-shadow:0 1px 2px rgba(25,28,52,.06), 0 8px 20px -16px rgba(25,28,52,.28);}
+  [data-theme="dark"] .home-tile.is-soon:hover{box-shadow:0 1px 2px rgba(0,0,0,.5), 0 8px 20px -16px rgba(0,0,0,.8);}
   .home-tile.is-soon .home-tile-title{color:var(--text-secondary);}
   .home-tile-go{margin-left:auto;color:var(--text-tertiary);opacity:0;flex:0 0 auto;}
   .home-tile-go .beeline-icons{width:18px;height:18px;font-size:18px;}
@@ -3074,7 +3125,7 @@
   .lp-sec-head{margin-bottom:var(--size-spacing-x8);}
 
   .lp-grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-6);}
-  /* Стекло: собственной границы нет — кант даёт .lp-glass, иначе поверх его
+  /* Стекло: собственной границы нет — кант даёт .glass, иначе поверх его
      канта легла бы вторая рамка. Заливка полупрозрачная, фолбэк первой строкой. */
   .lp-tile{
     background:var(--bg);
@@ -3109,9 +3160,11 @@
   .lp-stat-num{font-size:var(--font-size-h3);line-height:var(--font-line-height-h3);letter-spacing:.3px;font-weight:500;}
   .lp-stat-cap{font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);}
 
-  /* ── Стеклянные плиты секций ───────────────────────────────────────────
-     Герой стоит на подложке, и стекло там читается по ней. У секций ниже
-     подложки нет и быть не должно — поэтому стеклянность здесь держится на
+  /* ── Стеклянные плиты ──────────────────────────────────────────────────
+     Общий класс: им пользуются и секции лендинга, и блоки внутри продукта
+     (карточка агента, панели «Сервисов»), поэтому имя без приставки lp-.
+     Герой стоит на подложке, и стекло там читается по ней. У плит без
+     подложки стеклянность держится на
      другом: заливка полупрозрачная (сквозь неё видно страницу), backdrop
      размывает и подсвечивает то, что попало под плиту, светлый кант сверху
      и затемнённый снизу дают толщину, блик сверху — отражение, тень — объём.
@@ -3120,7 +3173,7 @@
   /* Канты и внешняя тень вынесены в переменные: карточки витрины и ролей
      поднимаются по наведению, и их собственная тень иначе затирала бы весь
      список box-shadow вместе с кантами — стекло на hover пропадало. */
-  .lp-glass{
+  .glass{
     position:relative;isolation:isolate;
     --glass-edges:
       inset 0 1.5px 0 rgba(255,255,255,.9),
@@ -3138,12 +3191,12 @@
   }
   /* Блик лежит отдельным слоем под контентом: у плиты есть дети, выходящие
      за её край (объект в финальном блоке), обрезать всю плиту ради блика нельзя. */
-  .lp-glass::before{
+  .glass::before{
     content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;overflow:hidden;
     background:linear-gradient(170deg,rgba(255,255,255,.55) 0%,rgba(255,255,255,.12) 42%,rgba(255,255,255,0) 70%);
     pointer-events:none;
   }
-  [data-theme="dark"] .lp-glass{
+  [data-theme="dark"] .glass{
     --glass-edges:
       inset 0 1.5px 0 rgba(255,255,255,.18),
       inset 1.5px 0 0 rgba(255,255,255,.1),
@@ -3152,13 +3205,13 @@
       inset 0 0 0 1px rgba(255,255,255,.06);
     --glass-drop:0 24px 48px -30px rgba(0,0,0,.7);
   }
-  [data-theme="dark"] .lp-glass::before{
+  [data-theme="dark"] .glass::before{
     background:linear-gradient(170deg,rgba(255,255,255,.12) 0%,rgba(255,255,255,.03) 42%,rgba(255,255,255,0) 70%);
   }
 
   /* ── Как устроено: цепочка объектов на панели в точку ─────────────────── */
   /* Стекло с точками: текстуру держит та же сетка шагом 24, что под героем,
-     форму — кант, блик и тень .lp-glass. Совсем прозрачной плита быть не может:
+     форму — кант, блик и тень .glass. Совсем прозрачной плита быть не может:
      верхний кант стекла белый, и на белом фоне страницы верх плиты вместе с
      правым верхним углом просто пропадал. Лёгкая дымка (3.5 % цвета текста)
      отделяет плиту от фона и в светлой, и в тёмной теме — там она, наоборот,
@@ -7215,7 +7268,7 @@ function HomeServiceTile(it, color){
     <div class="home-tile col-4 ${it.filled?"":"is-soon"}" ${it.filled?`data-action="nav" data-nav="${it.id}"`:""}>
       <div class="home-tile-top">
         <div class="home-svc-icon home-svc-${color}">${icon(it.icon)}</div>
-        ${it.filled?"":'<span class="badge gray">скоро</span>'}
+        ${it.filled?"":'<span class="badge gray">Скоро</span>'}
         <span class="home-tile-go">${icon("chevronRight")}</span>
       </div>
       <div class="home-tile-title">${escapeHtml(it.label)}</div>
@@ -7226,12 +7279,12 @@ function HomeServiceTile(it, color){
 
 function HomeServiceGroup(g){
   return `
-    <div class="home-grp">
+    <div class="home-grp glass">
       <div class="home-grp-head">
         <span class="home-group-dot home-dot-${g.color}"></span>
         <h3 class="home-grp-title">${escapeHtml(g.label)}</h3>
       </div>
-      <div class="grid12">${g.items.map(it=>HomeServiceTile(it, g.color)).join("")}</div>
+      <div class="grid12" style="--grp-cols:${Math.min(g.items.length, 4)}">${g.items.map(it=>HomeServiceTile(it, g.color)).join("")}</div>
     </div>
   `;
 }
@@ -7242,7 +7295,7 @@ const HOME_SEARCH_CHIPS = ["beeatlas","Публикация приложения
    что были в макете, только с цифрой, иконкой и ссылкой в каждой карточке. */
 function HomeAgentCard(){
   return `
-    <div class="home-agent">
+    <div class="home-agent glass">
       <div class="home-agent__head">
         <span class="home-agent__ava">${icon("robot")}</span>
         <div>
@@ -7565,7 +7618,7 @@ function LpSvcCard(id, i){
   const it = lpNavItem(id), g = lpLayerOf(id);
   if(!it || !g) return "";
   const lead = LP_LEAD.includes(id);
-  const cls = ["lp-svc", "lp-glass", lead ? "lp-svc-lead" : "lp-svc-sm", `lp-tone-${g.color}`,
+  const cls = ["lp-svc", "glass", lead ? "lp-svc-lead" : "lp-svc-sm", `lp-tone-${g.color}`,
     lead && i % 2 ? "is-flip" : "", it.filled ? "" : "is-soon"].filter(Boolean).join(" ");
   /* Раздел на лендинге открывается через вход — внутреннее пространство
      неавторизованному не собирается (см. render и state.auth). Куда человек
@@ -7615,7 +7668,7 @@ function LpAdvantages(){
   <section class="lp-sec lp-reveal" id="lpAdvantages">
     <div class="lp-sec-head"><h2 class="lp-h2">Преимущества</h2></div>
     <div class="lp-bento">
-      <div class="lp-card lp-glass lp-c7 lp-bg-lemon">
+      <div class="lp-card glass lp-c7 lp-bg-lemon">
         <h3>Одна модель вместо разрозненных документов</h3>
         <p>
           Сценарии, приложения и вызовы описаны один раз и ссылаются друг на друга.
@@ -7627,7 +7680,7 @@ function LpAdvantages(){
           <div><div class="lp-stat-num" data-count="640">0</div><div class="lp-stat-cap">приложений</div></div>
         </div>
       </div>
-      <div class="lp-card lp-glass lp-c5 lp-bg-teal">
+      <div class="lp-card glass lp-c5 lp-bg-teal">
         <h3>Связи видно сразу</h3>
         <p>
           От шага клиентского пути до вызова и приложения, которое его реализует,
@@ -7635,14 +7688,14 @@ function LpAdvantages(){
           цепочкой подсвечиваются прямо в таблице
         </p>
       </div>
-      <div class="lp-card lp-glass lp-c5 lp-bg-purple">
+      <div class="lp-card glass lp-c5 lp-bg-purple">
         <h3>Агенты-помощники</h3>
         <p>
           Агент разбирает Use Case, предлагает оценку и находит похожие решения.
           Предложение остаётся предложением: итоговое решение принимает человек
         </p>
       </div>
-      <div class="lp-card lp-glass lp-c7 lp-bg-magenta">
+      <div class="lp-card glass lp-c7 lp-bg-magenta">
         <h3>Ветки и версии</h3>
         <ul>
           <li>Черновик живёт в отдельной ветке — основная модель не меняется, пока он не влит</li>
@@ -7658,7 +7711,7 @@ function LpFlow(){
   return `
   <section class="lp-sec lp-reveal" id="lpFlow">
     <div class="lp-sec-head"><h2 class="lp-h2">Как устроено</h2></div>
-    <div class="lp-panel lp-glass">
+    <div class="lp-panel glass">
       <div class="lp-flow">
         ${LP_FLOW.map((n,i)=>`
           ${i ? `<span class="lp-flow-arrow" style="animation-delay:${i*180}ms">${icon("chevronRight")}</span>` : ""}
@@ -7679,7 +7732,7 @@ function LpRoles(){
     <div class="lp-sec-head"><h2 class="lp-h2">Кому пригодится</h2></div>
     <div class="lp-grid3">
       ${LP_ROLES.map(r=>`
-        <div class="lp-tile lp-glass">
+        <div class="lp-tile glass">
           <div class="lp-tile-top"><div class="home-svc-icon home-svc-${r.color}">${icon(r.icon)}</div></div>
           <div class="lp-tile-title">${escapeHtml(r.title)}</div>
           <div class="lp-tile-focus">${escapeHtml(r.focus)}</div>
@@ -7692,7 +7745,7 @@ function LpRoles(){
 function LpCta(){
   return `
   <section class="lp-sec lp-reveal">
-    <div class="lp-cta lp-glass">
+    <div class="lp-cta glass">
       <div class="lp-cta-text">
         <h2>Войди и продолжи работу</h2>
         <p>
