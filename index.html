@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261014-143800">
+<meta name="beeatlas-build" content="20261014-145303">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -3193,7 +3193,19 @@
   .lp-cta-text{flex:1 1 420px;min-width:0;max-width:620px;}
   .lp-cta h2{font-size:var(--font-size-h3);line-height:var(--font-line-height-h3);letter-spacing:.3px;font-weight:500;margin:0 0 var(--space-4);}
   .lp-cta p{font-size:17px;line-height:22px;letter-spacing:.2px;color:var(--text-secondary);margin:0;}
-  .lp-footer{margin-top:var(--layout-gap-page);padding-bottom:var(--size-spacing-x10);overflow:hidden;}
+  .lp-footer{position:relative;margin-top:var(--layout-gap-page);padding-bottom:var(--size-spacing-x10);overflow:hidden;}
+  /* Сетка подвала — зеркало шапки: у начала подвала точек почти нет, к низу
+     страницы они набирают силу. Подвал лежит вне .lp-wrap, поэтому сетка и так
+     во всю ширину окна. Шаг 24 — общий с шапкой и подложкой героя. */
+  .lp-footer::before{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background-image:radial-gradient(var(--border-strong) 1px,transparent 1px);
+    background-size:24px 24px;
+    -webkit-mask-image:linear-gradient(to bottom, transparent 4%, rgba(0,0,0,.18) 32%, rgba(0,0,0,.55) 64%, #000 100%);
+    mask-image:linear-gradient(to bottom, transparent 4%, rgba(0,0,0,.18) 32%, rgba(0,0,0,.55) 64%, #000 100%);
+  }
+  /* Содержимое подвала лежит над сеткой */
+  .lp-footer .lp-wrap,.lp-mark{position:relative;z-index:1;}
   .lp-foot-row{
     display:flex;align-items:center;gap:var(--size-spacing-x6);flex-wrap:wrap;
     padding-top:var(--size-spacing-x6);border-top:1px solid var(--border);
