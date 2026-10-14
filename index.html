@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261014-145303">
+<meta name="beeatlas-build" content="20261014-153451">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -2814,18 +2814,6 @@
     position:sticky;top:0;z-index:30;height:var(--header-h);flex:0 0 auto;
     background:var(--bg);border-bottom:1px solid var(--border);
   }
-  /* Та же точечная сетка, что под героем, но перевёрнутая: у верхнего края
-     страницы точек почти нет, к низу шапки они набирают силу и подхватываются
-     подложкой героя. Шаг 24 — общий, иначе на стыке читались бы две разные сетки. */
-  .lp-header::after{
-    content:"";position:absolute;inset:0;pointer-events:none;
-    background-image:radial-gradient(var(--border-strong) 1px,transparent 1px);
-    background-size:24px 24px;
-    -webkit-mask-image:linear-gradient(to bottom, transparent 6%, rgba(0,0,0,.35) 48%, #000 100%);
-    mask-image:linear-gradient(to bottom, transparent 6%, rgba(0,0,0,.35) 48%, #000 100%);
-  }
-  /* Содержимое шапки лежит над сеткой */
-  .lp-header .lp-wrap{position:relative;z-index:1;}
   .lp-header .lp-wrap{height:100%;display:flex;align-items:center;gap:var(--size-spacing-x10);}
   .lp-brand{font-weight:700;font-size:20px;line-height:28px;letter-spacing:.2px;white-space:nowrap;}
   .lp-header-right{margin-left:auto;display:flex;align-items:center;gap:var(--size-spacing-x5);}
@@ -3194,18 +3182,21 @@
   .lp-cta h2{font-size:var(--font-size-h3);line-height:var(--font-line-height-h3);letter-spacing:.3px;font-weight:500;margin:0 0 var(--space-4);}
   .lp-cta p{font-size:17px;line-height:22px;letter-spacing:.2px;color:var(--text-secondary);margin:0;}
   .lp-footer{position:relative;margin-top:var(--layout-gap-page);padding-bottom:var(--size-spacing-x10);overflow:hidden;}
-  /* Сетка подвала — зеркало шапки: у начала подвала точек почти нет, к низу
-     страницы они набирают силу. Подвал лежит вне .lp-wrap, поэтому сетка и так
-     во всю ширину окна. Шаг 24 — общий с шапкой и подложкой героя. */
+  /* Сетка подвала — то же, что под героем: у начала подвала точек почти нет,
+     к низу страницы они набирают силу. Подвал лежит вне .lp-wrap, поэтому сетка
+     и так во всю ширину окна. Шаг 24 — общий с подложкой героя.
+     Сетка лежит ПОВЕРХ крупного имени (z-index 2 против 1): имя закрывает собой
+     середину подвала, и под ним точки просто пропадали — ровно там, где маска
+     даёт им полную силу. Поверх буквы растр читается как чертёж, а не как сор. */
   .lp-footer::before{
-    content:"";position:absolute;inset:0;pointer-events:none;
+    content:"";position:absolute;inset:0;z-index:2;pointer-events:none;
     background-image:radial-gradient(var(--border-strong) 1px,transparent 1px);
     background-size:24px 24px;
-    -webkit-mask-image:linear-gradient(to bottom, transparent 4%, rgba(0,0,0,.18) 32%, rgba(0,0,0,.55) 64%, #000 100%);
-    mask-image:linear-gradient(to bottom, transparent 4%, rgba(0,0,0,.18) 32%, rgba(0,0,0,.55) 64%, #000 100%);
+    -webkit-mask-image:linear-gradient(to bottom, transparent 2%, rgba(0,0,0,.4) 30%, rgba(0,0,0,.8) 62%, #000 88%);
+    mask-image:linear-gradient(to bottom, transparent 2%, rgba(0,0,0,.4) 30%, rgba(0,0,0,.8) 62%, #000 88%);
   }
-  /* Содержимое подвала лежит над сеткой */
-  .lp-footer .lp-wrap,.lp-mark{position:relative;z-index:1;}
+  /* Строка ссылок — над сеткой; крупное имя лежит под ней (z-index у .lp-mark) */
+  .lp-footer .lp-wrap{position:relative;z-index:3;}
   .lp-foot-row{
     display:flex;align-items:center;gap:var(--size-spacing-x6);flex-wrap:wrap;
     padding-top:var(--size-spacing-x6);border-top:1px solid var(--border);
@@ -3216,6 +3207,7 @@
   /* Крупное начертание имени продукта в подвале — приём с лендингов Yellowbe.
      Декорация, поэтому aria-hidden и без собственного смысла. */
   .lp-mark{
+    position:relative;z-index:1;
     margin-top:var(--size-spacing-x10);font-weight:700;line-height:.8;text-align:center;
     font-size:clamp(88px,26vw,400px);letter-spacing:-.02em;color:var(--bg-alt);user-select:none;
   }
