@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261014-212718">
+<meta name="beeatlas-build" content="20261014-213046">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -53,10 +53,11 @@
     --color-text-light-inactive: rgba(255, 255, 255, 0.6);
     --color-text-light-disabled: rgba(255, 255, 255, 0.38);
 
-    /* Elevation */
-    --elevation-low: 0px 2px 10px rgba(0, 0, 0, 0.08), 0px 2px 8px rgba(0, 0, 0, 0.08);
-    --elevation-medium: 0px 4px 30px rgba(0, 0, 0, 0.1), 0px 0px 10px rgba(0, 0, 0, 0.1);
-    --elevation-high: 0px 6px 38px rgba(0, 0, 0, 0.16), 0px 0px 10px rgba(0, 0, 0, 0.08);
+    /* Elevation — уровни Material 3 (две тени на уровень: ключевая и мягкая).
+       Прежние имена сохранены: на них завязаны карточки, поповеры и модалки. */
+    --elevation-low: 0px 1px 2px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15);
+    --elevation-medium: 0px 1px 2px rgba(0, 0, 0, 0.3), 0px 2px 6px 2px rgba(0, 0, 0, 0.15);
+    --elevation-high: 0px 1px 3px rgba(0, 0, 0, 0.3), 0px 4px 8px 3px rgba(0, 0, 0, 0.15);
     --font-family-header: 'Onest', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     --font-family-text: 'Onest', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     --font-family-code: 'Roboto Mono', monospace;
@@ -1660,13 +1661,16 @@
   .table-wrap > table tbody tr:last-child td:last-child,
   .table-wrap-fit > table tbody tr:last-child td:last-child,
   .table-scroll > table tbody tr:last-child td:last-child{border-bottom-right-radius:var(--size-border-radius-x6);}
-  /* ДС Table: body 15/400/18/0.2, header 15/500/20/0.2, padding 17-18 / 24 */
-  table{width:100%;border-collapse:collapse;font-size:14px;font-weight:400;line-height:18px;letter-spacing:.2px;}
+  /* M3 data table: тело body-medium 14/20, шапка title-small 14/20 весом 500,
+     отступ ячейки 16 со всех сторон. */
+  table{width:100%;border-collapse:collapse;font-size:14px;font-weight:400;line-height:20px;letter-spacing:.1px;}
   thead th{
     text-align:left;font-weight:500;font-size:14px;line-height:20px;letter-spacing:.2px;color:var(--text);
-    padding:18px var(--size-spacing-x6);border-bottom:1px solid var(--color-divider);background:var(--bg);white-space:nowrap;
+    /* M3 data table: высота строки 56 (padding 16 при тексте 14/20 + бордер),
+       горизонтальный отступ 16. Прежние 17/18/24 были из слепка Yellowbe. */
+    padding:var(--size-spacing-x4);border-bottom:1px solid var(--color-divider);background:var(--bg);white-space:nowrap;
   }
-  tbody td{padding:17px var(--size-spacing-x6);border-bottom:1px solid var(--color-divider);vertical-align:top;}
+  tbody td{padding:var(--size-spacing-x4);border-bottom:1px solid var(--color-divider);vertical-align:top;}
   tbody tr:last-child td{border-bottom:none;}
   /* Раскрытая часть — панель, а не строка данных: наведение на неё не должно
      её подкрашивать (выглядело как тень, наползающая на содержимое). */
