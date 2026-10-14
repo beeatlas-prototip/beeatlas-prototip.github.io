@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261014-115312">
+<meta name="beeatlas-build" content="20261014-130813">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -2839,15 +2839,16 @@
   /* В референсах заголовок героя набран жирным, а имя продукта стоит отдельной
      строкой («Дизайн-платформа / yellowbe»), и по заголовку переливается
      градиент — на лендинге Yellowbe это единственный цветной акцент в тексте.
-     Размер остаётся дсовским H1 54/66, вес — bold из токенов.
+     Имя продукта стоит первым и набрано крупнее шкалы текстов — 72/80. Это
+     леттеринг имени, а не заголовок интерфейса: тот же приём, что у крупного
+     начертания в подвале. Дескриптор под ним — дсовский H3, вес 400, secondary.
      Градиент собран только из purple и magenta: teal и aquamarine на светлом
      фоне героя дают 2.3:1 и в тексте не читаются. Худшая точка этого
      градиента — 4.6:1, то есть он проходит и как обычный текст, не только
      как крупный. */
   .lp-h1{
-    font-size:var(--font-size-h1);line-height:var(--font-line-height-h1);
-    letter-spacing:var(--font-letter-spacing-h1);font-weight:var(--font-weight-bold);
-    margin:0 0 var(--space-5);
+    font-size:72px;line-height:80px;letter-spacing:-.5px;font-weight:var(--font-weight-bold);
+    margin:0;
     background-image:linear-gradient(100deg,
       var(--color-accent-purple) 0%, var(--color-accent-magenta) 25%,
       var(--color-accent-purple) 50%, var(--color-accent-magenta) 75%,
@@ -2869,7 +2870,14 @@
       var(--color-accent-teal) 40%, var(--color-accent-magenta) 60%,
       var(--color-accent-purple) 80%, var(--color-accent-magenta) 100%);
   }
-  .lp-h1 em{font-style:normal;}
+  /* Дескриптор под именем — отдельный блок, а не потомок заголовка: токены
+     текста заданы полупрозрачными (secondary — rgba(25,28,52,.7)), и внутри
+     заголовка сквозь него просвечивал бы градиент имени. */
+  .lp-h1-sub{
+    margin:calc(-1 * var(--space-2)) 0 var(--space-5);
+    font-size:var(--font-size-h3);line-height:var(--font-line-height-h3);
+    letter-spacing:.3px;font-weight:400;color:var(--text-secondary);
+  }
   .lp-hero-sub{
     font-size:var(--font-size-body1);line-height:var(--font-line-height-body1);letter-spacing:.2px;
     color:var(--text-secondary);max-width:760px;margin:0 auto var(--size-spacing-x8);
@@ -3139,23 +3147,21 @@
   /* Объект у чётных крупных карточек стоит справа — ряд не выглядит
      одинаковыми близнецами (приём из референса beeline cloud). */
   .lp-svc-lead.is-flip{flex-direction:row-reverse;}
-  /* Компактная карточка — без объекта: цветом слоя здесь работает подложка
-     всей карточки, а не половина с картинкой. Текст на этих фонах читается —
-     заголовок 15.5:1, описание 5.7:1 (светлая тема), 9.2:1 и 5.3:1 (тёмная). */
-  .lp-svc-sm{flex-direction:column;border-color:transparent;}
-  .lp-svc-sm .lp-svc-body{padding:var(--size-spacing-x6);gap:var(--space-2);}
+  /* Компактная карточка — белая, со значком раздела слева: ровно так разделы
+     показаны на главной внутри продукта (.home-svc-icon — 40, радиус 24,
+     глиф 24, мягкий фон слоя). Объёмный объект и заливка карточки остались
+     только у крупных: в ряду из девяти они перетягивали на себя всё внимание. */
+  .lp-svc-sm{align-items:flex-start;padding:var(--size-spacing-x6);gap:var(--space-4);}
+  .lp-svc-ava{margin-top:2px;}
+  .lp-svc-sm .lp-svc-body{padding:0;gap:var(--space-2);}
   .lp-svc-sm .lp-svc-title{font-size:17px;line-height:22px;}
   .lp-svc-sm .lp-svc-desc{font-size:13px;line-height:18px;}
-  /* «Скоро» на цветной подложке берёт secondary: tertiary даёт там 3:1,
-     а это текст 13 px, ему нужно 4.5:1. */
-  .lp-svc-sm .lp-svc-soon{color:var(--text-secondary);}
-  /* Тон по слою — те же цвета, что у меток разделов в меню. У крупной карточки
-     тонирована половина с объектом, у компактной — карточка целиком. */
-  .lp-tone-pink .lp-svc-art,.lp-svc-sm.lp-tone-pink{background:var(--pink-bg);}
-  .lp-tone-orange .lp-svc-art,.lp-svc-sm.lp-tone-orange{background:var(--orange-bg);}
-  .lp-tone-blue .lp-svc-art,.lp-svc-sm.lp-tone-blue{background:var(--blue-bg);}
-  .lp-tone-green .lp-svc-art,.lp-svc-sm.lp-tone-green{background:var(--green-bg);}
-  .lp-tone-gray .lp-svc-art,.lp-svc-sm.lp-tone-gray{background:var(--gray-bg);}
+  /* Тон половины по слою — те же цвета, что у значков разделов в продукте */
+  .lp-tone-pink .lp-svc-art{background:var(--pink-bg);}
+  .lp-tone-orange .lp-svc-art{background:var(--orange-bg);}
+  .lp-tone-blue .lp-svc-art{background:var(--blue-bg);}
+  .lp-tone-green .lp-svc-art{background:var(--green-bg);}
+  .lp-tone-gray .lp-svc-art{background:var(--gray-bg);}
 
   /* ── Декор ────────────────────────────────────────────────────────────
      Референсы держатся на «воздушных» деталях: мягкие цветные пятна за
@@ -3246,7 +3252,8 @@
        съедает текст, поэтому ниже 1280 она идёт во всю ширину ряда. */
     .lp-svc-lead{grid-column:span 12;}
     .lp-svc{grid-column:span 6;}
-    .lp-h1{font-size:var(--font-size-h2);line-height:var(--font-line-height-h2);}
+    .lp-h1{font-size:var(--font-size-h1);line-height:var(--font-line-height-h1);letter-spacing:var(--font-letter-spacing-h1);}
+    .lp-h1-sub{font-size:var(--font-size-h4);line-height:var(--font-line-height-h4);}
     .lp-h2{font-size:var(--font-size-h3);line-height:var(--font-line-height-h3);}
     .lp-nav{display:none;}
   }
@@ -7332,16 +7339,17 @@ function LpHero(){
   <section class="lp-hero">
     ${LpHeroDeco()}
     <div ${rise(0,"lp-chips")}>${LP_ROLES.map(r=>`<span class="lp-chip">${escapeHtml(r.title)}</span>`).join("")}</div>
-    <h1 ${rise(1,"lp-h1")}>Архитектурная платформа<br><em>beeatlas</em></h1>
-    <p ${rise(2,"lp-hero-sub")}>
+    <h1 ${rise(1,"lp-h1")}>beeatlas</h1>
+    <div ${rise(2,"lp-h1-sub")}>Архитектурная платформа</div>
+    <p ${rise(3,"lp-hero-sub")}>
       Клиентские пути, сценарии, приложения и вызовы между ними живут одной связанной моделью.
       Войди по корпоративной учётной записи — и продолжай с того места, где остановилась команда.
     </p>
-    <div ${rise(3,"lp-hero-cta")}>
+    <div ${rise(4,"lp-hero-cta")}>
       <button class="btn btn-primary" data-action="auth-open">Войти</button>
       <button class="btn btn-outline" data-action="lp-scroll" data-to="lpServices">Что внутри</button>
     </div>
-    <div ${rise(4,"lp-hero-note")}>Доступ — по корпоративной учётной записи</div>
+    <div ${rise(5,"lp-hero-note")}>Доступ — по корпоративной учётной записи</div>
     <div class="lp-shot-wrap">
       ${LpAppShot()}
       ${LpObj("lego", "lp-shot-lego")}
@@ -7404,8 +7412,9 @@ function LpSvcCard(id, i){
       ${lead ? `<div class="lp-svc-art">
         <img class="lp-svc-obj" src="${LP_ICON[id]}" alt="" aria-hidden="true" draggable="false">
       </div>` : ""}
+      ${lead ? "" : `<div class="home-svc-icon home-svc-${g.color} lp-svc-ava">${icon(it.icon)}</div>`}
       <div class="lp-svc-body">
-        <div class="lp-svc-layer"><span class="lp-svc-dot home-dot-${g.color}"></span>${escapeHtml(g.label)}</div>
+        <div class="lp-svc-layer">${lead ? `<span class="lp-svc-dot home-dot-${g.color}"></span>` : ""}${escapeHtml(g.label)}</div>
         <h3 class="lp-svc-title">${escapeHtml(it.label)}</h3>
         <p class="lp-svc-desc">${escapeHtml(it.desc||"")}</p>
         ${it.filled
