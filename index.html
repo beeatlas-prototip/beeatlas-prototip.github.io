@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261014-163800">
+<meta name="beeatlas-build" content="20261014-164337">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -3235,8 +3235,10 @@
      и приложение) залиты тёмным: так сразу видно, где она начинается и
      заканчивается. Заливка — overlay-токены ДС, те же, что у карточки агента:
      инверсию по теме задаёт ДС, а не хардкод. */
-  .lp-flow{display:flex;align-items:flex-start;flex-wrap:wrap;gap:var(--space-2);}
-  .lp-flow-step{display:flex;flex-direction:column;align-items:center;gap:var(--space-2);max-width:200px;}
+  /* Промежуток между шагами держит сам коннектор (он тянется), поэтому gap
+     здесь нулевой: иначе стрелка висела бы в воздухе, не доходя до пилюль. */
+  .lp-flow{display:flex;align-items:flex-start;flex-wrap:wrap;gap:0;}
+  .lp-flow-step{display:flex;flex-direction:column;align-items:center;gap:var(--space-2);max-width:200px;flex:0 0 auto;}
   .lp-flow-node{
     background:var(--bg);border:1px solid var(--border);border-radius:var(--size-border-radius-x15);
     padding:var(--space-3) var(--space-5);font-size:17px;line-height:22px;letter-spacing:.2px;font-weight:500;
@@ -3260,15 +3262,19 @@
   }
   /* Коннектор: кружок у хвоста, линия, остриё. Подсвечивается по очереди
      (задержка задаётся по месту) — так читается направление потока. */
+  /* Стрелка идёт от края пилюли к краю следующей: кружок у хвоста прижат
+     к предыдущему узлу, остриё упирается в следующий, линия между ними
+     тянется (flex:1) и сама задаёт расстояние между шагами. Высота 48 —
+     ровно высота пилюли, чтобы стрелка шла по её центру. */
   .lp-flow-link{
-    display:flex;align-items:center;flex:0 0 40px;height:46px;
-    color:var(--text-tertiary);animation:lp-pulse 3.6s ease-in-out infinite;
+    display:flex;align-items:center;flex:1 1 32px;min-width:28px;height:48px;
+    color:var(--text-secondary);animation:lp-pulse 3.6s ease-in-out infinite;
   }
-  .lp-flow-link::before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor;flex:0 0 auto;}
-  .lp-flow-link i{flex:1;height:1px;background:currentColor;}
+  .lp-flow-link::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;flex:0 0 auto;}
+  .lp-flow-link i{flex:1;height:1.5px;background:currentColor;}
   .lp-flow-link::after{
     content:"";flex:0 0 auto;width:0;height:0;
-    border-left:5px solid currentColor;border-top:4px solid transparent;border-bottom:4px solid transparent;
+    border-left:7px solid currentColor;border-top:5px solid transparent;border-bottom:5px solid transparent;
   }
   .lp-flow-note{margin:var(--size-spacing-x8) 0 0;font-size:17px;line-height:22px;letter-spacing:.2px;color:var(--text-secondary);max-width:900px;}
 
