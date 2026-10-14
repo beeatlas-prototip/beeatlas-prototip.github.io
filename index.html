@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261014-161233">
+<meta name="beeatlas-build" content="20261014-163115">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -968,7 +968,14 @@
   .home-agent__chip:hover{background:color-mix(in srgb, currentColor 18%, transparent);}
 
   /* ═══ Моё пространство ═══ карточки одной высоты, ссылка всегда у нижнего края */
-  .home-mine-card{padding:var(--size-spacing-x6);display:flex;flex-direction:column;gap:var(--space-4);}
+  /* Стеклянная плита (.glass в разметке). Селектор парный .card.home-mine-card:
+     правило .card объявлено НИЖЕ по файлу и при равной специфичности побеждало бы
+     по каскаду, возвращая рамку и непрозрачный фон. */
+  .card.home-mine-card{
+    border:none;padding:var(--size-spacing-x6);display:flex;flex-direction:column;gap:var(--space-4);
+    background:var(--bg);
+    background:color-mix(in srgb, var(--bg) 58%, transparent);
+  }
   .home-mine-head{display:flex;align-items:center;gap:var(--space-3);}
   .home-mine-head .home-mine-title{margin-bottom:0;}
   .home-mine-ico{width:40px;height:40px;border-radius:var(--size-border-radius-x6);flex:0 0 auto;
@@ -988,11 +995,10 @@
   .home-grp{
     margin-bottom:var(--space-6);
     border-radius:var(--size-border-radius-x12);padding:var(--size-spacing-x6);
+    /* Точечной сетки здесь нет: на рабочем экране она читается как сор поверх
+       содержимого (на лендинге ей есть место — там это витрина). Плиту держат
+       дымка заливки, замкнутый контур, блик и тень .glass. */
     background-color:color-mix(in srgb, var(--text) 3.5%, transparent);
-    /* Сетка здесь бледнее, чем на лендинге: это рабочий экран, и точки в полную
-       силу спорят с содержимым плиток. */
-    background-image:radial-gradient(color-mix(in srgb, var(--border-strong) 55%, transparent) 1px,transparent 1px);
-    background-size:24px 24px;
     --glass-ring:inset 0 0 0 1px var(--border);
   }
   .home-grp:last-child{margin-bottom:0;}
@@ -3225,19 +3231,38 @@
     background-size:24px 24px;
     --glass-ring:inset 0 0 0 1px var(--border);
   }
-  .lp-flow{display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-3);}
-  /* Узлы цепочки крупнее остального лендинга намеренно: это главная схема
-     блока, и на 15 px ряд читался как подпись, а не как содержание. */
+  /* Цепочка собрана как схема процесса: узел — пилюля, под ней подпись,
+     между узлами коннектор «точка — линия — остриё». Концы цепочки (клиент
+     и приложение) залиты тёмным: так сразу видно, где она начинается и
+     заканчивается. Заливка — overlay-токены ДС, те же, что у карточки агента:
+     инверсию по теме задаёт ДС, а не хардкод. */
+  .lp-flow{display:flex;align-items:flex-start;flex-wrap:wrap;gap:var(--space-2);}
+  .lp-flow-step{display:flex;flex-direction:column;align-items:center;gap:var(--space-2);max-width:200px;}
   .lp-flow-node{
-    background:var(--bg);border:1px solid var(--border);border-radius:var(--size-border-radius-x6);
-    padding:var(--space-4);font-size:17px;line-height:22px;letter-spacing:.2px;font-weight:500;
-    transition:transform .15s ease;
+    background:var(--bg);border:1px solid var(--border);border-radius:var(--size-border-radius-x15);
+    padding:var(--space-3) var(--space-5);font-size:17px;line-height:22px;letter-spacing:.2px;font-weight:500;
+    white-space:nowrap;transition:transform .15s ease;
   }
-  .lp-flow-node .lp-flow-cap{display:block;margin-top:2px;font-size:13px;line-height:18px;font-weight:400;color:var(--text-secondary);}
-  /* Стрелки цепочки подсвечиваются по очереди (задержка задаётся по месту) —
-     так читается направление потока */
-  .lp-flow-arrow{color:var(--text-tertiary);display:flex;align-items:center;animation:lp-pulse 3.6s ease-in-out infinite;}
-  .lp-flow-arrow .beeline-icons{width:18px;height:18px;font-size:18px;}
+  /* Концы залиты парой «цвет текста ↔ цвет фона»: в светлой теме пилюля тёмная,
+     в тёмной — светлая. Через overlay-токены ДС не вышло: в тёмной теме прототипа
+     они оба тёмные (см. блок [data-theme="dark"]), и конец цепочки сливался с фоном. */
+  .lp-flow-node.is-end{background:var(--text);border-color:transparent;color:var(--bg);}
+  .lp-flow-cap{
+    font-size:13px;line-height:16px;letter-spacing:.4px;text-transform:uppercase;
+    color:var(--text-secondary);text-align:center;
+  }
+  /* Коннектор: кружок у хвоста, линия, остриё. Подсвечивается по очереди
+     (задержка задаётся по месту) — так читается направление потока. */
+  .lp-flow-link{
+    display:flex;align-items:center;flex:0 0 40px;height:46px;
+    color:var(--text-tertiary);animation:lp-pulse 3.6s ease-in-out infinite;
+  }
+  .lp-flow-link::before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor;flex:0 0 auto;}
+  .lp-flow-link i{flex:1;height:1px;background:currentColor;}
+  .lp-flow-link::after{
+    content:"";flex:0 0 auto;width:0;height:0;
+    border-left:5px solid currentColor;border-top:4px solid transparent;border-bottom:4px solid transparent;
+  }
   .lp-flow-note{margin:var(--size-spacing-x8) 0 0;font-size:17px;line-height:22px;letter-spacing:.2px;color:var(--text-secondary);max-width:900px;}
 
   /* ── Финальный блок и подвал ──────────────────────────────────────────── */
@@ -3458,7 +3483,7 @@
 
   /* Человеку, который просил систему не анимировать, страница отдаётся статикой */
   @media (prefers-reduced-motion:reduce){
-    .lp-float,.lp-shot-lego,.lp-cta-figure,.lp-cursor,.lp-flow-arrow,.lp-shot,.lp-rise,.lp-h1{animation:none !important;}
+    .lp-float,.lp-shot-lego,.lp-cta-figure,.lp-cursor,.lp-flow-link,.lp-shot,.lp-rise,.lp-h1{animation:none !important;}
     .lp-svc,.lp-svc-obj,.lp-svc-go .beeline-icons{transition:none;}
     .lp-reveal{opacity:1;transform:none;transition:none;}
   }
@@ -7320,7 +7345,7 @@ function HomeAgentCard(){
 
 function HomeMineCard(o){
   return `
-    <div class="card home-mine-card">
+    <div class="card home-mine-card glass">
       <div class="home-mine-head">
         <span class="home-mine-ico home-svc-${o.color}">${icon(o.icon)}</span>
         <div class="home-mine-title">${escapeHtml(o.title)}</div>
@@ -7714,8 +7739,11 @@ function LpFlow(){
     <div class="lp-panel glass">
       <div class="lp-flow">
         ${LP_FLOW.map((n,i)=>`
-          ${i ? `<span class="lp-flow-arrow" style="animation-delay:${i*180}ms">${icon("chevronRight")}</span>` : ""}
-          <div class="lp-flow-node">${escapeHtml(n.name)}<span class="lp-flow-cap">${escapeHtml(n.cap)}</span></div>
+          ${i ? `<span class="lp-flow-link" style="animation-delay:${i*180}ms" aria-hidden="true"><i></i></span>` : ""}
+          <div class="lp-flow-step">
+            <span class="lp-flow-node${(i===0||i===LP_FLOW.length-1)?" is-end":""}">${escapeHtml(n.name)}</span>
+            <span class="lp-flow-cap">${escapeHtml(n.cap)}</span>
+          </div>
         `).join("")}
       </div>
       <p class="lp-flow-note">
