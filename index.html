@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261014-154719">
+<meta name="beeatlas-build" content="20261014-155806">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -3129,9 +3129,12 @@
       inset -1.5px 0 0 rgba(120,110,160,.16),
       inset 0 0 0 1px rgba(255,255,255,.4);
     --glass-drop:0 24px 48px -30px rgba(60,40,110,.32);
+    /* Плиты без собственной заливки добавляют сюда замкнутый контур:
+       белые канты сверху-слева на светлом фоне не читаются сами по себе. */
+    --glass-ring:0 0 0 0 transparent;
     -webkit-backdrop-filter:blur(16px) saturate(1.5);
     backdrop-filter:blur(16px) saturate(1.5);
-    box-shadow:var(--glass-edges),var(--glass-drop);
+    box-shadow:var(--glass-ring),var(--glass-edges),var(--glass-drop);
   }
   /* Блик лежит отдельным слоем под контентом: у плиты есть дети, выходящие
      за её край (объект в финальном блоке), обрезать всю плиту ради блика нельзя. */
@@ -3154,26 +3157,35 @@
   }
 
   /* ── Как устроено: цепочка объектов на панели в точку ─────────────────── */
-  /* Прозрачное стекло с точками: цвета у плиты нет совсем, текстуру держит та же
-     сетка шагом 24, что под героем и в шапке, а форму — кант, блик и тень .lp-glass. */
+  /* Стекло с точками: текстуру держит та же сетка шагом 24, что под героем,
+     форму — кант, блик и тень .lp-glass. Совсем прозрачной плита быть не может:
+     верхний кант стекла белый, и на белом фоне страницы верх плиты вместе с
+     правым верхним углом просто пропадал. Лёгкая дымка (3.5 % цвета текста)
+     отделяет плиту от фона и в светлой, и в тёмной теме — там она, наоборот,
+     чуть светлее фона. Замкнутый контур поверх всего — чтобы угол читался
+     целиком, а не только там, где кант темнее фона. */
   .lp-panel{
     border-radius:var(--size-border-radius-x12);padding:var(--size-spacing-x10);
     background-color:transparent;
+    background-color:color-mix(in srgb, var(--text) 3.5%, transparent);
     background-image:radial-gradient(var(--border-strong) 1px,transparent 1px);
     background-size:24px 24px;
+    --glass-ring:inset 0 0 0 1px var(--border);
   }
   .lp-flow{display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-3);}
+  /* Узлы цепочки крупнее остального лендинга намеренно: это главная схема
+     блока, и на 15 px ряд читался как подпись, а не как содержание. */
   .lp-flow-node{
     background:var(--bg);border:1px solid var(--border);border-radius:var(--size-border-radius-x6);
-    padding:var(--space-3) var(--space-4);font-size:15px;line-height:20px;letter-spacing:.2px;font-weight:500;
+    padding:var(--space-4);font-size:17px;line-height:22px;letter-spacing:.2px;font-weight:500;
     transition:transform .15s ease;
   }
-  .lp-flow-node .lp-flow-cap{display:block;font-size:13px;line-height:16px;font-weight:400;color:var(--text-secondary);}
+  .lp-flow-node .lp-flow-cap{display:block;margin-top:2px;font-size:13px;line-height:18px;font-weight:400;color:var(--text-secondary);}
   /* Стрелки цепочки подсвечиваются по очереди (задержка задаётся по месту) —
      так читается направление потока */
   .lp-flow-arrow{color:var(--text-tertiary);display:flex;align-items:center;animation:lp-pulse 3.6s ease-in-out infinite;}
   .lp-flow-arrow .beeline-icons{width:18px;height:18px;font-size:18px;}
-  .lp-flow-note{margin:var(--size-spacing-x6) 0 0;font-size:15px;line-height:20px;letter-spacing:.2px;color:var(--text-secondary);max-width:860px;}
+  .lp-flow-note{margin:var(--size-spacing-x8) 0 0;font-size:17px;line-height:22px;letter-spacing:.2px;color:var(--text-secondary);max-width:900px;}
 
   /* ── Финальный блок и подвал ──────────────────────────────────────────── */
   .lp-cta{
