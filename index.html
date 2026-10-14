@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261014-163115">
+<meta name="beeatlas-build" content="20261014-163800">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -3216,8 +3216,9 @@
   }
 
   /* ── Как устроено: цепочка объектов на панели в точку ─────────────────── */
-  /* Стекло с точками: текстуру держит та же сетка шагом 24, что под героем,
-     форму — кант, блик и тень .glass. Совсем прозрачной плита быть не может:
+  /* Стеклянная плита без текстуры: точечная сетка внутри блока читалась как сор
+     под текстом, остались кант, блик и тень .glass. Совсем прозрачной плита
+     быть не может:
      верхний кант стекла белый, и на белом фоне страницы верх плиты вместе с
      правым верхним углом просто пропадал. Лёгкая дымка (3.5 % цвета текста)
      отделяет плиту от фона и в светлой, и в тёмной теме — там она, наоборот,
@@ -3227,8 +3228,6 @@
     border-radius:var(--size-border-radius-x12);padding:var(--size-spacing-x10);
     background-color:transparent;
     background-color:color-mix(in srgb, var(--text) 3.5%, transparent);
-    background-image:radial-gradient(var(--border-strong) 1px,transparent 1px);
-    background-size:24px 24px;
     --glass-ring:inset 0 0 0 1px var(--border);
   }
   /* Цепочка собрана как схема процесса: узел — пилюля, под ней подпись,
@@ -3247,6 +3246,14 @@
      в тёмной — светлая. Через overlay-токены ДС не вышло: в тёмной теме прототипа
      они оба тёмные (см. блок [data-theme="dark"]), и конец цепочки сливался с фоном. */
   .lp-flow-node.is-end{background:var(--text);border-color:transparent;color:var(--bg);}
+  /* В тёмной теме чисто светлая пилюля читалась как подсветка, а не как конец
+     цепочки: белое пятно перевешивало сами названия. Берём приглушённый тон —
+     плотнее панели, но не белый. */
+  [data-theme="dark"] .lp-flow-node.is-end{
+    background:color-mix(in srgb, var(--text) 16%, transparent);
+    border:1px solid color-mix(in srgb, var(--text) 28%, transparent);
+    color:var(--text);
+  }
   .lp-flow-cap{
     font-size:13px;line-height:16px;letter-spacing:.4px;text-transform:uppercase;
     color:var(--text-secondary);text-align:center;
