@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261014-135836">
+<meta name="beeatlas-build" content="20261014-142148">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -3091,20 +3091,61 @@
   .lp-card li+li{margin-top:var(--space-2);}
   .lp-c5{grid-column:span 5;}
   .lp-c7{grid-column:span 7;}
-  .lp-bg-lemon{background:var(--color-accent-lemon-background);}
-  .lp-bg-teal{background:var(--color-accent-teal-background);}
-  .lp-bg-purple{background:var(--color-accent-purple-background);}
-  .lp-bg-magenta{background:var(--color-accent-magenta-background);}
+  .lp-bg-lemon{background:var(--color-accent-lemon-background);background:color-mix(in srgb, var(--color-accent-lemon-background) 68%, transparent);}
+  .lp-bg-teal{background:var(--color-accent-teal-background);background:color-mix(in srgb, var(--color-accent-teal-background) 68%, transparent);}
+  .lp-bg-purple{background:var(--color-accent-purple-background);background:color-mix(in srgb, var(--color-accent-purple-background) 68%, transparent);}
+  .lp-bg-magenta{background:var(--color-accent-magenta-background);background:color-mix(in srgb, var(--color-accent-magenta-background) 68%, transparent);}
   .lp-stats{display:flex;flex-wrap:wrap;gap:var(--size-spacing-x8);margin-top:auto;}
   .lp-stat-num{font-size:var(--font-size-h3);line-height:var(--font-line-height-h3);letter-spacing:.3px;font-weight:500;}
   .lp-stat-cap{font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);}
 
+  /* ── Стеклянные плиты секций ───────────────────────────────────────────
+     Герой стоит на подложке, и стекло там читается по ней. У секций ниже
+     подложки нет и быть не должно — поэтому стеклянность здесь держится на
+     другом: заливка полупрозрачная (сквозь неё видно страницу), backdrop
+     размывает и подсвечивает то, что попало под плиту, светлый кант сверху
+     и затемнённый снизу дают толщину, блик сверху — отражение, тень — объём.
+     color-mix идёт вторым объявлением: браузер без его поддержки оставит
+     непрозрачную заливку из первой строки и просто не получит прозрачности. */
+  .lp-glass{
+    position:relative;isolation:isolate;
+    -webkit-backdrop-filter:blur(16px) saturate(1.5);
+    backdrop-filter:blur(16px) saturate(1.5);
+    box-shadow:
+      inset 0 1.5px 0 rgba(255,255,255,.9),
+      inset 1.5px 0 0 rgba(255,255,255,.6),
+      inset 0 -1.5px 0 rgba(120,110,160,.22),
+      inset -1.5px 0 0 rgba(120,110,160,.16),
+      inset 0 0 0 1px rgba(255,255,255,.4),
+      0 24px 48px -30px rgba(60,40,110,.32);
+  }
+  /* Блик лежит отдельным слоем под контентом: у плиты есть дети, выходящие
+     за её край (объект в финальном блоке), обрезать всю плиту ради блика нельзя. */
+  .lp-glass::before{
+    content:"";position:absolute;inset:0;z-index:-1;border-radius:inherit;overflow:hidden;
+    background:linear-gradient(170deg,rgba(255,255,255,.55) 0%,rgba(255,255,255,.12) 42%,rgba(255,255,255,0) 70%);
+    pointer-events:none;
+  }
+  [data-theme="dark"] .lp-glass{
+    box-shadow:
+      inset 0 1.5px 0 rgba(255,255,255,.18),
+      inset 1.5px 0 0 rgba(255,255,255,.1),
+      inset 0 -1.5px 0 rgba(0,0,0,.4),
+      inset -1.5px 0 0 rgba(0,0,0,.3),
+      inset 0 0 0 1px rgba(255,255,255,.06),
+      0 24px 48px -30px rgba(0,0,0,.7);
+  }
+  [data-theme="dark"] .lp-glass::before{
+    background:linear-gradient(170deg,rgba(255,255,255,.12) 0%,rgba(255,255,255,.03) 42%,rgba(255,255,255,0) 70%);
+  }
+
   /* ── Как устроено: цепочка объектов на панели в точку ─────────────────── */
+  /* Точечной сетки здесь больше нет: она повторяла подложку героя и читалась
+     как её кусок, уехавший вниз по странице. Плита держится на стекле. */
   .lp-panel{
     border-radius:var(--size-border-radius-x12);padding:var(--size-spacing-x10);
-    background-color:var(--bg-alt);
-    background-image:radial-gradient(var(--border-strong) 1px,transparent 1px);
-    background-size:24px 24px;
+    background:var(--bg-alt);
+    background:color-mix(in srgb, var(--color-accent-teal-background) 42%, transparent);
   }
   .lp-flow{display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-3);}
   .lp-flow-node{
@@ -3123,6 +3164,9 @@
   .lp-cta{
     border-radius:var(--size-border-radius-x12);padding:var(--size-spacing-x10);
     background:linear-gradient(135deg,var(--color-accent-teal-background) 0%,var(--color-accent-purple-background) 100%);
+    background:linear-gradient(135deg,
+      color-mix(in srgb, var(--color-accent-teal-background) 70%, transparent) 0%,
+      color-mix(in srgb, var(--color-accent-purple-background) 70%, transparent) 100%);
     display:flex;align-items:center;gap:var(--size-spacing-x10);flex-wrap:wrap;
   }
   /* Строка длиннее ~90 знаков читается тяжело: текст блока не тянется на всю
@@ -3240,7 +3284,11 @@
      читается сама, без рамки. */
   .lp-hero-stage{position:relative;}
   .lp-deco{
-    position:absolute;inset:-80px -40px;pointer-events:none;z-index:0;
+    /* Подложка шире контентной колонки: она тянется во всю ширину окна,
+       иначе сетка обрывается ровно по краю .lp-wrap и читается как рамка.
+       100vw безопасен — горизонтальную прокрутку снимает overflow-x:clip у .lp. */
+    position:absolute;top:-80px;bottom:-80px;left:50%;width:100vw;margin-left:-50vw;
+    pointer-events:none;z-index:0;
     /* За стеклом лежит не цветная клякса, а подложка-чертёж: точечная сетка
        шагом 24 (тот же приём, что у .lp-panel в секции «Как устроено») и один
        очень мягкий тёплый подтон. Под плитой сетка размывается в ровную дымку,
@@ -3251,8 +3299,12 @@
       radial-gradient(55% 45% at 84% 62%, var(--color-accent-teal-background) 0%, transparent 70%),
       radial-gradient(var(--border-strong) 1px, transparent 1px);
     background-size:auto, auto, 24px 24px;
-    -webkit-mask-image:radial-gradient(115% 95% at 50% 42%, #000 52%, transparent 100%);
-    mask-image:radial-gradient(115% 95% at 50% 42%, #000 52%, transparent 100%);
+    /* Подложка гаснет сверху вниз: точки бледнеют ряд за рядом и растворяются,
+       не обрываясь линией. Маска вертикальная — по бокам подложка доходит до
+       края окна, и гасить её там незачем. Радиальная маска вместо этой давала
+       заметную дугу по низу, особенно в тёмной теме. */
+    -webkit-mask-image:linear-gradient(to bottom, transparent 0%, #000 7%, #000 34%, rgba(0,0,0,.55) 64%, rgba(0,0,0,.18) 84%, transparent 97%);
+    mask-image:linear-gradient(to bottom, transparent 0%, #000 7%, #000 34%, rgba(0,0,0,.55) 64%, rgba(0,0,0,.18) 84%, transparent 97%);
     opacity:.9;
   }
   /* Объёмные объекты парят без подложки, как в референсах. Кубики заходят на
@@ -6940,7 +6992,7 @@ const DS_ICONS = {
   menu:'menu', doc:'page', code:'code', moon:'half_moon', bell:'notification', search:'search',
   x:'close', chevronDown:'nav_arrow_down', chevronRight:'nav_arrow_right', chevronLeft:'nav_arrow_left',
   chevronsLeft:'fast_arrow_left', chevronsRight:'fast_arrow_right', upload:'upload', plus:'add',
-  arrowUp:'arrow_up',
+  arrowUp:'arrow_up', login:'log_in',
   check:'check', checkCircle:'check_circled', map:'map', puzzle:'puzzle', target:'goal',
   network:'network', folder:'folder', grid:'grid', flow:'pipeline', chart:'report_columns',
   mail:'mail', layers:'group_elements', robot:'robot', gauge:'pulse', shield:'security',
@@ -7284,6 +7336,7 @@ function LandingHeader(){
       <div class="lp-brand" title="Сборка ${BUILD}">beeatlas</div>
       <div class="lp-header-right">
         <button class="icon-btn" data-action="toggle-theme" title="Тема">${icon("moon")}</button>
+        <button class="icon-btn" data-action="auth-open" title="Войти" aria-label="Войти">${icon("login")}</button>
       </div>
     </div>
   </header>`;
@@ -7522,7 +7575,7 @@ function LpAdvantages(){
   <section class="lp-sec lp-reveal" id="lpAdvantages">
     <div class="lp-sec-head"><h2 class="lp-h2">Преимущества</h2></div>
     <div class="lp-bento">
-      <div class="lp-card lp-c7 lp-bg-lemon">
+      <div class="lp-card lp-glass lp-c7 lp-bg-lemon">
         <h3>Одна модель вместо разрозненных документов</h3>
         <p>
           Сценарии, приложения и вызовы описаны один раз и ссылаются друг на друга.
@@ -7534,7 +7587,7 @@ function LpAdvantages(){
           <div><div class="lp-stat-num" data-count="640">0</div><div class="lp-stat-cap">приложений</div></div>
         </div>
       </div>
-      <div class="lp-card lp-c5 lp-bg-teal">
+      <div class="lp-card lp-glass lp-c5 lp-bg-teal">
         <h3>Связи видно сразу</h3>
         <p>
           От шага клиентского пути до вызова и приложения, которое его реализует,
@@ -7542,14 +7595,14 @@ function LpAdvantages(){
           цепочкой подсвечиваются прямо в таблице
         </p>
       </div>
-      <div class="lp-card lp-c5 lp-bg-purple">
+      <div class="lp-card lp-glass lp-c5 lp-bg-purple">
         <h3>Агенты-помощники</h3>
         <p>
           Агент разбирает Use Case, предлагает оценку и находит похожие решения.
           Предложение остаётся предложением: итоговое решение принимает человек
         </p>
       </div>
-      <div class="lp-card lp-c7 lp-bg-magenta">
+      <div class="lp-card lp-glass lp-c7 lp-bg-magenta">
         <h3>Ветки и версии</h3>
         <ul>
           <li>Черновик живёт в отдельной ветке — основная модель не меняется, пока он не влит</li>
@@ -7565,7 +7618,7 @@ function LpFlow(){
   return `
   <section class="lp-sec lp-reveal" id="lpFlow">
     <div class="lp-sec-head"><h2 class="lp-h2">Как устроено</h2></div>
-    <div class="lp-panel">
+    <div class="lp-panel lp-glass">
       <div class="lp-flow">
         ${LP_FLOW.map((n,i)=>`
           ${i ? `<span class="lp-flow-arrow" style="animation-delay:${i*180}ms">${icon("chevronRight")}</span>` : ""}
@@ -7599,7 +7652,7 @@ function LpRoles(){
 function LpCta(){
   return `
   <section class="lp-sec lp-reveal">
-    <div class="lp-cta">
+    <div class="lp-cta lp-glass">
       <div class="lp-cta-text">
         <h2>Войди и продолжи работу</h2>
         <p>
@@ -15152,6 +15205,17 @@ const TIP_EDGE = 8;  /* зазор до края окна */
    и вложенная сущность действительно существуют. Сохраняется и открытый визард оценки —
    без таймеров и без экрана загрузки. */
 const LOCATION_KEY = "beeatlas_location_v1";
+/* Тема лежит отдельно и в localStorage, а не в снимке маршрута: это настройка
+   человека, а не состояние сессии. Вход намеренно живёт в sessionStorage и
+   новую вкладку не переживает, а выбранная тема должна переживать обе. */
+const THEME_KEY = "beeatlas_theme_v1";
+function saveTheme(){ try{ localStorage.setItem(THEME_KEY, state.theme); }catch(e){} }
+function loadTheme(){
+  try{
+    const t = localStorage.getItem(THEME_KEY);
+    return t==="dark" || t==="light" ? t : null;
+  }catch(e){ return null; }
+}
 /* Перезагрузка страницы не должна выкидывать из прохождения Use Case: визард кладём
    в ту же сессионную память, что и маршрут, рядом с визардом оценки. timer — id
    setInterval, после перезагрузки он мёртв, поэтому незавершённый прогон импорта не
@@ -15553,7 +15617,7 @@ document.addEventListener("change", function(e){
 function handleAction(action, el){
   switch(action){
     case "toggle-sidebar": state.sidebarCollapsed = !state.sidebarCollapsed; render(); break;
-    case "toggle-theme": state.theme = state.theme==="light"?"dark":"light"; render(); break;
+    case "toggle-theme": state.theme = state.theme==="light"?"dark":"light"; saveTheme(); render(); break;
     case "toggle-popover": state.popover = state.popover===el.dataset.popover ? null : el.dataset.popover; render(); break;
     case "noop-doc": case "noop-ide":
       state.popover=null; showToast("Раздел вне рамок прототипа"); break;
@@ -16793,6 +16857,8 @@ document.addEventListener("scroll", ()=>{ positionDsSelectMenus(); positionToast
   /* Вход восстанавливаем раньше разбора ?home=: иначе переход по ссылке с якорем
      сбрасывал бы авторизацию, а после входа человек не попадал бы в нужный раздел. */
   const saved = loadLocation();
+  const theme = loadTheme();
+  if(theme) state.theme = theme;
   if(saved && saved.auth) state.auth = saved.auth;
   try {
     const home = new URLSearchParams(location.search).get("home");
