@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261014-170719">
+<meta name="beeatlas-build" content="20261014-192618">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -38,25 +38,19 @@
      ══════════════════════════════════════════════════════════════════════ */
   :root{
     /* Color / Const / Background */
-    --color-background-brand: #fdd835;
-    --color-background-brand-hover: #fdc435;
-    --color-background-brand-pressed: #fdb435;
+    --color-background-brand: #ecc300;
+    --color-background-brand-hover: #d8b300;
+    --color-background-brand-pressed: #c5a300;
     --color-background-backdrop: rgba(0, 0, 0, 0.48);
     --color-background-white: #ffffff;
     /* Color / Const / Divider */
-    --color-divider-grey: rgba(25, 28, 52, 0.12);
-    /* Color / Const / Gradient */
-    --color-gradient-magma: linear-gradient(-46deg, #1a73e8 0%, #bc00b8 49.44%, #f55555 100%);
-    --color-gradient-lazurit: linear-gradient(76deg, #fa1c8c 0%, #527ce7 46.89%, #2ebacf 100%);
-    --color-gradient-ocean: linear-gradient(85deg, #6137cc 0%, #00b2ff 43.57%, #7effc3 100%);
-    --color-gradient-oil-radial: radial-gradient(140.01% 127.68% at 18.75% 3%, #feca48 0%, #ff7d5d 21.17%, #b732a2 45.13%, #621a9f 71.18%, #030013 100%);
-    --color-gradient-oil-linear: linear-gradient(90deg, #feca48 0%, #ff7d5d 19.46%, #b732a2 43.54%, #621a9f 70.39%, #030013 100%);
+    --color-divider-grey: rgba(18, 24, 35, 0.12);
     /* Color / Const / Opacity */
     --color-opacity-disabled: 0.48;
     /* Color / Const / Text */
-    --color-text-black-active: rgba(9, 11, 22, 0.94);
-    --color-text-grey-inactive: rgba(25, 28, 52, 0.7);
-    --color-text-grey-disabled: rgba(25, 28, 52, 0.48);
+    --color-text-black-active: rgba(18, 24, 35, 0.94);
+    --color-text-grey-inactive: rgba(18, 24, 35, 0.7);
+    --color-text-grey-disabled: rgba(18, 24, 35, 0.48);
     --color-text-white-inverse: #ffffff;
     --color-text-dark-active: rgba(0, 0, 0, 0.87);
     --color-text-dark-inactive: rgba(0, 0, 0, 0.6);
@@ -188,193 +182,193 @@
   }
   :root, [data-theme="light"]{
     /* Color / Light / Accent */
-    --color-accent-teal: #00adc7;
-    --color-accent-teal-background: #e0f7fb;
-    --color-accent-purple: #7e00ed;
-    --color-accent-purple-background: #f3e7fe;
-    --color-accent-magenta: #bc00b8;
-    --color-accent-magenta-background: #fae4f7;
-    --color-accent-aquamarine: #1ebeaa;
-    --color-accent-aquamarine-background: #e1f5f0;
-    --color-accent-lemon-background: #fff7d7;
+    --color-accent-teal: #00777a;
+    --color-accent-teal-background: #def5f6;
+    --color-accent-purple: #5f61ba;
+    --color-accent-purple-background: #f2efff;
+    --color-accent-magenta: #92519f;
+    --color-accent-magenta-background: #ffebfd;
+    --color-accent-aquamarine: #00795b;
+    --color-accent-aquamarine-background: #e0f6ea;
+    --color-accent-lemon-background: #fdf0ce;
     /* Color / Light / Background */
     --color-background-base: #ffffff;
-    --color-background-base-hover: rgba(25, 28, 52, 0.08);
-    --color-background-base-focused: rgba(25, 28, 52, 0.12);
-    --color-background-base-pressed: rgba(25, 28, 52, 0.12);
-    --color-background-base-dragged: rgba(25, 28, 52, 0.08);
-    --color-background-base-selected: rgba(25, 28, 52, 0.05);
+    --color-background-base-hover: rgba(18, 24, 35, 0.08);
+    --color-background-base-focused: rgba(18, 24, 35, 0.12);
+    --color-background-base-pressed: rgba(18, 24, 35, 0.12);
+    --color-background-base-dragged: rgba(18, 24, 35, 0.08);
+    --color-background-base-selected: rgba(18, 24, 35, 0.05);
     --color-background-base-activated: rgba(0, 0, 0, 0.12);
-    --color-background-inverse: #121212;
+    --color-background-inverse: #1f1f23;
     --color-background-low: #ffffff;
     --color-background-medium: #ffffff;
     --color-background-high: #ffffff;
-    --color-background-secondary: #f9f9f9;
+    --color-background-secondary: #f9f6f7;
     /* Color / Light / Border */
-    --color-border: rgba(25, 28, 52, 0.18);
-    --color-border-focused: #202123;
-    --color-border-focus: #212121;
-    --color-border-error: #ff5555;
+    --color-border: rgba(18, 24, 35, 0.18);
+    --color-border-focused: #222429;
+    --color-border-focus: #252629;
+    --color-border-error: #d95c51;
     /* Color / Light / Button */
-    --color-button-plain: #1a73e8;
-    --color-button-plain-background-hover: rgba(26, 115, 232, 0.08);
-    --color-button-plain-background-pressed: rgba(26, 115, 232, 0.12);
-    --color-button-overlay-background: #141622;
-    --color-button-overlay-background-hover: #1f212d;
-    --color-button-overlay-background-pressed: #2a2c39;
+    --color-button-plain: #006bb6;
+    --color-button-plain-background-hover: rgba(0, 117, 199, 0.08);
+    --color-button-plain-background-pressed: rgba(0, 117, 199, 0.12);
+    --color-button-overlay-background: #1b2029;
+    --color-button-overlay-background-hover: #262a33;
+    --color-button-overlay-background-pressed: #31353e;
     /* Color / Light / Chart */
-    --color-chart-grey: #d4d4d9;
-    --color-chart-grey-active: #b6b7bf;
-    --color-chart-red: #ffb0b1;
-    --color-chart-red-active: #ff9193;
-    --color-chart-orange: #ffd086;
-    --color-chart-orange-active: #ffbd55;
-    --color-chart-green: #a0dbae;
-    --color-chart-green-active: #78ce8e;
-    --color-chart-blue: #8dcaff;
-    --color-chart-blue-active: #5cb5ff;
-    --color-chart-teal: #80deef;
-    --color-chart-teal-active: #4dd0e7;
-    --color-chart-magenta: #f2bceb;
-    --color-chart-magenta-active: #e98dde;
-    --color-chart-purple: #c89afa;
-    --color-chart-purple-active: #b16cf9;
-    --color-chart-aquamarine: #8fd9cb;
-    --color-chart-aquamarine-active: #63ccba;
-    --color-chart-yellow: #fff0a5;
-    --color-chart-yellow-active: #fee262;
-    --color-chart-saphire: #a1a4e8;
-    --color-chart-saphire-active: #7e87df;
+    --color-chart-grey: #d4d4db;
+    --color-chart-grey-active: #b6b8c2;
+    --color-chart-red: #ffc7c0;
+    --color-chart-red-active: #ff9f94;
+    --color-chart-orange: #ffcaa5;
+    --color-chart-orange-active: #ffa35c;
+    --color-chart-green: #ade2a3;
+    --color-chart-green-active: #80ca79;
+    --color-chart-blue: #b9d7ff;
+    --color-chart-blue-active: #85bcff;
+    --color-chart-teal: #88e3e7;
+    --color-chart-teal-active: #24ccd2;
+    --color-chart-magenta: #f9c2ff;
+    --color-chart-magenta-active: #e79ff4;
+    --color-chart-purple: #d1d0ff;
+    --color-chart-purple-active: #b1b2ff;
+    --color-chart-aquamarine: #93e5c3;
+    --color-chart-aquamarine-active: #4fcea3;
+    --color-chart-yellow: #efd374;
+    --color-chart-yellow-active: #d8b635;
+    --color-chart-saphire: #cad2ff;
+    --color-chart-saphire-active: #a4b5ff;
     /* Color / Light / Control */
-    --color-control-background: rgba(25, 28, 52, 0.1);
-    --color-control-background-hover: rgba(25, 28, 52, 0.14);
-    --color-control-background-pressed: rgba(25, 28, 52, 0.24);
-    --color-control-background-error: rgba(255, 85, 85, 0.08);
+    --color-control-background: rgba(18, 24, 35, 0.1);
+    --color-control-background-hover: rgba(18, 24, 35, 0.14);
+    --color-control-background-pressed: rgba(18, 24, 35, 0.24);
+    --color-control-background-error: rgba(217, 92, 81, 0.08);
     /* Color / Light / Divider */
-    --color-divider: rgba(25, 28, 52, 0.12);
+    --color-divider: rgba(18, 24, 35, 0.12);
     /* Color / Light / Gradient */
     --color-gradient-right: linear-gradient(-90deg, #ffffff00 0%, #ffffff 33.71%);
     --color-gradient-left: linear-gradient(-90deg, #ffffff 64.58%, #ffffff00 100%);
     /* Color / Light / Status */
-    --color-status-error: #ff5555;
-    --color-status-error-background: #ffecef;
-    --color-status-warning: #ff9419;
-    --color-status-warning-background: #fff4e1;
-    --color-status-success: #2ca853;
-    --color-status-success-background: #e7f6eb;
-    --color-status-info: #1a73e8;
-    --color-status-info-background: #e3f2ff;
-    --color-status-neutral: #5e6071;
-    --color-status-neutral-background: #f1f1f3;
+    --color-status-error: #ae3c34;
+    --color-status-error-background: #ffedea;
+    --color-status-warning: #8c5800;
+    --color-status-warning-background: #ffeede;
+    --color-status-success: #0b731c;
+    --color-status-success-background: #e4f6dc;
+    --color-status-info: #0066ae;
+    --color-status-info-background: #eaf1ff;
+    --color-status-neutral: #626369;
+    --color-status-neutral-background: #f2f0f3;
     /* Color / Light / Text */
-    --color-text-active: rgba(9, 11, 22, 0.94);
+    --color-text-active: rgba(18, 24, 35, 0.94);
     --color-text-active-inverse: #ffffff;
-    --color-text-inactive: rgba(25, 28, 52, 0.7);
+    --color-text-inactive: rgba(18, 24, 35, 0.7);
     --color-text-inactive-inverse: rgba(255, 255, 255, 0.6);
-    --color-text-disabled: rgba(25, 28, 52, 0.48);
+    --color-text-disabled: rgba(18, 24, 35, 0.48);
     --color-text-disabled-inverse: rgba(255, 255, 255, 0.38);
-    --color-text-link: #1a73e8;
-    --color-text-link-visited: #7e00ed;
+    --color-text-link: #006bb6;
+    --color-text-link-visited: #6769c2;
     --color-text-logo: #000000;
     /* Color / Light / Utilities */
-    --color-utilities-scroll: #b6b7bf;
-    --color-utilities-scroll-hover: #999aa5;
-    --color-utilities-scroll-pressed: #7b7d8b;
+    --color-utilities-scroll: #c1c0c4;
+    --color-utilities-scroll-hover: #a6a5a9;
+    --color-utilities-scroll-pressed: #8b8b8f;
   }
   [data-theme="dark"]{
     /* Color / Dark / Accent */
-    --color-accent-teal: #4dd0e7;
-    --color-accent-teal-background: #123035;
-    --color-accent-purple: #b16cf9;
-    --color-accent-purple-background: #27113a;
-    --color-accent-magenta: #df59d1;
-    --color-accent-magenta-background: #370f37;
-    --color-accent-aquamarine: #30d7c2;
-    --color-accent-aquamarine-background: #18302b;
-    --color-accent-lemon-background: #494635;
+    --color-accent-teal: #35d5da;
+    --color-accent-teal-background: #20393a;
+    --color-accent-purple: #babbff;
+    --color-accent-purple-background: #333346;
+    --color-accent-magenta: #f0a7fc;
+    --color-accent-magenta-background: #3f3041;
+    --color-accent-aquamarine: #59d6ab;
+    --color-accent-aquamarine-background: #233930;
+    --color-accent-lemon-background: #3c341a;
     /* Color / Dark / Background */
-    --color-background-base: #141414;
+    --color-background-base: #151518;
     --color-background-base-hover: rgba(255, 255, 255, 0.06);
-    --color-background-base-focused: rgba(255, 255, 255, 0.12);
-    --color-background-base-pressed: rgba(255, 255, 255, 0.12);
-    --color-background-base-dragged: rgba(255, 255, 255, 0.08);
-    --color-background-base-selected: rgba(255, 255, 255, 0.08);
+    --color-background-base-focused: rgba(255, 255, 255, 0.1);
+    --color-background-base-pressed: rgba(255, 255, 255, 0.1);
+    --color-background-base-dragged: rgba(255, 255, 255, 0.06);
+    --color-background-base-selected: rgba(255, 255, 255, 0.04);
     --color-background-base-activated: rgba(255, 255, 255, 0.12);
-    --color-background-inverse: #e0e0e0;
-    --color-background-low: #212121;
-    --color-background-medium: #2e2f33;
-    --color-background-high: #36383c;
-    --color-background-secondary: #36383c;
+    --color-background-inverse: #f4f3f7;
+    --color-background-low: #1d1d20;
+    --color-background-medium: #212124;
+    --color-background-high: #27282a;
+    --color-background-secondary: #212124;
     /* Color / Dark / Border */
     --color-border: rgba(255, 255, 255, 0.48);
-    --color-border-focused: #ffffff;
-    --color-border-focus: #ffffff;
-    --color-border-error: #f37678;
+    --color-border-focused: #e9e7ec;
+    --color-border-focus: #e3e2e6;
+    --color-border-error: #ffa399;
     /* Color / Dark / Button */
-    --color-button-plain: #5cb5ff;
-    --color-button-plain-background-hover: rgba(92, 181, 255, 0.12);
-    --color-button-plain-background-pressed: rgba(92, 181, 255, 0.16);
-    --color-button-overlay-background: #f9f9f9;
-    --color-button-overlay-background-hover: #f1f1f3;
-    --color-button-overlay-background-pressed: #e3e3e6;
+    --color-button-plain: #95c4ff;
+    --color-button-plain-background-hover: rgba(138, 191, 255, 0.08);
+    --color-button-plain-background-pressed: rgba(138, 191, 255, 0.12);
+    --color-button-overlay-background: #1b2029;
+    --color-button-overlay-background-hover: #262a33;
+    --color-button-overlay-background-pressed: #31353e;
     /* Color / Dark / Chart */
-    --color-chart-red: #e78687;
-    --color-chart-red-active: #db5858;
-    --color-chart-orange: #f2bb64;
-    --color-chart-orange-active: #d9922d;
-    --color-chart-green: #6ad682;
-    --color-chart-green-active: #3e9652;
-    --color-chart-blue: #5ca7e5;
-    --color-chart-blue-active: #457bc1;
-    --color-chart-grey: #bababa;
-    --color-chart-grey-active: #808187;
-    --color-chart-teal: #4ae5dc;
-    --color-chart-teal-active: #359e8b;
-    --color-chart-purple: #b16cf9;
-    --color-chart-purple-active: #803fc1;
-    --color-chart-magenta: #cc74b9;
-    --color-chart-magenta-active: #b153a7;
-    --color-chart-aquamarine: #50c09e;
-    --color-chart-aquamarine-active: #1b9881;
-    --color-chart-yellow: #edd460;
-    --color-chart-yellow-active: #c5a537;
-    --color-chart-saphire: #8186f4;
-    --color-chart-saphire-active: #6266bc;
+    --color-chart-red: #924941;
+    --color-chart-red-active: #ce6459;
+    --color-chart-orange: #8c4f1d;
+    --color-chart-orange-active: #c46e22;
+    --color-chart-green: #3a6936;
+    --color-chart-green-active: #4c9349;
+    --color-chart-blue: #336192;
+    --color-chart-blue-active: #3f87d0;
+    --color-chart-grey: #5d5e64;
+    --color-chart-grey-active: #81838c;
+    --color-chart-teal: #00696c;
+    --color-chart-teal-active: #009297;
+    --color-chart-purple: #575895;
+    --color-chart-purple-active: #797bd6;
+    --color-chart-magenta: #7b4e83;
+    --color-chart-magenta-active: #ad6bbb;
+    --color-chart-aquamarine: #0d6b51;
+    --color-chart-aquamarine-active: #009671;
+    --color-chart-yellow: #715d03;
+    --color-chart-yellow-active: #9d8100;
+    --color-chart-saphire: #4c5b96;
+    --color-chart-saphire-active: #687fd6;
     /* Color / Dark / Control */
-    --color-control-background: rgba(255, 255, 255, 0.14);
-    --color-control-background-hover: rgba(255, 255, 255, 0.2);
-    --color-control-background-pressed: rgba(255, 255, 255, 0.26);
-    --color-control-background-error: rgba(243, 118, 120, 0.12);
+    --color-control-background: rgba(255, 255, 255, 0.1);
+    --color-control-background-hover: rgba(255, 255, 255, 0.14);
+    --color-control-background-pressed: rgba(255, 255, 255, 0.22);
+    --color-control-background-error: rgba(255, 137, 125, 0.08);
     /* Color / Dark / Divider */
-    --color-divider: rgba(255, 255, 255, 0.2);
+    --color-divider: rgba(255, 255, 255, 0.16);
     /* Color / Dark / Gradient */
     --color-gradient-right: linear-gradient(-90deg, #21212100 0%, #212121 33.71%);
     --color-gradient-left: linear-gradient(-90deg, #212121 64.58%, #21212100 100%);
     /* Color / Dark / Status */
-    --color-status-error: #f37678;
-    --color-status-error-background: #371313;
-    --color-status-warning: #ffbd55;
-    --color-status-warning-background: #3d392a;
-    --color-status-success: #78ce8e;
-    --color-status-success-background: #10301a;
-    --color-status-info: #5cb5ff;
-    --color-status-info-background: #132338;
-    --color-status-neutral: #d1d2d6;
-    --color-status-neutral-background: #36383c;
+    --color-status-error: #ffaca2;
+    --color-status-error-background: #442926;
+    --color-status-warning: #ffb14a;
+    --color-status-warning-background: #3f2d17;
+    --color-status-success: #78d672;
+    --color-status-success-background: #253423;
+    --color-status-info: #95c4ff;
+    --color-status-info-background: #253141;
+    --color-status-neutral: #c0c0c7;
+    --color-status-neutral-background: #303032;
     /* Color / Dark / Text */
     --color-text-active: rgba(255, 255, 255, 0.87);
-    --color-text-active-inverse: rgba(9, 11, 22, 0.94);
+    --color-text-active-inverse: #121823;
     --color-text-inactive: rgba(255, 255, 255, 0.6);
-    --color-text-inactive-inverse: rgba(0, 0, 0, 0.6);
+    --color-text-inactive-inverse: rgba(18, 24, 35, 0.6);
     --color-text-disabled: rgba(255, 255, 255, 0.38);
-    --color-text-disabled-inverse: rgba(0, 0, 0, 0.38);
-    --color-text-link: #5cb5ff;
-    --color-text-link-visited: #b16cf9;
+    --color-text-disabled-inverse: rgba(18, 24, 35, 0.38);
+    --color-text-link: #95c4ff;
+    --color-text-link-visited: #babbff;
     --color-text-logo: #ffffff;
     /* Color / Dark / Utilities */
-    --color-utilities-scroll: #7b7d8b;
-    --color-utilities-scroll-hover: #b6b7bf;
-    --color-utilities-scroll-pressed: #f1f1f3;
+    --color-utilities-scroll: #545458;
+    --color-utilities-scroll-hover: #6d6d70;
+    --color-utilities-scroll-pressed: #86868a;
   }
   /* Инвертированная тема.
      По ДС (get-started/web/theming) в теме, обратной текущей, показываются
@@ -386,98 +380,98 @@
   [data-theme="light"] .invertedTheme, [data-theme="light"] .toast, [data-theme="light"] .fab,
   [data-theme="light"] .cell-tooltip, [data-theme="light"] .ds-tip, [data-theme="light"] .cj-merge-help-popover{
     /* Color / Dark / Accent */
-    --color-accent-teal: #4dd0e7;
-    --color-accent-teal-background: #123035;
-    --color-accent-purple: #b16cf9;
-    --color-accent-purple-background: #27113a;
-    --color-accent-magenta: #df59d1;
-    --color-accent-magenta-background: #370f37;
-    --color-accent-aquamarine: #30d7c2;
-    --color-accent-aquamarine-background: #18302b;
-    --color-accent-lemon-background: #494635;
+    --color-accent-teal: #35d5da;
+    --color-accent-teal-background: #20393a;
+    --color-accent-purple: #babbff;
+    --color-accent-purple-background: #333346;
+    --color-accent-magenta: #f0a7fc;
+    --color-accent-magenta-background: #3f3041;
+    --color-accent-aquamarine: #59d6ab;
+    --color-accent-aquamarine-background: #233930;
+    --color-accent-lemon-background: #3c341a;
     /* Color / Dark / Background */
-    --color-background-base: #141414;
+    --color-background-base: #151518;
     --color-background-base-hover: rgba(255, 255, 255, 0.06);
-    --color-background-base-focused: rgba(255, 255, 255, 0.12);
-    --color-background-base-pressed: rgba(255, 255, 255, 0.12);
-    --color-background-base-dragged: rgba(255, 255, 255, 0.08);
-    --color-background-base-selected: rgba(255, 255, 255, 0.08);
+    --color-background-base-focused: rgba(255, 255, 255, 0.1);
+    --color-background-base-pressed: rgba(255, 255, 255, 0.1);
+    --color-background-base-dragged: rgba(255, 255, 255, 0.06);
+    --color-background-base-selected: rgba(255, 255, 255, 0.04);
     --color-background-base-activated: rgba(255, 255, 255, 0.12);
-    --color-background-inverse: #e0e0e0;
-    --color-background-low: #212121;
-    --color-background-medium: #2e2f33;
-    --color-background-high: #36383c;
-    --color-background-secondary: #36383c;
+    --color-background-inverse: #f4f3f7;
+    --color-background-low: #1d1d20;
+    --color-background-medium: #212124;
+    --color-background-high: #27282a;
+    --color-background-secondary: #212124;
     /* Color / Dark / Border */
     --color-border: rgba(255, 255, 255, 0.48);
-    --color-border-focused: #ffffff;
-    --color-border-focus: #ffffff;
-    --color-border-error: #f37678;
+    --color-border-focused: #e9e7ec;
+    --color-border-focus: #e3e2e6;
+    --color-border-error: #ffa399;
     /* Color / Dark / Button */
-    --color-button-plain: #5cb5ff;
-    --color-button-plain-background-hover: rgba(92, 181, 255, 0.12);
-    --color-button-plain-background-pressed: rgba(92, 181, 255, 0.16);
-    --color-button-overlay-background: #f9f9f9;
-    --color-button-overlay-background-hover: #f1f1f3;
-    --color-button-overlay-background-pressed: #e3e3e6;
+    --color-button-plain: #95c4ff;
+    --color-button-plain-background-hover: rgba(138, 191, 255, 0.08);
+    --color-button-plain-background-pressed: rgba(138, 191, 255, 0.12);
+    --color-button-overlay-background: #1b2029;
+    --color-button-overlay-background-hover: #262a33;
+    --color-button-overlay-background-pressed: #31353e;
     /* Color / Dark / Chart */
-    --color-chart-red: #e78687;
-    --color-chart-red-active: #db5858;
-    --color-chart-orange: #f2bb64;
-    --color-chart-orange-active: #d9922d;
-    --color-chart-green: #6ad682;
-    --color-chart-green-active: #3e9652;
-    --color-chart-blue: #5ca7e5;
-    --color-chart-blue-active: #457bc1;
-    --color-chart-grey: #bababa;
-    --color-chart-grey-active: #808187;
-    --color-chart-teal: #4ae5dc;
-    --color-chart-teal-active: #359e8b;
-    --color-chart-purple: #b16cf9;
-    --color-chart-purple-active: #803fc1;
-    --color-chart-magenta: #cc74b9;
-    --color-chart-magenta-active: #b153a7;
-    --color-chart-aquamarine: #50c09e;
-    --color-chart-aquamarine-active: #1b9881;
-    --color-chart-yellow: #edd460;
-    --color-chart-yellow-active: #c5a537;
-    --color-chart-saphire: #8186f4;
-    --color-chart-saphire-active: #6266bc;
+    --color-chart-red: #924941;
+    --color-chart-red-active: #ce6459;
+    --color-chart-orange: #8c4f1d;
+    --color-chart-orange-active: #c46e22;
+    --color-chart-green: #3a6936;
+    --color-chart-green-active: #4c9349;
+    --color-chart-blue: #336192;
+    --color-chart-blue-active: #3f87d0;
+    --color-chart-grey: #5d5e64;
+    --color-chart-grey-active: #81838c;
+    --color-chart-teal: #00696c;
+    --color-chart-teal-active: #009297;
+    --color-chart-purple: #575895;
+    --color-chart-purple-active: #797bd6;
+    --color-chart-magenta: #7b4e83;
+    --color-chart-magenta-active: #ad6bbb;
+    --color-chart-aquamarine: #0d6b51;
+    --color-chart-aquamarine-active: #009671;
+    --color-chart-yellow: #715d03;
+    --color-chart-yellow-active: #9d8100;
+    --color-chart-saphire: #4c5b96;
+    --color-chart-saphire-active: #687fd6;
     /* Color / Dark / Control */
-    --color-control-background: rgba(255, 255, 255, 0.14);
-    --color-control-background-hover: rgba(255, 255, 255, 0.2);
-    --color-control-background-pressed: rgba(255, 255, 255, 0.26);
-    --color-control-background-error: rgba(243, 118, 120, 0.12);
+    --color-control-background: rgba(255, 255, 255, 0.1);
+    --color-control-background-hover: rgba(255, 255, 255, 0.14);
+    --color-control-background-pressed: rgba(255, 255, 255, 0.22);
+    --color-control-background-error: rgba(255, 137, 125, 0.08);
     /* Color / Dark / Divider */
-    --color-divider: rgba(255, 255, 255, 0.2);
+    --color-divider: rgba(255, 255, 255, 0.16);
     /* Color / Dark / Gradient */
     --color-gradient-right: linear-gradient(-90deg, #21212100 0%, #212121 33.71%);
     --color-gradient-left: linear-gradient(-90deg, #212121 64.58%, #21212100 100%);
     /* Color / Dark / Status */
-    --color-status-error: #f37678;
-    --color-status-error-background: #371313;
-    --color-status-warning: #ffbd55;
-    --color-status-warning-background: #3d392a;
-    --color-status-success: #78ce8e;
-    --color-status-success-background: #10301a;
-    --color-status-info: #5cb5ff;
-    --color-status-info-background: #132338;
-    --color-status-neutral: #d1d2d6;
-    --color-status-neutral-background: #36383c;
+    --color-status-error: #ffaca2;
+    --color-status-error-background: #442926;
+    --color-status-warning: #ffb14a;
+    --color-status-warning-background: #3f2d17;
+    --color-status-success: #78d672;
+    --color-status-success-background: #253423;
+    --color-status-info: #95c4ff;
+    --color-status-info-background: #253141;
+    --color-status-neutral: #c0c0c7;
+    --color-status-neutral-background: #303032;
     /* Color / Dark / Text */
     --color-text-active: rgba(255, 255, 255, 0.87);
-    --color-text-active-inverse: rgba(9, 11, 22, 0.94);
+    --color-text-active-inverse: #121823;
     --color-text-inactive: rgba(255, 255, 255, 0.6);
-    --color-text-inactive-inverse: rgba(0, 0, 0, 0.6);
+    --color-text-inactive-inverse: rgba(18, 24, 35, 0.6);
     --color-text-disabled: rgba(255, 255, 255, 0.38);
-    --color-text-disabled-inverse: rgba(0, 0, 0, 0.38);
-    --color-text-link: #5cb5ff;
-    --color-text-link-visited: #b16cf9;
+    --color-text-disabled-inverse: rgba(18, 24, 35, 0.38);
+    --color-text-link: #95c4ff;
+    --color-text-link-visited: #babbff;
     --color-text-logo: #ffffff;
     /* Color / Dark / Utilities */
-    --color-utilities-scroll: #7b7d8b;
-    --color-utilities-scroll-hover: #b6b7bf;
-    --color-utilities-scroll-pressed: #f1f1f3;
+    --color-utilities-scroll: #545458;
+    --color-utilities-scroll-hover: #6d6d70;
+    --color-utilities-scroll-pressed: #86868a;
     /* Алиасы прототипа нужно переобъявить здесь: custom property со значением var(...)
        вычисляется на том элементе, где объявлена, поэтому объявленный на :root алиас
        «заморозил» бы цвет внешней темы и инверсия до него не дошла бы. */
@@ -507,98 +501,98 @@
   [data-theme="dark"] .invertedTheme, [data-theme="dark"] .toast, [data-theme="dark"] .fab,
   [data-theme="dark"] .cell-tooltip, [data-theme="dark"] .ds-tip, [data-theme="dark"] .cj-merge-help-popover{
     /* Color / Light / Accent */
-    --color-accent-teal: #00adc7;
-    --color-accent-teal-background: #e0f7fb;
-    --color-accent-purple: #7e00ed;
-    --color-accent-purple-background: #f3e7fe;
-    --color-accent-magenta: #bc00b8;
-    --color-accent-magenta-background: #fae4f7;
-    --color-accent-aquamarine: #1ebeaa;
-    --color-accent-aquamarine-background: #e1f5f0;
-    --color-accent-lemon-background: #fff7d7;
+    --color-accent-teal: #00777a;
+    --color-accent-teal-background: #def5f6;
+    --color-accent-purple: #5f61ba;
+    --color-accent-purple-background: #f2efff;
+    --color-accent-magenta: #92519f;
+    --color-accent-magenta-background: #ffebfd;
+    --color-accent-aquamarine: #00795b;
+    --color-accent-aquamarine-background: #e0f6ea;
+    --color-accent-lemon-background: #fdf0ce;
     /* Color / Light / Background */
     --color-background-base: #ffffff;
-    --color-background-base-hover: rgba(25, 28, 52, 0.08);
-    --color-background-base-focused: rgba(25, 28, 52, 0.12);
-    --color-background-base-pressed: rgba(25, 28, 52, 0.12);
-    --color-background-base-dragged: rgba(25, 28, 52, 0.08);
-    --color-background-base-selected: rgba(25, 28, 52, 0.05);
+    --color-background-base-hover: rgba(18, 24, 35, 0.08);
+    --color-background-base-focused: rgba(18, 24, 35, 0.12);
+    --color-background-base-pressed: rgba(18, 24, 35, 0.12);
+    --color-background-base-dragged: rgba(18, 24, 35, 0.08);
+    --color-background-base-selected: rgba(18, 24, 35, 0.05);
     --color-background-base-activated: rgba(0, 0, 0, 0.12);
-    --color-background-inverse: #121212;
+    --color-background-inverse: #1f1f23;
     --color-background-low: #ffffff;
     --color-background-medium: #ffffff;
     --color-background-high: #ffffff;
-    --color-background-secondary: #f9f9f9;
+    --color-background-secondary: #f9f6f7;
     /* Color / Light / Border */
-    --color-border: rgba(25, 28, 52, 0.18);
-    --color-border-focused: #202123;
-    --color-border-focus: #212121;
-    --color-border-error: #ff5555;
+    --color-border: rgba(18, 24, 35, 0.18);
+    --color-border-focused: #222429;
+    --color-border-focus: #252629;
+    --color-border-error: #d95c51;
     /* Color / Light / Button */
-    --color-button-plain: #1a73e8;
-    --color-button-plain-background-hover: rgba(26, 115, 232, 0.08);
-    --color-button-plain-background-pressed: rgba(26, 115, 232, 0.12);
-    --color-button-overlay-background: #141622;
-    --color-button-overlay-background-hover: #1f212d;
-    --color-button-overlay-background-pressed: #2a2c39;
+    --color-button-plain: #006bb6;
+    --color-button-plain-background-hover: rgba(0, 117, 199, 0.08);
+    --color-button-plain-background-pressed: rgba(0, 117, 199, 0.12);
+    --color-button-overlay-background: #1b2029;
+    --color-button-overlay-background-hover: #262a33;
+    --color-button-overlay-background-pressed: #31353e;
     /* Color / Light / Chart */
-    --color-chart-grey: #d4d4d9;
-    --color-chart-grey-active: #b6b7bf;
-    --color-chart-red: #ffb0b1;
-    --color-chart-red-active: #ff9193;
-    --color-chart-orange: #ffd086;
-    --color-chart-orange-active: #ffbd55;
-    --color-chart-green: #a0dbae;
-    --color-chart-green-active: #78ce8e;
-    --color-chart-blue: #8dcaff;
-    --color-chart-blue-active: #5cb5ff;
-    --color-chart-teal: #80deef;
-    --color-chart-teal-active: #4dd0e7;
-    --color-chart-magenta: #f2bceb;
-    --color-chart-magenta-active: #e98dde;
-    --color-chart-purple: #c89afa;
-    --color-chart-purple-active: #b16cf9;
-    --color-chart-aquamarine: #8fd9cb;
-    --color-chart-aquamarine-active: #63ccba;
-    --color-chart-yellow: #fff0a5;
-    --color-chart-yellow-active: #fee262;
-    --color-chart-saphire: #a1a4e8;
-    --color-chart-saphire-active: #7e87df;
+    --color-chart-grey: #d4d4db;
+    --color-chart-grey-active: #b6b8c2;
+    --color-chart-red: #ffc7c0;
+    --color-chart-red-active: #ff9f94;
+    --color-chart-orange: #ffcaa5;
+    --color-chart-orange-active: #ffa35c;
+    --color-chart-green: #ade2a3;
+    --color-chart-green-active: #80ca79;
+    --color-chart-blue: #b9d7ff;
+    --color-chart-blue-active: #85bcff;
+    --color-chart-teal: #88e3e7;
+    --color-chart-teal-active: #24ccd2;
+    --color-chart-magenta: #f9c2ff;
+    --color-chart-magenta-active: #e79ff4;
+    --color-chart-purple: #d1d0ff;
+    --color-chart-purple-active: #b1b2ff;
+    --color-chart-aquamarine: #93e5c3;
+    --color-chart-aquamarine-active: #4fcea3;
+    --color-chart-yellow: #efd374;
+    --color-chart-yellow-active: #d8b635;
+    --color-chart-saphire: #cad2ff;
+    --color-chart-saphire-active: #a4b5ff;
     /* Color / Light / Control */
-    --color-control-background: rgba(25, 28, 52, 0.1);
-    --color-control-background-hover: rgba(25, 28, 52, 0.14);
-    --color-control-background-pressed: rgba(25, 28, 52, 0.24);
-    --color-control-background-error: rgba(255, 85, 85, 0.08);
+    --color-control-background: rgba(18, 24, 35, 0.1);
+    --color-control-background-hover: rgba(18, 24, 35, 0.14);
+    --color-control-background-pressed: rgba(18, 24, 35, 0.24);
+    --color-control-background-error: rgba(217, 92, 81, 0.08);
     /* Color / Light / Divider */
-    --color-divider: rgba(25, 28, 52, 0.12);
+    --color-divider: rgba(18, 24, 35, 0.12);
     /* Color / Light / Gradient */
     --color-gradient-right: linear-gradient(-90deg, #ffffff00 0%, #ffffff 33.71%);
     --color-gradient-left: linear-gradient(-90deg, #ffffff 64.58%, #ffffff00 100%);
     /* Color / Light / Status */
-    --color-status-error: #ff5555;
-    --color-status-error-background: #ffecef;
-    --color-status-warning: #ff9419;
-    --color-status-warning-background: #fff4e1;
-    --color-status-success: #2ca853;
-    --color-status-success-background: #e7f6eb;
-    --color-status-info: #1a73e8;
-    --color-status-info-background: #e3f2ff;
-    --color-status-neutral: #5e6071;
-    --color-status-neutral-background: #f1f1f3;
+    --color-status-error: #ae3c34;
+    --color-status-error-background: #ffedea;
+    --color-status-warning: #8c5800;
+    --color-status-warning-background: #ffeede;
+    --color-status-success: #0b731c;
+    --color-status-success-background: #e4f6dc;
+    --color-status-info: #0066ae;
+    --color-status-info-background: #eaf1ff;
+    --color-status-neutral: #626369;
+    --color-status-neutral-background: #f2f0f3;
     /* Color / Light / Text */
-    --color-text-active: rgba(9, 11, 22, 0.94);
+    --color-text-active: rgba(18, 24, 35, 0.94);
     --color-text-active-inverse: #ffffff;
-    --color-text-inactive: rgba(25, 28, 52, 0.7);
+    --color-text-inactive: rgba(18, 24, 35, 0.7);
     --color-text-inactive-inverse: rgba(255, 255, 255, 0.6);
-    --color-text-disabled: rgba(25, 28, 52, 0.48);
+    --color-text-disabled: rgba(18, 24, 35, 0.48);
     --color-text-disabled-inverse: rgba(255, 255, 255, 0.38);
-    --color-text-link: #1a73e8;
-    --color-text-link-visited: #7e00ed;
+    --color-text-link: #006bb6;
+    --color-text-link-visited: #6769c2;
     --color-text-logo: #000000;
     /* Color / Light / Utilities */
-    --color-utilities-scroll: #b6b7bf;
-    --color-utilities-scroll-hover: #999aa5;
-    --color-utilities-scroll-pressed: #7b7d8b;
+    --color-utilities-scroll: #c1c0c4;
+    --color-utilities-scroll-hover: #a6a5a9;
+    --color-utilities-scroll-pressed: #8b8b8f;
     /* Алиасы прототипа нужно переобъявить здесь: custom property со значением var(...)
        вычисляется на том элементе, где объявлена, поэтому объявленный на :root алиас
        «заморозил» бы цвет внешней темы и инверсия до него не дошла бы. */
@@ -1401,7 +1395,7 @@
      пропадает. :has() читает реальный DOM-фокус, поэтому не теряет синхронизацию
      при ре-рендере (в отличие от JS-класса, который пришлось бы вручную сверять). */
   .uc-step-setup .ffield-label,
-  .uc-choice-fields .ffield-label{top:14px;font-size:17px;color:var(--text-tertiary);transform:none;}
+  .uc-choice-fields .ffield-label{top:14px;font-size:17px;color:var(--text-secondary);transform:none;}
   .uc-step-setup .ffield.filled .ffield-label,
   .uc-step-setup .ffield:has(.ffield-input:focus) .ffield-label,
   .uc-step-setup .ffield:has(textarea:focus) .ffield-label,
@@ -1443,8 +1437,11 @@
 
   /* floating-label field (used in Архитектор filter, create/publish panels) */
   .ffield{position:relative;}
+  /* Подпись в покое — secondary, а не tertiary: tertiary это цвет состояния
+     disabled, на 15 px он давал 3.1:1 при норме 4.5. Застарелый дефект, нашёлся
+     прогоном контрастов при смене палитры. */
   .ffield-label{
-    position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--text-tertiary);
+    position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--text-secondary);
     pointer-events:none;transition:top .1s ease,font-size .1s ease,transform .1s ease;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(100% - 32px);
   }
   /* Поле с плавающей меткой — та же высота 48, раскладка по ДС (textfield medium):
