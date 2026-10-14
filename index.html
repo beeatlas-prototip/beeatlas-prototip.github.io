@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261014-165352">
+<meta name="beeatlas-build" content="20261014-170216">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -3276,6 +3276,10 @@
     color:var(--text-secondary);animation:lp-pulse 3.6s ease-in-out infinite;
   }
   .lp-flow-tip{width:23px;height:23px;flex:0 0 auto;display:block;}
+  /* Маркеры наезжают на пилюли ровно наполовину — так они сидят в макете:
+     остриё лежит НА краю узла, а не стоит в зазоре рядом с ним. Отрицательные
+     поля у самого коннектора, чтобы ширину шага это не меняло. */
+  .lp-flow-link{margin:0 -11px;}
   .lp-flow-link i{flex:1;height:1px;background:var(--text);opacity:.38;}
   .lp-flow-note{margin:var(--size-spacing-x8) 0 0;font-size:17px;line-height:22px;letter-spacing:.2px;color:var(--text-secondary);max-width:900px;}
 
