@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261014-134859">
+<meta name="beeatlas-build" content="20261014-135836">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифты Yellowbe, вшиты в файл (прототип должен оставаться одним HTML).
@@ -3239,22 +3239,22 @@
      плиты — снаружи они резкие, под стеклом размытые, и граница стекла
      читается сама, без рамки. */
   .lp-hero-stage{position:relative;}
-  .lp-deco{position:absolute;inset:-80px -40px;pointer-events:none;z-index:0;}
-  /* Пятна лежат ПОД стеклом и оно их ещё раз размывает и гасит, поэтому
-     здесь они резче и плотнее, чем выглядят в итоге. */
-  .lp-blob{position:absolute;border-radius:50%;filter:blur(28px);opacity:.8;will-change:transform;}
-  .lp-blob-1{width:480px;height:480px;left:-40px;top:-20px;
-    background:radial-gradient(circle,var(--color-accent-purple) 0%,transparent 70%);
-    animation:lp-drift-a 24s ease-in-out infinite alternate;}
-  .lp-blob-2{width:440px;height:440px;right:-30px;top:60px;
-    background:radial-gradient(circle,var(--color-accent-teal) 0%,transparent 70%);
-    animation:lp-drift-b 20s ease-in-out infinite alternate;}
-  .lp-blob-3{width:380px;height:380px;left:36%;top:-40px;
-    background:radial-gradient(circle,var(--color-accent-magenta) 0%,transparent 70%);
-    animation:lp-drift-c 28s ease-in-out infinite alternate;}
-  @keyframes lp-drift-a{to{transform:translate3d(60px,40px,0) scale(1.12);}}
-  @keyframes lp-drift-b{to{transform:translate3d(-50px,60px,0) scale(1.08);}}
-  @keyframes lp-drift-c{to{transform:translate3d(40px,-30px,0) scale(.9);}}
+  .lp-deco{
+    position:absolute;inset:-80px -40px;pointer-events:none;z-index:0;
+    /* За стеклом лежит не цветная клякса, а подложка-чертёж: точечная сетка
+       шагом 24 (тот же приём, что у .lp-panel в секции «Как устроено») и один
+       очень мягкий тёплый подтон. Под плитой сетка размывается в ровную дымку,
+       снаружи остаётся резкой — по этому переходу и читается край стекла.
+       Маска гасит подложку к краям сцены, иначе сетка обрывалась бы линейкой. */
+    background-image:
+      radial-gradient(60% 50% at 18% 26%, var(--color-accent-purple-background) 0%, transparent 70%),
+      radial-gradient(55% 45% at 84% 62%, var(--color-accent-teal-background) 0%, transparent 70%),
+      radial-gradient(var(--border-strong) 1px, transparent 1px);
+    background-size:auto, auto, 24px 24px;
+    -webkit-mask-image:radial-gradient(115% 95% at 50% 42%, #000 52%, transparent 100%);
+    mask-image:radial-gradient(115% 95% at 50% 42%, #000 52%, transparent 100%);
+    opacity:.9;
+  }
   /* Объёмные объекты парят без подложки, как в референсах. Кубики заходят на
      угол окна продукта — там же, где лего в выкладке Pixso on-premise. */
   .lp-float{position:absolute;z-index:2;will-change:transform;}
@@ -3313,7 +3313,7 @@
 
   /* Человеку, который просил систему не анимировать, страница отдаётся статикой */
   @media (prefers-reduced-motion:reduce){
-    .lp-blob,.lp-float,.lp-shot-lego,.lp-cta-figure,.lp-cursor,.lp-flow-arrow,.lp-shot,.lp-rise,.lp-h1{animation:none !important;}
+    .lp-float,.lp-shot-lego,.lp-cta-figure,.lp-cursor,.lp-flow-arrow,.lp-shot,.lp-rise,.lp-h1{animation:none !important;}
     .lp-svc,.lp-svc-obj,.lp-svc-go .beeline-icons{transition:none;}
     .lp-reveal{opacity:1;transform:none;transition:none;}
   }
@@ -7384,16 +7384,12 @@ function LpObj(name, cls){
   return `<img class="${cls}" src="${LP_OBJ[name]}" alt="" aria-hidden="true" draggable="false">`;
 }
 
-/* Пятна лежат под матовым стеклом героя и размываются вместе с градиентом,
-   а объёмный объект — предмет НА стекле, он остаётся резким. Поэтому они
-   разведены по разным слоям: .lp-deco под стеклом, .lp-float над ним. */
+/* Подложка лежит под матовым стеклом героя и размывается им, а объёмный
+   объект — предмет НА стекле, он остаётся резким. Поэтому они разведены по
+   разным слоям: .lp-deco под стеклом, .lp-float над ним. */
 function LpHeroDeco(){
   return `
-  <div class="lp-deco" aria-hidden="true">
-    <span class="lp-blob lp-blob-1"></span>
-    <span class="lp-blob lp-blob-2"></span>
-    <span class="lp-blob lp-blob-3"></span>
-  </div>`;
+  <div class="lp-deco" aria-hidden="true"></div>`;
 }
 
 /* Плита героя стоит на сцене, а цветные пятна лежат ПОД ней и выходят за её
