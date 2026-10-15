@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261015-130742">
+<meta name="beeatlas-build" content="20261015-133659">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -27,31 +27,15 @@
 
   /* ══════════════════════════════════════════════════════════════════════
      Цветовые токены. Значения считаются генератором из тональных шкал HCT —
-     см. переезд-m3/tokens.mjs. Руками не править: поменять опоры в генераторе
-     и прогнать `node tokens.mjs --apply`.
+     см. переезд-m3/m3-theme.mjs. Руками не править: поменять опоры в генераторе
+     и прогнать `node m3-theme.mjs --apply`.
      ══════════════════════════════════════════════════════════════════════ */
   :root{
-    /* Color / Const / Background */
-    --color-background-brand: #ecc300;
-    --color-background-brand-hover: #d8b300;
-    --color-background-brand-pressed: #c5a300;
-    --color-background-backdrop: rgba(0, 0, 0, 0.48);
-    --color-background-white: #ffffff;
-    /* Color / Const / Divider */
-    --color-divider-grey: rgba(18, 24, 35, 0.12);
-    /* Color / Const / Opacity */
-    --color-opacity-disabled: 0.48;
-    /* Color / Const / Text */
-    --color-text-black-active: rgba(18, 24, 35, 0.94);
-    --color-text-grey-inactive: rgba(18, 24, 35, 0.7);
-    --color-text-grey-disabled: rgba(18, 24, 35, 0.48);
-    --color-text-white-inverse: #ffffff;
-    --color-text-dark-active: rgba(0, 0, 0, 0.87);
-    --color-text-dark-inactive: rgba(0, 0, 0, 0.6);
-    --color-text-dark-disabled: rgba(0, 0, 0, 0.38);
-    --color-text-light-active: rgba(255, 255, 255, 0.87);
-    --color-text-light-inactive: rgba(255, 255, 255, 0.6);
-    --color-text-light-disabled: rgba(255, 255, 255, 0.38);
+    /* Затемнение под диалогом — роль scrim с прозрачностью по спеке M3 */
+    --scrim-backdrop: color-mix(in srgb, var(--md-sys-color-scrim) 32%, transparent);
+    /* Непрозрачность неактивного состояния — M3: текст .38, контейнер .12 */
+    --opacity-disabled: 0.38;
+    --opacity-disabled-container: 0.12;
 
     /* Elevation — уровни Material 3 (две тени на уровень: ключевая и мягкая).
        Прежние имена сохранены: на них завязаны карточки, поповеры и модалки. */
@@ -188,196 +172,181 @@
     --size-spacing-x9: 36px;
     --size-spacing-x10: 40px;
   }
+  /* ═══ Системные роли Material 3 ═══
+     49 ролей M3 плюс расширенные цвета (статусы и метки слоёв) — их в ролях M3
+     нет, и M3 описывает для таких случаев custom colors с тем же набором из
+     четырёх ролей. Значения считает переезд-m3/m3-theme.mjs из seed-цвета;
+     карта «роль → тон» взята из m3-спеки/sys.json. */
   :root, [data-theme="light"]{
-    /* Color / Light / Accent */
-    --color-accent-teal: #00777a;
-    --color-accent-teal-background: #def5f6;
-    --color-accent-purple: #5f61ba;
-    --color-accent-purple-background: #f2efff;
-    --color-accent-magenta: #92519f;
-    --color-accent-magenta-background: #ffebfd;
-    --color-accent-aquamarine: #00795b;
-    --color-accent-aquamarine-background: #e0f6ea;
-    --color-accent-lemon-background: #fdf0ce;
-    /* Color / Light / Background */
-    --color-background-base: #ffffff;
-    --color-background-base-hover: rgba(18, 24, 35, 0.08);
-    --color-background-base-focused: rgba(18, 24, 35, 0.12);
-    --color-background-base-pressed: rgba(18, 24, 35, 0.12);
-    --color-background-base-dragged: rgba(18, 24, 35, 0.08);
-    --color-background-base-selected: rgba(18, 24, 35, 0.05);
-    --color-background-base-activated: rgba(0, 0, 0, 0.12);
-    --color-background-inverse: #1f1f23;
-    --color-background-low: #ffffff;
-    --color-background-medium: #ffffff;
-    --color-background-high: #ffffff;
-    --color-background-secondary: #f9f6f7;
-    /* Color / Light / Border */
-    --color-border: rgba(18, 24, 35, 0.18);
-    --color-border-focused: #222429;
-    --color-border-focus: #252629;
-    --color-border-error: #d95c51;
-    /* Color / Light / Button */
-    --color-button-plain: #006bb6;
-    --color-button-plain-background-hover: rgba(0, 117, 199, 0.08);
-    --color-button-plain-background-pressed: rgba(0, 117, 199, 0.12);
-    --color-button-overlay-background: #2c303a;
-    --color-button-overlay-background-hover: #373b45;
-    --color-button-overlay-background-pressed: #434751;
-    /* Color / Light / Chart */
-    --color-chart-grey: #d4d4db;
-    --color-chart-grey-active: #b6b8c2;
-    --color-chart-red: #ffc7c0;
-    --color-chart-red-active: #ff9f94;
-    --color-chart-orange: #ffcaa5;
-    --color-chart-orange-active: #ffa35c;
-    --color-chart-green: #ade2a3;
-    --color-chart-green-active: #80ca79;
-    --color-chart-blue: #b9d7ff;
-    --color-chart-blue-active: #85bcff;
-    --color-chart-teal: #88e3e7;
-    --color-chart-teal-active: #24ccd2;
-    --color-chart-magenta: #f9c2ff;
-    --color-chart-magenta-active: #e79ff4;
-    --color-chart-purple: #d1d0ff;
-    --color-chart-purple-active: #b1b2ff;
-    --color-chart-aquamarine: #93e5c3;
-    --color-chart-aquamarine-active: #4fcea3;
-    --color-chart-yellow: #efd374;
-    --color-chart-yellow-active: #d8b635;
-    --color-chart-saphire: #cad2ff;
-    --color-chart-saphire-active: #a4b5ff;
-    /* Color / Light / Control */
-    --color-control-background: rgba(18, 24, 35, 0.1);
-    --color-control-background-hover: rgba(18, 24, 35, 0.14);
-    --color-control-background-pressed: rgba(18, 24, 35, 0.24);
-    --color-control-background-error: rgba(217, 92, 81, 0.08);
-    /* Color / Light / Divider */
-    --color-divider: rgba(18, 24, 35, 0.12);
-    /* Color / Light / Gradient */
-    --color-gradient-right: linear-gradient(-90deg, #ffffff00 0%, #ffffff 33.71%);
-    --color-gradient-left: linear-gradient(-90deg, #ffffff 64.58%, #ffffff00 100%);
-    /* Color / Light / Status */
-    --color-status-error: #ae3c34;
-    --color-status-error-background: #ffedea;
-    --color-status-warning: #8c5800;
-    --color-status-warning-background: #ffeede;
-    --color-status-success: #0b731c;
-    --color-status-success-background: #e4f6dc;
-    --color-status-info: #0066ae;
-    --color-status-info-background: #eaf1ff;
-    --color-status-neutral: #626369;
-    --color-status-neutral-background: #f2f0f3;
-    /* Color / Light / Text */
-    --color-text-active: rgba(18, 24, 35, 0.94);
-    --color-text-active-inverse: #ffffff;
-    --color-text-inactive: rgba(18, 24, 35, 0.7);
-    --color-text-inactive-inverse: rgba(255, 255, 255, 0.6);
-    --color-text-disabled: rgba(18, 24, 35, 0.48);
-    --color-text-disabled-inverse: rgba(255, 255, 255, 0.38);
-    --color-text-link: #006bb6;
-    --color-text-link-visited: #6769c2;
-    --color-text-logo: #000000;
-    /* Color / Light / Utilities */
-    --color-utilities-scroll: #c1c0c4;
-    --color-utilities-scroll-hover: #a6a5a9;
-    --color-utilities-scroll-pressed: #8b8b8f;
+    /* роли M3: светлая */
+    --md-sys-color-primary: #ecc300;
+    --md-sys-color-on-primary: #3b2f00;
+    --md-sys-color-primary-container: #ffe17a;
+    --md-sys-color-on-primary-container: #231b00;
+    --md-sys-color-inverse-primary: #ecc300;
+    --md-sys-color-primary-fixed: #ffe17a;
+    --md-sys-color-primary-fixed-dim: #ecc300;
+    --md-sys-color-on-primary-fixed: #231b00;
+    --md-sys-color-on-primary-fixed-variant: #554500;
+    --md-sys-color-secondary: #6b5d2f;
+    --md-sys-color-on-secondary: #ffffff;
+    --md-sys-color-secondary-container: #f5e1a7;
+    --md-sys-color-on-secondary-container: #231b00;
+    --md-sys-color-secondary-fixed: #f5e1a7;
+    --md-sys-color-secondary-fixed-dim: #d8c68d;
+    --md-sys-color-on-secondary-fixed: #231b00;
+    --md-sys-color-on-secondary-fixed-variant: #524619;
+    --md-sys-color-tertiary: #386846;
+    --md-sys-color-on-tertiary: #ffffff;
+    --md-sys-color-tertiary-container: #b9efc3;
+    --md-sys-color-on-tertiary-container: #00210d;
+    --md-sys-color-tertiary-fixed: #b9efc3;
+    --md-sys-color-tertiary-fixed-dim: #9ed3a9;
+    --md-sys-color-on-tertiary-fixed: #00210d;
+    --md-sys-color-on-tertiary-fixed-variant: #1f5030;
+    --md-sys-color-error: #a73830;
+    --md-sys-color-on-error: #ffffff;
+    --md-sys-color-error-container: #ffdad6;
+    --md-sys-color-on-error-container: #410002;
+    --md-sys-color-background: #faf9fd;
+    --md-sys-color-on-background: #1b1b1f;
+    --md-sys-color-surface: #faf9fd;
+    --md-sys-color-on-surface: #1b1b1f;
+    --md-sys-color-surface-dim: #dbd9dd;
+    --md-sys-color-surface-bright: #faf9fd;
+    --md-sys-color-surface-container-lowest: #ffffff;
+    --md-sys-color-surface-container-low: #f4f3f7;
+    --md-sys-color-surface-container: #efedf1;
+    --md-sys-color-surface-container-high: #e9e7ec;
+    --md-sys-color-surface-container-highest: #e3e2e6;
+    --md-sys-color-inverse-surface: #2f3033;
+    --md-sys-color-inverse-on-surface: #f2f0f4;
+    --md-sys-color-shadow: #000000;
+    --md-sys-color-scrim: #000000;
+    --md-sys-color-surface-variant: #e0e2ec;
+    --md-sys-color-on-surface-variant: #44474e;
+    --md-sys-color-outline: #74777f;
+    --md-sys-color-outline-variant: #c4c6d0;
+    --md-sys-color-surface-tint: #ecc300;
+    --md-sys-color-ext-success: #296b2a;
+    --md-sys-color-ext-on-success: #ffffff;
+    --md-sys-color-ext-success-container: #acf4a2;
+    --md-sys-color-ext-on-success-container: #002203;
+    --md-sys-color-ext-warning: #865300;
+    --md-sys-color-ext-on-warning: #ffffff;
+    --md-sys-color-ext-warning-container: #ffddb8;
+    --md-sys-color-ext-on-warning-container: #2b1700;
+    --md-sys-color-ext-info: #0b61a4;
+    --md-sys-color-ext-on-info: #ffffff;
+    --md-sys-color-ext-info-container: #d2e4ff;
+    --md-sys-color-ext-on-info-container: #001c37;
+    --md-sys-color-ext-teal: #00696c;
+    --md-sys-color-ext-on-teal: #ffffff;
+    --md-sys-color-ext-teal-container: #64f7fc;
+    --md-sys-color-ext-on-teal-container: #002021;
+    --md-sys-color-ext-purple: #5354ad;
+    --md-sys-color-ext-on-purple: #ffffff;
+    --md-sys-color-ext-purple-container: #e1dfff;
+    --md-sys-color-ext-on-purple-container: #090269;
+    --md-sys-color-ext-magenta: #844592;
+    --md-sys-color-ext-on-magenta: #ffffff;
+    --md-sys-color-ext-magenta-container: #fdd6ff;
+    --md-sys-color-ext-on-magenta-container: #340042;
+    --md-sys-color-ext-aquamarine: #006c50;
+    --md-sys-color-ext-on-aquamarine: #ffffff;
+    --md-sys-color-ext-aquamarine-container: #7df9cb;
+    --md-sys-color-ext-on-aquamarine-container: #002116;
+    --md-sys-color-ext-lemon: #715c00;
+    --md-sys-color-ext-on-lemon: #ffffff;
+    --md-sys-color-ext-lemon-container: #ffe17a;
+    --md-sys-color-ext-on-lemon-container: #231b00;
   }
   [data-theme="dark"]{
-    /* Color / Dark / Accent */
-    --color-accent-teal: #35d5da;
-    --color-accent-teal-background: #20393a;
-    --color-accent-purple: #babbff;
-    --color-accent-purple-background: #333346;
-    --color-accent-magenta: #f0a7fc;
-    --color-accent-magenta-background: #3f3041;
-    --color-accent-aquamarine: #59d6ab;
-    --color-accent-aquamarine-background: #233930;
-    --color-accent-lemon-background: #3c341a;
-    /* Color / Dark / Background */
-    --color-background-base: #151518;
-    --color-background-base-hover: rgba(255, 255, 255, 0.06);
-    --color-background-base-focused: rgba(255, 255, 255, 0.1);
-    --color-background-base-pressed: rgba(255, 255, 255, 0.1);
-    --color-background-base-dragged: rgba(255, 255, 255, 0.06);
-    --color-background-base-selected: rgba(255, 255, 255, 0.04);
-    --color-background-base-activated: rgba(255, 255, 255, 0.12);
-    --color-background-inverse: #f4f3f7;
-    --color-background-low: #1d1d20;
-    --color-background-medium: #212124;
-    --color-background-high: #27282a;
-    --color-background-secondary: #212124;
-    /* Color / Dark / Border */
-    --color-border: rgba(255, 255, 255, 0.48);
-    --color-border-focused: #e9e7ec;
-    --color-border-focus: #e3e2e6;
-    --color-border-error: #ffa399;
-    /* Color / Dark / Button */
-    --color-button-plain: #95c4ff;
-    --color-button-plain-background-hover: rgba(138, 191, 255, 0.08);
-    --color-button-plain-background-pressed: rgba(138, 191, 255, 0.12);
-    --color-button-overlay-background: #2c303a;
-    --color-button-overlay-background-hover: #373b45;
-    --color-button-overlay-background-pressed: #434751;
-    /* Color / Dark / Chart */
-    --color-chart-red: #924941;
-    --color-chart-red-active: #ce6459;
-    --color-chart-orange: #8c4f1d;
-    --color-chart-orange-active: #c46e22;
-    --color-chart-green: #3a6936;
-    --color-chart-green-active: #4c9349;
-    --color-chart-blue: #336192;
-    --color-chart-blue-active: #3f87d0;
-    --color-chart-grey: #5d5e64;
-    --color-chart-grey-active: #81838c;
-    --color-chart-teal: #00696c;
-    --color-chart-teal-active: #009297;
-    --color-chart-purple: #575895;
-    --color-chart-purple-active: #797bd6;
-    --color-chart-magenta: #7b4e83;
-    --color-chart-magenta-active: #ad6bbb;
-    --color-chart-aquamarine: #0d6b51;
-    --color-chart-aquamarine-active: #009671;
-    --color-chart-yellow: #715d03;
-    --color-chart-yellow-active: #9d8100;
-    --color-chart-saphire: #4c5b96;
-    --color-chart-saphire-active: #687fd6;
-    /* Color / Dark / Control */
-    --color-control-background: rgba(255, 255, 255, 0.1);
-    --color-control-background-hover: rgba(255, 255, 255, 0.14);
-    --color-control-background-pressed: rgba(255, 255, 255, 0.22);
-    --color-control-background-error: rgba(255, 137, 125, 0.08);
-    /* Color / Dark / Divider */
-    --color-divider: rgba(255, 255, 255, 0.16);
-    /* Color / Dark / Gradient */
-    --color-gradient-right: linear-gradient(-90deg, #21212100 0%, #212121 33.71%);
-    --color-gradient-left: linear-gradient(-90deg, #212121 64.58%, #21212100 100%);
-    /* Color / Dark / Status */
-    --color-status-error: #ffaca2;
-    --color-status-error-background: #442926;
-    --color-status-warning: #ffb14a;
-    --color-status-warning-background: #3f2d17;
-    --color-status-success: #78d672;
-    --color-status-success-background: #253423;
-    --color-status-info: #95c4ff;
-    --color-status-info-background: #253141;
-    --color-status-neutral: #c0c0c7;
-    --color-status-neutral-background: #303032;
-    /* Color / Dark / Text */
-    --color-text-active: rgba(255, 255, 255, 0.87);
-    --color-text-active-inverse: #121823;
-    --color-text-inactive: rgba(255, 255, 255, 0.6);
-    --color-text-inactive-inverse: rgba(18, 24, 35, 0.6);
-    --color-text-disabled: rgba(255, 255, 255, 0.38);
-    --color-text-disabled-inverse: rgba(18, 24, 35, 0.38);
-    --color-text-link: #95c4ff;
-    --color-text-link-visited: #babbff;
-    --color-text-logo: #ffffff;
-    /* Color / Dark / Utilities */
-    --color-utilities-scroll: #545458;
-    --color-utilities-scroll-hover: #6d6d70;
-    --color-utilities-scroll-pressed: #86868a;
+    /* роли M3: тёмная */
+    --md-sys-color-primary: #ecc300;
+    --md-sys-color-on-primary: #3b2f00;
+    --md-sys-color-primary-container: #554500;
+    --md-sys-color-on-primary-container: #ffe17a;
+    --md-sys-color-inverse-primary: #715c00;
+    --md-sys-color-primary-fixed: #ffe17a;
+    --md-sys-color-primary-fixed-dim: #ecc300;
+    --md-sys-color-on-primary-fixed: #231b00;
+    --md-sys-color-on-primary-fixed-variant: #554500;
+    --md-sys-color-secondary: #d8c68d;
+    --md-sys-color-on-secondary: #3a2f05;
+    --md-sys-color-secondary-container: #524619;
+    --md-sys-color-on-secondary-container: #f5e1a7;
+    --md-sys-color-secondary-fixed: #f5e1a7;
+    --md-sys-color-secondary-fixed-dim: #d8c68d;
+    --md-sys-color-on-secondary-fixed: #231b00;
+    --md-sys-color-on-secondary-fixed-variant: #524619;
+    --md-sys-color-tertiary: #9ed3a9;
+    --md-sys-color-on-tertiary: #02391b;
+    --md-sys-color-tertiary-container: #1f5030;
+    --md-sys-color-on-tertiary-container: #b9efc3;
+    --md-sys-color-tertiary-fixed: #b9efc3;
+    --md-sys-color-tertiary-fixed-dim: #9ed3a9;
+    --md-sys-color-on-tertiary-fixed: #00210d;
+    --md-sys-color-on-tertiary-fixed-variant: #1f5030;
+    --md-sys-color-error: #ffb4ab;
+    --md-sys-color-on-error: #660607;
+    --md-sys-color-error-container: #87201b;
+    --md-sys-color-on-error-container: #ffdad6;
+    --md-sys-color-background: #121316;
+    --md-sys-color-on-background: #e3e2e6;
+    --md-sys-color-surface: #121316;
+    --md-sys-color-on-surface: #e3e2e6;
+    --md-sys-color-surface-dim: #121316;
+    --md-sys-color-surface-bright: #38393c;
+    --md-sys-color-surface-container-lowest: #0d0e11;
+    --md-sys-color-surface-container-low: #1b1b1f;
+    --md-sys-color-surface-container: #1f1f23;
+    --md-sys-color-surface-container-high: #292a2d;
+    --md-sys-color-surface-container-highest: #343538;
+    --md-sys-color-inverse-surface: #e3e2e6;
+    --md-sys-color-inverse-on-surface: #2f3033;
+    --md-sys-color-shadow: #000000;
+    --md-sys-color-scrim: #000000;
+    --md-sys-color-surface-variant: #44474e;
+    --md-sys-color-on-surface-variant: #c4c6d0;
+    --md-sys-color-outline: #8e9099;
+    --md-sys-color-outline-variant: #44474e;
+    --md-sys-color-surface-tint: #ecc300;
+    --md-sys-color-ext-success: #91d888;
+    --md-sys-color-ext-on-success: #003908;
+    --md-sys-color-ext-success-container: #0b5314;
+    --md-sys-color-ext-on-success-container: #acf4a2;
+    --md-sys-color-ext-warning: #ffb960;
+    --md-sys-color-ext-on-warning: #472a00;
+    --md-sys-color-ext-warning-container: #653e00;
+    --md-sys-color-ext-on-warning-container: #ffddb8;
+    --md-sys-color-ext-info: #a0c9ff;
+    --md-sys-color-ext-on-info: #003259;
+    --md-sys-color-ext-info-container: #00497f;
+    --md-sys-color-ext-on-info-container: #d2e4ff;
+    --md-sys-color-ext-teal: #3edae0;
+    --md-sys-color-ext-on-teal: #003738;
+    --md-sys-color-ext-teal-container: #004f52;
+    --md-sys-color-ext-on-teal-container: #64f7fc;
+    --md-sys-color-ext-purple: #c1c1ff;
+    --md-sys-color-ext-on-purple: #23237c;
+    --md-sys-color-ext-purple-container: #3b3c93;
+    --md-sys-color-ext-on-purple-container: #e1dfff;
+    --md-sys-color-ext-magenta: #f4aeff;
+    --md-sys-color-ext-on-magenta: #501260;
+    --md-sys-color-ext-magenta-container: #6a2c78;
+    --md-sys-color-ext-on-magenta-container: #fdd6ff;
+    --md-sys-color-ext-aquamarine: #5fdcb0;
+    --md-sys-color-ext-on-aquamarine: #003828;
+    --md-sys-color-ext-aquamarine-container: #00513c;
+    --md-sys-color-ext-on-aquamarine-container: #7df9cb;
+    --md-sys-color-ext-lemon: #e6c442;
+    --md-sys-color-ext-on-lemon: #3b2f00;
+    --md-sys-color-ext-lemon-container: #554500;
+    --md-sys-color-ext-on-lemon-container: #ffe17a;
   }
+
+
   /* Инвертированная тема.
      По своей схеме тем в теме, обратной текущей, показываются
      tooltip, snackbar, popover и FAB. Компоненты перечислены прямо в селекторе —
@@ -386,247 +355,9 @@
      а не подсказка; настоящий Popover — только .cj-merge-help-popover. */
   :root .invertedTheme, :root .toast, :root .fab, :root .cell-tooltip, :root .ds-tip, :root .cj-merge-help-popover,
   [data-theme="light"] .invertedTheme, [data-theme="light"] .toast, [data-theme="light"] .fab,
-  [data-theme="light"] .cell-tooltip, [data-theme="light"] .ds-tip, [data-theme="light"] .cj-merge-help-popover{
-    /* Color / Dark / Accent */
-    --color-accent-teal: #35d5da;
-    --color-accent-teal-background: #20393a;
-    --color-accent-purple: #babbff;
-    --color-accent-purple-background: #333346;
-    --color-accent-magenta: #f0a7fc;
-    --color-accent-magenta-background: #3f3041;
-    --color-accent-aquamarine: #59d6ab;
-    --color-accent-aquamarine-background: #233930;
-    --color-accent-lemon-background: #3c341a;
-    /* Color / Dark / Background */
-    --color-background-base: #151518;
-    --color-background-base-hover: rgba(255, 255, 255, 0.06);
-    --color-background-base-focused: rgba(255, 255, 255, 0.1);
-    --color-background-base-pressed: rgba(255, 255, 255, 0.1);
-    --color-background-base-dragged: rgba(255, 255, 255, 0.06);
-    --color-background-base-selected: rgba(255, 255, 255, 0.04);
-    --color-background-base-activated: rgba(255, 255, 255, 0.12);
-    --color-background-inverse: #f4f3f7;
-    --color-background-low: #1d1d20;
-    --color-background-medium: #212124;
-    --color-background-high: #27282a;
-    --color-background-secondary: #212124;
-    /* Color / Dark / Border */
-    --color-border: rgba(255, 255, 255, 0.48);
-    --color-border-focused: #e9e7ec;
-    --color-border-focus: #e3e2e6;
-    --color-border-error: #ffa399;
-    /* Color / Dark / Button */
-    --color-button-plain: #95c4ff;
-    --color-button-plain-background-hover: rgba(138, 191, 255, 0.08);
-    --color-button-plain-background-pressed: rgba(138, 191, 255, 0.12);
-    --color-button-overlay-background: #2c303a;
-    --color-button-overlay-background-hover: #373b45;
-    --color-button-overlay-background-pressed: #434751;
-    /* Color / Dark / Chart */
-    --color-chart-red: #924941;
-    --color-chart-red-active: #ce6459;
-    --color-chart-orange: #8c4f1d;
-    --color-chart-orange-active: #c46e22;
-    --color-chart-green: #3a6936;
-    --color-chart-green-active: #4c9349;
-    --color-chart-blue: #336192;
-    --color-chart-blue-active: #3f87d0;
-    --color-chart-grey: #5d5e64;
-    --color-chart-grey-active: #81838c;
-    --color-chart-teal: #00696c;
-    --color-chart-teal-active: #009297;
-    --color-chart-purple: #575895;
-    --color-chart-purple-active: #797bd6;
-    --color-chart-magenta: #7b4e83;
-    --color-chart-magenta-active: #ad6bbb;
-    --color-chart-aquamarine: #0d6b51;
-    --color-chart-aquamarine-active: #009671;
-    --color-chart-yellow: #715d03;
-    --color-chart-yellow-active: #9d8100;
-    --color-chart-saphire: #4c5b96;
-    --color-chart-saphire-active: #687fd6;
-    /* Color / Dark / Control */
-    --color-control-background: rgba(255, 255, 255, 0.1);
-    --color-control-background-hover: rgba(255, 255, 255, 0.14);
-    --color-control-background-pressed: rgba(255, 255, 255, 0.22);
-    --color-control-background-error: rgba(255, 137, 125, 0.08);
-    /* Color / Dark / Divider */
-    --color-divider: rgba(255, 255, 255, 0.16);
-    /* Color / Dark / Gradient */
-    --color-gradient-right: linear-gradient(-90deg, #21212100 0%, #212121 33.71%);
-    --color-gradient-left: linear-gradient(-90deg, #212121 64.58%, #21212100 100%);
-    /* Color / Dark / Status */
-    --color-status-error: #ffaca2;
-    --color-status-error-background: #442926;
-    --color-status-warning: #ffb14a;
-    --color-status-warning-background: #3f2d17;
-    --color-status-success: #78d672;
-    --color-status-success-background: #253423;
-    --color-status-info: #95c4ff;
-    --color-status-info-background: #253141;
-    --color-status-neutral: #c0c0c7;
-    --color-status-neutral-background: #303032;
-    /* Color / Dark / Text */
-    --color-text-active: rgba(255, 255, 255, 0.87);
-    --color-text-active-inverse: #121823;
-    --color-text-inactive: rgba(255, 255, 255, 0.6);
-    --color-text-inactive-inverse: rgba(18, 24, 35, 0.6);
-    --color-text-disabled: rgba(255, 255, 255, 0.38);
-    --color-text-disabled-inverse: rgba(18, 24, 35, 0.38);
-    --color-text-link: #95c4ff;
-    --color-text-link-visited: #babbff;
-    --color-text-logo: #ffffff;
-    /* Color / Dark / Utilities */
-    --color-utilities-scroll: #545458;
-    --color-utilities-scroll-hover: #6d6d70;
-    --color-utilities-scroll-pressed: #86868a;
-    /* Алиасы прототипа нужно переобъявить здесь: custom property со значением var(...)
-       вычисляется на том элементе, где объявлена, поэтому объявленный на :root алиас
-       «заморозил» бы цвет внешней темы и инверсия до него не дошла бы. */
-    --bg:             var(--color-background-base);
-    --bg-alt:         var(--color-background-secondary);
-    --sidebar-bg:     var(--color-background-base);
-    --border:         var(--color-divider);
-    --border-strong:  var(--color-border);
-    --text:           var(--color-text-active);
-    --text-secondary: var(--color-text-inactive);
-    --text-tertiary:  var(--color-text-disabled);
-    --blue:           var(--color-status-info);
-    --green-bg:       var(--color-status-success-background);
-    --green-text:     var(--color-status-success);
-    --gray-bg:        var(--color-status-neutral-background);
-    --gray-text:      var(--color-status-neutral);
-    --orange-bg:      var(--color-status-warning-background);
-    --orange-text:    var(--color-status-warning);
-    --blue-bg:        var(--color-status-info-background);
-    --blue-text:      var(--color-status-info);
-    --red-bg:         var(--color-status-error-background);
-    --red-text:       var(--color-status-error);
-    --pink-bg:        var(--color-accent-magenta-background);
-    --pink-text:      var(--color-accent-magenta);
-    --input-bg:       var(--color-control-background);
-  }
+
   [data-theme="dark"] .invertedTheme, [data-theme="dark"] .toast, [data-theme="dark"] .fab,
-  [data-theme="dark"] .cell-tooltip, [data-theme="dark"] .ds-tip, [data-theme="dark"] .cj-merge-help-popover{
-    /* Color / Light / Accent */
-    --color-accent-teal: #00777a;
-    --color-accent-teal-background: #def5f6;
-    --color-accent-purple: #5f61ba;
-    --color-accent-purple-background: #f2efff;
-    --color-accent-magenta: #92519f;
-    --color-accent-magenta-background: #ffebfd;
-    --color-accent-aquamarine: #00795b;
-    --color-accent-aquamarine-background: #e0f6ea;
-    --color-accent-lemon-background: #fdf0ce;
-    /* Color / Light / Background */
-    --color-background-base: #ffffff;
-    --color-background-base-hover: rgba(18, 24, 35, 0.08);
-    --color-background-base-focused: rgba(18, 24, 35, 0.12);
-    --color-background-base-pressed: rgba(18, 24, 35, 0.12);
-    --color-background-base-dragged: rgba(18, 24, 35, 0.08);
-    --color-background-base-selected: rgba(18, 24, 35, 0.05);
-    --color-background-base-activated: rgba(0, 0, 0, 0.12);
-    --color-background-inverse: #1f1f23;
-    --color-background-low: #ffffff;
-    --color-background-medium: #ffffff;
-    --color-background-high: #ffffff;
-    --color-background-secondary: #f9f6f7;
-    /* Color / Light / Border */
-    --color-border: rgba(18, 24, 35, 0.18);
-    --color-border-focused: #222429;
-    --color-border-focus: #252629;
-    --color-border-error: #d95c51;
-    /* Color / Light / Button */
-    --color-button-plain: #006bb6;
-    --color-button-plain-background-hover: rgba(0, 117, 199, 0.08);
-    --color-button-plain-background-pressed: rgba(0, 117, 199, 0.12);
-    --color-button-overlay-background: #2c303a;
-    --color-button-overlay-background-hover: #373b45;
-    --color-button-overlay-background-pressed: #434751;
-    /* Color / Light / Chart */
-    --color-chart-grey: #d4d4db;
-    --color-chart-grey-active: #b6b8c2;
-    --color-chart-red: #ffc7c0;
-    --color-chart-red-active: #ff9f94;
-    --color-chart-orange: #ffcaa5;
-    --color-chart-orange-active: #ffa35c;
-    --color-chart-green: #ade2a3;
-    --color-chart-green-active: #80ca79;
-    --color-chart-blue: #b9d7ff;
-    --color-chart-blue-active: #85bcff;
-    --color-chart-teal: #88e3e7;
-    --color-chart-teal-active: #24ccd2;
-    --color-chart-magenta: #f9c2ff;
-    --color-chart-magenta-active: #e79ff4;
-    --color-chart-purple: #d1d0ff;
-    --color-chart-purple-active: #b1b2ff;
-    --color-chart-aquamarine: #93e5c3;
-    --color-chart-aquamarine-active: #4fcea3;
-    --color-chart-yellow: #efd374;
-    --color-chart-yellow-active: #d8b635;
-    --color-chart-saphire: #cad2ff;
-    --color-chart-saphire-active: #a4b5ff;
-    /* Color / Light / Control */
-    --color-control-background: rgba(18, 24, 35, 0.1);
-    --color-control-background-hover: rgba(18, 24, 35, 0.14);
-    --color-control-background-pressed: rgba(18, 24, 35, 0.24);
-    --color-control-background-error: rgba(217, 92, 81, 0.08);
-    /* Color / Light / Divider */
-    --color-divider: rgba(18, 24, 35, 0.12);
-    /* Color / Light / Gradient */
-    --color-gradient-right: linear-gradient(-90deg, #ffffff00 0%, #ffffff 33.71%);
-    --color-gradient-left: linear-gradient(-90deg, #ffffff 64.58%, #ffffff00 100%);
-    /* Color / Light / Status */
-    --color-status-error: #ae3c34;
-    --color-status-error-background: #ffedea;
-    --color-status-warning: #8c5800;
-    --color-status-warning-background: #ffeede;
-    --color-status-success: #0b731c;
-    --color-status-success-background: #e4f6dc;
-    --color-status-info: #0066ae;
-    --color-status-info-background: #eaf1ff;
-    --color-status-neutral: #626369;
-    --color-status-neutral-background: #f2f0f3;
-    /* Color / Light / Text */
-    --color-text-active: rgba(18, 24, 35, 0.94);
-    --color-text-active-inverse: #ffffff;
-    --color-text-inactive: rgba(18, 24, 35, 0.7);
-    --color-text-inactive-inverse: rgba(255, 255, 255, 0.6);
-    --color-text-disabled: rgba(18, 24, 35, 0.48);
-    --color-text-disabled-inverse: rgba(255, 255, 255, 0.38);
-    --color-text-link: #006bb6;
-    --color-text-link-visited: #6769c2;
-    --color-text-logo: #000000;
-    /* Color / Light / Utilities */
-    --color-utilities-scroll: #c1c0c4;
-    --color-utilities-scroll-hover: #a6a5a9;
-    --color-utilities-scroll-pressed: #8b8b8f;
-    /* Алиасы прототипа нужно переобъявить здесь: custom property со значением var(...)
-       вычисляется на том элементе, где объявлена, поэтому объявленный на :root алиас
-       «заморозил» бы цвет внешней темы и инверсия до него не дошла бы. */
-    --bg:             var(--color-background-base);
-    --bg-alt:         var(--color-background-secondary);
-    --sidebar-bg:     var(--color-background-base);
-    --border:         var(--color-divider);
-    --border-strong:  var(--color-border);
-    --text:           var(--color-text-active);
-    --text-secondary: var(--color-text-inactive);
-    --text-tertiary:  var(--color-text-disabled);
-    --blue:           var(--color-status-info);
-    --green-bg:       var(--color-status-success-background);
-    --green-text:     var(--color-status-success);
-    --gray-bg:        var(--color-status-neutral-background);
-    --gray-text:      var(--color-status-neutral);
-    --orange-bg:      var(--color-status-warning-background);
-    --orange-text:    var(--color-status-warning);
-    --blue-bg:        var(--color-status-info-background);
-    --blue-text:      var(--color-status-info);
-    --red-bg:         var(--color-status-error-background);
-    --red-text:       var(--color-status-error);
-    --pink-bg:        var(--color-accent-magenta-background);
-    --pink-text:      var(--color-accent-magenta);
-    --input-bg:       var(--color-control-background);
-  }
+
 
   /* ══════════════════════════════════════════════════════════════════════
      Локальные имена прототипа → токены палитры.
@@ -634,29 +365,29 @@
      В новом коде использовать имена токенов напрямую.
      ══════════════════════════════════════════════════════════════════════ */
   :root{
-    --bg:               var(--color-background-base);
-    --bg-alt:           var(--color-background-secondary);
-    --border:           var(--color-divider);
-    --border-strong:    var(--color-border);
-    --text:             var(--color-text-active);
-    --text-secondary:   var(--color-text-inactive);
-    --text-tertiary:    var(--color-text-disabled);
-    --yellow:           var(--color-background-brand);
-    --yellow-hover:     var(--color-background-brand-hover);
-    --blue:             var(--color-status-info);
-    --green-bg:         var(--color-status-success-background);
-    --green-text:       var(--color-status-success);
-    --gray-bg:          var(--color-status-neutral-background);
-    --gray-text:        var(--color-status-neutral);
-    --orange-bg:        var(--color-status-warning-background);
-    --orange-text:      var(--color-status-warning);
-    --blue-bg:          var(--color-status-info-background);
-    --blue-text:        var(--color-status-info);
-    --red-bg:           var(--color-status-error-background);
-    --red-text:         var(--color-status-error);
-    --pink-bg:          var(--color-accent-magenta-background);
-    --pink-text:        var(--color-accent-magenta);
-    --input-bg:         var(--color-control-background);
+    --bg:               var(--md-sys-color-surface);
+    --bg-alt:           var(--md-sys-color-surface-container-low);
+    --border:           var(--md-sys-color-outline-variant);
+    --border-strong:    var(--md-sys-color-outline);
+    --text:             var(--md-sys-color-on-surface);
+    --text-secondary:   var(--md-sys-color-on-surface-variant);
+    --text-tertiary:    color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent);
+    --yellow:           var(--md-sys-color-primary);
+    --yellow-hover:     color-mix(in srgb, var(--md-sys-color-on-primary) 8%, var(--md-sys-color-primary));
+    --blue:             var(--md-sys-color-ext-info);
+    --green-bg:         var(--md-sys-color-ext-success-container);
+    --green-text:       var(--md-sys-color-ext-success);
+    --gray-bg:          var(--md-sys-color-surface-container-highest);
+    --gray-text:        var(--md-sys-color-on-surface-variant);
+    --orange-bg:        var(--md-sys-color-ext-warning-container);
+    --orange-text:      var(--md-sys-color-ext-warning);
+    --blue-bg:          var(--md-sys-color-ext-info-container);
+    --blue-text:        var(--md-sys-color-ext-info);
+    --red-bg:           var(--md-sys-color-error-container);
+    --red-text:         var(--md-sys-color-error);
+    --pink-bg:          var(--md-sys-color-ext-magenta-container);
+    --pink-text:        var(--md-sys-color-ext-magenta);
+    --input-bg:         var(--md-sys-color-surface-container-highest);
     --shadow:           var(--elevation-high);
     --shadow-sm:        var(--elevation-low);
     --radius:           var(--size-border-radius-x8);   /* 16px */
@@ -685,7 +416,7 @@
     --space-10: var(--layout-gap-page);
 
     /* Собственная геометрия прототипа — своей роли в M3 у неё нет */
-    --sidebar-bg:       var(--color-background-base);
+    --sidebar-bg:       var(--md-sys-color-surface);
     /* Рамка статусной плашки — смесь её цвета и фона, считается из токенов */
     --orange-border:    color-mix(in srgb, var(--orange-text) 32%, var(--orange-bg));
     --header-h:         64px;
@@ -695,8 +426,8 @@
     /* Только то, что в тёмной теме расходится с палитрой или роли в ней не имеет.
        --bg-alt служит здесь и подложкой, и hover-фоном, поэтому берётся на тон
        выше полотна; боковое меню — на тон ниже, чтобы отделялось от контента. */
-    --bg-alt:var(--color-background-medium);
-    --sidebar-bg:color-mix(in srgb, var(--color-background-base) 72%, #000);
+    --bg-alt:var(--md-sys-color-surface-container);
+    --sidebar-bg:color-mix(in srgb, var(--md-sys-color-surface) 72%, #000);
     --shadow: 0 20px 60px rgba(0,0,0,.6);
   }
   *{box-sizing:border-box;}
@@ -717,7 +448,7 @@
   .ic{width:20px;height:20px;flex:0 0 auto;}
   button{font-family:inherit;cursor:pointer;}
   input,textarea,select{font-family:inherit;}
-  ::selection{background:color-mix(in srgb, var(--color-background-brand) 55%, var(--color-background-base));}
+  ::selection{background:color-mix(in srgb, var(--md-sys-color-primary) 55%, var(--md-sys-color-surface));}
 
   /* ---------- Layout shell ---------- */
   #app{display:flex;flex-direction:column;height:100vh;}
@@ -771,8 +502,8 @@
      elevation-medium, вертикальный padding 8, у пунктов высота 46 и padding 16.
      Это Menu, а не Popover, поэтому тема НЕ инвертируется. */
   .popover{
-    position:absolute; top:52px; right:0; background:var(--color-background-medium);
-    border-radius:var(--size-border-radius-x6); box-shadow:var(--elevation-medium);
+    position:absolute; top:52px; right:0; background:var(--md-sys-color-surface-container);
+    border-radius:var(--shape-xs); box-shadow:var(--elevation-medium);
     padding:var(--size-spacing-x2) 0; min-width:220px; z-index:50; font-size:14px;
   }
   .popover .pv-title{font-weight:600;margin-bottom:var(--space-2);padding:0 var(--size-spacing-x4);}
@@ -781,14 +512,14 @@
     display:flex;align-items:center;min-height:46px;
     padding:0 var(--size-spacing-x4);border-radius:0;cursor:pointer;
   }
-  .popover .pv-item:hover{background:var(--color-background-base-hover);}
+  .popover .pv-item:hover{background:color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);}
 
   .body-row{flex:1;display:flex;min-height:0;}
   /* Navigation Drawer (docs/components.md).
      Ширина 256 / свёрнутая 56, padding по вертикали 24, справа 16 (левый — 0,
      чтобы индикатор активного пункта прижимался к краю меню, как того требует анатомия компонента). */
   .sidebar{
-    width:var(--sidebar-w); flex:0 0 auto; background:var(--color-background-base);
+    width:var(--sidebar-w); flex:0 0 auto; background:var(--md-sys-color-surface);
     border-right:1px solid var(--border); overflow-y:auto;
     padding:var(--size-spacing-x6) var(--size-spacing-x4) var(--size-spacing-x6) 0;
     transition:width .18s ease, padding .18s ease;
@@ -808,7 +539,7 @@
   }
   .sidebar-toggle .ic, .sidebar-toggle svg{width:24px;height:24px;}
   .sidebar.collapsed .sidebar-toggle{padding:var(--size-spacing-x3) var(--size-spacing-x4);height:auto;justify-content:center;}
-  .sidebar-toggle:hover{background:var(--color-background-base-hover);}
+  .sidebar-toggle:hover{background:color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);}
   .navgroup{margin-bottom:var(--size-spacing-x6);}
   /* Свёрнутое меню: заголовки групп скрыты, поэтому и большие зазоры между
      группами не нужны — с ними список не помещается по высоте и появляется скролл. */
@@ -818,7 +549,7 @@
     display:flex;align-items:center;height:40px;
     /* M3 label-small 11/16. Разрядка уменьшена с 1.2 до .5 и отступ с 32 до 24:
        на Onest с прежней разрядкой «АРХИТЕКТУРА ПРИЛОЖЕНИЯ» уходила в две строки. */
-    font-size:11px;font-weight:700;letter-spacing:.5px;line-height:16px;color:var(--color-text-inactive);
+    font-size:11px;font-weight:700;letter-spacing:.5px;line-height:16px;color:var(--md-sys-color-on-surface-variant);
     text-transform:uppercase;padding:var(--size-spacing-x3) var(--size-spacing-x6);margin-bottom:0;
   }
   /* Пункт меню: высота 48, отступ 24, скругление 12 только справа, зазор в списке 4 */
@@ -826,9 +557,9 @@
     display:flex;align-items:center;gap:var(--size-spacing-x4);
     /* Левый отступ 24, а не 32: вместе с иконкой и зазором на текст оставалось
        151 px, и «Аналитический отчет фитнес-функций» на Onest уходил в три строки. */
-    min-height:48px;padding:0 var(--size-spacing-x4) 0 var(--size-spacing-x6);
-    border-radius:0 var(--size-border-radius-x6) var(--size-border-radius-x6) 0;
-    color:var(--color-text-inactive);
+    min-height:56px;padding:0 var(--size-spacing-x6);
+    border-radius:0 var(--shape-full) var(--shape-full) 0;
+    color:var(--md-sys-color-on-surface-variant);
     /* letter-spacing здесь 0, а не .2px: Onest шире прежнего шрифта, и на
        разрядке «Аналитический отчет фитнес-функций» уходил в три строки. */
     font-size:14px;line-height:20px;letter-spacing:0;font-weight:400;
@@ -839,22 +570,18 @@
   .navitem svg{width:24px;height:24px;flex:0 0 auto;margin-top:0;}
   .navitem .ic{width:24px;height:24px;flex:0 0 auto;margin-top:0;}
   .navtext{white-space:normal;line-height:18px;}
-  .navitem:hover{background:var(--color-background-base-hover);}
+  .navitem:hover{background:color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);}
   .navitem.active{
-    color:var(--color-text-active);background:var(--color-background-base-selected);
+    color:var(--md-sys-color-on-surface);background:var(--md-sys-color-secondary-container);
     font-weight:500;line-height:20px;
   }
-  /* Indicator: 4px во всю высоту пункта, прижат к левому краю, скруглён справа */
-  .navitem.active::before{
-    content:"";position:absolute;left:0;top:0;bottom:0;width:4px;
-    background:var(--color-background-brand);
-    border-radius:0 var(--size-border-radius-x2) var(--size-border-radius-x2) 0;
-  }
+  /* Активный пункт в M3 показывает себя контейнером, отдельной полосы в
+     анатомии navigation drawer нет — она осталась от прежней системы. */
   /* Tooltip у свёрнутого меню: в развёрнутом он не нужен — подпись и так видна */
   .sidebar.collapsed .navitem::after{
     content:attr(data-title);
     position:absolute;left:calc(100% + var(--size-spacing-x2));top:50%;transform:translateY(-50%);
-    background:var(--color-background-inverse);color:var(--color-text-active-inverse);
+    background:var(--md-sys-color-inverse-surface);color:var(--md-sys-color-inverse-on-surface);
     padding:var(--size-spacing-x1) var(--size-spacing-x2);
     border-radius:var(--size-border-radius-x4);box-shadow:var(--elevation-high);
     font-size:12px;line-height:16px;font-weight:400;letter-spacing:.2px;
@@ -884,7 +611,7 @@
   }
   .sidebar::-webkit-scrollbar-thumb:hover,
   .main::-webkit-scrollbar-thumb:hover,
-  .table-scroll::-webkit-scrollbar-thumb:hover{background-color:var(--color-text-inactive);}
+  .table-scroll::-webkit-scrollbar-thumb:hover{background-color:var(--md-sys-color-on-surface-variant);}
   @supports not selector(::-webkit-scrollbar){
     .sidebar, .main, .table-scroll{scrollbar-width:thin;scrollbar-color:var(--text-tertiary) transparent;}
   }
@@ -912,11 +639,11 @@
      (в светлой она тёмная, в тёмной — светлая), поэтому тёмные канты из
      [data-theme="dark"] .glass легли бы на светлую плиту и грань пропала бы. */
   .home-agent{
-    background:linear-gradient(135deg, var(--color-button-overlay-background) 0%, var(--color-button-overlay-background-pressed) 100%);
+    background:linear-gradient(135deg, var(--md-sys-color-inverse-surface) 0%, color-mix(in srgb, var(--md-sys-color-inverse-on-surface) 12%, var(--md-sys-color-inverse-surface)) 100%);
     background:linear-gradient(135deg,
-      color-mix(in srgb, var(--color-button-overlay-background) 88%, transparent) 0%,
-      color-mix(in srgb, var(--color-button-overlay-background-pressed) 88%, transparent) 100%);
-    color:var(--color-text-active-inverse);
+      color-mix(in srgb, var(--md-sys-color-inverse-surface) 88%, transparent) 0%,
+      color-mix(in srgb, color-mix(in srgb, var(--md-sys-color-inverse-on-surface) 12%, var(--md-sys-color-inverse-surface)) 88%, transparent) 100%);
+    color:var(--md-sys-color-inverse-on-surface);
     border-radius:var(--size-border-radius-x6);
     padding:var(--size-spacing-x6);
     margin-bottom:var(--space-9);
@@ -944,7 +671,7 @@
   }
   .home-agent__head{display:flex;align-items:center;gap:var(--space-4);}
   .home-agent__ava{width:40px;height:40px;border-radius:var(--size-border-radius-x6);flex:0 0 auto;
-    background:var(--yellow);color:var(--color-text-black-active);display:flex;align-items:center;justify-content:center;}
+    background:var(--yellow);color:var(--md-sys-color-on-primary);display:flex;align-items:center;justify-content:center;}
   .home-agent__ava .ic{width:24px;height:24px;}
   .home-agent__ava svg{width:24px;height:24px;}
   .home-agent__hi{font-size:22px;line-height:28px;letter-spacing:.2px;font-weight:500;}
@@ -957,7 +684,7 @@
   .home-agent__input{flex:1;min-width:0;border:none;background:transparent;outline:none;font-size:16px;color:var(--text);}
   .home-agent__input::placeholder{color:var(--text-secondary);}
   .home-agent__send{width:var(--size-control-height-large);height:var(--size-control-height-large);flex:0 0 auto;
-    border:none;border-radius:var(--size-border-radius-x6);background:var(--yellow);color:var(--color-text-black-active);
+    border:none;border-radius:var(--size-border-radius-x6);background:var(--yellow);color:var(--md-sys-color-on-primary);
     display:flex;align-items:center;justify-content:center;cursor:pointer;}
   .home-agent__send:hover{background:var(--yellow-hover);}
   .home-agent__send .ic{width:20px;height:20px;}
@@ -1144,7 +871,7 @@
      копируем из данных, а не из DOM. Шрифт — $font-family-code. */
   .code-editor{
     border:1px solid var(--border);border-radius:var(--size-border-radius-x6);
-    background:var(--color-background-base);overflow:hidden;
+    background:var(--md-sys-color-surface);overflow:hidden;
   }
   .code-editor-bar{
     display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);
@@ -1172,27 +899,27 @@
      на полотне редактора, значения считает переезд-m3/tokens.mjs. */
   /* подсветка: светлая */
   .code-editor-code{
-    --tok-keyword:#6567db;      /* ключевые слова, 4.65:1 */
-    --tok-modifier:#a553b8;     /* модификаторы, 4.64:1 */
-    --tok-func:#0077cb;         /* названия функций, 4.67:1 */
-    --tok-type:#008488;         /* названия классов / типы, 4.51:1 */
-    --tok-var:#434751;          /* переменные / параметры, 9.30:1 */
-    --tok-string:#b55d00;       /* строки, 4.64:1 */
-    --tok-number:#2a882f;       /* числа, булевы, 4.51:1 */
-    --tok-comment:#72747d;      /* комментарии, 4.66:1 */
-    --tok-error:#c54d43;        /* ошибки, 4.65:1 */
+    --tok-keyword:#6264d8;      /* ключевые слова, 4.62:1 */
+    --tok-modifier:#a250b5;     /* модификаторы, 4.60:1 */
+    --tok-func:#0075c7;         /* названия функций, 4.59:1 */
+    --tok-type:#007f83;         /* названия классов / типы, 4.59:1 */
+    --tok-var:#434751;          /* переменные / параметры, 8.87:1 */
+    --tok-string:#b15b00;       /* строки, 4.59:1 */
+    --tok-number:#23832a;       /* числа, булевы, 4.60:1 */
+    --tok-comment:#6f727a;      /* комментарии, 4.59:1 */
+    --tok-error:#c14b41;        /* ошибки, 4.61:1 */
   }
   /* подсветка: тёмная */
   [data-theme="dark"] .code-editor-code{
-    --tok-keyword:#8284fa;      /* ключевые слова, 5.75:1 */
-    --tok-modifier:#c470d6;     /* модификаторы, 5.76:1 */
-    --tok-func:#2694f3;         /* названия функций, 5.74:1 */
-    --tok-type:#00a1a5;         /* названия классов / типы, 5.76:1 */
-    --tok-var:#ced1de;          /* переменные / параметры, 11.98:1 */
-    --tok-string:#dd750b;       /* строки, 5.75:1 */
-    --tok-number:#47a346;       /* числа, булевы, 5.72:1 */
-    --tok-comment:#8e9099;      /* комментарии, 5.73:1 */
-    --tok-error:#e9685c;        /* ошибки, 5.73:1 */
+    --tok-keyword:#8284fa;      /* ключевые слова, 5.86:1 */
+    --tok-modifier:#c470d6;     /* модификаторы, 5.87:1 */
+    --tok-func:#2694f3;         /* названия функций, 5.85:1 */
+    --tok-type:#00a1a5;         /* названия классов / типы, 5.87:1 */
+    --tok-var:#ced1de;          /* переменные / параметры, 12.21:1 */
+    --tok-string:#dd750b;       /* строки, 5.86:1 */
+    --tok-number:#47a346;       /* числа, булевы, 5.83:1 */
+    --tok-comment:#8e9099;      /* комментарии, 5.84:1 */
+    --tok-error:#e9685c;        /* ошибки, 5.84:1 */
   }
   .tok-keyword{color:var(--tok-keyword);}
   .tok-modifier{color:var(--tok-modifier);}
@@ -1233,7 +960,7 @@
   .btn:has(> .ic:last-child){padding-right:var(--size-spacing-x4);}
   .btn svg{width:20px;height:20px;}
   .btn .ic{width:20px;height:20px;}
-  .btn-primary{background:var(--yellow);color:var(--color-text-black-active);}
+  .btn-primary{background:var(--yellow);color:var(--md-sys-color-on-primary);}
   .btn-primary:hover{background:var(--yellow-hover);}
   /* disabled у кнопки — это opacity .48, а не отдельная пара цветов */
   .btn-primary:disabled{opacity:.48;cursor:not-allowed;}
@@ -1263,12 +990,23 @@
   .field-label{font-size:12px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);margin-bottom:var(--space-2);display:block;}
   /* Поле и select (docs/components.md) — высота 56, форма shape-xs,
      padding по горизонтали 16. Высота задаётся явно, а не паддингами. */
+  /* Filled text field по спеке M3: контейнер surface-container-highest,
+     форма corner-extra-small-top (скругление только сверху), снизу —
+     активный индикатор 1px, при фокусе 2px цветом primary. */
   .input, .select{
-    /* M3 filled text field: высота 56, форма extra-small, текст body-large 16 */
     width:100%;height:var(--m3-h-field);
-    border:1px solid transparent;background:var(--input-bg);border-radius:var(--shape-xs);
+    border:none;border-bottom:1px solid var(--md-sys-color-on-surface-variant);
+    background:var(--input-bg);border-radius:var(--shape-xs) var(--shape-xs) 0 0;
     padding:0 var(--size-spacing-x4);font-size:16px;color:var(--text);outline:none;
   }
+  .input:hover, .select:hover{border-bottom-color:var(--md-sys-color-on-surface);}
+  .input:focus, .select:focus{
+    border-bottom:2px solid var(--md-sys-color-primary);
+    /* линия стала толще на 1px — забираем его у внутреннего отступа,
+       иначе содержимое поля дёргается вверх при фокусе */
+    padding-bottom:0;
+  }
+  .input.error, .select.error{border-bottom-color:var(--md-sys-color-error);}
   /* Стрелка раскрытия у <select> — как в фильтрах СХ: нативную прячем, свою рисуем
      с отступом 16 от края (поле: padding горизонтальный 16, иконка 20).
      Правило общее для всего прототипа, а не только для полей с .select-wrap. */
@@ -1293,21 +1031,22 @@
   .ds-select-trigger{
     display:flex;align-items:center;gap:var(--size-spacing-x3);width:100%;
     height:var(--m3-h-field);
-    border:1px solid transparent;background:var(--input-bg);border-radius:var(--shape-xs);
+    border:none;border-bottom:1px solid var(--md-sys-color-on-surface-variant);
+    background:var(--input-bg);border-radius:var(--shape-xs) var(--shape-xs) 0 0;
     padding:0 var(--size-spacing-x4);font-size:16px;color:var(--text);text-align:left;cursor:pointer;
   }
-  .ds-select-trigger:hover{background:var(--color-background-base-hover);}
-  .ds-select-trigger.placeholder .val{color:var(--color-text-inactive);}
+  .ds-select-trigger:hover{background:color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);}
+  .ds-select-trigger.placeholder .val{color:var(--md-sys-color-on-surface-variant);}
   .ds-select-trigger .val{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .ds-select-trigger .chev{flex:0 0 auto;display:flex;color:var(--color-text-inactive);transition:transform .12s ease;}
+  .ds-select-trigger .chev{flex:0 0 auto;display:flex;color:var(--md-sys-color-on-surface-variant);transition:transform .12s ease;}
   .ds-select-trigger .chev svg{width:20px;height:20px;}
   .ds-select-trigger .chev .ic{width:20px;height:20px;}
-  .ds-select.open .ds-select-trigger{background:var(--bg);border-color:var(--text);}
+  .ds-select.open .ds-select-trigger{border-bottom:2px solid var(--md-sys-color-primary);}
   .ds-select.open .ds-select-trigger .chev{transform:rotate(180deg);}
   .ds-select-menu{
     position:absolute;top:100%;left:0;width:100%;z-index:60;
-    background:var(--color-background-medium);border-radius:var(--size-border-radius-x6);
-    box-shadow:0 4px 30px rgba(0,0,0,.1), 0 0 10px rgba(0,0,0,.1);
+    background:var(--md-sys-color-surface-container);border-radius:var(--shape-xs);
+    box-shadow:var(--elevation-medium);
     padding:var(--size-spacing-x2) 0;max-height:288px;overflow-y:auto;
   }
   /* Снизу не хватает места (мешает Bottom action bar) — меню раскрывается вверх.
@@ -1325,12 +1064,12 @@
   .cj-select-menu::-webkit-scrollbar-track{background-color:transparent;}
   .ds-select-menu::-webkit-scrollbar-thumb,
   .cj-select-menu::-webkit-scrollbar-thumb{
-    background-color:var(--color-text-inactive);border:4px solid transparent;
+    background-color:var(--md-sys-color-on-surface-variant);border:4px solid transparent;
     background-clip:content-box;border-radius:100px;min-height:28px;
   }
   @supports not selector(::-webkit-scrollbar){
     .ds-select-menu,
-    .cj-select-menu{scrollbar-width:thin;scrollbar-color:var(--color-text-inactive) transparent;}
+    .cj-select-menu{scrollbar-width:thin;scrollbar-color:var(--md-sys-color-on-surface-variant) transparent;}
   }
   .ds-select-item{
     padding:var(--size-spacing-x4);font-size:16px;line-height:24px;letter-spacing:.2px;color:var(--text);
@@ -1338,9 +1077,9 @@
   }
   .ds-select-item.two-line{white-space:normal;}
   .ds-select-item .ds-select-sub{font-size:14px;line-height:20px;color:var(--text-secondary);margin-top:2px;}
-  .ds-select-item:hover{background:var(--color-background-base-hover);}
-  .ds-select-item.selected{background:var(--color-background-base-selected);}
-  .ds-select-item:active{background:var(--color-background-base-pressed);}
+  .ds-select-item:hover{background:color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);}
+  .ds-select-item.selected{background:var(--md-sys-color-secondary-container);}
+  .ds-select-item:active{background:color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);}
 
   /* Banner (docs/components.md): padding 16, радиус 16, иконка 20 с отступом 16,
      текст 15/18/.2; фон и цвет иконки — по статусной модели (здесь нужен только info).
@@ -1349,12 +1088,12 @@
   .ds-banner{
     display:flex;align-items:flex-start;gap:var(--size-spacing-x4);
     padding:var(--size-spacing-x4);border-radius:var(--size-border-radius-x8);
-    font-size:14px;line-height:20px;letter-spacing:.2px;color:var(--color-text-active);
+    font-size:14px;line-height:20px;letter-spacing:.2px;color:var(--md-sys-color-on-surface);
   }
   .ds-banner > svg{flex:0 0 auto;width:20px;height:20px;}
   .ds-banner .ds-banner-text{padding-top:1px;}
-  .ds-banner.info{background:var(--color-status-info-background);}
-  .ds-banner.info > svg{color:var(--color-status-info);}
+  .ds-banner.info{background:var(--md-sys-color-ext-info-container);}
+  .ds-banner.info > svg{color:var(--md-sys-color-ext-info);}
 
   /* File uploader (docs/components.md): пунктирная зона, padding 16, радиус 12,
      высота 104, текст 15/18/.2, строка форматов 13/16 цветом inactive; на hover и
@@ -1362,25 +1101,25 @@
   .ds-uploader{
     display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--size-spacing-x2);
     min-height:104px;padding:var(--size-spacing-x4);text-align:center;cursor:pointer;
-    border:1px dashed var(--color-border);border-radius:var(--size-border-radius-x6);
-    font-size:14px;line-height:20px;letter-spacing:.2px;color:var(--color-text-active);
+    border:1px dashed var(--md-sys-color-outline);border-radius:var(--size-border-radius-x6);
+    font-size:14px;line-height:20px;letter-spacing:.2px;color:var(--md-sys-color-on-surface);
   }
-  .ds-uploader:hover{background:var(--color-background-base-selected);}
-  .ds-uploader.drag{border-color:var(--color-status-info);background:var(--color-background-base-selected);}
-  .ds-uploader .ds-uploader-link{color:var(--color-text-link);}
-  .ds-uploader .ds-uploader-formats{font-size:12px;line-height:16px;letter-spacing:.2px;color:var(--color-text-inactive);}
+  .ds-uploader:hover{background:var(--md-sys-color-secondary-container);}
+  .ds-uploader.drag{border-color:var(--md-sys-color-ext-info);background:var(--md-sys-color-secondary-container);}
+  .ds-uploader .ds-uploader-link{color:var(--md-sys-color-ext-info);}
+  .ds-uploader .ds-uploader-formats{font-size:12px;line-height:16px;letter-spacing:.2px;color:var(--md-sys-color-on-surface-variant);}
 
   /* Загруженный файл — строка под зоной загрузки: иконка типа, имя, вес, удаление. */
   .ds-file-row{display:flex;align-items:center;gap:var(--size-spacing-x4);padding:var(--size-spacing-x3) 0;}
   .ds-file-icon{
     flex:0 0 auto;width:40px;height:40px;border-radius:var(--size-border-radius-x4);
     display:flex;align-items:center;justify-content:center;
-    background:var(--color-status-info-background);color:var(--color-status-info);
+    background:var(--md-sys-color-ext-info-container);color:var(--md-sys-color-ext-info);
   }
   .ds-file-icon svg{width:20px;height:20px;}
   .ds-file-row .ds-file-body{flex:1;min-width:0;}
   .ds-file-row .ds-file-name{font-size:14px;line-height:20px;letter-spacing:.2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .ds-file-row .ds-file-sub{font-size:12px;line-height:16px;letter-spacing:.2px;color:var(--color-text-inactive);margin-top:var(--size-spacing-x1);}
+  .ds-file-row .ds-file-sub{font-size:12px;line-height:16px;letter-spacing:.2px;color:var(--md-sys-color-on-surface-variant);margin-top:var(--size-spacing-x1);}
 
   /* Заголовок блока внутри формы визарда — как заголовки секций шага «Результат». */
   .uc-form-section{display:flex;align-items:baseline;justify-content:space-between;gap:var(--space-4);margin-bottom:var(--space-4);}
@@ -1392,8 +1131,8 @@
   }
   .input::placeholder, .textarea::placeholder{color:var(--text-secondary);}
   .input.error, .textarea.error{border-color:var(--red-text);background:var(--red-bg);}
-  [data-theme="dark"] .input.error, [data-theme="dark"] .textarea.error{background:var(--color-status-error-background);}
-  .error-text{color:var(--color-status-error);font-size:12px;line-height:16px;letter-spacing:.2px;margin-top:var(--space-2);}
+  [data-theme="dark"] .input.error, [data-theme="dark"] .textarea.error{background:var(--md-sys-color-error-container);}
+  .error-text{color:var(--md-sys-color-error);font-size:12px;line-height:16px;letter-spacing:.2px;margin-top:var(--space-2);}
   .textarea{resize:vertical;min-height:110px;line-height:1.5;}
   .char-counter{font-size:12px;color:var(--text-secondary);text-align:right;margin-top:var(--space-2);}
   .field-block{margin-bottom:var(--space-5);}
@@ -1463,16 +1202,19 @@
   .ffield.filled .ffield-label{top:6px;font-size:12px;color:var(--text-secondary);transform:none;}
   .ffield .ffield-input{height:100%;padding-top:0;padding-bottom:0;position:relative;background:transparent;}
   .ffield.filled .ffield-input{padding-top:22px;padding-bottom:6px;line-height:20px;}
-  .ffield-box{height:var(--m3-h-field);background:var(--input-bg);border-radius:var(--shape-xs);border:1px solid transparent;}
+  .ffield-box{height:var(--m3-h-field);background:var(--input-bg);
+    border-radius:var(--shape-xs) var(--shape-xs) 0 0;
+    border:none;border-bottom:1px solid var(--md-sys-color-on-surface-variant);}
+  .ffield-box:hover{border-bottom-color:var(--md-sys-color-on-surface);}
   .ffield-box.focus,
-  .ffield-box:has(.ffield-input:focus){background:var(--bg);border-color:var(--text);}
-  .ffield-box:hover{background:var(--color-control-background-hover);}
+  .ffield-box:has(.ffield-input:focus){border-bottom:2px solid var(--md-sys-color-primary);}
+  .ffield-box:hover{background:color-mix(in srgb, var(--md-sys-color-on-surface) 8%, var(--md-sys-color-surface-container-highest));}
   .ffield-box.focus:hover,
   .ffield-box:has(.ffield-input:focus):hover{background:var(--bg);}
   .ffield:has(.ffield-input:focus) .ffield-label{top:6px;font-size:12px;color:var(--text-secondary);transform:none;}
   .ffield:has(.ffield-input:focus) .ffield-input{padding-top:22px;padding-bottom:6px;line-height:20px;}
   .ffield-box.error{border-color:var(--red-text);background:var(--red-bg);}
-  [data-theme="dark"] .ffield-box.error{background:var(--color-status-error-background);}
+  [data-theme="dark"] .ffield-box.error{background:var(--md-sys-color-error-container);}
 
   /* filters row */
   /* Ряд фильтров держится одной строкой. Раньше стоял flex-wrap:wrap при жёстком
@@ -1536,19 +1278,19 @@
      текст, Caption — короткая однострочная подсказка. Вертикальный padding 12. */
   .ds-list{padding:var(--size-spacing-x3) 0;}
   .ds-list-overline{
-    color:var(--color-text-inactive);
+    color:var(--md-sys-color-on-surface-variant);
     font-size:11px;font-weight:700;line-height:16px;letter-spacing:1.2px;text-transform:uppercase;
   }
   .ds-list-title{
-    color:var(--color-text-active);
+    color:var(--md-sys-color-on-surface);
     font-size:16px;font-weight:400;line-height:22px;letter-spacing:.2px;
   }
   .ds-list-text{
-    color:var(--color-text-inactive);
+    color:var(--md-sys-color-on-surface-variant);
     font-size:14px;font-weight:400;line-height:20px;letter-spacing:.2px;
   }
   .ds-list-caption{
-    color:var(--color-text-inactive);
+    color:var(--md-sys-color-on-surface-variant);
     font-size:12px;font-weight:400;line-height:16px;letter-spacing:.2px;
     margin-top:var(--size-spacing-x2);   /* $list-caption-spacing 8 */
   }
@@ -1559,7 +1301,7 @@
      а повод разобраться. */
   .uc-mismatch-btn{
     width:18px;height:18px;flex:0 0 auto;border:none;background:transparent;padding:0;
-    border-radius:var(--size-border-radius-x2);color:var(--color-status-warning);
+    border-radius:var(--size-border-radius-x2);color:var(--md-sys-color-ext-warning);
     display:inline-flex;align-items:center;justify-content:center;
     transform:translateY(1px);  /* оптический центр, см. комментарий у .uc-impl-rest */
   }
@@ -1575,17 +1317,17 @@
   .ds-popover{
     position:absolute;top:calc(100% + var(--size-spacing-x2));left:0;z-index:60;
     width:348px;max-width:480px;
-    background:var(--color-background-low);border-radius:var(--size-border-radius-x8);
+    background:var(--md-sys-color-surface-container-low);border-radius:var(--size-border-radius-x8);
     box-shadow:var(--elevation-high);
     padding:var(--size-spacing-x4) var(--size-spacing-x4) var(--size-spacing-x2);
     text-align:left;white-space:normal;cursor:default;
   }
   .ds-popover .dsp-title{
-    color:var(--color-text-active);font-size:20px;font-weight:500;line-height:28px;
+    color:var(--md-sys-color-on-surface);font-size:20px;font-weight:500;line-height:28px;
     letter-spacing:.2px;margin:0 0 var(--size-spacing-x2);
   }
   .ds-popover .dsp-text{
-    color:var(--color-text-active);font-size:12px;font-weight:400;line-height:16px;
+    color:var(--md-sys-color-on-surface);font-size:12px;font-weight:400;line-height:16px;
     letter-spacing:.2px;margin:0 0 var(--size-spacing-x2);
   }
   .ds-popover .dsp-text b{font-weight:500;}
@@ -1606,18 +1348,18 @@
   .archsuggest-item .a-email{font-size:12px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);margin-top:var(--space-1);}
   .toggle-wrap{display:flex;align-items:center;gap:var(--space-3);white-space:nowrap;font-size:14px;}
   /* Switcher (docs/components.md) — трек 44×24 радиус 10, бегунок 16 круглый, фон трека control-background */
-  .toggle{width:44px;height:24px;border-radius:var(--size-border-radius-x5);background:var(--color-control-background);position:relative;cursor:pointer;border:none;flex:0 0 auto;}
-  .toggle.on{background:var(--color-background-brand);}
-  .toggle .knob{position:absolute;top:4px;left:4px;width:16px;height:16px;border-radius:50%;background:var(--color-background-white);transition:left .15s ease;box-shadow:var(--elevation-low);}
+  .toggle{width:44px;height:24px;border-radius:var(--size-border-radius-x5);background:var(--md-sys-color-surface-container-highest);position:relative;cursor:pointer;border:none;flex:0 0 auto;}
+  .toggle.on{background:var(--md-sys-color-primary);}
+  .toggle .knob{position:absolute;top:4px;left:4px;width:16px;height:16px;border-radius:50%;background:var(--md-sys-color-surface-container-lowest);transition:left .15s ease;box-shadow:var(--elevation-low);}
   .toggle.on .knob{left:24px;}
   /* components/button, type=plain size=small: фон прозрачный, текст и иконка
-     --color-button-plain, высота 40, радиус 12, padding 16, текст 15/20/500/0.2,
+     роль ext-info, высота 40, форма pill, padding 16, текст label-large 14/20,
      фоны на hover/pressed, в disabled — прозрачность 0.48. Раньше сброс был просто
      синей ссылкой (.reset-link), то есть мимо компонента. */
   .btn-plain{
     height:var(--size-control-height-small);padding:0 var(--size-spacing-x4);
     border:none;background:transparent;border-radius:var(--size-border-radius-x6);
-    color:var(--color-button-plain);
+    color:var(--md-sys-color-ext-info);
     font-size:14px;font-weight:500;line-height:20px;letter-spacing:.2px;
     display:inline-flex;align-items:center;white-space:nowrap;flex:0 0 auto;cursor:pointer;
     /* кнопка: $button-with-icon-spacing 8, иконка size=small 18 */
@@ -1625,8 +1367,8 @@
   }
   .btn-plain .ic{width:18px;height:18px;flex:0 0 auto;}
   .btn-plain svg{width:18px;height:18px;flex:0 0 auto;}
-  .btn-plain:hover:not(:disabled){background:var(--color-button-plain-background-hover);}
-  .btn-plain:active:not(:disabled){background:var(--color-button-plain-background-pressed);}
+  .btn-plain:hover:not(:disabled){background:color-mix(in srgb, var(--md-sys-color-ext-info) 8%, transparent);}
+  .btn-plain:active:not(:disabled){background:color-mix(in srgb, var(--md-sys-color-ext-info) 12%, transparent);}
   .btn-plain:disabled{opacity:.48;cursor:not-allowed;}
   .reset-link{color:var(--blue);font-size:14px;cursor:pointer;white-space:nowrap;}
   .reset-link:hover{text-decoration:underline;}
@@ -1645,35 +1387,39 @@
   .suggest-item .s-name{font-size:14px;color:var(--text);}
 
   /* table */
-  .table-wrap{border:1px solid var(--border);border-radius:var(--shape-m);overflow-x:auto;overflow-y:hidden;}
+  .table-wrap{border:1px solid var(--border);border-radius:var(--shape-xs);overflow-x:auto;overflow-y:hidden;}
   /* Ячейки прямоугольные, поэтому в скруглённых углах обёртки их фон и границы
      выходили за радиус — углам таблицы задаём то же скругление, что у рамки. */
   .table-wrap > table thead th:first-child,
   .table-wrap-fit > table thead th:first-child,
-  .table-scroll > table thead th:first-child{border-top-left-radius:var(--size-border-radius-x6);}
+  .table-scroll > table thead th:first-child{border-top-left-radius:var(--shape-xs);}
   .table-wrap > table thead th:last-child,
   .table-wrap-fit > table thead th:last-child,
-  .table-scroll > table thead th:last-child{border-top-right-radius:var(--size-border-radius-x6);}
+  .table-scroll > table thead th:last-child{border-top-right-radius:var(--shape-xs);}
   .table-wrap > table tbody tr:last-child td:first-child,
   .table-wrap-fit > table tbody tr:last-child td:first-child,
-  .table-scroll > table tbody tr:last-child td:first-child{border-bottom-left-radius:var(--size-border-radius-x6);}
+  .table-scroll > table tbody tr:last-child td:first-child{border-bottom-left-radius:var(--shape-xs);}
   .table-wrap > table tbody tr:last-child td:last-child,
   .table-wrap-fit > table tbody tr:last-child td:last-child,
-  .table-scroll > table tbody tr:last-child td:last-child{border-bottom-right-radius:var(--size-border-radius-x6);}
+  .table-scroll > table tbody tr:last-child td:last-child{border-bottom-right-radius:var(--shape-xs);}
   /* M3 data table: тело body-medium 14/20, шапка title-small 14/20 весом 500,
      отступ ячейки 16 со всех сторон. */
   table{width:100%;border-collapse:collapse;font-size:14px;font-weight:400;line-height:20px;letter-spacing:.1px;}
+  /* Data table по спеке M3: шапка 56, строка 52, отступ ячейки 16,
+     шапка title-small, тело body-medium. */
   thead th{
     text-align:left;font-weight:500;font-size:14px;line-height:20px;letter-spacing:.2px;color:var(--text);
-    /* M3 data table: высота строки 56 (padding 16 при тексте 14/20 + бордер),
-       горизонтальный отступ 16. */
-    padding:var(--size-spacing-x4);border-bottom:1px solid var(--color-divider);background:var(--bg);white-space:nowrap;
+    height:56px;padding:0 var(--size-spacing-x4);
+    border-bottom:1px solid var(--md-sys-color-outline-variant);background:var(--bg);white-space:nowrap;
   }
-  tbody td{padding:var(--size-spacing-x4);border-bottom:1px solid var(--color-divider);vertical-align:top;}
+  tbody td{
+    height:52px;padding:var(--size-spacing-x4);
+    border-bottom:1px solid var(--md-sys-color-outline-variant);vertical-align:top;
+  }
   tbody tr:last-child td{border-bottom:none;}
   /* Раскрытая часть — панель, а не строка данных: наведение на неё не должно
      её подкрашивать (выглядело как тень, наползающая на содержимое). */
-  tbody tr:not(.exp-detail-row):hover{background:var(--color-background-base-hover);}
+  tbody tr:not(.exp-detail-row):hover{background:color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);}
   .proj-link{color:var(--blue);font-weight:500;cursor:pointer;}
   .proj-link:hover{text-decoration:underline;}
   .row-sub{color:var(--text-secondary);font-size:12px;line-height:16px;letter-spacing:.2px;margin-top:var(--space-1);}
@@ -1693,13 +1439,13 @@
      вылезали за .page и обрезались справа (скролл уезжал в .main и был не виден).
      Видимое переполнение нужно только фиксированным таблицам — у них всплывают
      подсказки .cell-tooltip, а по ширине они и так не превышают 100%. */
-  .table-wrap-fit{border:1px solid var(--border);border-radius:var(--shape-m);overflow-x:auto;overflow-y:hidden;}
+  .table-wrap-fit{border:1px solid var(--border);border-radius:var(--shape-xs);overflow-x:auto;overflow-y:hidden;}
   .table-wrap-fit:has(> table.fixed-table){overflow:visible;}
   table.fixed-table{table-layout:fixed;width:100%;}
   /* Таблица, которой не хватает ширины страницы (много столбцов), прокручивается
      по горизонтали, а первый столбец закрепляется — Таблица, «Фиксирование шапки
      и столбцов»: у закреплённого столбца при скролле тень Low. */
-  .table-scroll{border:1px solid var(--border);border-radius:var(--shape-m);overflow-x:auto;overflow-y:hidden;}
+  .table-scroll{border:1px solid var(--border);border-radius:var(--shape-xs);overflow-x:auto;overflow-y:hidden;}
   .table-scroll thead th:first-child,
   .table-scroll tbody td:first-child{position:sticky;left:0;z-index:2;background:var(--bg);}
   /* Тень появляется только когда столбец реально что-то перекрывает: класс ставит
@@ -1714,19 +1460,19 @@
      ячейку видно уезжающие под неё колонки. Правило стоит ДО ховера, чтобы
      наведение на раскрытую строку всё ещё читалось. */
   .table-scroll tbody tr.exp-open td:first-child{
-    background:linear-gradient(var(--color-background-base-selected),var(--color-background-base-selected)), var(--bg);
+    background:linear-gradient(var(--md-sys-color-secondary-container),var(--md-sys-color-secondary-container)), var(--bg);
   }
   /* Токен ховера полупрозрачный: если положить его на sticky-ячейку одним цветом,
      сквозь неё видно уезжающие под низ ячейки. Кладём его слоем поверх фона страницы. */
   .table-scroll tbody tr:not(.exp-detail-row):hover td:first-child{
-    background:linear-gradient(var(--color-background-base-hover),var(--color-background-base-hover)), var(--bg);
+    background:linear-gradient(color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent),color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent)), var(--bg);
   }
   /* У раскрытой строки ховер ложится ПОВЕРХ выделения: иначе закреплённая первая
      колонка получала чистый hover и оказывалась светлее остальных ячеек, где
      hover строки и selected ячейки складываются. */
   .table-scroll tbody tr.exp-open:hover td:first-child{
-    background:linear-gradient(var(--color-background-base-hover),var(--color-background-base-hover)),
-               linear-gradient(var(--color-background-base-selected),var(--color-background-base-selected)), var(--bg);
+    background:linear-gradient(color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent),color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent)),
+               linear-gradient(var(--md-sys-color-secondary-container),var(--md-sys-color-secondary-container)), var(--bg);
   }
   /* Таблица прокручивается, поэтому абсолютный тултип обрезался её краем. Внутри
      такой таблицы он позиционируется фиксированно — координаты считает positionCellTooltips(). */
@@ -1760,10 +1506,10 @@
      цвета из токенов темы; показывается в инвертированной теме. */
   .cell-tooltip{
     display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:60;
-    background:var(--color-background-base);border-radius:var(--size-border-radius-x4);
+    background:var(--md-sys-color-inverse-surface);border-radius:var(--shape-xs);
     box-shadow:var(--elevation-high);padding:var(--size-spacing-x1) var(--size-spacing-x2);
-    font-size:12px;line-height:1.5;font-weight:400;
-    white-space:normal;max-width:280px;min-width:160px;color:var(--color-text-active);
+    font-size:12px;line-height:16px;font-weight:400;
+    white-space:normal;max-width:280px;min-width:160px;color:var(--md-sys-color-inverse-on-surface);
   }
   .cell-clamp-wrap:hover .cell-tooltip{display:block;}
 
@@ -1775,9 +1521,9 @@
   .ds-tip-wrap{position:relative;display:inline-flex;}
   .ds-tip{
     display:none;position:absolute;top:calc(100% + var(--size-spacing-x2));left:50%;transform:translateX(-50%);
-    z-index:60;background:var(--color-background-base);border-radius:var(--size-border-radius-x4);
+    z-index:60;background:var(--md-sys-color-inverse-surface);border-radius:var(--shape-xs);
     box-shadow:var(--elevation-high);padding:var(--size-spacing-x1) var(--size-spacing-x2);
-    font-size:12px;line-height:16px;letter-spacing:.2px;font-weight:400;color:var(--color-text-active);
+    font-size:12px;line-height:16px;letter-spacing:.2px;font-weight:400;color:var(--md-sys-color-inverse-on-surface);
     white-space:nowrap;max-width:348px;pointer-events:none;
   }
   .ds-tip.tip-right{left:auto;right:0;transform:none;}
@@ -1788,7 +1534,7 @@
   /* Постраничная навигация: ячейка 40×40, радиус 12, gap 8, иконка 24, текст 14/20, disabled — opacity .48 */
   .pagination-row{display:flex;align-items:center;justify-content:flex-end;gap:var(--size-spacing-x2);padding:var(--space-4) var(--space-1) 0;color:var(--text-secondary);font-size:14px;line-height:20px;letter-spacing:.2px;}
   .pagination-row .pg-btn{min-width:40px;height:40px;border-radius:var(--size-border-radius-x6);border:1px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--text);}
-  .pagination-row .pg-btn:hover:not(:disabled){background:var(--color-background-base-hover);}
+  .pagination-row .pg-btn:hover:not(:disabled){background:color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);}
   .pagination-row .pg-btn:disabled{opacity:.48;cursor:not-allowed;}
   .pagination-row .pg-btn svg{width:24px;height:24px;}
   .pagination-row .pg-btn .ic{width:24px;height:24px;}
@@ -1815,7 +1561,7 @@
     font-size:14px;line-height:20px;letter-spacing:.2px;font-weight:500;color:var(--text-secondary);cursor:pointer;position:relative;}
   .page-tab:first-child{padding-left:0;}
   .page-tab.active{color:var(--text);}
-  .page-tab.active::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:4px;min-width:40px;
+  .page-tab.active::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:3px;min-width:40px;
     border-radius:var(--size-border-radius-x2) var(--size-border-radius-x2) 0 0;background:var(--yellow);}
 
   .pill-toggle{display:flex;gap:var(--space-3);margin-bottom:var(--space-6);flex-wrap:wrap;}
@@ -1824,10 +1570,10 @@
   .pill-item{display:inline-flex;align-items:center;gap:var(--size-spacing-x2);height:var(--m3-h-chip);
     padding:0 var(--size-spacing-x3);border-radius:var(--shape-s);
     font-size:14px;font-weight:400;line-height:20px;letter-spacing:.2px;cursor:pointer;
-    background:var(--color-control-background);color:var(--text);white-space:nowrap;}
-  .pill-item:hover{background:var(--color-control-background-hover);}
-  .pill-item:active{background:var(--color-control-background-pressed);}
-  .pill-item.active{background:var(--yellow);color:var(--color-text-black-active);}
+    background:var(--md-sys-color-surface-container-highest);color:var(--text);white-space:nowrap;}
+  .pill-item:hover{background:color-mix(in srgb, var(--md-sys-color-on-surface) 8%, var(--md-sys-color-surface-container-highest));}
+  .pill-item:active{background:color-mix(in srgb, var(--md-sys-color-on-surface) 12%, var(--md-sys-color-surface-container-highest));}
+  .pill-item.active{background:var(--yellow);color:var(--md-sys-color-on-primary);}
   .pill-item.active:hover{background:var(--yellow-hover);}
 
 
@@ -1910,7 +1656,7 @@
 
   .stat-tile{border:1px solid var(--border);border-radius:var(--size-border-radius-x6);padding:var(--size-spacing-x6);}
   .stat-tile .big{font-size:32px;line-height:40px;letter-spacing:.3px;font-weight:500;margin-bottom:var(--space-2);}
-  .stat-tile .big.orange-text{color:var(--color-status-warning);}
+  .stat-tile .big.orange-text{color:var(--md-sys-color-ext-warning);}
   .stat-tile .lbl{color:var(--text-secondary);font-size:14px;line-height:20px;letter-spacing:.2px;}
 
   .tshirt-card{border:1px solid var(--border);border-radius:var(--size-border-radius-x6);padding:var(--size-spacing-x6);text-align:center;}
@@ -1930,10 +1676,10 @@
   .inline-alert .ia-ico svg{width:20px;height:20px;}
   .inline-alert .ia-ico .ic{width:20px;height:20px;}
   .inline-alert .ia-txt{flex:1;padding:var(--size-spacing-x1) 0;}
-  .inline-alert.info{background:var(--color-status-info-background);}
-  .inline-alert.info .ia-ico{color:var(--color-status-info);}
-  .inline-alert.neutral{background:var(--color-status-neutral-background);}
-  .inline-alert.neutral .ia-ico{color:var(--color-status-neutral);}
+  .inline-alert.info{background:var(--md-sys-color-ext-info-container);}
+  .inline-alert.info .ia-ico{color:var(--md-sys-color-ext-info);}
+  .inline-alert.neutral{background:var(--md-sys-color-surface-container-highest);}
+  .inline-alert.neutral .ia-ico{color:var(--md-sys-color-on-surface-variant);}
 
   /* Ошибка шага визарда «Проведение оценки». Отказ сервиса — это не ошибка заполнения
      формы, поэтому не Inline alert над пустым экраном (как сейчас в бою), а отдельное
@@ -1945,8 +1691,8 @@
   .wiz-error .we-ico{width:64px;height:64px;border-radius:var(--size-border-radius-circle);
     display:flex;align-items:center;justify-content:center;margin-bottom:var(--space-6);}
   .wiz-error .we-ico svg{width:24px;height:24px;}
-  .wiz-error.status-error .we-ico{background:var(--color-status-error-background);color:var(--color-status-error);}
-  .wiz-error.status-warning .we-ico{background:var(--color-status-warning-background);color:var(--color-status-warning);}
+  .wiz-error.status-error .we-ico{background:var(--md-sys-color-error-container);color:var(--md-sys-color-error);}
+  .wiz-error.status-warning .we-ico{background:var(--md-sys-color-ext-warning-container);color:var(--md-sys-color-ext-warning);}
   .wiz-error h2{font-size:22px;line-height:28px;letter-spacing:.2px;font-weight:500;margin:0 0 var(--space-3);}
   .wiz-error .we-text{font-size:16px;line-height:24px;letter-spacing:.2px;color:var(--text-secondary);margin:0 0 var(--space-4);}
   .wiz-error .we-hint{font-size:14px;line-height:20px;letter-spacing:.2px;color:var(--text-secondary);margin:0;}
@@ -1979,7 +1725,7 @@
   .tc-toolbar{display:flex;align-items:center;gap:var(--space-5);flex-wrap:wrap;margin-bottom:var(--space-5);}
   .tc-pager{display:flex;align-items:center;gap:var(--size-spacing-x2);}
   .tc-pager .pg-btn{min-width:40px;height:40px;border-radius:var(--size-border-radius-x6);border:1px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--text);cursor:pointer;}
-  .tc-pager .pg-btn:hover:not([disabled]){background:var(--color-background-base-hover);}
+  .tc-pager .pg-btn:hover:not([disabled]){background:color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);}
   .tc-pager .pg-btn[disabled]{opacity:.48;cursor:default;}
   .tc-pager .pg-btn svg{width:24px;height:24px;}
   .tc-pager .pg-btn .ic{width:24px;height:24px;}
@@ -1995,10 +1741,10 @@
   .tc-card-desc{color:var(--text-secondary);font-size:14px;line-height:20px;letter-spacing:.2px;margin-top:var(--space-3);}
   .tc-card-note{font-size:14px;line-height:20px;letter-spacing:.2px;margin-top:var(--space-5);}
 
-  .tc-skip-banner{display:flex;align-items:center;gap:var(--size-spacing-x4);background:var(--color-status-neutral-background);
+  .tc-skip-banner{display:flex;align-items:center;gap:var(--size-spacing-x4);background:var(--md-sys-color-surface-container-highest);
     border-radius:var(--size-border-radius-x4);padding:var(--size-spacing-x2) var(--size-spacing-x4);margin:calc(-1 * var(--space-2)) 0 var(--space-5);}
   .tc-skip-banner .txt{flex:1;font-size:14px;line-height:20px;letter-spacing:.2px;}
-  .tc-skip-banner .ico{color:var(--color-status-neutral);display:flex;flex:0 0 auto;}
+  .tc-skip-banner .ico{color:var(--md-sys-color-on-surface-variant);display:flex;flex:0 0 auto;}
   .tc-skip-banner .ico svg{width:20px;height:20px;}
   .tc-skip-banner .ico .ic{width:20px;height:20px;}
 
@@ -2015,7 +1761,7 @@
   .bc-row{border:1px solid var(--border);border-radius:var(--size-border-radius-x8);overflow:hidden;background:var(--bg);}
   .bc-row.hit{border-color:var(--yellow);box-shadow:0 0 0 1px var(--yellow);}
   .bc-row-head{display:flex;align-items:center;gap:var(--size-spacing-x4);padding:var(--size-spacing-x3) var(--size-spacing-x6);min-height:56px;cursor:pointer;}
-  .bc-row-head:hover{background:var(--color-background-base-hover);}
+  .bc-row-head:hover{background:color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);}
   /* Имя .main занято колонкой контента приложения (белый фон + overflow-y:auto),
      поэтому внутренний блок строки ВС называется bc-main — иначе он перекрывал
      подсветку строки по наведению белым прямоугольником. */
@@ -2026,7 +1772,7 @@
   .chev svg{width:18px;height:18px;}
   .chev .ic{width:18px;height:18px;}
   .chev.open{transform:rotate(180deg);}
-  .bc-nested{background:var(--bg-alt);padding:var(--size-spacing-x4) var(--size-spacing-x6);display:flex;flex-direction:column;gap:var(--space-3);border-top:1px solid var(--color-divider);}
+  .bc-nested{background:var(--bg-alt);padding:var(--size-spacing-x4) var(--size-spacing-x6);display:flex;flex-direction:column;gap:var(--space-3);border-top:1px solid var(--md-sys-color-outline-variant);}
   .tc-nested{display:flex;gap:var(--space-4);align-items:flex-start;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:var(--space-4) var(--space-5);cursor:pointer;}
   .tc-nested.sel{border-color:var(--green-text);background:var(--green-bg);}
   .tc-nested .n-name{font-weight:500;font-size:14px;line-height:20px;letter-spacing:.2px;display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap;}
@@ -2036,7 +1782,7 @@
     border-radius:var(--shape-s);padding:0 var(--size-spacing-x2);
     font-size:14px;font-weight:500;line-height:20px;letter-spacing:.2px;margin-top:var(--space-2);}
 
-  .tc-req-foot{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);border-top:1px solid var(--color-divider);margin-top:var(--space-5);padding-top:var(--space-4);cursor:pointer;font-size:14px;line-height:20px;letter-spacing:.2px;}
+  .tc-req-foot{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);border-top:1px solid var(--md-sys-color-outline-variant);margin-top:var(--space-5);padding-top:var(--space-4);cursor:pointer;font-size:14px;line-height:20px;letter-spacing:.2px;}
   .tc-req-list{display:flex;flex-direction:column;gap:var(--space-2);margin-top:var(--space-3);color:var(--text-secondary);font-size:12px;line-height:16px;letter-spacing:.2px;}
 
   .q-card{border:1px solid var(--border);border-radius:var(--size-border-radius-x6);padding:var(--size-spacing-x4) var(--size-spacing-x6);margin-bottom:var(--space-3);}
@@ -2048,7 +1794,7 @@
   .empty-inline{color:var(--text-secondary);font-size:14px;line-height:20px;letter-spacing:.2px;padding:var(--space-5);border:1px dashed var(--border);border-radius:var(--size-border-radius-x6);}
 
   .coach-note{display:flex;align-items:flex-start;gap:var(--space-4);border-radius:var(--size-border-radius-x6);padding:var(--space-4) var(--space-5);margin-bottom:var(--space-6);font-size:14px;line-height:20px;letter-spacing:.2px;
-    background:var(--color-background-base);color:var(--color-text-active);max-width:640px;}
+    background:var(--md-sys-color-surface);color:var(--md-sys-color-on-surface);max-width:640px;}
   .coach-note .close{cursor:pointer;flex:0 0 auto;opacity:.7;display:flex;}
   .coach-note .close:hover{opacity:1;}
   .coach-note .close svg{width:18px;height:18px;}
@@ -2085,10 +1831,10 @@
   .uc-card-body .field-label{margin-bottom:var(--space-1);}
 
   /* Чекбокс: 24×24, radius 6 */
-  .checkbox{width:24px;height:24px;border-radius:var(--size-border-radius-x3);border:1.5px solid var(--border-strong);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto;background:var(--bg);}
+  .checkbox{width:18px;height:18px;border-radius:2px;border:2px solid var(--md-sys-color-on-surface-variant);display:flex;align-items:center;justify-content:center;cursor:pointer;flex:0 0 auto;background:var(--bg);}
   .checkbox.checked{background:var(--yellow);border-color:var(--yellow);}
-  .checkbox svg{width:18px;height:18px;display:none;color:var(--color-text-black-active);}
-  .checkbox .ic{width:18px;height:18px;display:none;color:var(--color-text-black-active);}
+  .checkbox svg{width:18px;height:18px;display:none;color:var(--md-sys-color-on-primary);}
+  .checkbox .ic{width:18px;height:18px;display:none;color:var(--md-sys-color-on-primary);}
   .checkbox.checked svg{display:block;}
   .checkbox.checked .ic{display:block;}
   .del-x{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);cursor:pointer;}
@@ -2114,7 +1860,7 @@
 
   /* wizard modals: footer always pinned to the bottom of the screen, outside the scrollable body */
   .wizard-foot{
-    flex:0 0 auto;background:var(--color-background-base);border-top:1px solid var(--color-divider);
+    flex:0 0 auto;background:var(--md-sys-color-surface);border-top:1px solid var(--md-sys-color-outline-variant);
     padding:var(--size-spacing-x4) var(--size-spacing-x8) var(--size-spacing-x6);display:flex;gap:var(--space-3);justify-content:flex-end;
   }
 
@@ -2171,10 +1917,10 @@
   .step{display:flex;align-items:center;gap:var(--size-spacing-x3);position:relative;height:56px;padding:0 var(--size-spacing-x6) 2px;}
   /* Шаги: number 24×24, отступ до текста 12, пройденный шаг — цвета status-success */
   .step .circle{width:24px;height:24px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;color:var(--text-secondary);flex:0 0 auto;}
-  .step.done .circle{background:var(--color-status-success-background);border-color:var(--color-status-success);color:var(--color-status-success);}
+  .step.done .circle{background:var(--md-sys-color-ext-success-container);border-color:var(--md-sys-color-ext-success);color:var(--md-sys-color-ext-success);}
   .step.done .circle svg{width:18px;height:18px;}
   .step.done .circle .ic{width:18px;height:18px;}
-  .step.active .circle{background:var(--yellow);border-color:var(--yellow);color:var(--color-text-black-active);font-weight:500;}
+  .step.active .circle{background:var(--yellow);border-color:var(--yellow);color:var(--md-sys-color-on-primary);font-weight:500;}
   .step .stxt{display:flex;flex-direction:column;justify-content:center;}
   .step .stxt .s-lbl{font-size:12px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);}
   .step .stxt .s-name{font-size:16px;line-height:24px;letter-spacing:.2px;font-weight:400;color:var(--text-secondary);}
@@ -2238,7 +1984,7 @@
   .side-body{flex:1;overflow-y:auto;padding:var(--size-spacing-x4) var(--size-spacing-x4) var(--size-spacing-x5);}
   /* (components/bottomActionBar): сверху 16, снизу 24, кнопки по правому краю,
      размер medium. По бокам — горизонтальные поля сайдшита. */
-  .side-foot{padding:var(--size-spacing-x4) var(--size-spacing-x4) var(--size-spacing-x6);border-top:1px solid var(--color-divider);display:flex;gap:var(--space-3);justify-content:flex-end;flex:0 0 auto;}
+  .side-foot{padding:var(--size-spacing-x4) var(--size-spacing-x4) var(--size-spacing-x6);border-top:1px solid var(--md-sys-color-outline-variant);display:flex;gap:var(--space-3);justify-content:flex-end;flex:0 0 auto;}
 
   .search-result-card{border:1px solid var(--border);border-radius:var(--radius-sm);padding:var(--space-4) var(--space-4);display:flex;align-items:flex-start;gap:var(--space-3);margin-bottom:var(--space-3);cursor:pointer;}
   .search-result-card:hover{border-color:var(--border-strong);}
@@ -2253,7 +1999,7 @@
   .search-result-card .code{color:var(--text-secondary);font-size:12px;}
   .search-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:var(--space-9) var(--space-3);color:var(--text);gap:var(--space-4);}
   /* Progress indicator, circle standart: 44×44, толщина 6, трек — divider */
-  .spinner{width:44px;height:44px;border-radius:50%;border:6px solid var(--color-divider);border-top-color:var(--yellow);animation:spin .8s linear infinite;}
+  .spinner{width:44px;height:44px;border-radius:50%;border:6px solid var(--md-sys-color-outline-variant);border-top-color:var(--yellow);animation:spin .8s linear infinite;}
   @keyframes spin{to{transform:rotate(360deg);}}
 
 
@@ -2305,7 +2051,7 @@
      Размеры по токенам: min 344 / max 660, текст 15/18/0.2, паддинги 16 слева и 8 справа. */
   .toast{
     position:fixed;left:50%;bottom:var(--size-spacing-x6);transform:translateX(-50%);
-    background:var(--color-background-base);color:var(--color-text-active);
+    background:var(--md-sys-color-surface);color:var(--md-sys-color-on-surface);
     padding:var(--size-spacing-x4) var(--size-spacing-x2) var(--size-spacing-x4) var(--size-spacing-x4);
     border-radius:var(--size-border-radius-x6);display:flex;align-items:center;gap:var(--size-spacing-x4);z-index:500;
     box-shadow:var(--elevation-high);font-size:14px;line-height:20px;letter-spacing:.2px;
@@ -2319,11 +2065,11 @@
      фон background-low, elevation-high; показывается в инвертированной теме. */
   .fab{
     position:fixed;right:var(--size-spacing-x9);bottom:var(--size-spacing-x9);
-    width:56px;height:56px;border-radius:50%;background:var(--color-background-low);
-    display:flex;align-items:center;justify-content:center;color:var(--color-text-active);
+    width:56px;height:56px;border-radius:50%;background:var(--md-sys-color-surface-container-low);
+    display:flex;align-items:center;justify-content:center;color:var(--md-sys-color-on-surface);
     box-shadow:var(--elevation-high);z-index:40;border:none;
   }
-  .fab:hover{background:var(--color-background-medium);}
+  .fab:hover{background:var(--md-sys-color-surface-container);}
   .fab svg{width:24px;height:24px;}
   .fab .ic{width:24px;height:24px;}
 
@@ -2365,7 +2111,7 @@
   .cj-head-spacer{flex:1;}
   .cj-head-actions{display:flex;align-items:center;gap:var(--space-3);flex-wrap:nowrap;}
   .cj-menu-wrap{position:relative;}
-  .cj-menu{position:absolute;top:42px;left:0;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow);min-width:220px;z-index:60;padding:var(--space-2);}
+  .cj-menu{position:absolute;top:42px;left:0;background:var(--md-sys-color-surface-container);border:none;border-radius:var(--shape-xs);box-shadow:var(--elevation-medium);min-width:220px;z-index:60;padding:var(--space-2);}
   .cj-menu-item{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3);border-radius:8px;font-size:14px;color:var(--text);cursor:pointer;}
   .cj-menu-item:hover{background:var(--bg-alt);}
   .cj-menu-item svg{width:18px;height:18px;color:var(--text-secondary);}
@@ -2376,18 +2122,18 @@
      ветки, работа с ветками, экспорт, история, редактирование — собраны под одной
      иконочной кнопкой в заголовке. Значения взяты из таблицы токенов компонента:
      ширина 280, вертикальный паддинг 8, радиус 12, высота пункта 46, горизонтальный
-     паддинг пункта 16, отступ иконки 8, ховер — --color-background-base-hover,
+     паддинг пункта 16, отступ иконки 8, ховер — слой состояния on-surface 8%,
      группы разделяются divider. Отдельный класс, а не .cj-menu: тот сверстан до сверки
      с (220/12/12) и используется в оверлее CJ — трогать его тут нечего. */
   .uc-menu-wrap{position:relative;}
   .uc-menu{position:absolute;top:calc(100% + 4px);right:0;width:var(--menu-width);min-width:var(--menu-width-min);
-    background:var(--color-background-medium);border-radius:var(--size-border-radius-x6);
-    box-shadow:0 4px 30px rgba(0,0,0,.1),0 0 10px rgba(0,0,0,.1);
+    background:var(--md-sys-color-surface-container);border-radius:var(--shape-xs);
+    box-shadow:var(--elevation-medium);
     padding:var(--menu-padding-vertical) 0;z-index:60;}
   .uc-menu-item{display:flex;align-items:center;gap:var(--size-spacing-x2);height:var(--menu-item-height);
     padding:0 var(--size-spacing-x4);font-size:14px;line-height:20px;letter-spacing:.2px;color:var(--text);
     cursor:pointer;white-space:nowrap;}
-  .uc-menu-item:hover{background:var(--color-background-base-hover);}
+  .uc-menu-item:hover{background:color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);}
   .uc-menu-item.disabled{opacity:.48;cursor:default;}
   .uc-menu-item.disabled:hover{background:transparent;}
   .uc-menu-item svg{width:20px;height:20px;flex:0 0 auto;color:var(--text-secondary);}
@@ -2396,7 +2142,7 @@
   .uc-menu-item .tag{font-size:12px;color:var(--text-secondary);}
   .uc-menu-item .check{display:flex;color:var(--text);}
   .uc-menu-item .check svg{width:20px;height:20px;color:var(--text);}
-  .uc-menu-divider{height:1px;background:var(--color-divider);margin:var(--menu-padding-vertical) 0;}
+  .uc-menu-divider{height:1px;background:var(--md-sys-color-outline-variant);margin:var(--menu-padding-vertical) 0;}
   /* Подпись группы — в у меню её нет (только divider), поэтому собрана из токенов
      типографики и отступов, как разрешает сборный компонент. */
   .uc-menu-cap{padding:var(--size-spacing-x2) var(--size-spacing-x4);font-size:12px;line-height:16px;
@@ -2431,10 +2177,11 @@
   .cj-select-trigger{
     display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);width:100%;min-width:160px;
     height:var(--m3-h-field);
-    border:1px solid transparent;background:var(--input-bg);border-radius:var(--shape-xs);
+    border:none;border-bottom:1px solid var(--md-sys-color-on-surface-variant);
+    background:var(--input-bg);border-radius:var(--shape-xs) var(--shape-xs) 0 0;
     padding:0 var(--size-spacing-x4);font-size:16px;line-height:24px;color:var(--text);text-align:left;
   }
-  .cj-select-trigger:hover{background:var(--color-control-background-hover);}
+  .cj-select-trigger:hover{background:color-mix(in srgb, var(--md-sys-color-on-surface) 8%, var(--md-sys-color-surface-container-highest));}
   .cj-select-trigger.open:hover{background:var(--bg);}
   /* open = same treatment as this app's other field-focus state (.ffield-box.focus) —
      surfaced background + a solid border, for consistency rather than a one-off style. */
@@ -2473,11 +2220,11 @@
      padding 16 по бокам и сверху / 8 снизу, elevation-high, инвертированная тема. */
   .cj-merge-help-popover{
     top:32px;left:0;right:auto;width:280px;
-    background:var(--color-background-low);
+    background:var(--md-sys-color-surface-container-low);
     border-radius:var(--size-border-radius-x8);
     box-shadow:var(--elevation-high);
     padding:var(--size-spacing-x4) var(--size-spacing-x4) var(--size-spacing-x2);
-    color:var(--color-text-active);
+    color:var(--md-sys-color-on-surface);
   }
   .cj-merge-help-popover .pv-title{padding:0;}
   .cj-merge-help-list{margin:0;padding-left:18px;font-size:12px;color:var(--text-secondary);line-height:1.6;}
@@ -2514,8 +2261,8 @@
   .cj-select-item.two-line .name{flex:0 0 auto;font-size:14px;line-height:20px;grid-column:1;}
   .cj-select-item.two-line .sub{grid-column:1;}
   .cj-select-item.two-line .del{grid-column:2;grid-row:1 / span 2;}
-  .cj-select-item .del{width:32px;height:32px;border:none;background:transparent;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--color-text-inactive);}
-  .cj-select-item .del:hover{background:var(--color-control-background-hover);color:var(--text);}
+  .cj-select-item .del{width:32px;height:32px;border:none;background:transparent;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--md-sys-color-on-surface-variant);}
+  .cj-select-item .del:hover{background:color-mix(in srgb, var(--md-sys-color-on-surface) 8%, var(--md-sys-color-surface-container-highest));color:var(--text);}
   .cj-select-item .del svg{width:20px;height:20px;}
   .cj-select-item .del .ic{width:20px;height:20px;}
   .cj-select-item .sub{font-size:12px;line-height:16px;color:var(--text-secondary);}
@@ -2537,7 +2284,7 @@
   .cj-dialog .row{display:flex;gap:var(--space-3);justify-content:flex-end;}
 
   /* Progress indicator, circle small: 20×20, толщина 3, трек — divider */
-  .mini-spinner{box-sizing:border-box;width:20px;height:20px;border-radius:50%;border:3px solid var(--color-divider);border-top-color:var(--yellow);animation:spin .8s linear infinite;flex:0 0 auto;}
+  .mini-spinner{box-sizing:border-box;width:20px;height:20px;border-radius:50%;border:3px solid var(--md-sys-color-outline-variant);border-top-color:var(--yellow);animation:spin .8s linear infinite;flex:0 0 auto;}
   .cj-branch-lock-badge,.cj-merge-running-banner{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary);}
   .cj-merge-running-banner{font-weight:600;color:var(--text);}
 
@@ -2555,10 +2302,10 @@
   .cj-stage-head{height:52px;display:flex;align-items:center;justify-content:space-between;gap:var(--space-2);padding:0 var(--space-4);font-weight:700;font-size:14px;color:var(--text);border-right:1px solid var(--border);}
   /* Цвет этапа — акцент палитры: у акцентов есть фон в обеих темах,
      поэтому отдельных правил для тёмной не нужно. */
-  .cj-stage-head.c1{background:var(--color-accent-aquamarine-background);}
-  .cj-stage-head.c2{background:var(--color-accent-lemon-background);}
-  .cj-stage-head.c3{background:var(--color-accent-magenta-background);}
-  .cj-stage-head.c4{background:var(--color-accent-teal-background);}
+  .cj-stage-head.c1{background:var(--md-sys-color-ext-aquamarine-container);}
+  .cj-stage-head.c2{background:var(--md-sys-color-ext-lemon-container);}
+  .cj-stage-head.c3{background:var(--md-sys-color-ext-magenta-container);}
+  .cj-stage-head.c4{background:var(--md-sys-color-ext-teal-container);}
   .cj-stage-cell{display:flex;align-items:center;padding:var(--space-3) var(--space-4);border-bottom:1px solid var(--border);border-right:1px solid var(--border);font-size:12px;line-height:1.45;}
   .cj-stage-cell.empty{color:var(--text-secondary);}
   .cj-stage-cell.wrap{align-items:flex-start;}
@@ -2605,7 +2352,7 @@
   .cj-source-badge .dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto;}
   .cj-source-badge .dot.manual{background:var(--gray-text);}
   .cj-source-badge .dot.usecase{background:var(--blue);}
-  .cj-source-badge .dot.e2e{background:var(--color-accent-magenta);}
+  .cj-source-badge .dot.e2e{background:var(--md-sys-color-ext-magenta);}
   .cj-source-badge .lbl{flex:1;min-width:0;font-size:12px;}
   .cj-source-badge .lbl .t{color:var(--text-secondary);font-size:12px;}
   .cj-source-badge .lbl .n{font-weight:600;font-size:12px;}
@@ -2685,7 +2432,7 @@
        висела в воздухе и читалась как самостоятельный элемент;
      — дочерние строки выравниваются по тексту в Expandable cell родителя:
        24 падинга ячейки + 22 шеврон + 8 зазор = 54. */
-  tbody tr.exp-open > td{background:var(--color-background-base-selected);}
+  tbody tr.exp-open > td{background:var(--md-sys-color-secondary-container);}
   .exp-detail{position:relative;background:transparent;
     padding:var(--space-5) var(--space-5) var(--space-5) 54px;}
   .exp-detail::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--yellow);}
@@ -2737,7 +2484,7 @@
   .pipe-timeline .seg.pending{background:var(--border-strong);}
   .pipe-timeline .dot{width:10px;height:10px;border-radius:50%;background:var(--yellow);flex:0 0 auto;}
   .pipe-timeline .dot.pending{background:var(--border-strong);}
-  .pipe-timeline .end{width:26px;height:26px;border-radius:50%;background:var(--green-text);color:var(--color-text-light-active);display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
+  .pipe-timeline .end{width:26px;height:26px;border-radius:50%;background:var(--green-text);color:var(--md-sys-color-on-ext-success);display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
   .pipe-timeline .end svg{width:18px;height:18px;}
   .pipe-timeline .end .ic{width:18px;height:18px;}
   .pipe-timeline .end.fail{background:var(--red-text);}
@@ -2824,7 +2571,7 @@
   .ac-pattern-tech-cell{display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap;}
   .ac-more-chip{position:relative;color:var(--blue);font-weight:600;cursor:default;}
   .ac-more-chip:hover .ac-more-pop{display:block;}
-  .ac-more-pop{display:none;position:absolute;top:100%;right:0;margin-top:4px;background:var(--color-background-inverse);color:var(--color-text-active-inverse);border-radius:8px;padding:var(--space-3) var(--space-4);font-size:12px;white-space:nowrap;z-index:5;box-shadow:var(--shadow);}
+  .ac-more-pop{display:none;position:absolute;top:100%;right:0;margin-top:4px;background:var(--md-sys-color-inverse-surface);color:var(--md-sys-color-inverse-on-surface);border-radius:8px;padding:var(--space-3) var(--space-4);font-size:12px;white-space:nowrap;z-index:5;box-shadow:var(--shadow);}
   .ac-more-pop div{padding:2px 0;}
   .ac-crit-row{display:flex;gap:var(--space-9);flex-wrap:wrap;margin-bottom:var(--space-7);}
   .ac-crit-row .lbl{font-size:12px;color:var(--text-secondary);margin-bottom:var(--space-2);}
@@ -2942,7 +2689,7 @@
   /* Без backdrop-filter стекло не собрать — там плита красится градиентом,
      как было до него, иначе текст лёг бы прямо на резкие пятна. */
   @supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
-    .lp-hero{background:linear-gradient(135deg,var(--color-accent-purple-background) 0%,var(--color-accent-teal-background) 100%);}
+    .lp-hero{background:linear-gradient(135deg,var(--md-sys-color-ext-purple-container) 0%,var(--md-sys-color-ext-teal-container) 100%);}
     .lp-deco{inset:0;overflow:hidden;}
   }
   /* Блик: широкая диагональная полоса по верхнему краю — отражение источника
@@ -2979,7 +2726,7 @@
      фон control-background (на цветном фоне героя он читается как лёгкая подложка). */
   .lp-chip{
     height:var(--m3-h-chip);display:inline-flex;align-items:center;padding:0 var(--size-spacing-x3);
-    border-radius:var(--shape-s);background:var(--color-control-background);
+    border-radius:var(--shape-s);background:var(--md-sys-color-surface-container-highest);
     font-size:14px;font-weight:400;line-height:20px;letter-spacing:.2px;color:var(--text);
   }
   /* В референсах заголовок героя набран жирным, а имя продукта стоит отдельной
@@ -2998,9 +2745,9 @@
     font-size:72px;line-height:80px;letter-spacing:-.5px;font-weight:var(--font-weight-bold);
     margin:0;
     background-image:linear-gradient(100deg,
-      var(--color-accent-magenta) 0%, var(--color-accent-purple) 25%,
-      var(--color-status-info) 50%, var(--color-accent-purple) 75%,
-      var(--color-accent-magenta) 100%);
+      var(--md-sys-color-ext-magenta) 0%, var(--md-sys-color-ext-purple) 25%,
+      var(--md-sys-color-ext-info) 50%, var(--md-sys-color-ext-purple) 75%,
+      var(--md-sys-color-ext-magenta) 100%);
     /* Тайл в пикселях, а не в процентах: имя продукта короче одного прохода,
        и растянутый на 200 % градиент давал по буквам почти ровный цвет — перелив
        был виден только в тёмной теме, где цвета сами по себе разнесены сильнее.
@@ -3018,9 +2765,9 @@
      он даёт 7.7:1, а палитра перестаёт быть двухцветной. */
   [data-theme="dark"] .lp-h1{
     background-image:linear-gradient(100deg,
-      var(--color-accent-purple) 0%, var(--color-accent-magenta) 20%,
-      var(--color-accent-teal) 40%, var(--color-accent-magenta) 60%,
-      var(--color-accent-purple) 80%, var(--color-accent-magenta) 100%);
+      var(--md-sys-color-ext-purple) 0%, var(--md-sys-color-ext-magenta) 20%,
+      var(--md-sys-color-ext-teal) 40%, var(--md-sys-color-ext-magenta) 60%,
+      var(--md-sys-color-ext-purple) 80%, var(--md-sys-color-ext-magenta) 100%);
   }
   /* Дескриптор под именем — отдельный блок, а не потомок заголовка: токены
      текста заданы полупрозрачными (secondary — rgba(25,28,52,.7)), и внутри
@@ -3083,11 +2830,11 @@
     font-size:12px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);
   }
   .lp-shot-nav.is-on{
-    color:var(--text);font-weight:500;background:var(--color-background-base-selected);
+    color:var(--text);font-weight:500;background:var(--md-sys-color-secondary-container);
   }
   .lp-shot-nav.is-on::before{
     content:"";position:absolute;left:0;top:4px;bottom:4px;width:4px;
-    background:var(--color-background-brand);
+    background:var(--md-sys-color-primary);
     border-radius:0 var(--size-border-radius-x2) var(--size-border-radius-x2) 0;
   }
   .lp-shot-nav .ic{width:18px;height:18px;flex:0 0 auto;}
@@ -3103,7 +2850,7 @@
   .lp-shot-btn{
     display:inline-flex;align-items:center;margin-left:auto;height:20px;
     padding:0 var(--space-3);border-radius:var(--size-border-radius-x4);
-    background:var(--color-background-brand);color:var(--color-text-black-active);
+    background:var(--md-sys-color-primary);color:var(--md-sys-color-on-primary);
     font-size:11px;line-height:14px;letter-spacing:.2px;font-weight:500;white-space:nowrap;
   }
   .lp-shot-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-3);}
@@ -3123,7 +2870,7 @@
   .lp-shot-spark i{flex:1;background:var(--blue-text);opacity:.65;border-radius:2px 2px 0 0;}
   .lp-shot-spark i:last-child{opacity:1;}
   .lp-shot-meter{height:6px;border-radius:3px;background:var(--bg-alt);margin-top:var(--space-2);overflow:hidden;}
-  .lp-shot-meter span{display:block;height:100%;background:var(--color-background-brand);border-radius:3px;}
+  .lp-shot-meter span{display:block;height:100%;background:var(--md-sys-color-primary);border-radius:3px;}
   /* Таблица снимка: колонки фиксированы, иначе длинные названия сдвигают статусы */
   .lp-shot-table{display:flex;flex-direction:column;}
   .lp-shot-row{
@@ -3181,10 +2928,10 @@
   .lp-card li+li{margin-top:var(--space-2);}
   .lp-c5{grid-column:span 5;}
   .lp-c7{grid-column:span 7;}
-  .lp-bg-lemon{background:var(--color-accent-lemon-background);background:color-mix(in srgb, var(--color-accent-lemon-background) 68%, transparent);}
-  .lp-bg-teal{background:var(--color-accent-teal-background);background:color-mix(in srgb, var(--color-accent-teal-background) 68%, transparent);}
-  .lp-bg-purple{background:var(--color-accent-purple-background);background:color-mix(in srgb, var(--color-accent-purple-background) 68%, transparent);}
-  .lp-bg-magenta{background:var(--color-accent-magenta-background);background:color-mix(in srgb, var(--color-accent-magenta-background) 68%, transparent);}
+  .lp-bg-lemon{background:var(--md-sys-color-ext-lemon-container);background:color-mix(in srgb, var(--md-sys-color-ext-lemon-container) 68%, transparent);}
+  .lp-bg-teal{background:var(--md-sys-color-ext-teal-container);background:color-mix(in srgb, var(--md-sys-color-ext-teal-container) 68%, transparent);}
+  .lp-bg-purple{background:var(--md-sys-color-ext-purple-container);background:color-mix(in srgb, var(--md-sys-color-ext-purple-container) 68%, transparent);}
+  .lp-bg-magenta{background:var(--md-sys-color-ext-magenta-container);background:color-mix(in srgb, var(--md-sys-color-ext-magenta-container) 68%, transparent);}
   .lp-stats{display:flex;flex-wrap:wrap;gap:var(--size-spacing-x8);margin-top:auto;}
   .lp-stat-num{font-size:var(--font-size-h3);line-height:var(--font-line-height-h3);letter-spacing:.3px;font-weight:500;}
   .lp-stat-cap{font-size:12px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);}
@@ -3312,10 +3059,10 @@
   /* ── Финальный блок и подвал ──────────────────────────────────────────── */
   .lp-cta{
     border-radius:var(--size-border-radius-x12);padding:var(--size-spacing-x10);
-    background:linear-gradient(135deg,var(--color-accent-teal-background) 0%,var(--color-accent-purple-background) 100%);
+    background:linear-gradient(135deg,var(--md-sys-color-ext-teal-container) 0%,var(--md-sys-color-ext-purple-container) 100%);
     background:linear-gradient(135deg,
-      color-mix(in srgb, var(--color-accent-teal-background) 70%, transparent) 0%,
-      color-mix(in srgb, var(--color-accent-purple-background) 70%, transparent) 100%);
+      color-mix(in srgb, var(--md-sys-color-ext-teal-container) 70%, transparent) 0%,
+      color-mix(in srgb, var(--md-sys-color-ext-purple-container) 70%, transparent) 100%);
     display:flex;align-items:center;gap:var(--size-spacing-x10);flex-wrap:wrap;
   }
   /* Строка длиннее ~90 знаков читается тяжело: текст блока не тянется на всю
@@ -3371,7 +3118,7 @@
   .lp-svc[data-action]{cursor:pointer;}
   .lp-svc[data-action]:hover{transform:translateY(-4px);--glass-drop:0 28px 56px -26px rgba(60,40,110,.44);}
   [data-theme="dark"] .lp-svc[data-action]:hover{--glass-drop:0 28px 56px -26px rgba(0,0,0,.82);}
-  .lp-svc[data-action]:focus-visible{outline:2px solid var(--color-border-focus);outline-offset:2px;}
+  .lp-svc[data-action]:focus-visible{outline:2px solid var(--md-sys-color-secondary);outline-offset:2px;}
   /* Тонированная половина. У крупной карточки она стоит колонкой сбоку,
      у компактной — лежит полосой сверху. */
   .lp-svc-art{
@@ -3395,7 +3142,7 @@
   /* «Открыть» — Plain-кнопка по виду: цвет button-plain, без заливки */
   .lp-svc-go{
     display:inline-flex;align-items:center;gap:var(--space-1);margin-top:auto;
-    color:var(--color-button-plain);font-size:14px;line-height:20px;letter-spacing:.2px;font-weight:500;
+    color:var(--md-sys-color-ext-info);font-size:14px;line-height:20px;letter-spacing:.2px;font-weight:500;
   }
   .lp-svc-go .ic{width:18px;height:18px;transition:transform .2s ease;}
   .lp-svc[data-action]:hover .lp-svc-go .ic{transform:translateX(3px);}
@@ -3448,8 +3195,8 @@
        снаружи остаётся резкой — по этому переходу и читается край стекла.
        Маска гасит подложку к краям сцены, иначе сетка обрывалась бы линейкой. */
     background-image:
-      radial-gradient(60% 50% at 18% 26%, var(--color-accent-purple-background) 0%, transparent 70%),
-      radial-gradient(55% 45% at 84% 62%, var(--color-accent-teal-background) 0%, transparent 70%),
+      radial-gradient(60% 50% at 18% 26%, var(--md-sys-color-ext-purple-container) 0%, transparent 70%),
+      radial-gradient(55% 45% at 84% 62%, var(--md-sys-color-ext-teal-container) 0%, transparent 70%),
       radial-gradient(var(--border-strong) 1px, transparent 1px);
     background-size:auto, auto, 24px 24px;
     /* Подложка гаснет сверху вниз: точки бледнеют ряд за рядом и растворяются,
@@ -3479,7 +3226,7 @@
   .lp-cursor svg{width:20px;height:20px;}
   .lp-cursor-label{
     height:24px;display:inline-flex;align-items:center;padding:0 var(--space-2);
-    border-radius:var(--size-border-radius-x4);color:var(--color-text-white-inverse);
+    border-radius:var(--size-border-radius-x4);color:var(--md-sys-color-surface-container-lowest);
     font-size:12px;line-height:16px;letter-spacing:.2px;font-weight:500;white-space:nowrap;
   }
   /* Указатель цепляет край окна, подпись уходит наружу — как в референсах.
@@ -3490,7 +3237,7 @@
   .lp-cursor-2 .lp-cursor-label{background:var(--blue-text);}
   /* В тёмной теме статусные цвета светлее, и белая подпись на них не читается
      (2.9:1). Чёрный текст на той же плашке даёт 7:1. */
-  [data-theme="dark"] .lp-cursor-label{color:var(--color-text-black-active);}
+  [data-theme="dark"] .lp-cursor-label{color:var(--md-sys-color-on-primary);}
   /* Дрейф уводит курсоры наружу от окна продукта, а не внутрь: внутрь они
      наезжали бы на подписи разделов и статусы. */
   @keyframes lp-cursor-a{from{transform:translate3d(0,0,0);}to{transform:translate3d(-22px,-30px,0);}}
@@ -3558,34 +3305,34 @@
      справа — источник правды. Ничего не поменялось визуально, кроме бейджей
      CJ/BI/Step, которые раньше были «почти как», а теперь ровно акцентные цвета. */
   .e2ecat-scope{
-    --bg:            var(--color-background-base);
-    --bg-panel:      var(--color-background-low);
-    --bg-rail:       var(--color-background-base);
-    --bg-hover:      var(--color-background-base-hover);
-    --bg-selected:   var(--color-background-base-selected);
-    --border:        var(--color-divider);
-    --border-strong: var(--color-border);
-    --text:          var(--color-text-active);
-    --text-secondary:var(--color-text-inactive);
-    --text-tertiary: var(--color-text-disabled);
-    --accent:        var(--color-background-brand);
-    --accent-strong: var(--color-background-brand-hover);
-    --accent-text:   var(--color-text-dark-active);
-    --link:          var(--color-text-link);
-    --info-bg:       var(--color-status-info-background);
-    --info-icon:     var(--color-status-info);
-    --danger-bg:     var(--color-status-error-background);
-    --danger-text:   var(--color-status-error);
-    --success-bg:    var(--color-status-success-background);
-    --success-text:  var(--color-status-success);
-    --warn-bg:       var(--color-status-warning-background);
-    --warn-text:     var(--color-status-warning);
-    --badge-cj-bg:   var(--color-accent-magenta-background);
-    --badge-cj-text: var(--color-accent-magenta);
-    --badge-bi-bg:   var(--color-accent-aquamarine-background);
-    --badge-bi-text: var(--color-accent-aquamarine);
-    --badge-sp-bg:   var(--color-status-info-background);
-    --badge-sp-text: var(--color-status-info);
+    --bg:            var(--md-sys-color-surface);
+    --bg-panel:      var(--md-sys-color-surface-container-low);
+    --bg-rail:       var(--md-sys-color-surface);
+    --bg-hover:      color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);
+    --bg-selected:   var(--md-sys-color-secondary-container);
+    --border:        var(--md-sys-color-outline-variant);
+    --border-strong: var(--md-sys-color-outline);
+    --text:          var(--md-sys-color-on-surface);
+    --text-secondary:var(--md-sys-color-on-surface-variant);
+    --text-tertiary: color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent);
+    --accent:        var(--md-sys-color-primary);
+    --accent-strong: color-mix(in srgb, var(--md-sys-color-on-primary) 8%, var(--md-sys-color-primary));
+    --accent-text:   var(--md-sys-color-on-primary);
+    --link:          var(--md-sys-color-ext-info);
+    --info-bg:       var(--md-sys-color-ext-info-container);
+    --info-icon:     var(--md-sys-color-ext-info);
+    --danger-bg:     var(--md-sys-color-error-container);
+    --danger-text:   var(--md-sys-color-error);
+    --success-bg:    var(--md-sys-color-ext-success-container);
+    --success-text:  var(--md-sys-color-ext-success);
+    --warn-bg:       var(--md-sys-color-ext-warning-container);
+    --warn-text:     var(--md-sys-color-ext-warning);
+    --badge-cj-bg:   var(--md-sys-color-ext-magenta-container);
+    --badge-cj-text: var(--md-sys-color-ext-magenta);
+    --badge-bi-bg:   var(--md-sys-color-ext-aquamarine-container);
+    --badge-bi-text: var(--md-sys-color-ext-aquamarine);
+    --badge-sp-bg:   var(--md-sys-color-ext-info-container);
+    --badge-sp-text: var(--md-sys-color-ext-info);
     --shadow-panel:  var(--elevation-high);
     --shadow-card:   var(--elevation-low);
     --radius-lg:     var(--size-border-radius-x8);   /* 16px */
@@ -3604,31 +3351,31 @@
   [data-theme="dark"] .e2ecat-scope{
     /* Переобъявляем те же алиасы: custom property со значением var(...) вычисляется
        на своём элементе, поэтому без повтора остров остался бы в светлой теме. */
-    --bg:            var(--color-background-base);
-    --bg-panel:      var(--color-background-low);
-    --bg-rail:       var(--color-background-base);
-    --bg-hover:      var(--color-background-base-hover);
-    --bg-selected:   var(--color-background-base-selected);
-    --border:        var(--color-divider);
-    --border-strong: var(--color-border);
-    --text:          var(--color-text-active);
-    --text-secondary:var(--color-text-inactive);
-    --text-tertiary: var(--color-text-disabled);
-    --link:          var(--color-text-link);
-    --info-bg:       var(--color-status-info-background);
-    --info-icon:     var(--color-status-info);
-    --danger-bg:     var(--color-status-error-background);
-    --danger-text:   var(--color-status-error);
-    --success-bg:    var(--color-status-success-background);
-    --success-text:  var(--color-status-success);
-    --warn-bg:       var(--color-status-warning-background);
-    --warn-text:     var(--color-status-warning);
-    --badge-cj-bg:   var(--color-accent-magenta-background);
-    --badge-cj-text: var(--color-accent-magenta);
-    --badge-bi-bg:   var(--color-accent-aquamarine-background);
-    --badge-bi-text: var(--color-accent-aquamarine);
-    --badge-sp-bg:   var(--color-status-info-background);
-    --badge-sp-text: var(--color-status-info);
+    --bg:            var(--md-sys-color-surface);
+    --bg-panel:      var(--md-sys-color-surface-container-low);
+    --bg-rail:       var(--md-sys-color-surface);
+    --bg-hover:      color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);
+    --bg-selected:   var(--md-sys-color-secondary-container);
+    --border:        var(--md-sys-color-outline-variant);
+    --border-strong: var(--md-sys-color-outline);
+    --text:          var(--md-sys-color-on-surface);
+    --text-secondary:var(--md-sys-color-on-surface-variant);
+    --text-tertiary: color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent);
+    --link:          var(--md-sys-color-ext-info);
+    --info-bg:       var(--md-sys-color-ext-info-container);
+    --info-icon:     var(--md-sys-color-ext-info);
+    --danger-bg:     var(--md-sys-color-error-container);
+    --danger-text:   var(--md-sys-color-error);
+    --success-bg:    var(--md-sys-color-ext-success-container);
+    --success-text:  var(--md-sys-color-ext-success);
+    --warn-bg:       var(--md-sys-color-ext-warning-container);
+    --warn-text:     var(--md-sys-color-ext-warning);
+    --badge-cj-bg:   var(--md-sys-color-ext-magenta-container);
+    --badge-cj-text: var(--md-sys-color-ext-magenta);
+    --badge-bi-bg:   var(--md-sys-color-ext-aquamarine-container);
+    --badge-bi-text: var(--md-sys-color-ext-aquamarine);
+    --badge-sp-bg:   var(--md-sys-color-ext-info-container);
+    --badge-sp-text: var(--md-sys-color-ext-info);
     /* Тени в тёмной теме глубже уровней M3 — как и у глобального --shadow */
     --shadow-panel:0 20px 60px rgba(0,0,0,.6);
     --shadow-card:0px 2px 10px rgba(0,0,0,.3);
@@ -3660,19 +3407,20 @@
 .e2ecat-scope .iconbtn{width:36px;height:36px;border-radius:var(--radius-sm);border:none;background:transparent;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);position:relative;}
 .e2ecat-scope .iconbtn:hover{background:var(--bg-hover);}
 /* Avatar (docs/components.md) — medium 40×40, круглый, цветовая пара amber */
-.e2ecat-scope .avatar{width:40px;height:40px;border-radius:50%;background:var(--color-status-warning-background);color:var(--color-status-warning);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;border:none;}
+.e2ecat-scope .avatar{width:40px;height:40px;border-radius:50%;background:var(--md-sys-color-ext-warning-container);color:var(--md-sys-color-ext-warning);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;border:none;}
 
 .e2ecat-scope .dot{position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--danger-text);border:1.5px solid var(--bg);}
 
-.e2ecat-scope .dropdown{position:absolute;top:48px;right:0;background:var(--bg-panel);border:1px solid var(--border);border-radius:var(--radius-md);box-shadow:var(--shadow-panel);min-width:220px;padding:8px;z-index:60;}
+.e2ecat-scope .dropdown{position:absolute;top:48px;right:0;background:var(--md-sys-color-surface-container);border:none;border-radius:var(--shape-xs);box-shadow:var(--elevation-medium);min-width:220px;padding:8px;z-index:60;}
 .e2ecat-scope .dropdown-item{padding:9px 10px;border-radius:var(--radius-sm);font-size:14px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
 .e2ecat-scope .dropdown-item:hover{background:var(--bg-hover);}
 .e2ecat-scope .dropdown-title{padding:8px 10px 4px;font-size:12px;color:var(--text-secondary);}
 /* Тот же Switcher из спека, что и .toggle в основном приложении */
-.e2ecat-scope .switch{width:44px;height:24px;border-radius:var(--size-border-radius-x5);background:var(--color-control-background);position:relative;flex:0 0 auto;transition:.15s;}
-.e2ecat-scope .switch.on{background:var(--color-background-brand);}
-.e2ecat-scope .switch::after{content:"";position:absolute;top:4px;left:4px;width:16px;height:16px;border-radius:50%;background:var(--color-background-white);transition:.15s;box-shadow:var(--elevation-low);}
-.e2ecat-scope .switch.on::after{left:24px;}
+.e2ecat-scope .switch{width:52px;height:32px;border-radius:var(--shape-full);background:var(--md-sys-color-surface-container-highest);border:2px solid var(--md-sys-color-outline);position:relative;flex:0 0 auto;transition:.15s;box-sizing:border-box;}
+.e2ecat-scope .switch.on{background:var(--md-sys-color-primary);border-color:var(--md-sys-color-primary);}
+.e2ecat-scope .switch::after{content:"";position:absolute;top:6px;left:6px;width:16px;height:16px;border-radius:50%;background:var(--md-sys-color-outline);transition:.15s;}
+/* Включённая ручка по спеке крупнее (24) и красится on-primary */
+.e2ecat-scope .switch.on::after{left:22px;top:2px;width:24px;height:24px;background:var(--md-sys-color-on-primary);}
 
 .e2ecat-scope .body-row{flex:1;display:flex;min-height:0;}
 .e2ecat-scope .rail{
@@ -3950,14 +3698,14 @@
 
 /* Тот же Snackbar, что и глобальный .toast — цвета берём из токенов темы,
    инвертирование делает общее правило выше. */
-.e2ecat-scope .toast{position:fixed;left:50%;bottom:var(--size-spacing-x9);transform:translateX(-50%);background:var(--color-background-base);color:var(--color-text-active);padding:var(--size-spacing-x4) var(--size-spacing-x2) var(--size-spacing-x4) var(--size-spacing-x4);border-radius:var(--size-border-radius-x6);font-size:14px;box-shadow:var(--elevation-high);z-index:120;display:flex;align-items:center;gap:var(--size-spacing-x4);}
+.e2ecat-scope .toast{position:fixed;left:50%;bottom:var(--size-spacing-x9);transform:translateX(-50%);background:var(--md-sys-color-surface);color:var(--md-sys-color-on-surface);padding:var(--size-spacing-x4) var(--size-spacing-x2) var(--size-spacing-x4) var(--size-spacing-x4);border-radius:var(--size-border-radius-x6);font-size:14px;box-shadow:var(--elevation-high);z-index:120;display:flex;align-items:center;gap:var(--size-spacing-x4);}
 
 .e2ecat-scope ::-webkit-scrollbar{width:10px;height:10px;}
 .e2ecat-scope ::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:6px;}
 .e2ecat-scope ::-webkit-scrollbar-track{background:transparent;}
 /* diagram color tokens (from the second, small <style> block in the source file) */
 /* Палитра схем — из токенов темы, поэтому тёмная версия получается сама */
-.e2ecat-scope{ --diagram-line:var(--color-text-inactive); --diagram-text:var(--color-text-active); --diagram-box:var(--color-background-secondary); --diagram-boxb:var(--color-divider); }
+.e2ecat-scope{ --diagram-line:var(--md-sys-color-on-surface-variant); --diagram-text:var(--md-sys-color-on-surface); --diagram-box:var(--md-sys-color-surface-container-low); --diagram-boxb:var(--md-sys-color-outline-variant); }
 
 
 </style>
@@ -9540,7 +9288,7 @@ function GraphCanvasPage(){
               <button class="graph-canvas-ctrl-btn" data-action="graph-zoom-fit" title="Вписать в экран">${icon("minimize")}</button>
             </div>
             <div style="position:relative;">
-              <button class="graph-canvas-ctrl-btn standalone ${g.exportMenuOpen?"active":""}" data-action="graph-toggle-export-menu" title="Экспорт">${icon("download")}</button>
+              <button class="graph-canvas-ctrl-btn standalone ${g.exportMenuOpen?"active":""}" data-action="graph-toggle-export-menu" title="Экспорт">${icon("upload")}</button>
               ${g.exportMenuOpen ? `
                 <div class="graph-export-menu">
                   <div class="graph-export-menu-item" data-action="graph-export" data-format="png">${icon("download")} PNG</div>
@@ -12536,7 +12284,7 @@ function UseCaseDetailPage(projectId, ucId){
       <span class="badge gray uc-branch-badge" title="Ветка, состав которой показан на странице">${icon("gitBranch")}${escapeHtml(u.branch)}</span>
       <div class="actions">
         <div class="uc-menu-wrap">
-          <button class="btn btn-outline btn-icon-only" data-action="toggle-popover" data-popover="uc-export" title="Экспорт">${icon("download")}</button>
+          <button class="btn btn-outline btn-icon-only" data-action="toggle-popover" data-popover="uc-export" title="Экспорт">${icon("upload")}</button>
           ${state.popover==="uc-export" ? `
             <div class="uc-menu">
               <div class="uc-menu-item" data-action="export-uc" data-format="puml" data-id="${p.id}" data-uc="${u.id}"><span class="txt">Экспорт в PUML</span></div>
@@ -13098,14 +12846,14 @@ function hldDiagramSvg(systems){
   const dots = nodes.map(n=>`
     <g>
       <title>${escapeHtml(n.name)}</title>
-      <circle cx="${n.x}" cy="${n.y}" r="30" fill="${n.isNew?'var(--orange-bg)':'var(--bg-alt)'}" stroke="${n.isNew?'var(--color-status-warning)':'var(--border-strong)'}" stroke-width="1.5"/>
+      <circle cx="${n.x}" cy="${n.y}" r="30" fill="${n.isNew?'var(--orange-bg)':'var(--bg-alt)'}" stroke="${n.isNew?'var(--md-sys-color-ext-warning)':'var(--border-strong)'}" stroke-width="1.5"/>
       <text x="${n.x}" y="${n.y+4}" text-anchor="middle" font-size="10.5" font-weight="600" fill="var(--text)">${escapeHtml(n.name.length>10?n.name.slice(0,9)+"…":n.name)}</text>
     </g>
   `).join("");
   return `<svg viewBox="0 0 920 260" style="width:100%;height:auto;display:block;">
     ${lines}
     <circle cx="${center.x}" cy="${center.y}" r="38" fill="var(--yellow)"/>
-    <text x="${center.x}" y="${center.y+4}" text-anchor="middle" font-size="11" font-weight="500" fill="var(--color-text-black-active)">Решение</text>
+    <text x="${center.x}" y="${center.y+4}" text-anchor="middle" font-size="11" font-weight="500" fill="var(--md-sys-color-on-primary)">Решение</text>
     ${dots}
   </svg>`;
 }
