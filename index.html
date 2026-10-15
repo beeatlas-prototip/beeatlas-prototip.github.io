@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261015-141949">
+<meta name="beeatlas-build" content="20261015-144634">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -170,170 +170,202 @@
      карта «роль → тон» описана в самом генераторе. */
   :root, [data-theme="light"]{
     /* роли M3: светлая */
-    --md-sys-color-primary: #ecc300;
-    --md-sys-color-on-primary: #3b2f00;
-    --md-sys-color-primary-container: #ffe17a;
-    --md-sys-color-on-primary-container: #231b00;
-    --md-sys-color-inverse-primary: #ecc300;
-    --md-sys-color-primary-fixed: #ffe17a;
-    --md-sys-color-primary-fixed-dim: #ecc300;
-    --md-sys-color-on-primary-fixed: #231b00;
-    --md-sys-color-on-primary-fixed-variant: #554500;
-    --md-sys-color-secondary: #6b5d2f;
-    --md-sys-color-on-secondary: #ffffff;
-    --md-sys-color-secondary-container: #f5e1a7;
-    --md-sys-color-on-secondary-container: #231b00;
-    --md-sys-color-secondary-fixed: #f5e1a7;
-    --md-sys-color-secondary-fixed-dim: #d8c68d;
-    --md-sys-color-on-secondary-fixed: #231b00;
-    --md-sys-color-on-secondary-fixed-variant: #524619;
-    --md-sys-color-tertiary: #386846;
-    --md-sys-color-on-tertiary: #ffffff;
-    --md-sys-color-tertiary-container: #b9efc3;
-    --md-sys-color-on-tertiary-container: #00210d;
-    --md-sys-color-tertiary-fixed: #b9efc3;
-    --md-sys-color-tertiary-fixed-dim: #9ed3a9;
-    --md-sys-color-on-tertiary-fixed: #00210d;
-    --md-sys-color-on-tertiary-fixed-variant: #1f5030;
-    --md-sys-color-error: #a73830;
-    --md-sys-color-on-error: #ffffff;
-    --md-sys-color-error-container: #ffdad6;
-    --md-sys-color-on-error-container: #410002;
-    --md-sys-color-background: #faf9fd;
-    --md-sys-color-on-background: #1b1b1f;
-    --md-sys-color-surface: #faf9fd;
-    --md-sys-color-on-surface: #1b1b1f;
-    --md-sys-color-surface-dim: #dbd9dd;
-    --md-sys-color-surface-bright: #faf9fd;
+    --md-sys-color-primary: #fdd835;
+    --md-sys-color-on-primary: rgba(9, 11, 22, 0.94);
+    --md-sys-color-primary-container: #fdc435;
+    --md-sys-color-on-primary-container: rgba(9, 11, 22, 0.94);
+    --md-sys-color-inverse-primary: #fdd835;
+    --md-sys-color-primary-fixed: #fdc435;
+    --md-sys-color-primary-fixed-dim: #fdd835;
+    --md-sys-color-on-primary-fixed: rgba(9, 11, 22, 0.94);
+    --md-sys-color-on-primary-fixed-variant: rgba(9, 11, 22, 0.94);
+    --md-sys-color-surface: #ffffff;
+    --md-sys-color-on-surface: rgba(9, 11, 22, 0.94);
+    --md-sys-color-background: #ffffff;
+    --md-sys-color-on-background: rgba(9, 11, 22, 0.94);
     --md-sys-color-surface-container-lowest: #ffffff;
-    --md-sys-color-surface-container-low: #f4f3f7;
-    --md-sys-color-surface-container: #efedf1;
-    --md-sys-color-surface-container-high: #e9e7ec;
-    --md-sys-color-surface-container-highest: #e3e2e6;
-    --md-sys-color-inverse-surface: #2f3033;
-    --md-sys-color-inverse-on-surface: #f2f0f4;
+    --md-sys-color-surface-container-low: #ffffff;
+    --md-sys-color-surface-container: #ffffff;
+    --md-sys-color-surface-container-high: #ffffff;
+    --md-sys-color-surface-container-highest: #f9f9f9;
+    --md-sys-color-surface-dim: #f9f9f9;
+    --md-sys-color-surface-bright: #ffffff;
+    --md-sys-color-surface-variant: #f9f9f9;
+    --md-sys-color-on-surface-variant: rgba(25, 28, 52, 0.7);
+    --md-sys-color-inverse-surface: #121212;
+    --md-sys-color-inverse-on-surface: #ffffff;
+    --md-sys-color-outline: rgba(25, 28, 52, 0.18);
+    --md-sys-color-outline-variant: rgba(25, 28, 52, 0.12);
+    --md-sys-color-error: #ff5555;
+    --md-sys-color-on-error: #ffffff;
+    --md-sys-color-error-container: #ffecef;
+    --md-sys-color-on-error-container: #8a0014;
     --md-sys-color-shadow: #000000;
     --md-sys-color-scrim: #000000;
-    --md-sys-color-surface-variant: #e0e2ec;
-    --md-sys-color-on-surface-variant: #44474e;
-    --md-sys-color-outline: #74777f;
-    --md-sys-color-outline-variant: #c4c6d0;
-    --md-sys-color-surface-tint: #ecc300;
-    --md-sys-color-ext-success: #296b2a;
+    --md-sys-color-secondary: rgba(25, 28, 52, 0.7);
+    --md-sys-color-on-secondary: #ffffff;
+    --md-sys-color-secondary-container: #f9f9f9;
+    --md-sys-color-on-secondary-container: rgba(9, 11, 22, 0.94);
+    --md-sys-color-tertiary: #7e00ed;
+    --md-sys-color-on-tertiary: #ffffff;
+    --md-sys-color-tertiary-container: #f3e7fe;
+    --md-sys-color-on-tertiary-container: #7e00ed;
+    --md-sys-color-ext-success: #2ca853;
+    --md-sys-color-ext-success-container: #e7f6eb;
+    --md-sys-color-ext-warning: #ff9419;
+    --md-sys-color-ext-warning-container: #fff4e1;
+    --md-sys-color-ext-info: #1a73e8;
+    --md-sys-color-ext-info-container: #e3f2ff;
+    --md-sys-color-ext-teal: #00adc7;
+    --md-sys-color-ext-teal-container: #e0f7fb;
+    --md-sys-color-ext-purple: #7e00ed;
+    --md-sys-color-ext-purple-container: #f3e7fe;
+    --md-sys-color-ext-magenta: #bc00b8;
+    --md-sys-color-ext-magenta-container: #fae4f7;
+    --md-sys-color-ext-aquamarine: #1ebeaa;
+    --md-sys-color-ext-aquamarine-container: #e1f5f0;
+    --md-sys-color-ext-lemon: #fdd835;
+    --md-sys-color-ext-lemon-container: #fff7d7;
+    --md-sys-color-on-ext-success: #ffffff;
+    --md-sys-color-on-ext-success-container: #004d1f;
+    --md-sys-color-on-ext-warning: #ffffff;
+    --md-sys-color-on-ext-warning-container: #653600;
+    --md-sys-color-on-ext-info: #ffffff;
+    --md-sys-color-on-ext-info-container: #00408a;
+    --md-sys-color-on-ext-teal: #ffffff;
+    --md-sys-color-on-ext-teal-container: #004955;
+    --md-sys-color-on-ext-purple: #ffffff;
+    --md-sys-color-on-ext-purple-container: #5c00b1;
+    --md-sys-color-on-ext-magenta: #ffffff;
+    --md-sys-color-on-ext-magenta-container: #7a0077;
+    --md-sys-color-on-ext-aquamarine: #ffffff;
+    --md-sys-color-on-ext-aquamarine-container: #004b42;
+    --md-sys-color-on-ext-lemon: #ffffff;
+    --md-sys-color-on-ext-lemon-container: #4f4100;
+    --md-sys-color-secondary-fixed: #f7e1a6;
+    --md-sys-color-secondary-fixed-dim: #dac58c;
+    --md-sys-color-on-secondary-fixed: #241a00;
+    --md-sys-color-on-secondary-fixed-variant: #544519;
+    --md-sys-color-tertiary-fixed: #bcefc0;
+    --md-sys-color-tertiary-fixed-dim: #a1d3a6;
+    --md-sys-color-on-tertiary-fixed: #00210a;
+    --md-sys-color-on-tertiary-fixed-variant: #22502d;
+    --md-sys-color-surface-tint: #ffd244;
     --md-sys-color-ext-on-success: #ffffff;
-    --md-sys-color-ext-success-container: #acf4a2;
-    --md-sys-color-ext-on-success-container: #002203;
-    --md-sys-color-ext-warning: #865300;
+    --md-sys-color-ext-on-success-container: #00460b;
     --md-sys-color-ext-on-warning: #ffffff;
-    --md-sys-color-ext-warning-container: #ffddb8;
-    --md-sys-color-ext-on-warning-container: #2b1700;
-    --md-sys-color-ext-info: #0b61a4;
+    --md-sys-color-ext-on-warning-container: #563400;
     --md-sys-color-ext-on-info: #ffffff;
-    --md-sys-color-ext-info-container: #d2e4ff;
-    --md-sys-color-ext-on-info-container: #001c37;
-    --md-sys-color-ext-teal: #00696c;
+    --md-sys-color-ext-on-info-container: #003d6c;
     --md-sys-color-ext-on-teal: #ffffff;
-    --md-sys-color-ext-teal-container: #64f7fc;
-    --md-sys-color-ext-on-teal-container: #002021;
-    --md-sys-color-ext-purple: #5354ad;
+    --md-sys-color-ext-on-teal-container: #004345;
     --md-sys-color-ext-on-purple: #ffffff;
-    --md-sys-color-ext-purple-container: #e1dfff;
-    --md-sys-color-ext-on-purple-container: #090269;
-    --md-sys-color-ext-magenta: #844592;
+    --md-sys-color-ext-on-purple-container: #2f2f87;
     --md-sys-color-ext-on-magenta: #ffffff;
-    --md-sys-color-ext-magenta-container: #fdd6ff;
-    --md-sys-color-ext-on-magenta-container: #340042;
-    --md-sys-color-ext-aquamarine: #006c50;
+    --md-sys-color-ext-on-magenta-container: #5d206c;
     --md-sys-color-ext-on-aquamarine: #ffffff;
-    --md-sys-color-ext-aquamarine-container: #7df9cb;
-    --md-sys-color-ext-on-aquamarine-container: #002116;
-    --md-sys-color-ext-lemon: #715c00;
+    --md-sys-color-ext-on-aquamarine-container: #004432;
     --md-sys-color-ext-on-lemon: #ffffff;
-    --md-sys-color-ext-lemon-container: #ffe17a;
-    --md-sys-color-ext-on-lemon-container: #231b00;
+    --md-sys-color-ext-on-lemon-container: #483a00;
   }
   [data-theme="dark"]{
     /* роли M3: тёмная */
-    --md-sys-color-primary: #ecc300;
-    --md-sys-color-on-primary: #3b2f00;
-    --md-sys-color-primary-container: #554500;
-    --md-sys-color-on-primary-container: #ffe17a;
-    --md-sys-color-inverse-primary: #715c00;
-    --md-sys-color-primary-fixed: #ffe17a;
-    --md-sys-color-primary-fixed-dim: #ecc300;
-    --md-sys-color-on-primary-fixed: #231b00;
-    --md-sys-color-on-primary-fixed-variant: #554500;
-    --md-sys-color-secondary: #d8c68d;
-    --md-sys-color-on-secondary: #3a2f05;
-    --md-sys-color-secondary-container: #524619;
-    --md-sys-color-on-secondary-container: #f5e1a7;
-    --md-sys-color-secondary-fixed: #f5e1a7;
-    --md-sys-color-secondary-fixed-dim: #d8c68d;
-    --md-sys-color-on-secondary-fixed: #231b00;
-    --md-sys-color-on-secondary-fixed-variant: #524619;
-    --md-sys-color-tertiary: #9ed3a9;
-    --md-sys-color-on-tertiary: #02391b;
-    --md-sys-color-tertiary-container: #1f5030;
-    --md-sys-color-on-tertiary-container: #b9efc3;
-    --md-sys-color-tertiary-fixed: #b9efc3;
-    --md-sys-color-tertiary-fixed-dim: #9ed3a9;
-    --md-sys-color-on-tertiary-fixed: #00210d;
-    --md-sys-color-on-tertiary-fixed-variant: #1f5030;
-    --md-sys-color-error: #ffb4ab;
-    --md-sys-color-on-error: #660607;
-    --md-sys-color-error-container: #87201b;
-    --md-sys-color-on-error-container: #ffdad6;
-    --md-sys-color-background: #121316;
-    --md-sys-color-on-background: #e3e2e6;
-    --md-sys-color-surface: #121316;
-    --md-sys-color-on-surface: #e3e2e6;
-    --md-sys-color-surface-dim: #121316;
-    --md-sys-color-surface-bright: #38393c;
-    --md-sys-color-surface-container-lowest: #0d0e11;
-    --md-sys-color-surface-container-low: #1b1b1f;
-    --md-sys-color-surface-container: #1f1f23;
-    --md-sys-color-surface-container-high: #292a2d;
-    --md-sys-color-surface-container-highest: #343538;
-    --md-sys-color-inverse-surface: #e3e2e6;
-    --md-sys-color-inverse-on-surface: #2f3033;
-    --md-sys-color-shadow: #000000;
-    --md-sys-color-scrim: #000000;
-    --md-sys-color-surface-variant: #44474e;
-    --md-sys-color-on-surface-variant: #c4c6d0;
-    --md-sys-color-outline: #8e9099;
-    --md-sys-color-outline-variant: #44474e;
-    --md-sys-color-surface-tint: #ecc300;
-    --md-sys-color-ext-success: #91d888;
+    --md-sys-color-primary: #fdd835;
+    --md-sys-color-on-primary: rgba(9, 11, 22, 0.94);
+    --md-sys-color-primary-container: #fdc435;
+    --md-sys-color-on-primary-container: rgba(9, 11, 22, 0.94);
+    --md-sys-color-inverse-primary: #fdd835;
+    --md-sys-color-primary-fixed: #fdc435;
+    --md-sys-color-primary-fixed-dim: #fdd835;
+    --md-sys-color-on-primary-fixed: rgba(9, 11, 22, 0.94);
+    --md-sys-color-on-primary-fixed-variant: rgba(9, 11, 22, 0.94);
+    --md-sys-color-surface: #141414;
+    --md-sys-color-on-surface: rgba(255, 255, 255, 0.87);
+    --md-sys-color-background: #141414;
+    --md-sys-color-on-background: rgba(255, 255, 255, 0.87);
+    --md-sys-color-surface-container-lowest: #ffffff;
+    --md-sys-color-surface-container-low: #212121;
+    --md-sys-color-surface-container: #2e2f33;
+    --md-sys-color-surface-container-high: #36383c;
+    --md-sys-color-surface-container-highest: #36383c;
+    --md-sys-color-surface-dim: #36383c;
+    --md-sys-color-surface-bright: #141414;
+    --md-sys-color-surface-variant: #36383c;
+    --md-sys-color-on-surface-variant: rgba(255, 255, 255, 0.6);
+    --md-sys-color-inverse-surface: #e0e0e0;
+    --md-sys-color-inverse-on-surface: rgba(9, 11, 22, 0.94);
+    --md-sys-color-outline: rgba(255, 255, 255, 0.48);
+    --md-sys-color-outline-variant: rgba(255, 255, 255, 0.2);
+    --md-sys-color-error: #f37678;
+    --md-sys-color-on-error: #ffffff;
+    --md-sys-color-error-container: #371313;
+    --md-sys-color-on-error-container: #7e1e25;
+    --md-sys-color-shadow: #ffffff;
+    --md-sys-color-scrim: #ffffff;
+    --md-sys-color-secondary: rgba(255, 255, 255, 0.6);
+    --md-sys-color-on-secondary: #141414;
+    --md-sys-color-secondary-container: #36383c;
+    --md-sys-color-on-secondary-container: rgba(255, 255, 255, 0.87);
+    --md-sys-color-tertiary: #b16cf9;
+    --md-sys-color-on-tertiary: #ffffff;
+    --md-sys-color-tertiary-container: #27113a;
+    --md-sys-color-on-tertiary-container: #b16cf9;
+    --md-sys-color-ext-success: #78ce8e;
+    --md-sys-color-ext-success-container: #10301a;
+    --md-sys-color-ext-warning: #ffbd55;
+    --md-sys-color-ext-warning-container: #3d392a;
+    --md-sys-color-ext-info: #5cb5ff;
+    --md-sys-color-ext-info-container: #132338;
+    --md-sys-color-ext-teal: #4dd0e7;
+    --md-sys-color-ext-teal-container: #123035;
+    --md-sys-color-ext-purple: #b16cf9;
+    --md-sys-color-ext-purple-container: #27113a;
+    --md-sys-color-ext-magenta: #df59d1;
+    --md-sys-color-ext-magenta-container: #370f37;
+    --md-sys-color-ext-aquamarine: #30d7c2;
+    --md-sys-color-ext-aquamarine-container: #18302b;
+    --md-sys-color-ext-lemon: #fdd835;
+    --md-sys-color-ext-lemon-container: #494635;
+    --md-sys-color-on-ext-success: #ffffff;
+    --md-sys-color-on-ext-success-container: #004d24;
+    --md-sys-color-on-ext-warning: #ffffff;
+    --md-sys-color-on-ext-warning-container: #5c3c00;
+    --md-sys-color-on-ext-info: #ffffff;
+    --md-sys-color-on-ext-info-container: #00456f;
+    --md-sys-color-on-ext-teal: #ffffff;
+    --md-sys-color-on-ext-teal-container: #004954;
+    --md-sys-color-on-ext-purple: #ffffff;
+    --md-sys-color-on-ext-purple-container: #6009a6;
+    --md-sys-color-on-ext-magenta: #ffffff;
+    --md-sys-color-on-ext-magenta-container: #7a0075;
+    --md-sys-color-on-ext-aquamarine: #ffffff;
+    --md-sys-color-on-ext-aquamarine-container: #004b43;
+    --md-sys-color-on-ext-lemon: #ffffff;
+    --md-sys-color-on-ext-lemon-container: #4f4100;
+    --md-sys-color-secondary-fixed: #f7e1a6;
+    --md-sys-color-secondary-fixed-dim: #dac58c;
+    --md-sys-color-on-secondary-fixed: #241a00;
+    --md-sys-color-on-secondary-fixed-variant: #544519;
+    --md-sys-color-tertiary-fixed: #bcefc0;
+    --md-sys-color-tertiary-fixed-dim: #a1d3a6;
+    --md-sys-color-on-tertiary-fixed: #00210a;
+    --md-sys-color-on-tertiary-fixed-variant: #22502d;
+    --md-sys-color-surface-tint: #ffd244;
     --md-sys-color-ext-on-success: #003908;
-    --md-sys-color-ext-success-container: #0b5314;
     --md-sys-color-ext-on-success-container: #acf4a2;
-    --md-sys-color-ext-warning: #ffb960;
     --md-sys-color-ext-on-warning: #472a00;
-    --md-sys-color-ext-warning-container: #653e00;
     --md-sys-color-ext-on-warning-container: #ffddb8;
-    --md-sys-color-ext-info: #a0c9ff;
     --md-sys-color-ext-on-info: #003259;
-    --md-sys-color-ext-info-container: #00497f;
     --md-sys-color-ext-on-info-container: #d2e4ff;
-    --md-sys-color-ext-teal: #3edae0;
     --md-sys-color-ext-on-teal: #003738;
-    --md-sys-color-ext-teal-container: #004f52;
     --md-sys-color-ext-on-teal-container: #64f7fc;
-    --md-sys-color-ext-purple: #c1c1ff;
     --md-sys-color-ext-on-purple: #23237c;
-    --md-sys-color-ext-purple-container: #3b3c93;
     --md-sys-color-ext-on-purple-container: #e1dfff;
-    --md-sys-color-ext-magenta: #f4aeff;
     --md-sys-color-ext-on-magenta: #501260;
-    --md-sys-color-ext-magenta-container: #6a2c78;
     --md-sys-color-ext-on-magenta-container: #fdd6ff;
-    --md-sys-color-ext-aquamarine: #5fdcb0;
     --md-sys-color-ext-on-aquamarine: #003828;
-    --md-sys-color-ext-aquamarine-container: #00513c;
     --md-sys-color-ext-on-aquamarine-container: #7df9cb;
-    --md-sys-color-ext-lemon: #e6c442;
     --md-sys-color-ext-on-lemon: #3b2f00;
-    --md-sys-color-ext-lemon-container: #554500;
     --md-sys-color-ext-on-lemon-container: #ffe17a;
   }
 
@@ -367,15 +399,15 @@
     --yellow-hover:     color-mix(in srgb, var(--md-sys-color-on-primary) 8%, var(--md-sys-color-primary));
     --blue:             var(--md-sys-color-ext-info);
     --green-bg:         var(--md-sys-color-ext-success-container);
-    --green-text:       var(--md-sys-color-ext-success);
+    --green-text:       var(--md-sys-color-on-ext-success-container);
     --gray-bg:          var(--md-sys-color-surface-container-highest);
     --gray-text:        var(--md-sys-color-on-surface-variant);
     --orange-bg:        var(--md-sys-color-ext-warning-container);
-    --orange-text:      var(--md-sys-color-ext-warning);
+    --orange-text:      var(--md-sys-color-on-ext-warning-container);
     --blue-bg:          var(--md-sys-color-ext-info-container);
-    --blue-text:        var(--md-sys-color-ext-info);
+    --blue-text:        var(--md-sys-color-on-ext-info-container);
     --red-bg:           var(--md-sys-color-error-container);
-    --red-text:         var(--md-sys-color-error);
+    --red-text:         var(--md-sys-color-on-error-container);
     --pink-bg:          var(--md-sys-color-ext-magenta-container);
     --pink-text:        var(--md-sys-color-ext-magenta);
     --input-bg:         var(--md-sys-color-surface-container-highest);
@@ -563,7 +595,7 @@
   .navtext{white-space:normal;line-height:18px;}
   .navitem:hover{background:color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);}
   .navitem.active{
-    color:var(--md-sys-color-on-surface);background:var(--md-sys-color-secondary-container);
+    color:var(--md-sys-color-on-surface);background:color-mix(in srgb, var(--md-sys-color-on-surface) 5%, transparent);
     font-weight:500;line-height:20px;
   }
   /* Индикатор: полоса 4px во всю высоту пункта, прижата к левому краю */
@@ -618,7 +650,7 @@
   .home-chip-row{display:flex;gap:var(--space-3);flex-wrap:wrap;margin-bottom:var(--space-9);}
   .home-chip{border:1px solid var(--border-strong);border-radius:var(--size-border-radius-x15);height:32px;display:inline-flex;align-items:center;padding:var(--space-2) var(--space-5);font-size:15px;color:var(--text-secondary);white-space:nowrap;cursor:pointer;background:var(--bg);}
   .home-chip:hover{background:var(--bg-alt);}
-  .home-chip.active{background:var(--yellow);border-color:var(--yellow);color:rgba(0,0,0,.87);font-weight:600;}
+  .home-chip.active{background:var(--yellow);border-color:var(--yellow);color:var(--md-sys-color-on-primary);}
   .home-h2{font-size:20px;margin:0 0 var(--space-5);}
   .home-sec-head{margin-bottom:var(--space-5);}
   .home-sec-head .home-h2{margin-bottom:var(--space-1);}
@@ -1061,7 +1093,7 @@
   .ds-select-item.two-line{white-space:normal;}
   .ds-select-item .ds-select-sub{font-size:15px;line-height:20px;color:var(--text-secondary);margin-top:2px;}
   .ds-select-item:hover{background:color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);}
-  .ds-select-item.selected{background:var(--md-sys-color-secondary-container);}
+  .ds-select-item.selected{background:color-mix(in srgb, var(--md-sys-color-on-surface) 5%, transparent);}
   .ds-select-item:active{background:color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);}
 
   /* Banner (docs/components.md): padding 16, радиус 16, иконка 20 с отступом 16,
@@ -1087,8 +1119,8 @@
     border:1px dashed var(--md-sys-color-outline);border-radius:var(--size-border-radius-x6);
     font-size:14px;line-height:20px;letter-spacing:.2px;color:var(--md-sys-color-on-surface);
   }
-  .ds-uploader:hover{background:var(--md-sys-color-secondary-container);}
-  .ds-uploader.drag{border-color:var(--md-sys-color-ext-info);background:var(--md-sys-color-secondary-container);}
+  .ds-uploader:hover{background:color-mix(in srgb, var(--md-sys-color-on-surface) 5%, transparent);}
+  .ds-uploader.drag{border-color:var(--md-sys-color-ext-info);background:color-mix(in srgb, var(--md-sys-color-on-surface) 5%, transparent);}
   .ds-uploader .ds-uploader-link{color:var(--md-sys-color-ext-info);}
   .ds-uploader .ds-uploader-formats{font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--md-sys-color-on-surface-variant);}
 
@@ -1434,7 +1466,7 @@
      ячейку видно уезжающие под неё колонки. Правило стоит ДО ховера, чтобы
      наведение на раскрытую строку всё ещё читалось. */
   .table-scroll tbody tr.exp-open td:first-child{
-    background:linear-gradient(var(--md-sys-color-secondary-container),var(--md-sys-color-secondary-container)), var(--bg);
+    background:linear-gradient(color-mix(in srgb, var(--md-sys-color-on-surface) 5%, transparent),color-mix(in srgb, var(--md-sys-color-on-surface) 5%, transparent)), var(--bg);
   }
   /* Токен ховера полупрозрачный: если положить его на sticky-ячейку одним цветом,
      сквозь неё видно уезжающие под низ ячейки. Кладём его слоем поверх фона страницы. */
@@ -1446,7 +1478,7 @@
      hover строки и selected ячейки складываются. */
   .table-scroll tbody tr.exp-open:hover td:first-child{
     background:linear-gradient(color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent),color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent)),
-               linear-gradient(var(--md-sys-color-secondary-container),var(--md-sys-color-secondary-container)), var(--bg);
+               linear-gradient(color-mix(in srgb, var(--md-sys-color-on-surface) 5%, transparent),color-mix(in srgb, var(--md-sys-color-on-surface) 5%, transparent)), var(--bg);
   }
   /* Таблица прокручивается, поэтому абсолютный тултип обрезался её краем. Внутри
      такой таблицы он позиционируется фиксированно — координаты считает positionCellTooltips(). */
@@ -2405,7 +2437,7 @@
        висела в воздухе и читалась как самостоятельный элемент;
      — дочерние строки выравниваются по тексту в Expandable cell родителя:
        24 падинга ячейки + 22 шеврон + 8 зазор = 54. */
-  tbody tr.exp-open > td{background:var(--md-sys-color-secondary-container);}
+  tbody tr.exp-open > td{background:color-mix(in srgb, var(--md-sys-color-on-surface) 5%, transparent);}
   .exp-detail{position:relative;background:transparent;
     padding:var(--space-5) var(--space-5) var(--space-5) 54px;}
   .exp-detail::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--yellow);}
@@ -2803,7 +2835,7 @@
     font-size:12px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);
   }
   .lp-shot-nav.is-on{
-    color:var(--text);font-weight:500;background:var(--md-sys-color-secondary-container);
+    color:var(--text);font-weight:500;background:color-mix(in srgb, var(--md-sys-color-on-surface) 5%, transparent);
   }
   .lp-shot-nav.is-on::before{
     content:"";position:absolute;left:0;top:4px;bottom:4px;width:4px;
@@ -3282,7 +3314,7 @@
     --bg-panel:      var(--md-sys-color-surface-container-low);
     --bg-rail:       var(--md-sys-color-surface);
     --bg-hover:      color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);
-    --bg-selected:   var(--md-sys-color-secondary-container);
+    --bg-selected:   color-mix(in srgb, var(--md-sys-color-on-surface) 5%, transparent);
     --border:        var(--md-sys-color-outline-variant);
     --border-strong: var(--md-sys-color-outline);
     --text:          var(--md-sys-color-on-surface);
@@ -3301,11 +3333,11 @@
     --warn-bg:       var(--md-sys-color-ext-warning-container);
     --warn-text:     var(--md-sys-color-ext-warning);
     --badge-cj-bg:   var(--md-sys-color-ext-magenta-container);
-    --badge-cj-text: var(--md-sys-color-ext-magenta);
+    --badge-cj-text: var(--md-sys-color-on-ext-magenta-container);
     --badge-bi-bg:   var(--md-sys-color-ext-aquamarine-container);
-    --badge-bi-text: var(--md-sys-color-ext-aquamarine);
+    --badge-bi-text: var(--md-sys-color-on-ext-aquamarine-container);
     --badge-sp-bg:   var(--md-sys-color-ext-info-container);
-    --badge-sp-text: var(--md-sys-color-ext-info);
+    --badge-sp-text: var(--md-sys-color-on-ext-info-container);
     --shadow-panel:  var(--elevation-high);
     --shadow-card:   var(--elevation-low);
     --radius-lg:     var(--size-border-radius-x8);   /* 16px */
@@ -3328,7 +3360,7 @@
     --bg-panel:      var(--md-sys-color-surface-container-low);
     --bg-rail:       var(--md-sys-color-surface);
     --bg-hover:      color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);
-    --bg-selected:   var(--md-sys-color-secondary-container);
+    --bg-selected:   color-mix(in srgb, var(--md-sys-color-on-surface) 5%, transparent);
     --border:        var(--md-sys-color-outline-variant);
     --border-strong: var(--md-sys-color-outline);
     --text:          var(--md-sys-color-on-surface);
@@ -3344,11 +3376,11 @@
     --warn-bg:       var(--md-sys-color-ext-warning-container);
     --warn-text:     var(--md-sys-color-ext-warning);
     --badge-cj-bg:   var(--md-sys-color-ext-magenta-container);
-    --badge-cj-text: var(--md-sys-color-ext-magenta);
+    --badge-cj-text: var(--md-sys-color-on-ext-magenta-container);
     --badge-bi-bg:   var(--md-sys-color-ext-aquamarine-container);
-    --badge-bi-text: var(--md-sys-color-ext-aquamarine);
+    --badge-bi-text: var(--md-sys-color-on-ext-aquamarine-container);
     --badge-sp-bg:   var(--md-sys-color-ext-info-container);
-    --badge-sp-text: var(--md-sys-color-ext-info);
+    --badge-sp-text: var(--md-sys-color-on-ext-info-container);
     /* Тени в тёмной теме глубже обычных — как и у глобального --shadow */
     --shadow-panel:0 20px 60px rgba(0,0,0,.6);
     --shadow-card:0px 2px 10px rgba(0,0,0,.3);
@@ -3380,7 +3412,7 @@
 .e2ecat-scope .iconbtn{width:36px;height:36px;border-radius:var(--radius-sm);border:none;background:transparent;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);position:relative;}
 .e2ecat-scope .iconbtn:hover{background:var(--bg-hover);}
 /* Avatar (docs/components.md) — medium 40×40, круглый, цветовая пара amber */
-.e2ecat-scope .avatar{width:40px;height:40px;border-radius:50%;background:var(--md-sys-color-ext-warning-container);color:var(--md-sys-color-ext-warning);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;border:none;}
+.e2ecat-scope .avatar{width:40px;height:40px;border-radius:50%;background:var(--md-sys-color-ext-warning-container);color:var(--md-sys-color-on-ext-warning-container);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;border:none;}
 
 .e2ecat-scope .dot{position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--danger-text);border:1.5px solid var(--bg);}
 
@@ -3416,7 +3448,7 @@
 .e2ecat-scope .catalog-head{padding:20px 20px 12px;flex:0 0 auto;}
 .e2ecat-scope .catalog-title{font-size:20px;font-weight:700;margin:0 0 16px;}
 .e2ecat-scope .pill-toggle{display:flex;background:var(--bg-hover);border-radius:var(--radius-sm);padding:3px;gap:2px;}
-.e2ecat-scope .pill-toggle button{flex:1;border:none;background:transparent;height:32px;padding:9px 10px;border-radius:var(--size-border-radius-x4);font-size:15px;line-height:20px;font-weight:600;color:var(--text-secondary);}
+.e2ecat-scope .pill-toggle button{flex:1;border:none;background:transparent;padding:9px 10px;border-radius:var(--size-border-radius-x4);font-size:15px;line-height:20px;font-weight:500;color:var(--text-secondary);}
 .e2ecat-scope .pill-toggle button.on{background:var(--bg-panel);color:var(--text);box-shadow:var(--shadow-card);}
 .e2ecat-scope .searchbox{position:relative;margin-top:12px;}
 .e2ecat-scope .searchbox input{
@@ -3500,7 +3532,7 @@
 .e2ecat-scope .impl-lbl{font-size:13px;color:var(--text-secondary);margin-right:4px;}
 .e2ecat-scope .impl-chip{display:inline-flex;align-items:center;gap:6px;max-width:320px;height:32px;padding:0 12px;border-radius:var(--radius-pill);background:var(--bg-hover);color:var(--text);font-size:13px;line-height:16px;cursor:pointer;border:1px solid transparent;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
 .e2ecat-scope .impl-chip:hover{border-color:var(--border);}
-.e2ecat-scope .impl-chip.on{background:var(--accent);color:var(--accent-text);font-weight:600;}
+.e2ecat-scope .impl-chip.on{background:var(--accent);color:var(--accent-text);}
 .e2ecat-scope .impl-chip .ic-src{font-size:10px;opacity:.65;text-transform:uppercase;letter-spacing:.06em;}
 .e2ecat-scope .impl-more{height:32px;padding:0 12px;border-radius:var(--radius-pill);background:transparent;border:1px dashed var(--border);color:var(--link);font-size:13px;cursor:pointer;}
 .e2ecat-scope .impl-meta{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--text-secondary);margin:-8px 0 18px;}
@@ -8999,11 +9031,8 @@ function AcTechTab(app){
   return `
     <div class="filters-row">
       <div class="search-wrap field-with-icon">${icon("search")}<input class="input" id="acTechSearch" placeholder="Название технологии" value="${escapeHtml(ac.techSearch)}"/></div>
-      <div class="select-wrap">
-        <label class="ffield-label" style="opacity:1;">Статус технологии</label>
-        <select class="select" id="acTechStatusSelect">${["Все","Успешно"].map(s=>`<option ${ac.techStatusFilter===s?"selected":""}>${s}</option>`).join("")}</select>
-        ${icon("chevronDown")}
-      </div>
+      ${FilterSelect({id:"ac-tech-status", label:"Статус технологии", value:ac.techStatusFilter,
+        options:["Все","Успешно"], action:"ac-tech-status-set"})}
       <div style="display:flex;align-items:center;gap:var(--space-3);">
         <div class="toggle ${ac.techKiOnly?"on":""}" data-action="ac-toggle-tech-ki"><div class="knob"></div></div>
         <span style="font-size:14px;">Допустимо КИ</span>
@@ -9074,11 +9103,8 @@ function AcPatternsTab(app){
   return `
     <div class="filters-row">
       <div class="search-wrap field-with-icon">${icon("search")}<input class="input" id="acPatternSearch" placeholder="Название паттерна" value="${escapeHtml(ac.patternSearch)}"/></div>
-      <div class="select-wrap">
-        <label class="ffield-label" style="opacity:1;">Тип паттерна</label>
-        <select class="select" id="acPatternTypeSelect">${["Все","Успешно"].map(s=>`<option ${ac.patternTypeFilter===s?"selected":""}>${s}</option>`).join("")}</select>
-        ${icon("chevronDown")}
-      </div>
+      ${FilterSelect({id:"ac-pattern-type", label:"Тип паттерна", value:ac.patternTypeFilter,
+        options:["Все","Успешно"], action:"ac-pattern-type-set"})}
       ${ResetFiltersButton("ac-reset-patterns", !!(state.appcat.patternSearch || state.appcat.patternTypeFilter!=="Все"))}
     </div>
     <div class="table-wrap">
@@ -9107,11 +9133,8 @@ function AcNfrTab(app){
   return `
     <div class="filters-row">
       <div class="search-wrap field-with-icon">${icon("search")}<input class="input" id="acNfrSearch" placeholder="Название или код требования" value="${escapeHtml(ac.nfrSearch)}"/></div>
-      <div class="select-wrap">
-        <label class="ffield-label" style="opacity:1;">Источник</label>
-        <select class="select" id="acNfrSourceSelect">${["Все","Информационная безопасность","Надежность"].map(s=>`<option ${ac.nfrSourceFilter===s?"selected":""}>${s}</option>`).join("")}</select>
-        ${icon("chevronDown")}
-      </div>
+      ${FilterSelect({id:"ac-nfr-source", label:"Источник", value:ac.nfrSourceFilter,
+        options:["Все","Информационная безопасность","Надежность"], action:"ac-nfr-source-set"})}
       ${ResetFiltersButton("ac-reset-nfr", !!(state.appcat.nfrSearch || state.appcat.nfrSourceFilter!=="Все"))}
       <button class="btn btn-primary" data-action="noop-doc">Кнопка</button>
     </div>
@@ -9806,12 +9829,8 @@ function GraphAddNodeOverlay(){
         <h2 style="margin-bottom:var(--space-2);">Добавить ноду</h2>
         <div style="color:var(--text-secondary);font-size:12px;margin-bottom:var(--space-6);">Крепится к «${escapeHtml(anchor.label)}»</div>
 
-        <div class="field-block nfield">
-          <select class="select" id="ganTypeSelect">
-            ${options.map(o=>`<option value="${o.code}" ${st.draft.typeCode===o.code?"selected":""}>${escapeHtml(o.name)}</option>`).join("")}
-          </select>
-          <label class="ffield-label">Тип</label>
-        </div>
+        <div class="field-block">${FilterSelect({id:"gan-type", label:"Тип", value:st.draft.typeCode,
+          options:options.map(o=>({value:o.code, label:o.name})), action:"graph-add-node-type"})}</div>
         <div class="field-block">${FField({id:"ganName", label:"Имя экземпляра", value:st.draft.name})}</div>
         ${type ? Object.entries(type.attributes).map(([k,label])=>`
           <div class="field-block">${FField({id:"ganAttr-"+k, label, value:st.draft.attributes[k]||"", dataAttrs:{"gan-attr":k}})}</div>
@@ -9855,26 +9874,16 @@ function GraphAddRelOverlay(){
         <h2 style="margin-bottom:var(--space-2);">Добавить связь</h2>
         <div style="color:var(--text-secondary);font-size:12px;margin-bottom:var(--space-6);">От «${escapeHtml(anchor.label)}»</div>
 
-        <div class="field-block nfield">
-          <select class="select" id="garTypeSelect">
-            ${options.map(o=>`<option value="${o.code}" ${st.draft.typeCode===o.code?"selected":""}>${escapeHtml(o.name)}</option>`).join("")}
-          </select>
-          <label class="ffield-label">Тип связи</label>
-        </div>
-        <div class="field-block nfield">
-          <select class="select" id="garRoleSelect">
-            ${type && type.nodePairs.some(p=>p.from===anchor.type) ? `<option value="from" ${anchorRole==="from"?"selected":""}>«${escapeHtml(anchor.label)}» → другой элемент</option>` : ""}
-            ${type && type.nodePairs.some(p=>p.to===anchor.type) ? `<option value="to" ${anchorRole==="to"?"selected":""}>другой элемент → «${escapeHtml(anchor.label)}»</option>` : ""}
-          </select>
-          <label class="ffield-label">Направление</label>
-        </div>
-        <div class="field-block nfield">
-          <select class="select" id="garOtherSelect">
-            <option value="">Выбрать элемент</option>
-            ${otherOptions.map(o=>`<option value="${o.id}" ${st.draft.otherId===o.id?"selected":""}>${escapeHtml(o.label)} (${escapeHtml(o.type)})</option>`).join("")}
-          </select>
-          <label class="ffield-label">Второй элемент</label>
-        </div>
+        <div class="field-block">${FilterSelect({id:"gar-type", label:"Тип связи", value:st.draft.typeCode,
+          options:options.map(o=>({value:o.code, label:o.name})), action:"graph-add-rel-type"})}</div>
+        <div class="field-block">${FilterSelect({id:"gar-role", label:"Направление", value:anchorRole,
+          options:[
+            ...(type && type.nodePairs.some(p=>p.from===anchor.type) ? [{value:"from", label:`«${escapeHtml(anchor.label)}» → другой элемент`}] : []),
+            ...(type && type.nodePairs.some(p=>p.to===anchor.type) ? [{value:"to", label:`другой элемент → «${escapeHtml(anchor.label)}»`}] : []),
+          ], action:"graph-add-rel-role"})}</div>
+        <div class="field-block">${FilterSelect({id:"gar-other", label:"Элемент", value:st.draft.otherId,
+          placeholder:"Выбрать элемент",
+          options:otherOptions.map(o=>({value:o.id, label:`${o.label} (${o.type})`})), action:"graph-add-rel-other"})}</div>
         ${type ? Object.entries(type.attributes).map(([k,label])=>`
           <div class="field-block">${FField({id:"garAttr-"+k, label, value:st.draft.attributes[k]||"", dataAttrs:{"gar-attr":k}})}</div>
         `).join("") : ""}
@@ -10000,42 +10009,16 @@ function CjFiltersPanel(){
           <div class="toggle ${f.withGrafana?"on":""}" data-action="cj-toggle-with-grafana"><div class="knob"></div></div>
           <span>Показать CJ с дашбордами в Grafana</span>
         </div>
-        <div class="field-block nfield">
-          <select class="select" id="cjFilterProductSelect">
-            <option value="">Все</option>
-            ${productOptions.map(p=>`<option value="${escapeHtml(p)}" ${f.product===p?"selected":""}>${escapeHtml(p)}</option>`).join("")}
-          </select>
-          <label class="ffield-label">Продукт</label>
-        </div>
-        <div class="field-block nfield">
-          <select class="select" id="cjFilterStatusSelect">
-            <option value="">Все</option>
-            <option value="Опубликован" ${f.status==="Опубликован"?"selected":""}>Опубликован</option>
-            <option value="Черновик" ${f.status==="Черновик"?"selected":""}>Черновик</option>
-          </select>
-          <label class="ffield-label">Статус</label>
-        </div>
-        <div class="field-block nfield">
-          <select class="select" id="cjFilterFormatSelect">
-            <option value="">Все</option>
-            ${CJ_FILTER_FORMAT_OPTIONS.map(t=>`<option value="${t}" ${f.format===t?"selected":""}>${t}</option>`).join("")}
-          </select>
-          <label class="ffield-label">Формат</label>
-        </div>
-        <div class="field-block nfield">
-          <select class="select" id="cjFilterChannelSelect">
-            <option value="">Все</option>
-            ${channelOptions.map(c=>`<option value="${escapeHtml(c)}" ${f.channel===c?"selected":""}>${escapeHtml(c)}</option>`).join("")}
-          </select>
-          <label class="ffield-label">Канал</label>
-        </div>
-        <div class="field-block nfield">
-          <select class="select" id="cjFilterTypeSelect">
-            <option value="">Все</option>
-            ${CJ_FILTER_TYPE_OPTIONS.map(t=>`<option value="${t}" ${f.type===t?"selected":""}>${t}</option>`).join("")}
-          </select>
-          <label class="ffield-label">Тип</label>
-        </div>
+        ${FilterSelect({id:"cj-filter-product", label:"Продукт", value:f.product || "Все",
+          options:["Все", ...productOptions], action:"cj-filter-product-set"})}
+        ${FilterSelect({id:"cj-filter-status", label:"Статус", value:f.status || "Все",
+          options:["Все","Опубликован","Черновик"], action:"cj-filter-status-set"})}
+        ${FilterSelect({id:"cj-filter-format", label:"Формат", value:f.format || "Все",
+          options:["Все", ...CJ_FILTER_FORMAT_OPTIONS], action:"cj-filter-format-set"})}
+        ${FilterSelect({id:"cj-filter-channel", label:"Канал", value:f.channel || "Все",
+          options:["Все", ...channelOptions], action:"cj-filter-channel-set"})}
+        ${FilterSelect({id:"cj-filter-type", label:"Тип", value:f.type || "Все",
+          options:["Все", ...CJ_FILTER_TYPE_OPTIONS], action:"cj-filter-type-set"})}
       </div>
       <div class="side-foot">
         <button class="btn btn-outline" data-action="cj-reset-filters">Сбросить</button>
@@ -10480,7 +10463,10 @@ function DsSelect({id, value, placeholder, options, action, dataAttrs}){
 function FilterSelect({id, label, value, options, action, placeholder, dataAttrs}){
   const open = state.popover===id;
   const attrs = Object.entries(dataAttrs||{}).map(([k,v])=>`data-${k}="${escapeHtml(String(v))}"`).join(" ");
-  const shown = value || placeholder || "";
+  /* Опция — строка либо пара {value, label}: в метамодели подпись и код разные */
+  const opts = (options||[]).map(o => typeof o === "string" ? {value:o, label:o} : o);
+  const current = opts.find(o => o.value === value);
+  const shown = (current ? current.label : value) || placeholder || "";
   return `
     <div class="select-wrap${open?" open":""}${value?"":" placeholder"}">
       <label class="ffield-label" style="opacity:1;">${escapeHtml(label)}</label>
@@ -10488,7 +10474,7 @@ function FilterSelect({id, label, value, options, action, placeholder, dataAttrs
       ${icon("chevronDown")}
       ${open ? `
         <div class="ds-select-menu" style="top:100%;left:0;">
-          ${options.map(o=>`<div class="ds-select-item${o===value?" selected":""}" data-action="${action}" ${attrs} data-value="${escapeHtml(o)}" title="${escapeHtml(o)}">${escapeHtml(o)}</div>`).join("")}
+          ${opts.map(o=>`<div class="ds-select-item${o.value===value?" selected":""}" data-action="${action}" ${attrs} data-value="${escapeHtml(o.value)}" title="${escapeHtml(o.label)}">${escapeHtml(o.label)}</div>`).join("")}
         </div>` : ""}
     </div>
   `;
@@ -15408,11 +15394,7 @@ document.addEventListener("change", function(e){
     const part = state.ucWizard && state.ucWizard.data.parts.find(x=>x.id===e.target.dataset.id);
     if(part){ part[e.target.dataset.partField] = e.target.value; render(); }
   }
-  else if(e.target.id==="cjFilterProductSelect"){ state.cjFilters.product = e.target.value; render(); }
-  else if(e.target.id==="cjFilterStatusSelect"){ state.cjFilters.status = e.target.value; render(); }
-  else if(e.target.id==="cjFilterFormatSelect"){ state.cjFilters.format = e.target.value; render(); }
-  else if(e.target.id==="cjFilterTypeSelect"){ state.cjFilters.type = e.target.value; render(); }
-  else if(e.target.id==="cjFilterChannelSelect"){ state.cjFilters.channel = e.target.value; render(); }
+
   else if(e.target.id==="ucWizFileInput"){
     const f = e.target.files && e.target.files[0];
     if(f && state.ucWizard){ state.ucWizard.data.file = {name:f.name, size:f.size}; render(); }
@@ -15421,19 +15403,7 @@ document.addEventListener("change", function(e){
     const f = e.target.files && e.target.files[0];
     if(f && state.cjCreatePanel){ state.cjCreatePanel.bpmnFile = f.name; render(); }
   }
-  else if(e.target.id==="acTechStatusSelect"){ state.appcat.techStatusFilter = e.target.value; render(); }
-  else if(e.target.id==="acPatternTypeSelect"){ state.appcat.patternTypeFilter = e.target.value; render(); }
-  else if(e.target.id==="acNfrSourceSelect"){ state.appcat.nfrSourceFilter = e.target.value; render(); }
-  else if(e.target.id==="ganTypeSelect"){ state.graph.addNode.draft.typeCode = e.target.value; state.graph.addNode.draft.attributes = {}; render(); }
-  else if(e.target.id==="garTypeSelect"){
-    state.graph.addRel.draft.typeCode = e.target.value;
-    state.graph.addRel.draft.anchorRole = null;
-    state.graph.addRel.draft.otherId = "";
-    state.graph.addRel.draft.attributes = {};
-    render();
-  }
-  else if(e.target.id==="garRoleSelect"){ state.graph.addRel.draft.anchorRole = e.target.value; state.graph.addRel.draft.otherId = ""; render(); }
-  else if(e.target.id==="garOtherSelect"){ state.graph.addRel.draft.otherId = e.target.value; render(); }
+
   else if(e.target.dataset.pairIdx!==undefined){ state.graph.typeEditor.draft.nodePairs[+e.target.dataset.pairIdx][e.target.dataset.pairField] = e.target.value; render(); }
 });
 
@@ -15901,6 +15871,34 @@ function handleAction(action, el){
     case "uc-source-filter-set": state.ucSourceFilter = el.dataset.value; state.popover=null; render(); break;
     case "uc-status-filter-set": state.ucStatusFilter = el.dataset.value; state.popover=null; render(); break;
     case "proj-status-filter-set": state.statusFilter = el.dataset.value; state.popover=null; render(); break;
+    case "graph-add-node-type":
+      state.graph.addNode.draft.typeCode = el.dataset.value;
+      state.graph.addNode.draft.attributes = {};
+      state.popover=null; render(); break;
+    case "graph-add-rel-type":
+      /* Смена типа связи обнуляет направление и второй элемент: допустимые пары
+         у нового типа свои, и прежний выбор мог стать несуществующим. */
+      state.graph.addRel.draft.typeCode = el.dataset.value;
+      state.graph.addRel.draft.anchorRole = null;
+      state.graph.addRel.draft.otherId = "";
+      state.graph.addRel.draft.attributes = {};
+      state.popover=null; render(); break;
+    case "graph-add-rel-role":
+      state.graph.addRel.draft.anchorRole = el.dataset.value;
+      state.graph.addRel.draft.otherId = "";
+      state.popover=null; render(); break;
+    case "graph-add-rel-other":
+      state.graph.addRel.draft.otherId = el.dataset.value;
+      state.popover=null; render(); break;
+    case "ac-tech-status-set":   state.appcat.techStatusFilter  = el.dataset.value; state.popover=null; render(); break;
+    case "ac-pattern-type-set":  state.appcat.patternTypeFilter = el.dataset.value; state.popover=null; render(); break;
+    case "ac-nfr-source-set":    state.appcat.nfrSourceFilter   = el.dataset.value; state.popover=null; render(); break;
+    /* «Все» в фильтрах CJ значит «без ограничения» — храним пустую строку */
+    case "cj-filter-product-set": state.cjFilters.product = el.dataset.value==="Все"?"":el.dataset.value; state.popover=null; render(); break;
+    case "cj-filter-status-set":  state.cjFilters.status  = el.dataset.value==="Все"?"":el.dataset.value; state.popover=null; render(); break;
+    case "cj-filter-format-set":  state.cjFilters.format  = el.dataset.value==="Все"?"":el.dataset.value; state.popover=null; render(); break;
+    case "cj-filter-channel-set": state.cjFilters.channel = el.dataset.value==="Все"?"":el.dataset.value; state.popover=null; render(); break;
+    case "cj-filter-type-set":    state.cjFilters.type    = el.dataset.value==="Все"?"":el.dataset.value; state.popover=null; render(); break;
     case "open-hub-interface": showToast(`Переход в карточку интерфейса «${el.dataset.call}» в Хабе приложений — вне периметра прототипа`); break;
     case "open-uc-impl":
       state.implTab = "source";
