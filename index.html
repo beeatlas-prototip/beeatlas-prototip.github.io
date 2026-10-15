@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261015-173040">
+<meta name="beeatlas-build" content="20261015-181423">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -494,7 +494,7 @@
     position:relative;
     z-index:20;
   }
-  .brand{display:flex;align-items:center;gap:var(--space-3);font-weight:700;font-size:20px;white-space:nowrap;}
+  .brand{display:flex;align-items:center;gap:var(--space-3);font-weight:700;font-size:20px;line-height:28px;white-space:nowrap;}
   .header-spacer{flex:1;}
   /* Шапка: gap 30 — расстояние между ЗОНАМИ правой части (виджеты, иконочные
      кнопки, аватар), а не между каждым элементом. Внутри зон шаг мельче, иначе
@@ -537,7 +537,7 @@
     border-radius:var(--size-border-radius-x6); box-shadow:var(--elevation-medium);
     padding:var(--size-spacing-x2) 0; min-width:220px; z-index:50; font-size:14px;
   }
-  .popover .pv-title{font-weight:600;margin-bottom:var(--space-2);padding:0 var(--size-spacing-x4);}
+  .popover .pv-title{font-weight:500;margin-bottom:var(--space-2);padding:0 var(--size-spacing-x4);}
   .popover .pv-muted{color:var(--text-secondary);padding:0 var(--size-spacing-x4);}
   .popover .pv-item{
     display:flex;align-items:center;min-height:46px;
@@ -659,7 +659,7 @@
   .home-chip{border:1px solid var(--border-strong);border-radius:var(--size-border-radius-x15);height:32px;display:inline-flex;align-items:center;padding:var(--space-2) var(--space-5);font-size:15px;color:var(--text-secondary);white-space:nowrap;cursor:pointer;background:var(--bg);}
   .home-chip:hover{background:var(--bg-alt);}
   .home-chip.active{background:var(--yellow);border-color:var(--yellow);color:var(--md-sys-color-on-primary);}
-  .home-h2{font-size:20px;margin:0 0 var(--space-5);}
+  .home-h2{font-size:20px;line-height:28px;margin:0 0 var(--space-5);}
   .home-sec-head{margin-bottom:var(--space-5);}
   .home-sec-head .home-h2{margin-bottom:var(--space-1);}
   .home-sec-sub{color:var(--text-secondary);font-size:15px;line-height:20px;letter-spacing:.2px;}
@@ -1417,8 +1417,8 @@
   .table-wrap > table tbody tr:last-child td:last-child,
   .table-wrap-fit > table tbody tr:last-child td:last-child,
   .table-scroll > table tbody tr:last-child td:last-child{border-bottom-right-radius:var(--size-border-radius-x6);}
-  /* Таблица: тело 15/18, шапка 15/20 весом 500, отступ ячейки 17/18 × 24 */
-  table{width:100%;border-collapse:collapse;font-size:15px;font-weight:400;line-height:18px;letter-spacing:.2px;}
+  /* Таблица: тело 15/20, шапка 15/20 весом 500, отступ ячейки 17 × 24 — docs/components.md */
+  table{width:100%;border-collapse:collapse;font-size:15px;font-weight:400;line-height:20px;letter-spacing:.2px;}
   thead th{
     text-align:left;font-weight:500;font-size:15px;line-height:20px;letter-spacing:.2px;color:var(--text);
     padding:18px var(--size-spacing-x6);
@@ -2004,7 +2004,7 @@
   .search-result-card.selected,
   .search-result-card.selected:hover{border-color:var(--yellow);background:var(--bg-alt);}
   .search-result-card .tag{font-size:13px;color:var(--text-secondary);margin-bottom:var(--space-1);}
-  .search-result-card .name{color:var(--blue);font-weight:600;font-size:15px;margin-bottom:var(--space-1);}
+  .search-result-card .name{color:var(--blue);font-weight:500;font-size:15px;margin-bottom:var(--space-1);}
   .search-result-card .code{color:var(--text-secondary);font-size:13px;}
   .search-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:var(--space-9) var(--space-3);color:var(--text);gap:var(--space-4);}
   /* Progress indicator, circle standart: 44×44, толщина 6, трек — divider */
@@ -2100,7 +2100,7 @@
   .cj-card-title{color:var(--blue);font-weight:700;font-size:17px;margin-bottom:var(--space-1);}
   .cj-card-code{color:var(--text-secondary);font-size:13px;margin-bottom:var(--space-3);}
   .cj-card-desc{font-size:13px;color:var(--text-secondary);line-height:1.5;margin-bottom:var(--space-4);}
-  .cj-card-desc .more-link{color:var(--blue);font-weight:600;display:block;margin-top:var(--space-1);}
+  .cj-card-desc .more-link{color:var(--blue);font-weight:500;display:block;margin-top:var(--space-1);}
   .cj-card-field{font-size:13px;color:var(--text-secondary);margin-bottom:var(--space-1);}
   .cj-card-field-val{font-size:13px;color:var(--text);margin-bottom:var(--space-3);line-height:1.4;}
   .cj-card-tags{display:flex;flex-wrap:wrap;gap:var(--space-2);margin-bottom:var(--space-4);}
@@ -2243,7 +2243,7 @@
   .cj-merge-info-cards{display:flex;align-items:stretch;gap:var(--space-3);margin-top:var(--space-5);}
   .cj-merge-info-card{flex:1;border:1px solid var(--border);border-radius:var(--radius-sm);padding:var(--space-4);}
   .cj-merge-info-card .hd{font-weight:700;font-size:13px;display:flex;align-items:baseline;gap:6px;}
-  .cj-merge-info-card .hd .sub{font-size:10px;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.03em;}
+  .cj-merge-info-card .hd .sub{font-size:10px;font-weight:500;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.03em;}
   .cj-merge-info-card .upd{font-size:13px;color:var(--text-secondary);margin-top:var(--space-2);}
   .cj-merge-strategy{display:flex;flex-direction:column;gap:var(--space-3);}
   .cj-merge-strategy-card{border:1px solid var(--border-strong);border-radius:var(--radius-sm);padding:var(--space-4);cursor:pointer;}
@@ -2251,7 +2251,7 @@
   .cj-merge-strategy-card .d{font-size:13px;color:var(--text-secondary);line-height:1.45;}
   .cj-merge-strategy-card.active{border-color:var(--yellow);background:var(--bg-alt);}
   .cj-merge-conflict-box{margin-top:var(--space-5);border:1px solid var(--red-text);background:var(--red-bg);border-radius:var(--radius-sm);padding:var(--space-4);}
-  .cj-merge-conflict-box .t{display:flex;align-items:flex-start;gap:var(--space-2);font-weight:600;font-size:13px;color:var(--red-text);}
+  .cj-merge-conflict-box .t{display:flex;align-items:flex-start;gap:var(--space-2);font-weight:500;font-size:13px;color:var(--red-text);}
   .cj-merge-conflict-box ul{margin:var(--space-3) 0 0;padding-left:34px;font-size:13px;color:var(--text);line-height:1.6;}
   .cj-merge-conflict-box .hint{margin-top:var(--space-3);padding-left:34px;font-size:13px;color:var(--text-secondary);}
 
@@ -2279,7 +2279,7 @@
   /* стратегия объединения — радио-карточки (Radiobutton: жёлтая точка у выбранной) */
   .cj-merge-strategy-card.radio{display:flex;align-items:flex-start;gap:var(--space-4);border-color:var(--border);}
   .cj-merge-strategy-card.radio .dot{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border-strong);flex:0 0 auto;display:flex;align-items:center;justify-content:center;margin-top:2px;}
-  .cj-merge-strategy-card.radio .t{font-size:15px;line-height:20px;font-weight:600;margin-bottom:var(--space-1);}
+  .cj-merge-strategy-card.radio .t{font-size:15px;line-height:20px;font-weight:500;margin-bottom:var(--space-1);}
   .cj-merge-strategy-card.radio .d{font-size:13px;line-height:18px;}
   .cj-merge-strategy-card.radio.active{border-color:var(--yellow);background:transparent;}
   .cj-merge-strategy-card.radio.active .dot{border-color:var(--yellow);}
@@ -2295,7 +2295,7 @@
   /* Progress indicator, circle small: 20×20, толщина 3, трек — divider */
   .mini-spinner{box-sizing:border-box;width:20px;height:20px;border-radius:50%;border:3px solid var(--md-sys-color-outline-variant);border-top-color:var(--yellow);animation:spin .8s linear infinite;flex:0 0 auto;}
   .cj-branch-lock-badge,.cj-merge-running-banner{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-secondary);}
-  .cj-merge-running-banner{font-weight:600;color:var(--text);}
+  .cj-merge-running-banner{font-weight:500;color:var(--text);}
 
   .cj-matrix-wrap{flex:1;min-height:0;overflow:auto;}
   /* CSS grid (not independent flex columns) so every row's height stays in sync across
@@ -2338,7 +2338,7 @@
   .cj-scenario-chip .ic svg{width:18px;height:18px;}
   .cj-scenario-chip .ic .ic{width:18px;height:18px;}
   .cj-scenario-chip .txt{flex:1;min-width:0;}
-  .cj-scenario-chip .txt .n{font-size:13px;font-weight:600;}
+  .cj-scenario-chip .txt .n{font-size:13px;font-weight:500;}
   .cj-scenario-chip .txt .id{font-size:13px;color:var(--text-secondary);}
   .cj-scenario-chip .pencil{width:26px;height:26px;border-radius:var(--size-border-radius-x4);display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);flex:0 0 auto;}
   .cj-scenario-chip .pencil:hover{background:var(--bg-alt);color:var(--text);}
@@ -2363,7 +2363,7 @@
   .cj-source-badge .dot.e2e{background:var(--md-sys-color-ext-magenta);}
   .cj-source-badge .lbl{flex:1;min-width:0;font-size:13px;}
   .cj-source-badge .lbl .t{color:var(--text-secondary);font-size:13px;}
-  .cj-source-badge .lbl .n{font-weight:600;font-size:13px;}
+  .cj-source-badge .lbl .n{font-weight:500;font-size:13px;}
   .cj-source-badge.add{border-style:dashed;background:transparent;}
   .cj-source-badge.add svg{color:var(--blue);}
   .cj-source-badge.add .ic{color:var(--blue);}
@@ -2392,7 +2392,7 @@
   .readonly-note{display:flex;align-items:center;gap:var(--space-2);font-size:13px;color:var(--text-secondary);}
   .readonly-note svg{width:18px;height:18px;flex:0 0 auto;}
   .readonly-note .ic{width:18px;height:18px;flex:0 0 auto;}
-  .readonly-note a{color:var(--blue);font-weight:600;}
+  .readonly-note a{color:var(--blue);font-weight:500;}
   .cj-call-edit-group{border:1px solid var(--border);border-radius:10px;padding:var(--space-4);margin-bottom:var(--space-4);}
   .cj-call-edit-group:last-child{margin-bottom:0;}
   .cj-call-edit-title{font-size:13px;font-weight:700;margin-bottom:var(--space-3);}
@@ -2411,17 +2411,26 @@
 
   /* ============================= APP CATALOG ============================= */
   .ac-tree{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
-  .ac-tree-row{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-4) var(--space-5);cursor:pointer;border-bottom:1px solid var(--border);font-size:15px;font-weight:600;}
+  .ac-tree-row{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-4) var(--space-5);cursor:pointer;border-bottom:1px solid var(--border);font-size:15px;font-weight:500;}
   .ac-tree-row:last-child{border-bottom:none;}
   .ac-tree-row:hover{background:var(--bg-hover);}
   .ac-tree-row.lvl-1{padding-left:var(--space-5);}
   .ac-tree-row.lvl-2{padding-left:var(--space-8);font-weight:500;}
   .ac-tree-row .chev{width:18px;height:18px;flex:0 0 auto;color:var(--text-tertiary);transition:transform .12s;}
   .ac-tree-row .chev.open{transform:rotate(90deg);}
-  .ac-tree-body{border-bottom:1px solid var(--border);background:var(--bg-alt);}
+  /* Уровни таблицы по docs/components.md: раскрытая строка — заливка Base Selected,
+   вложенный уровень заливки НЕ меняет, его начало и конец отбивает жёлтая полоса,
+   прижатая к краю. Отступ 22 добавляет к 24 падинга ячейки ровно столько, чтобы
+   текст колонки встал под текстом родителя (20 падинг + 18 шеврон + 8 зазор = 46).
+   Нижней границы у раскрытой строки нет: её роль берёт верхняя граница вложенного
+   блока — иначе две линии вставали вплотную и читались двойным разделителем. */
+.ac-tree-row.is-open{background:color-mix(in srgb, var(--md-sys-color-on-surface) 5%, transparent);border-bottom:none;}
+.ac-tree-body{position:relative;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:transparent;padding-left:22px;}
+.ac-tree-body::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--yellow);}
+.ac-tree > :last-child{border-bottom:none;}
   .ac-tree-body:last-child{border-bottom:none;}
-  .ac-tree-body .table-wrap{border:none;border-radius:0;border-top:1px solid var(--border);}
-  .ac-tree-body table{background:var(--bg);}
+  .ac-tree-body .table-wrap{border:none;border-radius:0;}
+  .ac-tree-body table{background:transparent;}
 
   .exp-row-btn{width:22px;height:22px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);cursor:pointer;border-radius:6px;}
   .exp-row-btn:hover{background:var(--bg-hover);}
@@ -2463,12 +2472,12 @@
 
 
   .tc-card{border:1px solid var(--border);border-radius:var(--radius);padding:var(--space-5);display:flex;flex-direction:column;gap:var(--space-3);}
-  .tc-card .tc-title{color:var(--blue);font-weight:600;font-size:15px;line-height:1.35;cursor:pointer;}
+  .tc-card .tc-title{color:var(--blue);font-weight:500;font-size:15px;line-height:1.35;cursor:pointer;}
   .tc-card .tc-title:hover{text-decoration:underline;}
   .tc-card .tc-code{font-size:13px;color:var(--text-secondary);}
   .tc-card .tc-domain-lbl{font-size:13px;color:var(--text-secondary);}
   .tc-card .tc-domain-val{font-size:13px;color:var(--blue);}
-  .tc-card .tc-methods-head{display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-weight:600;font-size:15px;border-top:1px solid var(--border);padding-top:var(--space-3);}
+  .tc-card .tc-methods-head{display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-weight:500;font-size:15px;border-top:1px solid var(--border);padding-top:var(--space-3);}
   .tc-card .tc-methods-head svg{width:18px;height:18px;color:var(--text-tertiary);transition:transform .12s;}
   .tc-card .tc-methods-head .ic{width:18px;height:18px;color:var(--text-tertiary);transition:transform .12s;}
   .tc-card .tc-methods-head.open svg{transform:rotate(180deg);}
@@ -2479,7 +2488,7 @@
   .pipe-run:last-child{border-bottom:none;}
   .pipe-run-row{display:flex;align-items:center;gap:var(--space-3);padding:var(--space-4) var(--space-5);cursor:pointer;}
   .pipe-run-row:hover{background:var(--bg-hover);}
-  .pipe-run-row .name{flex:1;font-size:15px;color:var(--blue);font-weight:600;}
+  .pipe-run-row .name{flex:1;font-size:15px;color:var(--blue);font-weight:500;}
   .pipe-run-row .src{width:160px;font-size:13px;color:var(--text-secondary);}
   .pipe-run-detail{position:relative;padding:var(--space-5) var(--space-6);background:var(--bg-alt);}
   .pipe-run-detail::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--yellow);}
@@ -2503,8 +2512,8 @@
   .obs-tree-row{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-3) var(--space-5);border-bottom:1px solid var(--border);font-size:15px;}
   .obs-tree-row:last-child{border-bottom:none;}
   .obs-tree-row:hover{background:var(--bg-hover);}
-  .obs-tree-row .lbl{flex:1;font-weight:600;}
-  .obs-tree-row.lvl-1 .lbl{font-weight:600;padding-left:var(--space-5);}
+  .obs-tree-row .lbl{flex:1;font-weight:500;}
+  .obs-tree-row.lvl-1 .lbl{font-weight:500;padding-left:var(--space-5);}
   .obs-tree-row.lvl-2 .lbl{font-weight:500;padding-left:var(--space-8);}
   .obs-tree-row .link-col{width:340px;color:var(--blue);}
   .obs-tree-row .edit-btn{width:28px;height:28px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);border-radius:6px;cursor:pointer;}
@@ -2577,13 +2586,13 @@
   .ac-src-suggest-item{padding:var(--space-3) var(--space-4);cursor:pointer;font-size:15px;}
   .ac-src-suggest-item:hover{background:var(--bg-hover);}
   .ac-pattern-tech-cell{display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap;}
-  .ac-more-chip{position:relative;color:var(--blue);font-weight:600;cursor:default;}
+  .ac-more-chip{position:relative;color:var(--blue);font-weight:500;cursor:default;}
   .ac-more-chip:hover .ac-more-pop{display:block;}
   .ac-more-pop{display:none;position:absolute;top:100%;right:0;margin-top:4px;background:var(--md-sys-color-inverse-surface);color:var(--md-sys-color-inverse-on-surface);border-radius:8px;padding:var(--space-3) var(--space-4);font-size:13px;white-space:nowrap;z-index:5;box-shadow:var(--shadow);}
   .ac-more-pop div{padding:2px 0;}
   .ac-crit-row{display:flex;gap:var(--space-9);flex-wrap:wrap;margin-bottom:var(--space-7);}
   .ac-crit-row .lbl{font-size:13px;color:var(--text-secondary);margin-bottom:var(--space-2);}
-  .ac-crit-row .val{font-size:15px;font-weight:600;}
+  .ac-crit-row .val{font-size:15px;font-weight:500;}
   .ac-desc{font-size:15px;line-height:1.5;color:var(--text);}
   .ac-desc-more{color:var(--blue);font-size:13px;cursor:pointer;margin-top:var(--space-2);display:inline-flex;align-items:center;gap:4px;}
   .ac-desc-more svg{width:18px;height:18px;}
@@ -2592,7 +2601,8 @@
   .ac-kv-row{display:grid;grid-template-columns:220px 1fr;gap:var(--space-4);align-items:start;}
   .ac-kv-row .k{font-size:15px;color:var(--text-secondary);}
   .ac-kv-row .v{font-size:15px;}
-  .ac-kv-row .v a, .ac-kv-row .v.link{color:var(--blue);font-weight:600;}
+  /* Ссылка не выделяется весом — её и так отличает цвет. */
+.ac-kv-row .v a, .ac-kv-row .v.link{color:var(--blue);}
 
   .ac-tabs-wrap{position:relative;margin-bottom:var(--space-6);}
   .ac-tabs-track{display:flex;gap:var(--space-7);flex-wrap:nowrap;overflow-x:auto;border-bottom:1px solid var(--border);scrollbar-width:none;-ms-overflow-style:none;}
@@ -2626,7 +2636,7 @@
   .rp-uc-card{padding:var(--space-4) var(--space-5);margin-bottom:0;}
   .rp-uc-card .card-title-row{display:flex;align-items:center;gap:var(--space-3);cursor:pointer;}
   .rp-uc-card .table-wrap{margin-top:var(--space-4);}
-  .rp-uc-name{color:var(--blue);font-weight:600;font-size:15px;}
+  .rp-uc-name{color:var(--blue);font-weight:500;font-size:15px;}
   .rp-uc-code{color:var(--text-secondary);font-size:13px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;flex:1;}
   td.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;color:var(--text-secondary);}
 
@@ -3088,9 +3098,13 @@
   .lp-foot-copy{margin-left:auto;font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);}
   /* Крупное начертание имени продукта в подвале — витринный приём.
      Декорация, поэтому aria-hidden и без собственного смысла. */
+  /* Цвет — подмес текста к полотну, а не --bg-alt: в светлой теме вся лестница
+     поверхностей схлопнута в белый, и знак становился белым по белому. Подмес
+     даёт одинаковый отрыв от фона в обеих темах. */
   .lp-mark{
     margin-top:var(--size-spacing-x10);font-weight:700;line-height:.8;text-align:center;
-    font-size:clamp(88px,26vw,400px);letter-spacing:-.02em;color:var(--bg-alt);user-select:none;
+    font-size:clamp(88px,26vw,400px);letter-spacing:-.02em;user-select:none;
+    color:color-mix(in srgb, var(--text) 8%, transparent);
   }
 
   /* ── Экран входа ──────────────────────────────────────────────────────
@@ -3414,7 +3428,7 @@
 }
 .e2ecat-scope .brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:17px;white-space:nowrap;cursor:pointer;user-select:none;}
 .e2ecat-scope .brand .bee{font-size:17px;}
-.e2ecat-scope .brand .beeatlas{color:var(--text-secondary);font-weight:600;}
+.e2ecat-scope .brand .beeatlas{color:var(--text-secondary);font-weight:500;}
 .e2ecat-scope .topnav{display:flex;gap:28px;align-items:center;height:100%;}
 .e2ecat-scope .topnav a{color:var(--text-secondary);font-size:15px;font-weight:500;height:100%;display:flex;align-items:center;border-bottom:2px solid transparent;white-space:nowrap;}
 .e2ecat-scope .topnav a.active{color:var(--text);border-bottom-color:var(--accent);}
@@ -3460,7 +3474,7 @@
   display:flex;flex-direction:column;min-height:0;
 }
 .e2ecat-scope .catalog-head{padding:20px 20px 12px;flex:0 0 auto;}
-.e2ecat-scope .catalog-title{font-size:20px;font-weight:700;margin:0 0 16px;}
+.e2ecat-scope .catalog-title{font-size:20px;line-height:28px;font-weight:500;margin:0 0 16px;}
 .e2ecat-scope .pill-toggle{display:flex;background:var(--bg-hover);border-radius:var(--radius-sm);padding:3px;gap:2px;}
 .e2ecat-scope .pill-toggle button{flex:1;border:none;background:transparent;padding:9px 10px;border-radius:var(--size-border-radius-x4);font-size:15px;line-height:20px;font-weight:500;color:var(--text-secondary);}
 .e2ecat-scope .pill-toggle button.on{background:var(--bg-panel);color:var(--text);box-shadow:var(--shadow-card);}
@@ -3495,7 +3509,8 @@
 .e2ecat-scope .tree-row .chev.open svg{transform:rotate(90deg);}
 .e2ecat-scope .tree-row .chev.open .ic{transform:rotate(90deg);}
 .e2ecat-scope .tree-row .chev.none{visibility:hidden;}
-.e2ecat-scope .badge{flex:0 0 auto;height:24px;display:inline-flex;align-items:center;font-size:13px;font-weight:800;letter-spacing:.3px;border-radius:var(--size-border-radius-x4);padding:3px 7px;line-height:1;}
+/* Вес 500 по docs/components.md «Бейдж»; было 800 — самое тяжёлое начертание Onest. */
+.e2ecat-scope .badge{flex:0 0 auto;height:24px;display:inline-flex;align-items:center;font-size:13px;font-weight:500;letter-spacing:.3px;border-radius:var(--size-border-radius-x4);padding:3px 7px;line-height:1;}
 .e2ecat-scope .badge.cj{background:var(--badge-cj-bg);color:var(--badge-cj-text);}
 .e2ecat-scope .badge.bi{background:var(--badge-bi-bg);color:var(--badge-bi-text);}
 .e2ecat-scope .badge.sp{background:var(--badge-sp-bg);color:var(--badge-sp-text);}
@@ -3508,7 +3523,7 @@
 
 .e2ecat-scope .flat-row{padding:12px 12px;border-radius:var(--radius-sm);font-size:15px;cursor:pointer;line-height:1.4;}
 .e2ecat-scope .flat-row:hover{background:var(--bg-hover);}
-.e2ecat-scope .flat-row.selected{background:var(--bg-selected);font-weight:600;}
+.e2ecat-scope .flat-row.selected{background:var(--bg-selected);font-weight:500;}
 
 .e2ecat-scope .content{flex:1;min-width:0;overflow-y:auto;background:var(--bg);}
 .e2ecat-scope .content-inner{padding:var(--size-spacing-x8) var(--size-spacing-x8) var(--size-spacing-x10);max-width:1180px;}
@@ -3517,7 +3532,7 @@
 .e2ecat-scope .info-banner svg{flex:0 0 auto;color:var(--info-icon);margin-top:1px;}
 .e2ecat-scope .info-banner .ic{flex:0 0 auto;color:var(--info-icon);margin-top:1px;}
 .e2ecat-scope .info-banner .txt{flex:1;font-size:15px;line-height:1.5;color:var(--text);}
-.e2ecat-scope .info-banner button{flex:0 0 auto;background:var(--bg-panel);border:1px solid var(--border-strong);padding:9px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;white-space:nowrap;}
+.e2ecat-scope .info-banner button{flex:0 0 auto;background:var(--bg-panel);border:1px solid var(--border-strong);padding:9px 16px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;white-space:nowrap;}
 .e2ecat-scope .info-banner button:hover{background:var(--bg-hover);}
 .e2ecat-scope .info-banner.hidden{display:none;}
 
@@ -3530,12 +3545,14 @@
 .e2ecat-scope .crumbs{font-size:15px;margin-bottom:6px;color:var(--text-secondary);}
 .e2ecat-scope .crumbs a{color:var(--link);}
 .e2ecat-scope .crumbs .sep{margin:0 6px;}
-.e2ecat-scope .page-title{font-size:26px;font-weight:700;margin:0 0 4px;}
+/* Интерлиньяж обязателен: body задаёт line-height:18px фиксированно, и
+   заголовок без своего значения наезжал строками при переносе. */
+.e2ecat-scope .page-title{font-size:26px;line-height:32px;font-weight:500;margin:0 0 4px;}
 .e2ecat-scope .page-code{font-size:13px;color:var(--text-secondary);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;margin-bottom:18px;}
 .e2ecat-scope .page-kicker{font-size:13px;color:var(--text-secondary);margin-bottom:2px;}
 
 .e2ecat-scope .tabs{display:flex;gap:28px;border-bottom:1px solid var(--border);margin-bottom:24px;}
-.e2ecat-scope .tab{padding:12px 2px 13px;font-size:15px;font-weight:600;color:var(--text-secondary);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;}
+.e2ecat-scope .tab{padding:12px 2px 13px;font-size:15px;font-weight:500;color:var(--text-secondary);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;}
 .e2ecat-scope .tab:hover{color:var(--text);}
 .e2ecat-scope .tab.on{color:var(--text);border-bottom-color:var(--accent);}
 
@@ -3562,7 +3579,7 @@
 .e2ecat-scope .field .val.link{color:var(--link);cursor:pointer;}
 /* Кнопки карточки стоят в правом нижнем углу — см. docs/components.md. */
 .e2ecat-scope .btnrow{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;}
-.e2ecat-scope .btn{border-radius:var(--radius-sm);padding:10px 16px;font-size:15px;line-height:20px;font-weight:600;border:1px solid var(--border-strong);background:var(--bg-panel);display:inline-flex;align-items:center;gap:8px;white-space:nowrap;}
+.e2ecat-scope .btn{border-radius:var(--radius-sm);padding:10px 16px;font-size:15px;line-height:20px;font-weight:500;border:1px solid var(--border-strong);background:var(--bg-panel);display:inline-flex;align-items:center;gap:8px;white-space:nowrap;}
 /* Со стороны иконки отступ меньше — как в основном слое (docs/components.md) */
 .e2ecat-scope .btn:has(> .ic:first-child, > svg:first-child){padding-left:var(--size-spacing-x4);}
 .e2ecat-scope .btn:has(> .ic:last-child, > svg:last-child){padding-right:var(--size-spacing-x4);}
@@ -3621,7 +3638,7 @@
 
 .e2ecat-scope .related-list{display:flex;flex-direction:column;}
 .e2ecat-scope .related-item{padding:12px 14px;border:1px solid var(--border);border-radius:var(--radius-md);margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
-.e2ecat-scope .related-item a{font-size:15px;font-weight:600;}
+.e2ecat-scope .related-item a{font-size:15px;font-weight:500;}
 .e2ecat-scope .related-item .meta{font-size:13px;color:var(--text-secondary);}
 
 /* side panel */
@@ -3657,9 +3674,9 @@
 .e2ecat-scope .title-edit-row{display:flex;align-items:center;gap:10px;margin-bottom:4px;}
 .e2ecat-scope .iconghost{border:none;background:transparent;color:var(--text-tertiary);width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
 .e2ecat-scope .iconghost:hover{background:var(--bg-hover);color:var(--text);}
-.e2ecat-scope .rename-input{font-size:26px;font-weight:700;border:1px solid var(--accent);border-radius:8px;padding:5px 10px;background:var(--bg-panel);width:100%;max-width:520px;outline:none;}
+.e2ecat-scope .rename-input{font-size:26px;line-height:32px;font-weight:500;border:1px solid var(--accent);border-radius:8px;padding:5px 10px;background:var(--bg-panel);width:100%;max-width:520px;outline:none;}
 .e2ecat-scope .vh-table{width:100%;border-collapse:collapse;}
-.e2ecat-scope .vh-table th{text-align:left;font-size:13px;color:var(--text-secondary);font-weight:600;padding:0 10px 10px;border-bottom:1px solid var(--border);white-space:nowrap;}
+.e2ecat-scope .vh-table th{text-align:left;font-size:13px;color:var(--text-secondary);font-weight:500;padding:0 10px 10px;border-bottom:1px solid var(--border);white-space:nowrap;}
 .e2ecat-scope .vh-table td{padding:12px 10px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle;}
 .e2ecat-scope .vh-table tr:last-child td{border-bottom:none;}
 .e2ecat-scope .vh-table.uc-table{table-layout:fixed;min-width:1120px;}
@@ -3674,7 +3691,7 @@
 .e2ecat-scope .import-head{display:flex;align-items:center;justify-content:space-between;padding:20px 40px;border-bottom:1px solid var(--border);flex:0 0 auto;}
 .e2ecat-scope .import-head h3{margin:0;font-size:17px;font-weight:700;}
 .e2ecat-scope .import-stepper{display:flex;justify-content:center;gap:56px;padding:0 40px;border-bottom:1px solid var(--border);flex:0 0 auto;}
-.e2ecat-scope .import-step{display:flex;align-items:center;gap:10px;padding:16px 2px;border-bottom:2px solid transparent;color:var(--text-secondary);font-size:15px;font-weight:600;margin-bottom:-1px;}
+.e2ecat-scope .import-step{display:flex;align-items:center;gap:10px;padding:16px 2px;border-bottom:2px solid transparent;color:var(--text-secondary);font-size:15px;font-weight:500;margin-bottom:-1px;}
 .e2ecat-scope .import-step .num{width:22px;height:22px;border-radius:50%;background:var(--bg-hover);color:var(--text-secondary);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex:0 0 auto;}
 .e2ecat-scope .import-step.on{color:var(--text);border-bottom-color:var(--accent);}
 .e2ecat-scope .import-step.on .num{background:var(--accent);color:var(--accent-text);}
@@ -3689,14 +3706,14 @@
 .e2ecat-scope .file-card{display:flex;align-items:center;gap:12px;margin-top:14px;padding:4px 0;}
 .e2ecat-scope .file-card .ficon{width:38px;height:38px;border-radius:8px;background:var(--bg-hover);display:flex;align-items:center;justify-content:center;color:var(--text-secondary);flex:0 0 auto;}
 .e2ecat-scope .file-card .fbody{flex:1;min-width:0;}
-.e2ecat-scope .file-card .fname{font-size:15px;font-weight:600;}
+.e2ecat-scope .file-card .fname{font-size:15px;font-weight:500;}
 .e2ecat-scope .file-card .fmeta{font-size:13px;color:var(--text-secondary);margin-top:2px;}
 .e2ecat-scope .file-card .factions{display:flex;gap:4px;flex:0 0 auto;}
 .e2ecat-scope .progress-track{height:4px;border-radius:2px;background:var(--border);margin-top:6px;overflow:hidden;}
 .e2ecat-scope .progress-fill{height:100%;background:var(--link);border-radius:2px;transition:width .2s;}
 .e2ecat-scope .stat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:20px 0 28px;}
 .e2ecat-scope .stat-tile{border:1px solid var(--border);border-radius:var(--radius-md);padding:14px 14px 12px;}
-.e2ecat-scope .stat-tile .num{font-size:26px;font-weight:800;}
+.e2ecat-scope .stat-tile .num{font-size:26px;line-height:32px;font-weight:700;}
 .e2ecat-scope .stat-tile .lbl{font-size:13px;color:var(--text-secondary);margin-top:4px;line-height:1.3;}
 .e2ecat-scope .result-layout{display:flex;gap:40px;align-items:flex-start;}
 .e2ecat-scope .result-main{flex:1;min-width:0;}
@@ -3707,7 +3724,7 @@
 .e2ecat-scope .result-section h4{font-size:15px;font-weight:700;margin:0 0 2px;}
 .e2ecat-scope .result-section .cnt{font-size:13px;color:var(--text-secondary);margin-bottom:10px;}
 .e2ecat-scope .result-table{width:100%;border-collapse:collapse;}
-.e2ecat-scope .result-table th{text-align:left;font-size:13px;color:var(--text-secondary);font-weight:600;padding:0 12px 8px;border-bottom:1px solid var(--border);}
+.e2ecat-scope .result-table th{text-align:left;font-size:13px;color:var(--text-secondary);font-weight:500;padding:0 12px 8px;border-bottom:1px solid var(--border);}
 .e2ecat-scope .result-table td{padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px;}
 .e2ecat-scope .result-table tr:last-child td{border-bottom:none;}
 .e2ecat-scope .result-table td.stat{width:150px;}
@@ -9230,7 +9247,7 @@ function AcSourceEditorOverlay(){
   return `
     <div class="wizard-overlay">
       <div class="wizard-head" style="border-bottom:1px solid var(--border);">
-        <div class="proj-link" style="display:flex;align-items:center;gap:var(--space-2);color:var(--text);font-weight:600;" data-action="ac-close-source-editor">${icon("chevronLeft")} Назад</div>
+        <div class="proj-link" style="display:flex;align-items:center;gap:var(--space-2);color:var(--text);font-weight:500;" data-action="ac-close-source-editor">${icon("chevronLeft")} Назад</div>
       </div>
       <div class="wizard-body">
         <h2 style="margin-bottom:var(--space-6);">${ed.mode==="edit"?"Редактировать источник":"Добавить источник"}</h2>
@@ -9650,7 +9667,7 @@ function GraphCustomNodeCard(inst){
   const t = findNodeType(inst.type);
   return `
     <div class="graph-custom-node-card">
-      <div style="font-weight:600;">${escapeHtml(inst.name)}</div>
+      <div style="font-weight:500;">${escapeHtml(inst.name)}</div>
       <div style="color:var(--text-secondary);font-size:12px;">${escapeHtml(t?t.name:inst.type)}</div>
       <div class="ac-kv" style="margin-top:var(--space-3);">
         ${Object.entries(inst.attributes).map(([k,v])=>`
@@ -9695,7 +9712,7 @@ function GraphTypesPage(){
 function GraphTypeTreeRoot(root, items, isNode){
   const open = !!state.graph.typeTreeExpanded[root.id];
   return `
-    <div class="ac-tree-row lvl-1" data-action="graph-toggle-type-tree" data-id="${root.id}">
+    <div class="ac-tree-row lvl-1 ${open?"is-open":""}" data-action="graph-toggle-type-tree" data-id="${root.id}">
       <span class="chev ${open?"open":""}">${icon("chevronRight")}</span><span>${escapeHtml(root.label)}</span>
       <span class="badge gray" style="margin-left:auto;">${items.length}</span>
     </div>
@@ -9760,7 +9777,7 @@ function GraphTypeEditorOverlay(){
   return `
     <div class="wizard-overlay">
       <div class="wizard-head">
-        <div class="proj-link" style="display:flex;align-items:center;gap:var(--space-2);color:var(--text);font-weight:600;" data-action="graph-close-type-editor">${icon("chevronLeft")} Назад</div>
+        <div class="proj-link" style="display:flex;align-items:center;gap:var(--space-2);color:var(--text);font-weight:500;" data-action="graph-close-type-editor">${icon("chevronLeft")} Назад</div>
       </div>
       <div class="wizard-body">
        <div style="max-width:909px;margin:0 auto;">
@@ -9776,7 +9793,7 @@ function GraphTypeEditorOverlay(){
         </div>
         <div class="field-block">${FTextarea({id:"gteDesc", label:"Описание", value:d.description, rows:70})}</div>
 
-        <div style="font-weight:600;margin-bottom:var(--space-3);">Атрибуты</div>
+        <div style="font-weight:500;margin-bottom:var(--space-3);">Атрибуты</div>
         ${d.attributes.map((a,i)=>`
           <div class="graph-attr-row">
             <input class="input" id="gteAttr-${i}-key" placeholder="Ключ (attr_key)" value="${escapeHtml(a.key)}" data-attr-idx="${i}" data-attr-field="key"/>
@@ -9787,7 +9804,7 @@ function GraphTypeEditorOverlay(){
         <button class="btn btn-outline btn-sm" style="margin-bottom:var(--space-6);" data-action="graph-add-attr">Добавить атрибут</button>
 
         ${isNode ? `
-          <div style="font-weight:600;margin-bottom:var(--space-3);">С кем связывать</div>
+          <div style="font-weight:500;margin-bottom:var(--space-3);">С кем связывать</div>
           <div class="graph-checkbox-list" style="margin-bottom:var(--space-5);">
             ${linkableOptions.map(o=>`
               <div class="graph-checkbox" data-action="graph-toggle-linkable" data-value="${escapeHtml(o)}">
@@ -9796,13 +9813,13 @@ function GraphTypeEditorOverlay(){
             `).join("")}
           </div>
           <div class="field-block">${FField({id:"gteRelType", label:"Название связи (тип ребра Neo4j)", value:d.relationshipType})}</div>
-          <div style="font-weight:600;margin-bottom:var(--space-3);">Направление</div>
+          <div style="font-weight:500;margin-bottom:var(--space-3);">Направление</div>
           <div class="ac-radio-group" style="margin-bottom:var(--space-5);">
             <div class="ac-radio ${d.relationshipDirection==="TO_CUSTOM"?"checked":""}" data-action="graph-set-direction" data-dir="TO_CUSTOM"><div class="dot"></div>Существующая → кастомная</div>
             <div class="ac-radio ${d.relationshipDirection==="FROM_CUSTOM"?"checked":""}" data-action="graph-set-direction" data-dir="FROM_CUSTOM"><div class="dot"></div>Кастомная → существующая</div>
           </div>
         ` : `
-          <div style="font-weight:600;margin-bottom:var(--space-3);">Пары нод (from → to)</div>
+          <div style="font-weight:500;margin-bottom:var(--space-3);">Пары нод (from → to)</div>
           ${d.nodePairs.map((p,i)=>`
             <div class="graph-attr-row">
               <select class="select" data-pair-idx="${i}" data-pair-field="from">
@@ -9839,7 +9856,7 @@ function GraphAddNodeOverlay(){
   return `
     <div class="wizard-overlay">
       <div class="wizard-head">
-        <div class="proj-link" style="display:flex;align-items:center;gap:var(--space-2);color:var(--text);font-weight:600;" data-action="graph-close-add-node">${icon("chevronLeft")} Назад</div>
+        <div class="proj-link" style="display:flex;align-items:center;gap:var(--space-2);color:var(--text);font-weight:500;" data-action="graph-close-add-node">${icon("chevronLeft")} Назад</div>
       </div>
       <div class="wizard-body">
        <div style="max-width:909px;margin:0 auto;">
@@ -9884,7 +9901,7 @@ function GraphAddRelOverlay(){
   return `
     <div class="wizard-overlay">
       <div class="wizard-head">
-        <div class="proj-link" style="display:flex;align-items:center;gap:var(--space-2);color:var(--text);font-weight:600;" data-action="graph-close-add-rel">${icon("chevronLeft")} Назад</div>
+        <div class="proj-link" style="display:flex;align-items:center;gap:var(--space-2);color:var(--text);font-weight:500;" data-action="graph-close-add-rel">${icon("chevronLeft")} Назад</div>
       </div>
       <div class="wizard-body">
        <div style="max-width:909px;margin:0 auto;">
@@ -9977,7 +9994,7 @@ function CjLibraryEmptyState(){
   return `
     <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:var(--space-10) 0;color:var(--text-secondary);">
       <div style="width:56px;height:56px;border-radius:50%;background:var(--bg-alt);display:flex;align-items:center;justify-content:center;margin-bottom:var(--space-5);color:var(--text-tertiary);">${icon("search")}</div>
-      <div style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:var(--space-2);">Нет результатов, подходящих под параметры поиска</div>
+      <div style="font-size:16px;font-weight:500;color:var(--text);margin-bottom:var(--space-2);">Нет результатов, подходящих под параметры поиска</div>
       <div style="font-size:14px;">Попробуй изменить поисковый запрос или сбросить фильтры</div>
     </div>
   `;
@@ -9998,7 +10015,7 @@ function CjTableRow(c){
   return `
     <tr data-action="open-cj" data-id="${c.id}" style="cursor:pointer;">
       <td>
-        <div style="font-weight:600;">${escapeHtml(c.name)}</div>
+        <div style="font-weight:500;">${escapeHtml(c.name)}</div>
         <div style="color:var(--text-secondary);font-size:12px;">${escapeHtml(c.code)}</div>
       </td>
       <td>${escapeHtml(c.app)}</td>
@@ -10173,7 +10190,7 @@ function CjUnfilledStageCell(stageIndex){
 function CjStageFieldCell(stage, key){
   switch(key){
     case "biName": return `<div class="cj-stage-cell">${escapeHtml(stage.biName)}</div>`;
-    case "biId": return `<div class="cj-stage-cell"><span style="color:var(--blue);font-weight:600;">${escapeHtml(stage.biId)}</span></div>`;
+    case "biId": return `<div class="cj-stage-cell"><span style="color:var(--blue);font-weight:500;">${escapeHtml(stage.biId)}</span></div>`;
     case "description": return `<div class="cj-stage-cell wrap">${escapeHtml(stage.description)}</div>`;
     case "characteristic": return `<div class="cj-stage-cell"><span class="badge ${stage.characteristic.c}">${escapeHtml(stage.characteristic.t)}</span></div>`;
     case "lifecycle": return `<div class="cj-stage-cell"><span class="badge ${stage.lifecycle.c}">${escapeHtml(stage.lifecycle.t)}</span></div>`;
@@ -10896,7 +10913,7 @@ function UcMergePanel(){
   return `
     <div class="wizard-overlay">
       <div class="wizard-head">
-        <div class="proj-link" style="display:flex;align-items:center;gap:var(--space-2);color:var(--text);font-weight:600;" data-action="uc-close-merge">${icon("chevronLeft")} Назад</div>
+        <div class="proj-link" style="display:flex;align-items:center;gap:var(--space-2);color:var(--text);font-weight:500;" data-action="uc-close-merge">${icon("chevronLeft")} Назад</div>
       </div>
       <div class="wizard-body">
        <div style="max-width:640px;margin:0 auto;">
@@ -10930,7 +10947,7 @@ function UcMergePanel(){
         </div>
 
         <div class="field-block" style="margin-top:var(--space-5);">
-          <div style="font-weight:600;margin-bottom:var(--space-3);">Стратегия объединения</div>
+          <div style="font-weight:500;margin-bottom:var(--space-3);">Стратегия объединения</div>
           <div class="cj-merge-strategy">
             <div class="cj-merge-strategy-card ${m.strategy==="add"?"active":""}" data-action="uc-merge-set-strategy" data-strategy="add">
               <div class="t">Добавление (add)</div>
@@ -10998,7 +11015,7 @@ function CjBpmnOverlay(){
   return `
     <div class="wizard-overlay">
       <div class="wizard-head">
-        <div class="proj-link" style="display:flex;align-items:center;gap:var(--space-2);color:var(--text);font-weight:600;" data-action="${stage?"cj-bpmn-up":"cj-close-bpmn"}">${icon("chevronLeft")} ${stage?"Назад к процессу":"Назад"}</div>
+        <div class="proj-link" style="display:flex;align-items:center;gap:var(--space-2);color:var(--text);font-weight:500;" data-action="${stage?"cj-bpmn-up":"cj-close-bpmn"}">${icon("chevronLeft")} ${stage?"Назад к процессу":"Назад"}</div>
       </div>
       <div class="wizard-body">
        <div style="max-width:none;">
@@ -11128,7 +11145,7 @@ function CjCreateOverlay(){
   return `
     <div class="wizard-overlay">
       <div class="wizard-head">
-        <div class="proj-link" style="display:flex;align-items:center;gap:var(--space-2);color:var(--text);font-weight:600;" data-action="cj-close-create">${icon("chevronLeft")} Назад</div>
+        <div class="proj-link" style="display:flex;align-items:center;gap:var(--space-2);color:var(--text);font-weight:500;" data-action="cj-close-create">${icon("chevronLeft")} Назад</div>
       </div>
       <div class="wizard-body">
        <div style="max-width:640px;margin:0 auto;">
@@ -11138,7 +11155,7 @@ function CjCreateOverlay(){
           <span>Нельзя менять структуру CJ, добавленного с помощью нотации BPMN, можно менять только расположение атрибутов BI и этапов. Нельзя импортировать CJ из BPMN в ранее собранный CJ в формате Beeatlas.</span>
         </div>
 
-        <div style="font-weight:600;margin-bottom:var(--space-3);">Добавить CJ в bpmn формате</div>
+        <div style="font-weight:500;margin-bottom:var(--space-3);">Добавить CJ в bpmn формате</div>
         ${cp.bpmnFile ? `
           <div class="search-result-card" style="margin-bottom:var(--space-6);">
             ${icon("doc")}
@@ -11168,7 +11185,7 @@ function CjCreateOverlay(){
         <div class="field-block">${FField({id:"cjCreateTags", label:"Теги", value:cp.tags})}</div>
 
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-3);">
-          <div style="font-weight:600;">Технический ответственный</div>
+          <div style="font-weight:500;">Технический ответственный</div>
           <button class="btn btn-outline btn-sm" data-action="cj-add-tech-owner">Добавить</button>
         </div>
         ${cp.techOwners.map((t,i)=>`
@@ -11179,7 +11196,7 @@ function CjCreateOverlay(){
         `).join("")}
 
         <div style="color:var(--text-secondary);font-size:12px;margin-top:var(--space-7);border-top:1px solid var(--border);padding-top:var(--space-5);">
-          <div style="font-weight:600;color:var(--text);margin-bottom:4px;">Обязательные поля для заполнения:</div>
+          <div style="font-weight:500;color:var(--text);margin-bottom:4px;">Обязательные поля для заполнения:</div>
           <div>• Название CJ</div>
           <div>• Владелец сценария</div>
           <div>• Файл в формате bpmn</div>
