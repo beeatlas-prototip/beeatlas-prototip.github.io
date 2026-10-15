@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261015-181423">
+<meta name="beeatlas-build" content="20261015-184902">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -466,9 +466,9 @@
   body{
     margin:0;
     font-family:'Onest',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
-    /* База — body-medium 14/20. Без неё всё, чему размер не задан явно,
-       наследовало дефолт браузера 16px. */
-    font-size:14px;line-height:18px;
+    /* База — body3 15/18 по --font-size-body3. Без неё всё, чему размер не
+       задан явно, наследовало дефолт браузера 16px. */
+    font-size:15px;line-height:18px;
     letter-spacing:.2px;
     background:var(--bg);
     color:var(--text);
@@ -527,7 +527,7 @@
   .avatar{
     width:40px;height:40px;border-radius:50%;background:var(--orange-bg);color:var(--orange-text);
     display:flex;align-items:center;justify-content:center;
-    font-size:14px;font-weight:500;line-height:20px;letter-spacing:.2px;
+    font-size:15px;font-weight:500;line-height:20px;letter-spacing:.2px;
   }
   /* Дропдаун-меню (docs/components.md) — фон background-medium, радиус 12px,
      elevation-medium, вертикальный padding 8, у пунктов высота 46 и padding 16.
@@ -535,7 +535,7 @@
   .popover{
     position:absolute; top:52px; right:0; background:var(--md-sys-color-surface-container);
     border-radius:var(--size-border-radius-x6); box-shadow:var(--elevation-medium);
-    padding:var(--size-spacing-x2) 0; min-width:220px; z-index:50; font-size:14px;
+    padding:var(--size-spacing-x2) 0; min-width:220px; z-index:50; font-size:15px;
   }
   .popover .pv-title{font-weight:500;margin-bottom:var(--space-2);padding:0 var(--size-spacing-x4);}
   .popover .pv-muted{color:var(--text-secondary);padding:0 var(--size-spacing-x4);}
@@ -580,7 +580,7 @@
     display:flex;align-items:center;height:40px;
     /* Разрядка уменьшена с 1.2 до .5 и отступ с 32 до 24:
        на Onest с прежней разрядкой «АРХИТЕКТУРА ПРИЛОЖЕНИЯ» уходила в две строки. */
-    font-size:11px;font-weight:700;letter-spacing:.5px;line-height:16px;color:var(--md-sys-color-on-surface-variant);
+    font-size:10px;font-weight:700;letter-spacing:.5px;line-height:16px;color:var(--md-sys-color-on-surface-variant);
     text-transform:uppercase;padding:var(--size-spacing-x3) var(--size-spacing-x6);margin-bottom:0;
   }
   /* Пункт меню: высота 48, отступ 24, скругление 12 только справа, зазор в списке 4 */
@@ -593,7 +593,7 @@
     color:var(--md-sys-color-on-surface-variant);
     /* letter-spacing здесь 0, а не .2px: Onest шире прежнего шрифта, и на
        разрядке «Аналитический отчет фитнес-функций» уходил в три строки. */
-    font-size:14px;line-height:20px;letter-spacing:0;font-weight:400;
+    font-size:15px;line-height:18px;letter-spacing:0;font-weight:400;
     cursor:pointer;position:relative;
   }
   .navitem + .navitem{margin-top:var(--size-spacing-x1);}
@@ -619,7 +619,7 @@
     background:var(--md-sys-color-inverse-surface);color:var(--md-sys-color-inverse-on-surface);
     padding:var(--size-spacing-x1) var(--size-spacing-x2);
     border-radius:var(--size-border-radius-x4);box-shadow:var(--elevation-high);
-    font-size:12px;line-height:16px;font-weight:400;letter-spacing:.2px;
+    font-size:13px;line-height:16px;font-weight:400;letter-spacing:.2px;
     white-space:nowrap;pointer-events:none;opacity:0;visibility:hidden;transition:opacity .12s ease;
     z-index:60;
   }
@@ -726,7 +726,7 @@
   .home-agent__chips{display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-3);}
   /* Подсказка 12px: на прозрачности .6 пиксельный замер давал 3.75:1 — мелкому
      тексту этого мало, поэтому .8 (замер 5.6:1). */
-  .home-agent__hint{font-size:12px;line-height:16px;letter-spacing:.2px;opacity:.8;}
+  .home-agent__hint{font-size:13px;line-height:16px;letter-spacing:.2px;opacity:.8;}
   .home-agent__chip{border:1px solid color-mix(in srgb, currentColor 28%, transparent);
     background:color-mix(in srgb, currentColor 10%, transparent);
     border-radius:var(--size-border-radius-x15);padding:var(--space-2) var(--space-4);
@@ -869,19 +869,28 @@
   .home-svc-gray{background:var(--gray-bg);color:var(--gray-text);}
 
   /* Хлебные крошки: gap 8, текст body-medium 14/20 */
-  .breadcrumb{display:flex;align-items:center;gap:var(--size-spacing-x2);color:var(--blue);font-size:14px;line-height:20px;letter-spacing:.2px;margin-bottom:var(--space-4);flex-wrap:wrap;}
+  .breadcrumb{display:flex;align-items:center;gap:var(--size-spacing-x2);color:var(--blue);font-size:15px;line-height:18px;letter-spacing:.2px;margin-bottom:var(--space-4);flex-wrap:wrap;}
   .breadcrumb .sep{color:var(--text-tertiary);}
   .breadcrumb .current{color:var(--text-secondary);}
   .breadcrumb a:hover{text-decoration:underline;}
 
   .page-title-row{display:flex;align-items:center;gap:var(--space-4);flex-wrap:wrap;margin-bottom:var(--space-6);}
-  /* Типографика заголовка страницы — headline-small 24/32, вес 500.
+  /* Типографика заголовка страницы — h4 26/32, вес 500.
      Правило на голый h1 нужно потому, что часть страниц рендерит заголовок без обёртки
      .page-title-row (например Каталог приложений) — без него такой h1 получал дефолт
      браузера 32px/700/normal. Отступы не трогаем: они у страниц свои. */
-  h1{font-size:24px;line-height:32px;letter-spacing:.2px;font-weight:500;}
-  /* Подзаголовок страницы: body-medium 14/20, цвет inactive. */
-  .page-lead{font-size:14px;line-height:20px;letter-spacing:.2px;color:var(--text-secondary);margin:var(--space-2) 0 var(--space-6);}
+  h1{font-size:26px;line-height:32px;letter-spacing:.2px;font-weight:500;}
+  /* То же и для h2…h6: правила на них есть только внутри скоупов, и заголовок,
+     выпавший из скоупа, брал браузерный 1.5em — 22.5px при line-height:18px,
+     то есть строки наезжали (так было на фитнес-функциях). База по шкале:
+     h2 — h5, h3 — subtitle1, h4 — h6, h5 — subtitle3, h6 — caption. */
+  h2{font-size:20px;line-height:28px;letter-spacing:.2px;font-weight:500;}
+  h3{font-size:19px;line-height:24px;letter-spacing:.2px;font-weight:500;}
+  h4{font-size:17px;line-height:22px;letter-spacing:.2px;font-weight:500;}
+  h5{font-size:15px;line-height:20px;letter-spacing:.2px;font-weight:500;}
+  h6{font-size:13px;line-height:16px;letter-spacing:.2px;font-weight:500;}
+  /* Подзаголовок страницы: subtitle3 15/22, цвет inactive. */
+  .page-lead{font-size:15px;line-height:22px;letter-spacing:.2px;color:var(--text-secondary);margin:var(--space-2) 0 var(--space-6);}
   .page-lead b{color:var(--text);font-weight:500;}
 
   /* ═══ Страница реализации (R-4, метаданные источника — R-6) ═══════════════
@@ -962,7 +971,7 @@
 
   /* Бейдж: высота 24, форма shape-s, padding 8, текст 14/20 вес 500 */
   .badge{display:inline-flex;align-items:center;gap:var(--size-spacing-x1);height:24px;padding:0 var(--size-spacing-x2);border-radius:var(--size-border-radius-x6);
-    font-size:14px;font-weight:500;line-height:20px;letter-spacing:.2px;white-space:nowrap;}
+    font-size:15px;font-weight:500;line-height:20px;letter-spacing:.2px;white-space:nowrap;}
   .badge svg{width:18px;height:18px;}
   .badge .ic{width:18px;height:18px;}
   .badge.green{background:var(--green-bg);color:var(--green-text);}
@@ -982,7 +991,7 @@
     height:var(--size-control-height-medium);
     border-radius:var(--size-border-radius-x6);border:1px solid transparent;
     padding:0 var(--size-spacing-x6);
-    font-size:14px;line-height:20px;letter-spacing:.1px;font-weight:500;
+    font-size:17px;line-height:22px;letter-spacing:.1px;font-weight:500;
     background:var(--bg-alt);color:var(--text);white-space:nowrap;
   }
   /* С иконкой padding со стороны иконки меньше (withIcon medium 16 / 20) */
@@ -1007,7 +1016,7 @@
   .btn-sm{
     height:var(--size-control-height-small);
     padding:0 var(--size-spacing-x4);
-    font-size:14px;line-height:20px;
+    font-size:15px;line-height:20px;
   }
   .btn-sm:has(> .ic:first-child){padding-left:var(--size-spacing-x3);}
   .btn-sm:has(> .ic:last-child){padding-right:var(--size-spacing-x3);}
@@ -1106,7 +1115,7 @@
   .ds-banner{
     display:flex;align-items:flex-start;gap:var(--size-spacing-x4);
     padding:var(--size-spacing-x4);border-radius:var(--size-border-radius-x8);
-    font-size:14px;line-height:20px;letter-spacing:.2px;color:var(--md-sys-color-on-surface);
+    font-size:15px;line-height:18px;letter-spacing:.2px;color:var(--md-sys-color-on-surface);
   }
   .ds-banner > svg{flex:0 0 auto;width:20px;height:20px;}
   .ds-banner .ds-banner-text{padding-top:1px;}
@@ -1120,7 +1129,7 @@
     display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--size-spacing-x2);
     min-height:104px;padding:var(--size-spacing-x4);text-align:center;cursor:pointer;
     border:1px dashed var(--md-sys-color-outline);border-radius:var(--size-border-radius-x6);
-    font-size:14px;line-height:20px;letter-spacing:.2px;color:var(--md-sys-color-on-surface);
+    font-size:15px;line-height:18px;letter-spacing:.2px;color:var(--md-sys-color-on-surface);
   }
   .ds-uploader:hover{background:color-mix(in srgb, var(--md-sys-color-on-surface) 5%, transparent);}
   .ds-uploader.drag{border-color:var(--md-sys-color-ext-info);background:color-mix(in srgb, var(--md-sys-color-on-surface) 5%, transparent);}
@@ -1145,7 +1154,7 @@
 
   .textarea{
     width:100%;border:1px solid transparent;background:var(--input-bg);border-radius:var(--size-border-radius-x6);
-    padding:var(--size-spacing-x3) var(--size-spacing-x4);font-size:16px;color:var(--text);outline:none;
+    padding:var(--size-spacing-x3) var(--size-spacing-x4);font-size:17px;color:var(--text);outline:none;
   }
   .input::placeholder, .textarea::placeholder{color:var(--text-secondary);}
   .input.error, .textarea.error{border-color:var(--red-text);background:var(--red-bg);}
@@ -1166,7 +1175,7 @@
      пропадает. :has() читает реальный DOM-фокус, поэтому не теряет синхронизацию
      при ре-рендере (в отличие от JS-класса, который пришлось бы вручную сверять). */
   .uc-step-setup .ffield-label,
-  .uc-choice-fields .ffield-label{top:14px;font-size:16px;color:var(--text-secondary);transform:none;}
+  .uc-choice-fields .ffield-label{top:14px;font-size:17px;color:var(--text-secondary);transform:none;}
   .uc-step-setup .ffield.filled .ffield-label,
   .uc-step-setup .ffield:has(.ffield-input:focus) .ffield-label,
   .uc-step-setup .ffield:has(textarea:focus) .ffield-label,
@@ -1185,7 +1194,7 @@
   .nfield .select{padding-top:22px;padding-bottom:6px;line-height:20px;}
   .nfield .ffield-label{top:6px;font-size:13px;color:var(--text-secondary);transform:none;}
   /* Многострочное поле: подпись не плавает по центру — текст начинается сверху. */
-  .ffield.ftextarea .ffield-label{top:6px;font-size:12px;color:var(--text-secondary);transform:none;}
+  .ffield.ftextarea .ffield-label{top:6px;font-size:13px;color:var(--text-secondary);transform:none;}
   .ffield.ftextarea .textarea{padding-top:26px;}
   /* Диаграмма вызовов сценария — SVG из buildSequenceSvgGeneric, тот же рендерер,
      что у реализации BI Step в каталоге, но вне его CSS-скоупа. */
@@ -1212,12 +1221,12 @@
      disabled, на 15 px он давал 3.1:1 при норме 4.5. Застарелый дефект, нашёлся
      прогоном контрастов при смене палитры. */
   .ffield-label{
-    position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--text-secondary);
+    position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--text-secondary);
     pointer-events:none;transition:top .1s ease,font-size .1s ease,transform .1s ease;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:calc(100% - 32px);
   }
   /* Поле с плавающей подписью — высота 56: подпись во всплывшем состоянии
      отступает сверху на 6, текст лежит ниже её при line-height 20. */
-  .ffield.filled .ffield-label{top:6px;font-size:12px;color:var(--text-secondary);transform:none;}
+  .ffield.filled .ffield-label{top:6px;font-size:13px;color:var(--text-secondary);transform:none;}
   .ffield .ffield-input{height:100%;padding-top:0;padding-bottom:0;position:relative;background:transparent;}
   .ffield.filled .ffield-input{padding-top:22px;padding-bottom:6px;line-height:20px;}
   .ffield-box{height:var(--size-control-height-medium);background:var(--input-bg);border-radius:var(--size-border-radius-x6);border:1px solid transparent;}
@@ -1226,7 +1235,7 @@
   .ffield-box:hover{background:color-mix(in srgb, var(--md-sys-color-on-surface) 8%, var(--md-sys-color-surface-container-highest));}
   .ffield-box.focus:hover,
   .ffield-box:has(.ffield-input:focus):hover{background:var(--bg);}
-  .ffield:has(.ffield-input:focus) .ffield-label{top:6px;font-size:12px;color:var(--text-secondary);transform:none;}
+  .ffield:has(.ffield-input:focus) .ffield-label{top:6px;font-size:13px;color:var(--text-secondary);transform:none;}
   .ffield:has(.ffield-input:focus) .ffield-input{padding-top:22px;padding-bottom:6px;line-height:20px;}
   .ffield-box.error{border-color:var(--red-text);background:var(--red-bg);}
   [data-theme="dark"] .ffield-box.error{background:var(--md-sys-color-error-container);}
@@ -1263,7 +1272,7 @@
      вверх тянет «плюс», он центрируется по математической оси), глиф предупреждения
      2.75–17.50 (центр 10.12, в своём боксе 18px он сидит выше середины). Сдвигаем
      счётчик и глиф к оптическому центру кода: 11.00 / 11.00 / 11.12. */
-  .uc-impl-rest{color:var(--text-secondary);font-size:12px;line-height:16px;letter-spacing:.2px;
+  .uc-impl-rest{color:var(--text-secondary);font-size:13px;line-height:16px;letter-spacing:.2px;
     white-space:nowrap;transform:translateY(1.5px);}
 
   /* Чипсы реализаций — существующий компонент .pill-item (он и есть Чип:
@@ -1375,7 +1384,7 @@
     height:var(--size-control-height-small);padding:0 var(--size-spacing-x4);
     border:none;background:transparent;border-radius:var(--size-border-radius-x6);
     color:var(--md-sys-color-ext-info);
-    font-size:14px;font-weight:500;line-height:20px;letter-spacing:.2px;
+    font-size:15px;font-weight:500;line-height:20px;letter-spacing:.2px;
     display:inline-flex;align-items:center;white-space:nowrap;flex:0 0 auto;cursor:pointer;
     /* кнопка: $button-with-icon-spacing 8, иконка size=small 18 */
     gap:var(--size-spacing-x2);
@@ -1517,7 +1526,7 @@
     display:none;position:absolute;top:calc(100% + 6px);left:0;z-index:60;
     background:var(--md-sys-color-inverse-surface);border-radius:var(--size-border-radius-x4);
     box-shadow:var(--elevation-high);padding:var(--size-spacing-x1) var(--size-spacing-x2);
-    font-size:12px;line-height:16px;font-weight:400;
+    font-size:13px;line-height:16px;font-weight:400;
     white-space:normal;max-width:280px;min-width:160px;color:var(--md-sys-color-inverse-on-surface);
   }
   .cell-clamp-wrap:hover .cell-tooltip{display:block;}
@@ -1541,7 +1550,7 @@
   .ds-tip-wrap:has(> .popover) > .ds-tip{display:none;}
 
   /* Постраничная навигация: ячейка 40×40, радиус 12, gap 8, иконка 24, текст 14/20, disabled — opacity .48 */
-  .pagination-row{display:flex;align-items:center;justify-content:flex-end;gap:var(--size-spacing-x2);padding:var(--space-4) var(--space-1) 0;color:var(--text-secondary);font-size:14px;line-height:20px;letter-spacing:.2px;}
+  .pagination-row{display:flex;align-items:center;justify-content:flex-end;gap:var(--size-spacing-x2);padding:var(--space-4) var(--space-1) 0;color:var(--text-secondary);font-size:15px;line-height:18px;letter-spacing:.2px;}
   .pagination-row .pg-btn{min-width:40px;height:40px;border-radius:var(--size-border-radius-x6);border:1px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--text);}
   .pagination-row .pg-btn:hover:not(:disabled){background:color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);}
   .pagination-row .pg-btn:disabled{opacity:.48;cursor:not-allowed;}
@@ -1564,10 +1573,10 @@
   .agent-card .a-name{font-weight:500;font-size:15px;line-height:20px;letter-spacing:.2px;margin-bottom:var(--space-2);}
 
   /* project page: tabs + pill toggle + v2 agent cards */
-  /* Вкладка: высота 48, padding 24, текст 14/20 вес 500, индикатор 4px со скруглением сверху */
+  /* Вкладка: высота 48, padding 24, текст 15/20 вес 500, индикатор 4px со скруглением сверху */
   .page-tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:var(--space-6);}
-  .page-tab{display:inline-flex;align-items:center;height:48px;padding:0 var(--size-spacing-x6);font-size:15px;
-    font-size:14px;line-height:20px;letter-spacing:.2px;font-weight:500;color:var(--text-secondary);cursor:pointer;position:relative;}
+  .page-tab{display:inline-flex;align-items:center;height:48px;padding:0 var(--size-spacing-x6);
+    font-size:15px;line-height:20px;letter-spacing:.2px;font-weight:500;color:var(--text-secondary);cursor:pointer;position:relative;}
   .page-tab:first-child{padding-left:0;}
   .page-tab.active{color:var(--text);}
   .page-tab.active::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:4px;min-width:40px;
@@ -1578,7 +1587,7 @@
      фоны control-background → background-brand (docs/components.md) */
   .pill-item{display:inline-flex;align-items:center;gap:var(--size-spacing-x2);height:32px;
     padding:0 var(--size-spacing-x3);border-radius:30px;
-    font-size:14px;font-weight:400;line-height:20px;letter-spacing:.2px;cursor:pointer;
+    font-size:15px;font-weight:400;line-height:18px;letter-spacing:.2px;cursor:pointer;
     background:var(--md-sys-color-surface-container-highest);color:var(--text);white-space:nowrap;}
   .pill-item:hover{background:color-mix(in srgb, var(--md-sys-color-on-surface) 8%, var(--md-sys-color-surface-container-highest));}
   .pill-item:active{background:color-mix(in srgb, var(--md-sys-color-on-surface) 12%, var(--md-sys-color-surface-container-highest));}
@@ -1680,7 +1689,7 @@
   /* Встроенное уведомление: padding 8/16, форма shape-s, текст 14/20, иконка 20 с отступом 16 */
   .inline-alert{display:flex;align-items:flex-start;gap:var(--size-spacing-x4);
     padding:var(--size-spacing-x2) var(--size-spacing-x4);border-radius:var(--size-border-radius-x4);
-    font-size:14px;font-weight:400;line-height:20px;letter-spacing:.2px;color:var(--text);}
+    font-size:15px;font-weight:400;line-height:18px;letter-spacing:.2px;color:var(--text);}
   .inline-alert .ia-ico{flex:0 0 auto;display:flex;}
   .inline-alert .ia-ico svg{width:20px;height:20px;}
   .inline-alert .ia-ico .ic{width:20px;height:20px;}
@@ -1789,7 +1798,7 @@
   /* Бейдж (neutral): высота 24, форма shape-s, padding 8, текст 14/20 вес 500 */
   .app-tag{display:inline-flex;align-items:center;height:24px;background:var(--gray-bg);color:var(--gray-text);
     border-radius:var(--size-border-radius-x6);padding:0 var(--size-spacing-x2);
-    font-size:14px;font-weight:500;line-height:20px;letter-spacing:.2px;margin-top:var(--space-2);}
+    font-size:15px;font-weight:500;line-height:20px;letter-spacing:.2px;margin-top:var(--space-2);}
 
   .tc-req-foot{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3);border-top:1px solid var(--md-sys-color-outline-variant);margin-top:var(--space-5);padding-top:var(--space-4);cursor:pointer;font-size:15px;line-height:18px;letter-spacing:.2px;}
   .tc-req-list{display:flex;flex-direction:column;gap:var(--space-2);margin-top:var(--space-3);color:var(--text-secondary);font-size:13px;line-height:16px;letter-spacing:.2px;}
@@ -1925,7 +1934,7 @@
   .stepper{display:flex;align-items:stretch;justify-content:center;gap:var(--size-spacing-x10);border-bottom:1px solid var(--border);margin-bottom:var(--space-7);flex-wrap:wrap;}
   .step{display:flex;align-items:center;gap:var(--size-spacing-x3);position:relative;height:56px;padding:0 var(--size-spacing-x6) 2px;}
   /* Шаги: number 24×24, отступ до текста 12, пройденный шаг — цвета status-success */
-  .step .circle{width:24px;height:24px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;line-height:16px;color:var(--text-secondary);flex:0 0 auto;}
+  .step .circle{width:24px;height:24px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;line-height:16px;color:var(--text-secondary);flex:0 0 auto;}
   .step.done .circle{background:var(--md-sys-color-ext-success-container);border-color:var(--md-sys-color-ext-success);color:var(--md-sys-color-ext-success);}
   .step.done .circle svg{width:18px;height:18px;}
   .step.done .circle .ic{width:18px;height:18px;}
@@ -2018,7 +2027,7 @@
   .uc-link-name{display:inline-block;font-size:17px;line-height:22px;letter-spacing:.2px;}
   .uc-link-code{font-size:15px;line-height:20px;letter-spacing:.2px;color:var(--text-secondary);margin-top:var(--space-1);}
   /* Код Use Case идёт отдельной строкой под заголовком, до строки «Источник / Дата». */
-  .uc-code-line{font-size:16px;line-height:24px;letter-spacing:.2px;color:var(--text-secondary);margin:calc(-1 * var(--space-4)) 0 var(--space-5);}
+  .uc-code-line{font-size:17px;line-height:22px;letter-spacing:.2px;color:var(--text-secondary);margin:calc(-1 * var(--space-4)) 0 var(--space-5);}
   .uc-stat-cards{margin-bottom:var(--space-6);}
   /* Число и подпись в одну строку, тон карточки — по статусу (макет шага «Результат»). */
   .uc-stat-card{display:flex;align-items:center;gap:var(--size-spacing-x3);border:1px solid var(--border);border-radius:var(--size-border-radius-x6);padding:var(--size-spacing-x6);background:var(--bg);}
@@ -2063,7 +2072,7 @@
     background:var(--md-sys-color-surface);color:var(--md-sys-color-on-surface);
     padding:var(--size-spacing-x4) var(--size-spacing-x2) var(--size-spacing-x4) var(--size-spacing-x4);
     border-radius:var(--size-border-radius-x6);display:flex;align-items:center;gap:var(--size-spacing-x4);z-index:500;
-    box-shadow:var(--elevation-high);font-size:14px;line-height:20px;letter-spacing:.2px;
+    box-shadow:var(--elevation-high);font-size:15px;line-height:18px;letter-spacing:.2px;
     min-width:344px;max-width:660px;animation:toastin .18s ease;
   }
   @keyframes toastin{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
@@ -2107,7 +2116,7 @@
   /* Label по (components/label): 24 / радиус 12 / 15-500-20 / паддинг 8 — как .badge выше */
   .cj-tag{background:var(--gray-bg);color:var(--gray-text);border-radius:var(--size-border-radius-x6);
     height:24px;display:inline-flex;align-items:center;padding:0 var(--size-spacing-x2);
-    font-size:14px;line-height:20px;font-weight:500;}
+    font-size:15px;line-height:20px;font-weight:500;}
   .cj-card-date{margin-top:auto;padding-top:var(--space-3);border-top:1px solid var(--border);font-size:13px;color:var(--text-secondary);}
 
   /* ---------- CJ detail overlay ---------- */
@@ -2155,7 +2164,7 @@
   .uc-menu-divider{height:1px;background:var(--md-sys-color-outline-variant);margin:var(--menu-padding-vertical) 0;}
   /* Подпись группы — в у меню её нет (только divider), поэтому собрана из токенов
      типографики и отступов, как разрешает сборный компонент. */
-  .uc-menu-cap{padding:var(--size-spacing-x2) var(--size-spacing-x4);font-size:12px;line-height:16px;
+  .uc-menu-cap{padding:var(--size-spacing-x2) var(--size-spacing-x4);font-size:13px;line-height:16px;
     color:var(--text-secondary);text-transform:uppercase;letter-spacing:.4px;}
   /* Бейдж ветки в заголовке — badge, тип fade, семантика neutral (.badge.gray).
      Рядом уже стоит бейдж статуса, поэтому fill здесь не годится по правилу спека. */
@@ -2167,7 +2176,7 @@
   .cj-branch-toggle-wrap{position:relative;height:0;flex:0 0 auto;z-index:5;}
   /* Без рамки: пилюля и так отделена от матрицы тенью, рамка поверх тени читается как
      вторая граница. */
-  .cj-branch-toggle-pill{position:absolute;top:0;left:50%;transform:translate(-50%,-50%);display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;border:none;background:var(--bg);box-shadow:var(--shadow);font-size:12px;font-weight:500;color:var(--text-secondary);cursor:pointer;white-space:nowrap;}
+  .cj-branch-toggle-pill{position:absolute;top:0;left:50%;transform:translate(-50%,-50%);display:flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;border:none;background:var(--bg);box-shadow:var(--shadow);font-size:13px;font-weight:500;color:var(--text-secondary);cursor:pointer;white-space:nowrap;}
   .cj-branch-toggle-pill:hover{color:var(--text);}
   .cj-branch-toggle-pill .chev{display:flex;transition:transform .12s ease;}
   .cj-branch-toggle-pill .chev svg{width:18px;height:18px;}
@@ -2428,6 +2437,13 @@
 .ac-tree-body{position:relative;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:transparent;padding-left:22px;}
 .ac-tree-body::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--yellow);}
 .ac-tree > :last-child{border-bottom:none;}
+/* Второй уровень вложенности (каталог приложений) своей полосы не рисует:
+   внешняя уже охватывает всю дочернюю информацию, а две параллельные читались
+   как дубль. Отступ 42 вместо 22 — у строки lvl-2 свой padding --space-8,
+   а это 40px, не 32 (историческое имя, см. комментарий у токена): 40 + 18
+   шеврон + 8 зазор = 66, минус 24 падинга ячейки = 42. */
+.ac-tree-body .ac-tree-body::before{content:none;}
+.ac-tree-body .ac-tree-body{padding-left:42px;}
   .ac-tree-body:last-child{border-bottom:none;}
   .ac-tree-body .table-wrap{border:none;border-radius:0;}
   .ac-tree-body table{background:transparent;}
@@ -2468,7 +2484,7 @@
   .desc-cell .desc-open{flex:0 0 auto;display:flex;align-items:center;color:var(--text-tertiary);}
   .desc-cell:hover .cell-clamp, .desc-cell:hover .desc-open{color:var(--blue);}
   /* Пояснение к выборке над таблицей вкладки. */
-  .ac-tab-note{margin:0 0 var(--space-4);color:var(--text-secondary);font-size:14px;line-height:20px;letter-spacing:.2px;max-width:720px;}
+  .ac-tab-note{margin:0 0 var(--space-4);color:var(--text-secondary);font-size:15px;line-height:18px;letter-spacing:.2px;max-width:720px;}
 
 
   .tc-card{border:1px solid var(--border);border-radius:var(--radius);padding:var(--space-5);display:flex;flex-direction:column;gap:var(--space-3);}
@@ -2745,7 +2761,7 @@
   .lp-chip{
     height:32px;display:inline-flex;align-items:center;padding:0 var(--size-spacing-x3);
     border-radius:var(--size-border-radius-x15);background:var(--md-sys-color-surface-container-highest);
-    font-size:14px;font-weight:400;line-height:20px;letter-spacing:.2px;color:var(--text);
+    font-size:15px;font-weight:400;line-height:18px;letter-spacing:.2px;color:var(--text);
   }
   /* В референсах заголовок героя набран жирным, а имя продукта стоит отдельной
      строкой, и по заголовку переливается градиент — единственный цветной
@@ -2802,7 +2818,7 @@
   .lp-hero-cta{display:flex;justify-content:center;gap:var(--space-3);flex-wrap:wrap;}
   /* Подпись под кнопками берёт secondary, а не tertiary: tertiary — цвет
      состояния disabled, на фоне героя он даёт 3:1, а это текст 13 px. */
-  .lp-hero-note{margin-top:var(--space-4);font-size:12px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);}
+  .lp-hero-note{margin-top:var(--space-4);font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);}
 
   /* ── Снимок продукта под героем: собран из блоков, а не картинка ─────── */
   /* Курсоры лежат рядом со снимком, а не внутри: у .lp-shot overflow:hidden,
@@ -2845,7 +2861,7 @@
   .lp-shot-nav{
     position:relative;display:flex;align-items:center;gap:var(--space-2);
     padding:var(--space-2) var(--space-3);border-radius:var(--size-border-radius-x4);
-    font-size:12px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);
+    font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);
   }
   .lp-shot-nav.is-on{
     color:var(--text);font-weight:500;background:color-mix(in srgb, var(--md-sys-color-on-surface) 5%, transparent);
@@ -2881,7 +2897,7 @@
   /* Рост за неделю — цвет success: единственное место снимка, где цвет несёт смысл */
   .lp-shot-delta{
     display:flex;align-items:center;gap:2px;margin-top:var(--space-1);
-    font-size:12px;line-height:16px;letter-spacing:.2px;color:var(--green-text);
+    font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--green-text);
   }
   .lp-shot-delta .ic{width:18px;height:18px;}
   .lp-shot-spark{display:flex;align-items:flex-end;gap:3px;height:20px;margin-top:var(--space-1);}
@@ -2932,7 +2948,7 @@
   .lp-tile-title{font-size:17px;line-height:22px;letter-spacing:.2px;font-weight:700;overflow-wrap:anywhere;}
   .lp-tile-desc{font-size:13px;line-height:1.5;letter-spacing:.2px;color:var(--text-secondary);overflow-wrap:anywhere;}
   /* Строка фокуса роли — не то же, что описание: она отвечает на «зачем это мне» */
-  .lp-tile-focus{font-size:14px;line-height:20px;letter-spacing:.2px;font-weight:500;color:var(--text);}
+  .lp-tile-focus{font-size:15px;line-height:20px;letter-spacing:.2px;font-weight:500;color:var(--text);}
 
   /* ── Преимущества: цветные карточки на 12 колонок ─────────────────────── */
   .lp-bento{display:grid;grid-template-columns:repeat(12,1fr);gap:var(--space-6);}
@@ -3164,7 +3180,7 @@
   /* «Открыть» — Plain-кнопка по виду: цвет button-plain, без заливки */
   .lp-svc-go{
     display:inline-flex;align-items:center;gap:var(--space-1);margin-top:auto;
-    color:var(--md-sys-color-ext-info);font-size:14px;line-height:20px;letter-spacing:.2px;font-weight:500;
+    color:var(--md-sys-color-ext-info);font-size:15px;line-height:20px;letter-spacing:.2px;font-weight:500;
   }
   .lp-svc-go .ic{width:18px;height:18px;transition:transform .2s ease;}
   .lp-svc[data-action]:hover .lp-svc-go .ic{transform:translateX(3px);}
@@ -3172,7 +3188,7 @@
      Заливку здесь не берём: это пометка, а не статус в колонке таблицы. */
   .lp-svc-soon{
     display:inline-flex;align-items:center;gap:var(--space-2);margin-top:auto;
-    font-size:12px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);
+    font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);
   }
   /* Нераскрытый раздел объект не приглушает: «скоро» сказано текстом, а
      обесцвеченные девять карточек из тринадцати гасили бы всю витрину. */
@@ -3440,7 +3456,7 @@
 .e2ecat-scope .iconbtn{width:36px;height:36px;border-radius:var(--radius-sm);border:none;background:transparent;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);position:relative;}
 .e2ecat-scope .iconbtn:hover{background:var(--bg-hover);}
 /* Avatar (docs/components.md) — medium 40×40, круглый, цветовая пара amber */
-.e2ecat-scope .avatar{width:40px;height:40px;border-radius:50%;background:var(--md-sys-color-ext-warning-container);color:var(--md-sys-color-on-ext-warning-container);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;border:none;}
+.e2ecat-scope .avatar{width:40px;height:40px;border-radius:50%;background:var(--md-sys-color-ext-warning-container);color:var(--md-sys-color-on-ext-warning-container);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;border:none;}
 
 .e2ecat-scope .dot{position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--danger-text);border:1.5px solid var(--bg);}
 
@@ -3736,7 +3752,7 @@
 
 /* Тот же Snackbar, что и глобальный .toast — цвета берём из токенов темы,
    инвертирование делает общее правило выше. */
-.e2ecat-scope .toast{position:fixed;left:50%;bottom:var(--size-spacing-x9);transform:translateX(-50%);background:var(--md-sys-color-surface);color:var(--md-sys-color-on-surface);padding:var(--size-spacing-x4) var(--size-spacing-x2) var(--size-spacing-x4) var(--size-spacing-x4);border-radius:var(--size-border-radius-x6);font-size:14px;box-shadow:var(--elevation-high);z-index:120;display:flex;align-items:center;gap:var(--size-spacing-x4);}
+.e2ecat-scope .toast{position:fixed;left:50%;bottom:var(--size-spacing-x9);transform:translateX(-50%);background:var(--md-sys-color-surface);color:var(--md-sys-color-on-surface);padding:var(--size-spacing-x4) var(--size-spacing-x2) var(--size-spacing-x4) var(--size-spacing-x4);border-radius:var(--size-border-radius-x6);font-size:15px;box-shadow:var(--elevation-high);z-index:120;display:flex;align-items:center;gap:var(--size-spacing-x4);}
 
 .e2ecat-scope ::-webkit-scrollbar{width:10px;height:10px;}
 .e2ecat-scope ::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:6px;}
@@ -4764,7 +4780,7 @@ function renderE2eList(){
     var sel=state.selected && state.selected.type==='e2e' && state.selected.id===e.id;
     var pill = (e.versions && e.versions.length) ? statusPillFor(e) : '';
     return '<div class="flat-row'+(sel?' selected':'')+'" onclick="selectE2e(\''+e.id+'\')">'+
-      '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;'+(e.mono?'font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px;':'')+'">'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;'+(e.mono?'font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;':'')+'">'+
         '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(e.title)+'</span>'+pill+
       '</div>'+
     '</div>';
@@ -5156,7 +5172,7 @@ function renderObsTab(stepId){
 
   html+='<div class="card"><div class="card-title">Alerts'+(alert?'<span class="pillstat ok">Успешно</span>':'')+'</div>';
   if(!alert){
-    html+='<div style="color:var(--text-secondary);font-size:14px;margin-bottom:18px;">Для этого процесса алерты еще не создавались</div>'+
+    html+='<div style="color:var(--text-secondary);font-size:15px;margin-bottom:18px;">Для этого процесса алерты еще не создавались</div>'+
       '<div class="btnrow"><button class="btn primary" onclick="openPanel(\'createAlerts\',\''+stepId+'\')">Создать alerts</button></div>';
   } else {
     html+='<div class="field-grid">'+
@@ -5251,7 +5267,7 @@ function renderResultBody(report){
     var items=sortResultItems(c.items);
     var body;
     if(!items.length){
-      body='<div style="color:var(--text-secondary);font-size:14px;padding:6px 0;">Данные не распознаны</div>';
+      body='<div style="color:var(--text-secondary);font-size:15px;padding:6px 0;">Данные не распознаны</div>';
     } else {
       body='<table class="result-table"><thead><tr><th class="stat">Статус</th><th>Название элемента</th></tr></thead><tbody>'+
         items.map(function(it){
@@ -5336,14 +5352,14 @@ function renderImportModal(){
     var hasContent=!!(p.value||'').trim();
     body='<div class="import-body-inner">'+
       '<div class="info-banner" style="margin-bottom:28px;">'+ic('infoc',20)+'<div class="txt">Для добавления данных доступно два варианта: вставка текста или добавление файла с устройства</div></div>'+
-      '<div style="font-size:14px;font-weight:700;margin-bottom:12px;">Добавить файл</div>'+
+      '<div style="font-size:15px;font-weight:700;margin-bottom:12px;">Добавить файл</div>'+
       '<div class="dropzone" ondragover="event.preventDefault();this.classList.add(\'drag\')" ondragleave="this.classList.remove(\'drag\')" ondrop="onDropzoneDrop(event)" onclick="document.getElementById(\'file-input\').click()">'+
         '<a onclick="event.stopPropagation();document.getElementById(\'file-input\').click()">Выбери файл</a> или перемести его сюда'+
         '<div class="hint">puml до 100 мб</div>'+
         '<input id="file-input" type="file" accept=".puml,.txt,.uml" style="display:none" onchange="onFileInputChange(this)">'+
       '</div>'+
       (p.fileMeta?renderFileCard(p):'')+
-      '<div style="font-size:14px;font-weight:700;margin:26px 0 12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">'+
+      '<div style="font-size:15px;font-weight:700;margin:26px 0 12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">'+
         '<span>Вставить текст</span>'+
         '<span style="font-weight:400;font-size:13px;color:var(--text-secondary);">'+
           '<a onclick="insertExample(\'ok\')">пример</a> · <a onclick="insertExample(\'warn\')">с замечаниями</a> · <a onclick="insertExample(\'error\')">с ошибкой</a>'+
@@ -8745,7 +8761,7 @@ function AcTreeNode(node, level){
     body = AcAppsTable(apps);
   }
   return `
-    <div class="ac-tree-row lvl-${Math.min(level,2)}" data-action="ac-toggle-tree" data-id="${node.id}">
+    <div class="ac-tree-row lvl-${Math.min(level,2)} ${open?"is-open":""}" data-action="ac-toggle-tree" data-id="${node.id}">
       <span class="chev ${open?"open":""}">${icon("chevronRight")}</span><span>${escapeHtml(node.label)}</span>
     </div>
     ${open ? `<div class="ac-tree-body">${body}</div>` : ""}
@@ -8788,7 +8804,7 @@ function AcAppDetailPage(app){
       ${appStatusBadge(app.status)}
       ${fitnessBadge(app.fitness)}
     </div>
-    <div style="color:var(--text-secondary);font-size:12px;margin-bottom:var(--space-6);">${escapeHtml(app.cmdb)}</div>
+    <div style="color:var(--text-secondary);font-size:13px;margin-bottom:var(--space-6);">${escapeHtml(app.cmdb)}</div>
 
     <div class="ac-tabs-wrap">
       <div class="ac-tabs-track">
@@ -8865,7 +8881,7 @@ function AcGeneralPipeline(app){
   const ac = state.appcat;
   return `
     <div class="table-wrap">
-      <div style="display:flex;font-weight:700;font-size:12px;color:var(--text-secondary);padding:var(--space-4) var(--space-5);border-bottom:1px solid var(--border);">
+      <div style="display:flex;font-weight:700;font-size:13px;color:var(--text-secondary);padding:var(--space-4) var(--space-5);border-bottom:1px solid var(--border);">
         <div style="flex:1;">Публикация</div><div style="width:160px;">Источник</div><div style="width:110px;">Статус</div>
       </div>
       ${AC_PUBLICATIONS.map(r=>AcPipelineRun(r)).join("")}
@@ -8955,7 +8971,7 @@ function AcTcTab(app){
       <div class="search-wrap field-with-icon">${icon("search")}<input class="input" id="acTcSearch" placeholder="Название интерфейса или метода" value="${escapeHtml(ac.tcSearch)}"/></div>
       <div style="display:flex;align-items:center;gap:var(--space-3);">
         <div class="toggle ${ac.tcOnlyIfaces?"on":""}" data-action="ac-toggle-tc-ifaces"><div class="knob"></div></div>
-        <span style="font-size:14px;">ТС с интерфейсами</span>
+        <span style="font-size:15px;">ТС с интерфейсами</span>
       </div>
       ${ResetFiltersButton("ac-reset-tc", !!(state.appcat.tcSearch || state.appcat.tcOnlyIfaces))}
     </div>
@@ -8973,7 +8989,7 @@ function AcTcCard(c){
       <div><div class="tc-title" data-action="noop-doc">${escapeHtml(c.name)}</div><div class="tc-code">${escapeHtml(c.code)}</div></div>
       <div><div class="tc-domain-lbl">Домен</div><div class="tc-domain-val"><a class="proj-link" data-action="noop-doc">${escapeHtml(c.domain)}</a></div></div>
       <div class="tc-methods-head ${open?"open":""}" data-action="ac-toggle-tc" data-id="${c.id}">Методы ${icon("chevronDown")}</div>
-      ${open ? c.methods.map(m=>`<div class="tc-method-item"><a data-action="noop-doc">${escapeHtml(m.method)}</a></div>`).join("") || `<div style="color:var(--text-secondary);font-size:12px;">Методов нет</div>` : ""}
+      ${open ? c.methods.map(m=>`<div class="tc-method-item"><a data-action="noop-doc">${escapeHtml(m.method)}</a></div>`).join("") || `<div style="color:var(--text-secondary);font-size:13px;">Методов нет</div>` : ""}
     </div>
   `;
 }
@@ -9069,7 +9085,7 @@ function AcTechTab(app){
         options:["Все","Успешно"], action:"ac-tech-status-set"})}
       <div style="display:flex;align-items:center;gap:var(--space-3);">
         <div class="toggle ${ac.techKiOnly?"on":""}" data-action="ac-toggle-tech-ki"><div class="knob"></div></div>
-        <span style="font-size:14px;">Допустимо КИ</span>
+        <span style="font-size:15px;">Допустимо КИ</span>
       </div>
       ${ResetFiltersButton("ac-reset-tech", !!(state.appcat.techSearch || state.appcat.techStatusFilter!=="Все" || state.appcat.techKiOnly))}
     </div>
@@ -9211,7 +9227,7 @@ function AcObsTab(app){
       <div style="margin-left:auto;"><button class="btn btn-primary" data-action="ac-open-source-editor" data-mode="add">Добавить источник</button></div>
     </div>
     <div class="table-wrap">
-      <div style="display:flex;font-weight:700;font-size:12px;color:var(--text-secondary);padding:var(--space-3) var(--space-5);border-bottom:1px solid var(--border);">
+      <div style="display:flex;font-weight:700;font-size:13px;color:var(--text-secondary);padding:var(--space-3) var(--space-5);border-bottom:1px solid var(--border);">
         <div style="flex:1;">Экземпляр приложения</div><div style="width:340px;">Ссылка на шаблон метрик в платформе наблюдаемости</div><div style="width:40px;"></div>
       </div>
       ${AC_OBS_TREE.map(n=>AcObsRow(n)).join("")}
@@ -9668,7 +9684,7 @@ function GraphCustomNodeCard(inst){
   return `
     <div class="graph-custom-node-card">
       <div style="font-weight:500;">${escapeHtml(inst.name)}</div>
-      <div style="color:var(--text-secondary);font-size:12px;">${escapeHtml(t?t.name:inst.type)}</div>
+      <div style="color:var(--text-secondary);font-size:13px;">${escapeHtml(t?t.name:inst.type)}</div>
       <div class="ac-kv" style="margin-top:var(--space-3);">
         ${Object.entries(inst.attributes).map(([k,v])=>`
           <div class="ac-kv-row"><div class="k">${escapeHtml((t&&t.attributes[k])||k)}</div><div class="v">${escapeHtml(String(v))}</div></div>
@@ -9742,7 +9758,7 @@ function GraphNodeTypeRow(t){
       <td><code>${escapeHtml(t.code)}</code></td>
       <td>${escapeHtml(t.description)}</td>
       <td>${t.linkableNodes.map(n=>`<span class="badge gray" style="margin-right:4px;">${escapeHtml(n)}</span>`).join("")}</td>
-      <td><code>${escapeHtml(t.relationshipType)}</code> <span style="color:var(--text-secondary);font-size:12px;">(${t.relationshipDirection==="TO_CUSTOM"?"→ к ноде":"← от ноды"})</span></td>
+      <td><code>${escapeHtml(t.relationshipType)}</code> <span style="color:var(--text-secondary);font-size:13px;">(${t.relationshipDirection==="TO_CUSTOM"?"→ к ноде":"← от ноды"})</span></td>
       <td style="white-space:nowrap;">
         <button class="icon-btn" data-action="graph-edit-type" data-kind="node" data-code="${t.code}" title="Редактировать">${icon("pencil")}</button>
         <button class="icon-btn" data-action="graph-delete-type" data-kind="node" data-code="${t.code}" title="Удалить">${icon("x")}</button>
@@ -9789,7 +9805,7 @@ function GraphTypeEditorOverlay(){
             <div class="ffield-box"><input class="input ffield-input" id="gteCode" value="${escapeHtml(d.code)}" ${ed.editingCode?"disabled":""} autocomplete="off"/></div>
             <label class="ffield-label">Код</label>
           </div>
-          <div style="color:var(--text-secondary);font-size:12px;margin-top:4px;">Формат: ${isNode?"^[a-z][a-z0-9_]*$":"^[A-Z][A-Z0-9_]*$"}</div>
+          <div style="color:var(--text-secondary);font-size:13px;margin-top:4px;">Формат: ${isNode?"^[a-z][a-z0-9_]*$":"^[A-Z][A-Z0-9_]*$"}</div>
         </div>
         <div class="field-block">${FTextarea({id:"gteDesc", label:"Описание", value:d.description, rows:70})}</div>
 
@@ -9861,7 +9877,7 @@ function GraphAddNodeOverlay(){
       <div class="wizard-body">
        <div style="max-width:909px;margin:0 auto;">
         <h2 style="margin-bottom:var(--space-2);">Добавить ноду</h2>
-        <div style="color:var(--text-secondary);font-size:12px;margin-bottom:var(--space-6);">Крепится к «${escapeHtml(anchor.label)}»</div>
+        <div style="color:var(--text-secondary);font-size:13px;margin-bottom:var(--space-6);">Крепится к «${escapeHtml(anchor.label)}»</div>
 
         <div class="field-block">${FilterSelect({id:"gan-type", label:"Тип", value:st.draft.typeCode,
           options:options.map(o=>({value:o.code, label:o.name})), action:"graph-add-node-type"})}</div>
@@ -9906,7 +9922,7 @@ function GraphAddRelOverlay(){
       <div class="wizard-body">
        <div style="max-width:909px;margin:0 auto;">
         <h2 style="margin-bottom:var(--space-2);">Добавить связь</h2>
-        <div style="color:var(--text-secondary);font-size:12px;margin-bottom:var(--space-6);">От «${escapeHtml(anchor.label)}»</div>
+        <div style="color:var(--text-secondary);font-size:13px;margin-bottom:var(--space-6);">От «${escapeHtml(anchor.label)}»</div>
 
         <div class="field-block">${FilterSelect({id:"gar-type", label:"Тип связи", value:st.draft.typeCode,
           options:options.map(o=>({value:o.code, label:o.name})), action:"graph-add-rel-type"})}</div>
@@ -9994,8 +10010,8 @@ function CjLibraryEmptyState(){
   return `
     <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:var(--space-10) 0;color:var(--text-secondary);">
       <div style="width:56px;height:56px;border-radius:50%;background:var(--bg-alt);display:flex;align-items:center;justify-content:center;margin-bottom:var(--space-5);color:var(--text-tertiary);">${icon("search")}</div>
-      <div style="font-size:16px;font-weight:500;color:var(--text);margin-bottom:var(--space-2);">Нет результатов, подходящих под параметры поиска</div>
-      <div style="font-size:14px;">Попробуй изменить поисковый запрос или сбросить фильтры</div>
+      <div style="font-size:17px;font-weight:500;color:var(--text);margin-bottom:var(--space-2);">Нет результатов, подходящих под параметры поиска</div>
+      <div style="font-size:15px;">Попробуй изменить поисковый запрос или сбросить фильтры</div>
     </div>
   `;
 }
@@ -10016,7 +10032,7 @@ function CjTableRow(c){
     <tr data-action="open-cj" data-id="${c.id}" style="cursor:pointer;">
       <td>
         <div style="font-weight:500;">${escapeHtml(c.name)}</div>
-        <div style="color:var(--text-secondary);font-size:12px;">${escapeHtml(c.code)}</div>
+        <div style="color:var(--text-secondary);font-size:13px;">${escapeHtml(c.code)}</div>
       </td>
       <td>${escapeHtml(c.app)}</td>
       <td>${escapeHtml(c.channels)}</td>
@@ -10664,7 +10680,7 @@ function CjBranchCreatePanel(){
             </div>
             <label class="ffield-label">Название ветки</label>
           </div>
-          ${taken?`<div style="color:var(--red-text);font-size:12px;margin-top:4px;">Ветка с таким названием уже существует</div>`:""}
+          ${taken?`<div style="color:var(--red-text);font-size:13px;margin-top:4px;">Ветка с таким названием уже существует</div>`:""}
         </div>
         <div class="field-block">
           ${CjSelectField({id:"cj-branch-parent", branches, activeId:p.parent, action:"cj-branch-set-parent", wide:true,
@@ -10874,7 +10890,7 @@ function UcBranchCreatePanel(){
             <div class="ffield-box${taken?" error":""}"><input class="input ffield-input" id="ucBranchName" value="${escapeHtml(panel.name)}" autocomplete="off"></div>
             <label class="ffield-label">Название ветки*</label>
           </div>
-          ${taken?`<div style="color:var(--red-text);font-size:12px;margin-top:4px;">Ветка с таким названием уже существует</div>`:""}
+          ${taken?`<div style="color:var(--red-text);font-size:13px;margin-top:4px;">Ветка с таким названием уже существует</div>`:""}
         </div>
         <div class="field-block">
           ${CjSelectField({id:"uc-branch-parent", label:"Клонировать состав из ветки", branches, activeId:panel.parent, action:"uc-branch-set-parent", wide:true})}
@@ -10930,7 +10946,7 @@ function UcMergePanel(){
               </ul>
             </div>` : ""}
         </div>
-        <div style="color:var(--text-secondary);font-size:12px;margin-bottom:var(--space-6);">Выбери, откуда и куда переносим изменения Use Case «${escapeHtml(u.name)}»</div>
+        <div style="color:var(--text-secondary);font-size:13px;margin-bottom:var(--space-6);">Выбери, откуда и куда переносим изменения Use Case «${escapeHtml(u.name)}»</div>
 
         <div style="display:flex;gap:var(--space-4);">
           <div class="field-block" style="flex:1;">
@@ -11020,7 +11036,7 @@ function CjBpmnOverlay(){
       <div class="wizard-body">
        <div style="max-width:none;">
         <h2 style="margin-bottom:var(--space-2);">${escapeHtml(cj.title)} — BPMN</h2>
-        <div style="color:var(--text-secondary);font-size:12px;margin-bottom:var(--space-6);">
+        <div style="color:var(--text-secondary);font-size:13px;margin-bottom:var(--space-6);">
           ${stage
             ? `Процесс <a data-action="cj-bpmn-up" style="color:var(--blue);cursor:pointer;">${escapeHtml(cj.title)}</a> / ${escapeHtml(stage.name)}`
             : `Автоматически построено по этапам CJ. Кликни по этапу, чтобы раскрыть его внутренний процесс.`}
@@ -11167,8 +11183,8 @@ function CjCreateOverlay(){
           </div>
         ` : `
           <div data-action="cj-browse-bpmn" data-dropzone="bpmn" style="border:1.5px dashed var(--border-strong);border-radius:var(--radius);padding:var(--space-7);text-align:center;margin-bottom:var(--space-6);cursor:pointer;${cp.dragOver?"background:var(--bg-alt);border-color:var(--blue);":""}">
-            <div style="font-size:14px;">Перетащи сюда файлы или <span style="color:var(--blue);">загрузи документы</span></div>
-            <div style="color:var(--text-secondary);font-size:12px;margin-top:4px;">bpmn до 200 кб</div>
+            <div style="font-size:15px;">Перетащи сюда файлы или <span style="color:var(--blue);">загрузи документы</span></div>
+            <div style="color:var(--text-secondary);font-size:13px;margin-top:4px;">bpmn до 200 кб</div>
           </div>
           <input type="file" id="cjBpmnFileInput" accept=".bpmn,.xml" style="display:none;">
         `}
@@ -11195,7 +11211,7 @@ function CjCreateOverlay(){
           </div>
         `).join("")}
 
-        <div style="color:var(--text-secondary);font-size:12px;margin-top:var(--space-7);border-top:1px solid var(--border);padding-top:var(--space-5);">
+        <div style="color:var(--text-secondary);font-size:13px;margin-top:var(--space-7);border-top:1px solid var(--border);padding-top:var(--space-5);">
           <div style="font-weight:500;color:var(--text);margin-bottom:4px;">Обязательные поля для заполнения:</div>
           <div>• Название CJ</div>
           <div>• Владелец сценария</div>
@@ -11454,8 +11470,8 @@ function ProjectDetailPage(projectId){
       ${statusBadge(p.status)}
     </div>
     <div style="display:flex;gap:var(--space-9);margin-bottom:var(--space-7);flex-wrap:wrap;">
-      <div><div style="font-size:12px;color:var(--text-secondary);margin-bottom:var(--space-2);">Архитектор проекта</div><div style="font-size:14px;font-weight:500;">${escapeHtml(p.architect)}</div></div>
-      <div><div style="font-size:12px;color:var(--text-secondary);margin-bottom:var(--space-2);">Дата изменения</div><div style="font-size:14px;font-weight:500;">${escapeHtml(p.updated)}</div></div>
+      <div><div style="font-size:13px;color:var(--text-secondary);margin-bottom:var(--space-2);">Архитектор проекта</div><div style="font-size:15px;font-weight:500;">${escapeHtml(p.architect)}</div></div>
+      <div><div style="font-size:13px;color:var(--text-secondary);margin-bottom:var(--space-2);">Дата изменения</div><div style="font-size:15px;font-weight:500;">${escapeHtml(p.updated)}</div></div>
     </div>
 
     <div class="page-tabs">
@@ -11645,9 +11661,9 @@ function UcParticipantSystemsTable(rows){
 function UseCaseMetaRow(u, lastRun){
   return `
     <div style="display:flex;gap:var(--space-9);flex-wrap:wrap;align-items:flex-start;margin-bottom:var(--space-7);">
-      <div><div style="font-size:12px;color:var(--text-secondary);margin-bottom:var(--space-2);">Источник</div><div style="font-size:14px;font-weight:500;">${escapeHtml(u.source)}</div></div>
-      <div><div style="font-size:12px;color:var(--text-secondary);margin-bottom:var(--space-2);">Дата изменения</div><div style="font-size:14px;font-weight:500;">${escapeHtml(u.updated)}</div></div>
-      ${lastRun ? `<div><div style="font-size:12px;color:var(--text-secondary);margin-bottom:var(--space-2);">Запуск импорта</div><div style="font-size:14px;font-weight:500;">${escapeHtml(lastRun.id)} · ${lastRun.status==="Применён"?"completed":escapeHtml(lastRun.status)}</div></div>` : ""}
+      <div><div style="font-size:13px;color:var(--text-secondary);margin-bottom:var(--space-2);">Источник</div><div style="font-size:15px;font-weight:500;">${escapeHtml(u.source)}</div></div>
+      <div><div style="font-size:13px;color:var(--text-secondary);margin-bottom:var(--space-2);">Дата изменения</div><div style="font-size:15px;font-weight:500;">${escapeHtml(u.updated)}</div></div>
+      ${lastRun ? `<div><div style="font-size:13px;color:var(--text-secondary);margin-bottom:var(--space-2);">Запуск импорта</div><div style="font-size:15px;font-weight:500;">${escapeHtml(lastRun.id)} · ${lastRun.status==="Применён"?"completed":escapeHtml(lastRun.status)}</div></div>` : ""}
     </div>
   `;
 }
@@ -11928,7 +11944,7 @@ function UcDiagramModal(u){
     <div class="uc-diagram-backdrop" data-action="close-uc-diagram-modal-bg"></div>
     <div class="uc-diagram-modal">
       <div class="uc-diagram-toolbar" style="justify-content:space-between;">
-        <div style="font-weight:700;font-size:14px;padding-left:6px;">Диаграмма</div>
+        <div style="font-weight:700;font-size:15px;padding-left:6px;">Диаграмма</div>
         <div style="display:flex;gap:var(--space-3);">
           <button class="btn btn-outline btn-sm" data-action="collapse-uc-diagram">${ic("expand",18)} Свернуть</button>
           <button class="btn btn-outline btn-sm" data-action="download-uc-diagram">${ic("download",18)} Скачать</button>
@@ -12034,7 +12050,7 @@ function UcImplMatchPanel(){
             <div class="code">${r.calls.length} ${ruPlural(r.calls.length,"вызов","вызова","вызовов")} в цепочке · загружено ${escapeHtml(r.loadedAt)}</div>
           </div>
         </div>
-      `).join("") : `<div style="color:var(--text-secondary);font-size:12px;">По запросу «${escapeHtml(sp.query)}» реализаций не нашлось. Попробуй код реализации или путь метода.</div>`}
+      `).join("") : `<div style="color:var(--text-secondary);font-size:13px;">По запросу «${escapeHtml(sp.query)}» реализаций не нашлось. Попробуй код реализации или путь метода.</div>`}
     </div>
     <div class="side-foot">
       <button class="btn btn-outline" data-action="close-side">Отмена</button>
@@ -12195,7 +12211,7 @@ function ImplDiagramModal(){
     <div class="uc-diagram-backdrop" data-action="collapse-impl-diagram"></div>
     <div class="uc-diagram-modal">
       <div class="uc-diagram-toolbar" style="justify-content:space-between;">
-        <div style="font-weight:700;font-size:14px;padding-left:6px;">Реализация ${escapeHtml(info.code)}</div>
+        <div style="font-weight:700;font-size:15px;padding-left:6px;">Реализация ${escapeHtml(info.code)}</div>
         <div style="display:flex;gap:var(--space-3);">
           <button class="btn btn-outline btn-sm" data-action="collapse-impl-diagram">${ic("expand",18)} Свернуть</button>
           <button class="btn btn-outline btn-sm" data-action="download-impl-diagram">${ic("download",18)} Скачать</button>
@@ -12238,13 +12254,13 @@ function UseCaseHistoryPage(projectId, ucId){
               <tr>
                 <td colspan="4" style="padding-top:0;">
                   ${r.notices && r.notices.length ? `
-                    <div class="lbl" style="font-size:12px;color:var(--text-secondary);margin-bottom:var(--space-2);">Реестр замечаний</div>
-                    <ul style="margin:0 0 var(--space-4);padding-left:var(--space-5);font-size:14px;line-height:22px;">
+                    <div class="lbl" style="font-size:13px;color:var(--text-secondary);margin-bottom:var(--space-2);">Реестр замечаний</div>
+                    <ul style="margin:0 0 var(--space-4);padding-left:var(--space-5);font-size:15px;line-height:22px;">
                       ${r.notices.map(n=>`<li>${escapeHtml(n)}</li>`).join("")}
                     </ul>
                   ` : ""}
-                  <div class="lbl" style="font-size:12px;color:var(--text-secondary);margin-bottom:var(--space-2);">Исходный артефакт (PlantUML)</div>
-                  <pre style="background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius-sm);padding:var(--space-4) var(--space-4);font-size:12px;line-height:22px;overflow-x:auto;white-space:pre;">${escapeHtml(r.rawPlantUml||"—")}</pre>
+                  <div class="lbl" style="font-size:13px;color:var(--text-secondary);margin-bottom:var(--space-2);">Исходный артефакт (PlantUML)</div>
+                  <pre style="background:var(--bg-alt);border:1px solid var(--border);border-radius:var(--radius-sm);padding:var(--space-4) var(--space-4);font-size:13px;line-height:22px;overflow-x:auto;white-space:pre;">${escapeHtml(r.rawPlantUml||"—")}</pre>
                 </td>
               </tr>
             ` : ""}
@@ -12517,7 +12533,7 @@ function AssessmentSummaryCard(projectId, a, isCurrent){
   `;
 }
 function miniStat(label,val){
-  return `<div><div style="font-size:12px;color:var(--text-secondary);text-transform:uppercase;margin-bottom:var(--space-1);">${label}</div><div style="font-weight:500;">${val}</div></div>`;
+  return `<div><div style="font-size:13px;color:var(--text-secondary);text-transform:uppercase;margin-bottom:var(--space-1);">${label}</div><div style="font-weight:500;">${val}</div></div>`;
 }
 
 /* ============================= ASSESSMENT DETAIL (full page + confluence) ============================= */
@@ -12780,7 +12796,7 @@ function AgentHldPage(projectId){
         <div style="display:flex;gap:var(--space-3);margin-bottom:var(--space-4);flex-wrap:wrap;">
           <span class="badge green">Сформирован</span>
         </div>
-        <div style="font-weight:500;font-size:16px;margin-bottom:var(--space-4);">${escapeHtml(s.pageTitle)}</div>
+        <div style="font-weight:500;font-size:17px;margin-bottom:var(--space-4);">${escapeHtml(s.pageTitle)}</div>
         <div style="display:flex;gap:var(--space-7);margin-bottom:var(--space-4);flex-wrap:wrap;">
           ${miniStat("FR", s.fr.length)}
           ${miniStat("NFR", s.nfr.length)}
@@ -12788,9 +12804,9 @@ function AgentHldPage(projectId){
           ${miniStat("ТС", s.tc.length)}
           ${miniStat("UseCase", s.useCases.length)}
         </div>
-        <div class="lbl" style="font-size:12px;color:var(--text-secondary);margin-bottom:var(--space-1);">Автор</div>
+        <div class="lbl" style="font-size:13px;color:var(--text-secondary);margin-bottom:var(--space-1);">Автор</div>
         <div style="margin-bottom:var(--space-4);">${escapeHtml(s.author)}</div>
-        <div class="lbl" style="font-size:12px;color:var(--text-secondary);margin-bottom:var(--space-1);">Дата формирования</div>
+        <div class="lbl" style="font-size:13px;color:var(--text-secondary);margin-bottom:var(--space-1);">Дата формирования</div>
         <div>${escapeHtml(s.date)}</div>
       </div>
     </div>
@@ -12802,7 +12818,7 @@ function AgentHldPage(projectId){
           <div class="agent-card" data-action="open-hld-flow" data-flow="${f.type}" data-id="${p.id}">
             <div class="a-icon">${icon(f.icon)}</div>
             <div class="a-name">${f.title}</div>
-            <div style="color:var(--text-secondary);font-size:12px;line-height:16px;">${f.desc}</div>
+            <div style="color:var(--text-secondary);font-size:13px;line-height:16px;">${f.desc}</div>
           </div>
         `).join("")}
       </div>
@@ -12957,7 +12973,7 @@ function HldSkeletonDetailPage(projectId){
     <div class="section">
       <h2>Компонентная диаграмма</h2>
       <div class="card">${hldDiagramSvg(s.systems)}</div>
-      <p style="color:var(--text-secondary);font-size:12px;margin-top:var(--space-3);">Диаграмма построена автоматически на основании реестра систем и связанных ТС. Точная нотация UML формируется в WebIDE.</p>
+      <p style="color:var(--text-secondary);font-size:13px;margin-top:var(--space-3);">Диаграмма построена автоматически на основании реестра систем и связанных ТС. Точная нотация UML формируется в WebIDE.</p>
     </div>
   `;
 }
@@ -13173,11 +13189,11 @@ function WizardStepBusiness(w){
         <span class="ia-txt">Для добавления данных доступно два варианта: вставка текста или добавление ссылки</span>
       </div>
 
-      <h3 style="font-size:16px;line-height:24px;letter-spacing:.2px;font-weight:500;margin:0 0 var(--space-4);">Добавить ссылку на бизнес-постановку</h3>
+      <h3 style="font-size:17px;line-height:22px;letter-spacing:.2px;font-weight:500;margin:0 0 var(--space-4);">Добавить ссылку на бизнес-постановку</h3>
       <div class="field-block">${FField({id:"wizBpUrl", label:"Ссылка на бизнес-постановку в confluence", value:w.data.bpUrl})}</div>
       <div class="field-block">${FField({id:"wizBpPat", label:"Персональный токен доступа (PAT)", value:w.data.bpPat||"", type:"password"})}</div>
 
-      <h3 style="font-size:16px;line-height:24px;letter-spacing:.2px;font-weight:500;margin:var(--space-7) 0 var(--space-4);">Вставить бизнес-постановку текстом</h3>
+      <h3 style="font-size:17px;line-height:22px;letter-spacing:.2px;font-weight:500;margin:var(--space-7) 0 var(--space-4);">Вставить бизнес-постановку текстом</h3>
       <div class="field-block">
         <textarea class="textarea" id="wizBpText" placeholder="Например, «Клиент оформляет возврат eSIM»">${escapeHtml(w.data.bpText)}</textarea>
       </div>
@@ -13439,15 +13455,15 @@ function WizardLoadingPanel(w){
       <div style="display:flex;gap:var(--space-4);align-items:center;">
         <div class="spinner"></div>
         <div>
-          <div style="font-weight:500;font-size:16px;">${escapeHtml(info.title)}</div>
-          ${info.subtitle ? `<div style="color:var(--text-secondary);font-size:14px;margin-top:var(--space-1);">${escapeHtml(info.subtitle)}</div>` : ""}
+          <div style="font-weight:500;font-size:17px;">${escapeHtml(info.title)}</div>
+          ${info.subtitle ? `<div style="color:var(--text-secondary);font-size:15px;margin-top:var(--space-1);">${escapeHtml(info.subtitle)}</div>` : ""}
         </div>
       </div>
       ${info.tiles && info.tiles.length ? `
         <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-4);margin-top:var(--space-6);">
           ${info.tiles.map(t=>`
             <div style="background:var(--gray-bg);border-radius:var(--radius);padding:var(--space-4) var(--space-5);">
-              <div style="color:var(--text-secondary);font-size:12px;margin-bottom:var(--space-1);">${escapeHtml(t.lbl)}</div>
+              <div style="color:var(--text-secondary);font-size:13px;margin-bottom:var(--space-1);">${escapeHtml(t.lbl)}</div>
               <div style="font-size:20px;font-weight:500;">${escapeHtml(String(t.val))}</div>
             </div>
           `).join("")}
@@ -13734,7 +13750,7 @@ function HldStepSources(w){
   const a = p.agents.assessment.current;
   return `
     <div style="max-width:720px;">
-      <h3 style="font-size:16px;margin:0 0 var(--space-5);">Источники данных для формирования каркаса</h3>
+      <h3 style="font-size:17px;margin:0 0 var(--space-5);">Источники данных для формирования каркаса</h3>
       <div class="card info-grid" style="margin-bottom:var(--space-6);">
         <div><div class="lbl">Проект</div><div class="val">«${escapeHtml(p.name)}»</div></div>
         <div><div class="lbl">Оценка требований</div><div class="val">${escapeHtml(a.name)}</div></div>
@@ -13746,7 +13762,7 @@ function HldStepSources(w){
         ${miniStat("ТС", w.data.tc.length)}
         ${miniStat("Системы", w.data.systems.length)}
       </div>
-      <p style="color:var(--text-secondary);font-size:14px;margin-top:var(--space-6);">Клиентские пути (CJ) не переданы в бизнес-постановке — раздел будет пропущен в шаблоне HLD. При необходимости уточни требования и перезапусти формирование.</p>
+      <p style="color:var(--text-secondary);font-size:15px;margin-top:var(--space-6);">Клиентские пути (CJ) не переданы в бизнес-постановке — раздел будет пропущен в шаблоне HLD. При необходимости уточни требования и перезапусти формирование.</p>
     </div>
   `;
 }
@@ -13803,14 +13819,14 @@ function HldStepCompose(w){
 
     <div class="section-head-row"><h2 style="margin:0;">Компонентная диаграмма</h2></div>
     <div class="card" style="margin-bottom:var(--space-3);">${hldDiagramSvg(w.data.systems)}</div>
-    <p style="color:var(--text-secondary);font-size:12px;margin:0 0 var(--space-3);">Диаграмма пересобирается автоматически при изменении реестра систем</p>
+    <p style="color:var(--text-secondary);font-size:13px;margin:0 0 var(--space-3);">Диаграмма пересобирается автоматически при изменении реестра систем</p>
   `;
 }
 
 function HldStepPublish(w){
   return `
     <div style="max-width:640px;">
-      <h3 style="font-size:16px;margin:0 0 var(--space-5);">Публикация каркаса HLD в Confluence</h3>
+      <h3 style="font-size:17px;margin:0 0 var(--space-5);">Публикация каркаса HLD в Confluence</h3>
       <div class="field-block">${FField({id:"hldPubTitle", label:"Название страницы", value:w.data.pageTitle})}</div>
       <div class="field-block">${FField({id:"hldPubParent", label:"URL родительской страницы", value:w.data.parentUrl})}</div>
     </div>
@@ -14087,11 +14103,11 @@ function UcStepSetup(w){
       </div>
       <div class="field-block">
         <div class="ffield${d.plantUml?" filled":""}" style="position:relative;">
-          <textarea class="textarea" id="ucWizPlantUml" style="min-height:220px;padding-top:28px;font-family:ui-monospace,monospace;font-size:12px;">${escapeHtml(d.plantUml)}</textarea>
+          <textarea class="textarea" id="ucWizPlantUml" style="min-height:220px;padding-top:28px;font-family:ui-monospace,monospace;font-size:13px;">${escapeHtml(d.plantUml)}</textarea>
           <label class="ffield-label">PlantUml</label>
         </div>
       </div>
-      <p style="color:var(--text-secondary);font-size:14px;margin:0 0 var(--space-7);">Вставь текст диаграммы последовательности в нотации PlantUML. Используй названия систем/контейнеров, соответствующие существующим в ландшафте BeeAtlas — так вызовы будут сопоставлены автоматически</p>
+      <p style="color:var(--text-secondary);font-size:15px;margin:0 0 var(--space-7);">Вставь текст диаграммы последовательности в нотации PlantUML. Используй названия систем/контейнеров, соответствующие существующим в ландшафте BeeAtlas — так вызовы будут сопоставлены автоматически</p>
 
       <div class="uc-form-section">
         <h3>Добавить файл</h3>
@@ -14160,19 +14176,19 @@ function UcStepResult(w){
   const partCounts = ucPartDecisionCounts(unmappedParts);
   return `
     <div style="width:100%;">
-    <div class="section-head-row"><h2 style="margin:0;font-size:16px;line-height:24px;letter-spacing:.2px;font-weight:500;">Staging собрал сценарии из PlantUML</h2></div>
+    <div class="section-head-row"><h2 style="margin:0;font-size:19px;line-height:24px;letter-spacing:.2px;font-weight:500;">Staging собрал сценарии из PlantUML</h2></div>
     <div class="uc-stat-cards cols-3">
       <div class="uc-stat-card green"><div class="val">${confirmedCount}</div><div class="lbl">Подтверждено</div></div>
       <div class="uc-stat-card orange"><div class="val">${unresolvedParts.length}</div><div class="lbl">Требуют решения</div></div>
       <div class="uc-stat-card"><div class="val">${plannedCount}</div><div class="lbl">Планируется</div></div>
     </div>
     <div class="section-head-row" style="margin-bottom:var(--space-4);">
-      <h3 style="margin:0;font-size:14px;">Список участников</h3>
+      <h3 style="margin:0;font-size:15px;">Список участников</h3>
     </div>
     <div style="margin-bottom:var(--space-7);">${UcParticipantSystemsTable(ucParticipantSystems(parts))}</div>
     ${resolvedParts.length ? `
       <div class="section-head-row" style="margin-bottom:var(--space-4);">
-        <h3 style="margin:0;font-size:14px;">Смаппированные части</h3>
+        <h3 style="margin:0;font-size:15px;">Смаппированные части</h3>
       </div>
       <div class="table-wrap-fit" style="margin-bottom:var(--space-7);">
         <table class="fixed-table">
@@ -14205,7 +14221,7 @@ function UcStepResult(w){
       </div>
     ` : ""}
     <div class="section-head-row" style="margin-bottom:var(--space-4);">
-      <h3 style="margin:0;font-size:14px;">Несмаппированные части</h3>
+      <h3 style="margin:0;font-size:15px;">Несмаппированные части</h3>
     </div>
     ${unmappedParts.length ? `
       <div class="tc-toolbar">
@@ -14703,7 +14719,7 @@ function ValidateReportBody(p, r){
           </tbody>
         </table>
       </div>
-      ${r.dynDiagramsMissing.length ? `<p style="color:var(--text-secondary);font-size:12px;margin-top:var(--space-3);">Отсутствуют динамические диаграммы: ${r.dynDiagramsMissing.map(x=>escapeHtml(x)).join(", ")}</p>` : ""}
+      ${r.dynDiagramsMissing.length ? `<p style="color:var(--text-secondary);font-size:13px;margin-top:var(--space-3);">Отсутствуют динамические диаграммы: ${r.dynDiagramsMissing.map(x=>escapeHtml(x)).join(", ")}</p>` : ""}
     </div>
     <div class="section">
       <h2>Итоговый отчёт</h2>
@@ -14854,8 +14870,8 @@ function AcMethodDescPanel(){
   const m = sp.method;
   const row = (label, value) => `
     <div style="display:flex;gap:var(--space-4);padding:var(--space-3) 0;border-bottom:1px solid var(--border);">
-      <div style="flex:0 0 180px;color:var(--text-secondary);font-size:14px;">${label}</div>
-      <div style="flex:1;min-width:0;font-size:14px;">${value}</div>
+      <div style="flex:0 0 180px;color:var(--text-secondary);font-size:15px;">${label}</div>
+      <div style="flex:1;min-width:0;font-size:15px;">${value}</div>
     </div>`;
   return `
     <div class="side-head">
@@ -14870,8 +14886,8 @@ function AcMethodDescPanel(){
       ${row("Техническая возможность", m.tcName ? escapeHtml(m.tcName)+' <span class="row-sub" style="display:inline;">'+escapeHtml(m.tcCode)+'</span>' : '<span class="empty-cell">—</span>')}
       ${row("Реализация", acDynamicCell(m.dynamic))}
       <div style="margin-top:var(--space-6);">
-        <div style="color:var(--text-secondary);font-size:12px;line-height:16px;letter-spacing:.2px;margin-bottom:var(--space-2);">Описание</div>
-        <div style="font-size:14px;line-height:22px;letter-spacing:.2px;white-space:pre-wrap;">${escapeHtml(m.desc)}</div>
+        <div style="color:var(--text-secondary);font-size:13px;line-height:16px;letter-spacing:.2px;margin-bottom:var(--space-2);">Описание</div>
+        <div style="font-size:15px;line-height:22px;letter-spacing:.2px;white-space:pre-wrap;">${escapeHtml(m.desc)}</div>
       </div>
     </div>
     <div class="side-foot">
@@ -14923,7 +14939,7 @@ function SearchPanel(){
         <input class="input" id="panelSearchInput" placeholder="Название или код" value="${escapeHtml(sp.query)}"/>
         ${sp.query ? `<div class="clear-x" data-action="clear-panel-search">${icon("x")}</div>` : ""}
       </div>
-      ${!sp.query && !sp.loading ? `<div style="color:var(--text-secondary);font-size:12px;">Начни вводить название или код, чтобы найти ТС в каталоге</div>` : ""}
+      ${!sp.query && !sp.loading ? `<div style="color:var(--text-secondary);font-size:13px;">Начни вводить название или код, чтобы найти ТС в каталоге</div>` : ""}
       ${body}
     </div>
     <div class="side-foot">
