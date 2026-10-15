@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261015-191116">
+<meta name="beeatlas-build" content="20261015-192420">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -329,12 +329,17 @@
     --md-sys-color-ext-aquamarine-container: #18302b;
     --md-sys-color-ext-lemon: #fdd835;
     --md-sys-color-ext-lemon-container: #494635;
+    /* Роли on-*-container в тёмной теме не были перевёрнуты: контейнер тёмный,
+       и «текст на нём» оставался тоже тёмным — оранжевый давал контраст 1.16,
+       зелёный 1.43, синий 1.57, то есть глиф на плитке не читался вовсе.
+       В тёмной теме пара к тёмному контейнеру — светлый базовый акцент,
+       ровно как у ext-magenta, который по этой причине и работал. */
     --md-sys-color-on-ext-success: #ffffff;
-    --md-sys-color-on-ext-success-container: #004d24;
+    --md-sys-color-on-ext-success-container: #78ce8e;
     --md-sys-color-on-ext-warning: #ffffff;
-    --md-sys-color-on-ext-warning-container: #5c3c00;
+    --md-sys-color-on-ext-warning-container: #ffbd55;
     --md-sys-color-on-ext-info: #ffffff;
-    --md-sys-color-on-ext-info-container: #00456f;
+    --md-sys-color-on-ext-info-container: #5cb5ff;
     --md-sys-color-on-ext-teal: #ffffff;
     --md-sys-color-on-ext-teal-container: #004954;
     --md-sys-color-on-ext-purple: #ffffff;
@@ -1834,7 +1839,10 @@
      "Создать проект" — те же 48). Раньше здесь было 43px, подогнанных под отрендеренную
      высоту .btn-outline без токена высоты — замер был точный, эталон неправильный. */
   .view-toggle{display:flex;align-items:stretch;height:var(--size-control-height-medium);border:1px solid var(--border-strong);border-radius:var(--radius-sm);overflow:hidden;flex:0 0 auto;}
-  .view-toggle-btn{width:var(--size-control-height-medium);border:none;background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);font-size:15px;}
+  /* Глиф в покое — secondary, а не tertiary: tertiary это непрозрачность .38,
+   то есть цвет состояния disabled, и на плитке он давал 2.38:1 при норме 3
+   для нетекстовой графики. Кнопка кликабельна, неактивной она не является. */
+.view-toggle-btn{width:var(--size-control-height-medium);border:none;background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:15px;}
   .view-toggle-btn svg{width:20px;height:20px;}
   .view-toggle-btn .ic{width:20px;height:20px;}
   .view-toggle-btn:not(:last-child){border-right:1px solid var(--border-strong);}
