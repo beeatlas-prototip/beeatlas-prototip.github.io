@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261015-172054">
+<meta name="beeatlas-build" content="20261015-173040">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -785,23 +785,18 @@
   .home-dot-blue{background:var(--blue-text);}
   .home-dot-green{background:var(--green-text);}
   .home-dot-gray{background:var(--gray-text);}
-  /* Плитка на панели: своей рамки нет — её роль играет край плотной заливки
-     поверх сетки, а глубину даёт тень. Так плитка читается как предмет на
-     стекле, а не как вторая рамка внутри рамки панели. */
-  .home-tile{background:var(--bg);border-radius:var(--size-border-radius-x6);
+  /* Плитка — та же карточка: обводка вместо тени. По наведению поднимается
+     сдвигом и темнеющей обводкой, тени нет ни в одном состоянии. */
+  .home-tile{background:var(--bg);border:1px solid var(--border);border-radius:var(--size-border-radius-x6);
     padding:var(--size-spacing-x6);display:flex;flex-direction:column;gap:var(--space-3);cursor:pointer;
-    box-shadow:0 1px 2px rgba(25,28,52,.06), 0 8px 20px -16px rgba(25,28,52,.28);
-    transition:transform .15s ease, box-shadow .15s ease;}
-  .home-tile:hover{transform:translateY(-2px);box-shadow:0 2px 4px rgba(25,28,52,.08), 0 16px 32px -18px rgba(25,28,52,.4);}
-  [data-theme="dark"] .home-tile{box-shadow:0 1px 2px rgba(0,0,0,.5), 0 8px 20px -16px rgba(0,0,0,.8);}
-  [data-theme="dark"] .home-tile:hover{box-shadow:0 2px 4px rgba(0,0,0,.6), 0 16px 32px -18px rgba(0,0,0,.9);}
+    transition:transform .15s ease, border-color .15s ease;}
+  .home-tile:hover{transform:translateY(-2px);border-color:var(--border-strong);}
   .home-tile-top{display:flex;align-items:center;gap:var(--space-2);}
   .home-tile-title{font-size:17px;line-height:22px;letter-spacing:.2px;font-weight:700;overflow-wrap:anywhere;}
   .home-tile-desc{font-size:13px;line-height:1.5;color:var(--text-secondary);overflow-wrap:anywhere;
     display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
   .home-tile.is-soon{cursor:default;}
-  .home-tile.is-soon:hover{transform:none;box-shadow:0 1px 2px rgba(25,28,52,.06), 0 8px 20px -16px rgba(25,28,52,.28);}
-  [data-theme="dark"] .home-tile.is-soon:hover{box-shadow:0 1px 2px rgba(0,0,0,.5), 0 8px 20px -16px rgba(0,0,0,.8);}
+  .home-tile.is-soon:hover{transform:none;border-color:var(--border);}
   .home-tile.is-soon .home-tile-title{color:var(--text-secondary);}
   .home-tile-go{margin-left:auto;color:var(--text-tertiary);opacity:0;flex:0 0 auto;}
   .home-tile-go .ic{width:18px;height:18px;}
@@ -2097,7 +2092,8 @@
   .cj-card-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:var(--space-5);}
   .cj-card-grid .cj-card{grid-column:span 4;min-width:0;}
   .cj-card{cursor:pointer;display:flex;flex-direction:column;}
-  .cj-card:hover{border-color:var(--border-strong);box-shadow:var(--shadow-sm);}
+  /* По наведению карточка не поднимается тенью — только обводка темнеет. */
+  .cj-card:hover{border-color:var(--border-strong);}
   .cj-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:var(--space-2);margin-bottom:var(--space-4);}
   .cj-card-badges{display:flex;gap:var(--space-2);flex-wrap:wrap;}
   .cj-card-menu{color:var(--text-tertiary);flex:0 0 auto;padding:var(--space-1);}
@@ -2323,9 +2319,8 @@
   .cj-stage-cell.empty{color:var(--text-secondary);}
   .cj-stage-cell.wrap{align-items:flex-start;}
   .cj-stage-unfilled{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:var(--space-4);padding:var(--space-8) var(--space-5);border-right:1px solid var(--border);color:var(--text-tertiary);font-size:13px;}
-  .cj-stage-unfilled-add{width:36px;height:36px;border-radius:50%;border:1px solid var(--border-strong);background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--text-secondary);}
-  .cj-stage-unfilled-add svg{width:18px;height:18px;}
-  .cj-stage-unfilled-add .ic{width:18px;height:18px;}
+  /* Кнопка с подписью, а не круглый «+»: иконку сложения из кнопок убрали. */
+  .cj-stage-unfilled-add{height:32px;padding:0 var(--space-4);border-radius:var(--size-border-radius-x15);border:1px solid var(--border-strong);background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:13px;white-space:nowrap;}
   .cj-stage-unfilled-add:hover{background:var(--bg-alt);}
   .cj-below-links{position:sticky;left:0;background:var(--bg);z-index:6;padding:var(--space-4) 0 0 var(--space-4);display:flex;gap:var(--space-5);font-size:15px;}
   .cj-below-links a{color:var(--blue);}
@@ -3235,19 +3230,29 @@
      как место, где одновременно работают несколько ролей. */
   /* Курсоры стоят по краям окна продукта, как в референсах: внутри они
      закрывали бы подписи и статусы. */
-  .lp-cursor{position:absolute;display:flex;align-items:flex-start;gap:var(--space-1);will-change:transform;}
-  .lp-cursor svg{width:20px;height:20px;}
+  /* Остриё — точка наведения, плашка с именем висит под ним со смещением,
+     как в многопользовательских редакторах. Раньше стрелка и плашка стояли
+     в строку встык: у левого курсора остриё смотрело в свою же подпись,
+     а у правого заезжало на кнопку внутри окна. */
+  .lp-cursor{position:absolute;will-change:transform;}
+  .lp-cursor svg{display:block;width:20px;height:20px;}
   .lp-cursor-label{
+    position:absolute;top:16px;left:14px;
     height:24px;display:inline-flex;align-items:center;padding:0 var(--space-2);
     border-radius:var(--size-border-radius-x4);color:var(--md-sys-color-surface-container-lowest);
     font-size:13px;line-height:16px;letter-spacing:.2px;font-weight:500;white-space:nowrap;
   }
-  /* Указатель цепляет край окна, подпись уходит наружу — как в референсах.
-     У левого курсора порядок обратный, иначе подпись легла бы на меню продукта. */
-  .lp-cursor-1{left:-78px;top:24px;flex-direction:row-reverse;color:var(--pink-text);animation:lp-cursor-a 12s ease-in-out infinite alternate;}
+  /* Слева от окна стрелка зеркалится — остриё смотрит на окно, — а плашка
+     уходит наружу, иначе легла бы на меню продукта. */
+  .lp-cursor-left svg{transform:scaleX(-1);}
+  .lp-cursor-left .lp-cursor-label{left:auto;right:14px;}
+  .lp-cursor-1{left:-28px;top:24px;color:var(--pink-text);animation:lp-cursor-a 12s ease-in-out infinite alternate;}
   .lp-cursor-1 .lp-cursor-label{background:var(--pink-text);}
-  .lp-cursor-2{right:-86px;top:64px;color:var(--blue-text);animation:lp-cursor-b 14s ease-in-out infinite alternate;}
+  .lp-cursor-2{right:-30px;top:64px;color:var(--blue-text);animation:lp-cursor-b 14s ease-in-out infinite alternate;}
   .lp-cursor-2 .lp-cursor-label{background:var(--blue-text);}
+  /* Третий курсор справа и ниже: слева на этой высоте лежит объёмная коробка. */
+  .lp-cursor-3{right:-30px;top:300px;color:var(--green-text);animation:lp-cursor-c 16s ease-in-out infinite alternate;}
+  .lp-cursor-3 .lp-cursor-label{background:var(--green-text);}
   /* В тёмной теме статусные цвета светлее, и белая подпись на них не читается
      (2.9:1). Чёрный текст на той же плашке даёт 7:1. */
   [data-theme="dark"] .lp-cursor-label{color:var(--md-sys-color-on-primary);}
@@ -3255,6 +3260,7 @@
      наезжали бы на подписи разделов и статусы. */
   @keyframes lp-cursor-a{from{transform:translate3d(0,0,0);}to{transform:translate3d(-22px,-30px,0);}}
   @keyframes lp-cursor-b{from{transform:translate3d(0,0,0);}to{transform:translate3d(20px,26px,0);}}
+  @keyframes lp-cursor-c{from{transform:translate3d(0,0,0);}to{transform:translate3d(18px,28px,0);}}
 
   /* ── Движение ─────────────────────────────────────────────────────────
      Только transform и opacity. Появление секций вешается один раз, на
@@ -3546,14 +3552,16 @@
 .e2ecat-scope .impl-meta{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--text-secondary);margin:-8px 0 18px;}
 .e2ecat-scope .impl-empty{color:var(--text-secondary);font-size:15px;margin:0 0 18px;}
 
-.e2ecat-scope .card{background:var(--bg-panel);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px 24px;margin-bottom:20px;box-shadow:var(--shadow-card);}
+/* Карточка — обводка без тени, как .card в основном приложении. */
+.e2ecat-scope .card{background:var(--bg-panel);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px 24px;margin-bottom:20px;}
 .e2ecat-scope .card-title{font-size:15px;font-weight:700;margin:0 0 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
 .e2ecat-scope .field-grid{display:flex;flex-wrap:wrap;gap:28px 48px;margin-bottom:18px;}
 .e2ecat-scope .field{min-width:160px;}
 .e2ecat-scope .field .lbl{font-size:13px;color:var(--text-secondary);margin-bottom:5px;}
 .e2ecat-scope .field .val{font-size:15px;color:var(--text);}
 .e2ecat-scope .field .val.link{color:var(--link);cursor:pointer;}
-.e2ecat-scope .btnrow{display:flex;gap:10px;flex-wrap:wrap;}
+/* Кнопки карточки стоят в правом нижнем углу — см. docs/components.md. */
+.e2ecat-scope .btnrow{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;}
 .e2ecat-scope .btn{border-radius:var(--radius-sm);padding:10px 16px;font-size:15px;line-height:20px;font-weight:600;border:1px solid var(--border-strong);background:var(--bg-panel);display:inline-flex;align-items:center;gap:8px;white-space:nowrap;}
 /* Со стороны иконки отступ меньше — как в основном слое (docs/components.md) */
 .e2ecat-scope .btn:has(> .ic:first-child, > svg:first-child){padding-left:var(--size-spacing-x4);}
@@ -4631,7 +4639,7 @@ function renderRail(){
 function renderCatalog(){
   var head='<div class="catalog-head">'+
     '<div class="catalog-title" role="heading" aria-level="1">Каталог Е2Е-сценариев</div>'+
-    '<button class="btn primary" style="width:100%;justify-content:center;margin-bottom:12px;" onclick="openCreateE2ePanel()">'+ic('plus',18)+' Создать шаг Е2Е-сценария</button>'+
+    '<button class="btn primary" style="width:100%;justify-content:center;margin-bottom:12px;" onclick="openCreateE2ePanel()">Создать шаг Е2Е-сценария</button>'+
     '<div class="pill-toggle">'+
       '<button class="'+(state.mode==='cj'?'on':'')+'" onclick="setMode(\'cj\')">CJ</button>'+
       '<button class="'+(state.mode==='e2e'?'on':'')+'" onclick="setMode(\'e2e\')">Шаги Е2Е-сценария</button>'+
@@ -4892,7 +4900,7 @@ function renderStepUcCallsTab(step){
     return '<div class="card">'+
       '<div class="card-title">Вызовы Use Case</div>'+
       '<p class="impl-empty">К этому шагу пока не привязан Use Case — сценарий описан только вызовами E2E</p>'+
-      '<div class="btnrow"><button class="btn primary" onclick="notAvail()">'+ic('plus',18)+' Привязать Use Case</button></div>'+
+      '<div class="btnrow"><button class="btn primary" onclick="notAvail()">Привязать Use Case</button></div>'+
     '</div>';
   }
   var cur=currentImpl(step,'uc');
@@ -5124,7 +5132,7 @@ function renderObsTab(stepId){
     '</div>'+
     '<div class="btnrow">'+
       '<button class="btn" onclick="refreshDashboard(\''+stepId+'\')">'+ic('refresh',18)+' Обновить дашборд</button>'+
-      '<button class="btn" onclick="openPanel(\'createDashboard\',\''+stepId+'\')">'+ic('plus',18)+' Создать временный дашборд</button>'+
+      '<button class="btn" onclick="openPanel(\'createDashboard\',\''+stepId+'\')">Создать временный дашборд</button>'+
     '</div>'+
     (temps.length?('<div class="templist">'+temps.map(function(t){return '<span class="templink" onclick="notAvail()">'+ic('doc',18)+esc(t)+'</span>';}).join('')+'</div>'):'')+
   '</div>';
@@ -5132,7 +5140,7 @@ function renderObsTab(stepId){
   html+='<div class="card"><div class="card-title">Alerts'+(alert?'<span class="pillstat ok">Успешно</span>':'')+'</div>';
   if(!alert){
     html+='<div style="color:var(--text-secondary);font-size:14px;margin-bottom:18px;">Для этого процесса алерты еще не создавались</div>'+
-      '<div style="display:flex;justify-content:flex-end;"><button class="btn primary" onclick="openPanel(\'createAlerts\',\''+stepId+'\')">Создать alerts</button></div>';
+      '<div class="btnrow"><button class="btn primary" onclick="openPanel(\'createAlerts\',\''+stepId+'\')">Создать alerts</button></div>';
   } else {
     html+='<div class="field-grid">'+
         '<div class="field"><div class="lbl">id</div><div class="val">'+esc(alert.id)+'</div></div>'+
@@ -5144,7 +5152,7 @@ function renderObsTab(stepId){
         '<div class="field"><div class="lbl">Инициатор</div><div class="val">'+esc(alert.initiator)+'</div></div>'+
       '</div>'+
       '<div class="field" style="margin-bottom:18px;"><div class="lbl">Комментарий</div><div class="val">'+esc(alert.comment)+'</div></div>'+
-      '<div style="display:flex;justify-content:flex-end;"><button class="btn" onclick="openPanel(\'updateAlerts\',\''+stepId+'\')">'+ic('refresh',18)+' Обновить alerts</button></div>';
+      '<div class="btnrow"><button class="btn" onclick="openPanel(\'updateAlerts\',\''+stepId+'\')">'+ic('refresh',18)+' Обновить alerts</button></div>';
   }
   html+='</div>';
   return html;
@@ -7343,8 +7351,9 @@ function LpHero(){
     <div class="lp-shot-wrap">
       ${LpAppShot()}
       ${LpObj("lego", "lp-shot-lego")}
-      <div class="lp-cursor lp-cursor-1" aria-hidden="true">${LP_CURSOR_SVG}<span class="lp-cursor-label">Аналитик</span></div>
+      <div class="lp-cursor lp-cursor-left lp-cursor-1" aria-hidden="true">${LP_CURSOR_SVG}<span class="lp-cursor-label">Аналитик</span></div>
       <div class="lp-cursor lp-cursor-2" aria-hidden="true">${LP_CURSOR_SVG}<span class="lp-cursor-label">Архитектор</span></div>
+      <div class="lp-cursor lp-cursor-3" aria-hidden="true">${LP_CURSOR_SVG}<span class="lp-cursor-label">Владелец продукта</span></div>
     </div>
   </section>
   </div>`;
@@ -9094,10 +9103,10 @@ function AcTechDetailPage(){
         <ul class="ac-desc">${t.cons.map(x=>`<li>${escapeHtml(x)}</li>`).join("")}</ul>
       </div>
       <div style="flex:1;min-width:280px;display:flex;flex-direction:column;gap:var(--space-4);">
-        <div class="card" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" data-action="noop-doc">История изменений ${icon("plus")}</div>
-        <div class="card" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" data-action="noop-doc">Приложения (${t.appsCount}) ${icon("plus")}</div>
-        <div class="card" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" data-action="noop-doc">Версии ${icon("plus")}</div>
-        <div class="card" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" data-action="noop-doc">Ссылки ADR ${icon("plus")}</div>
+        <div class="card" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" data-action="noop-doc">История изменений ${icon("chevronRight")}</div>
+        <div class="card" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" data-action="noop-doc">Приложения (${t.appsCount}) ${icon("chevronRight")}</div>
+        <div class="card" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" data-action="noop-doc">Версии ${icon("chevronRight")}</div>
+        <div class="card" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;" data-action="noop-doc">Ссылки ADR ${icon("chevronRight")}</div>
       </div>
     </div>
   `;
@@ -9576,8 +9585,8 @@ function GraphNodeDetail(node){
     </div>
 
     <div style="display:flex;gap:var(--space-3);margin-bottom:var(--space-6);">
-      <button class="btn btn-outline btn-sm" data-action="graph-open-add-node" data-id="${node.id}"${addNodeAttr}>${icon("plus")} Добавить ноду</button>
-      <button class="btn btn-outline btn-sm" data-action="graph-open-add-rel" data-id="${node.id}"${addRelAttr}>${icon("plus")} Добавить связь</button>
+      <button class="btn btn-outline btn-sm" data-action="graph-open-add-node" data-id="${node.id}"${addNodeAttr}>Добавить ноду</button>
+      <button class="btn btn-outline btn-sm" data-action="graph-open-add-rel" data-id="${node.id}"${addRelAttr}>Добавить связь</button>
     </div>
 
     <div class="section">
@@ -9672,7 +9681,7 @@ function GraphTypesPage(){
         <div class="home-chip ${!isNode?"active":""}" data-action="graph-set-type-kind" data-kind="relationship">Типы связей</div>
       </div>
       <div style="flex:1;"></div>
-      <button class="btn btn-primary" data-action="graph-new-type">${icon("plus")} ${isNode?"Новый тип ноды":"Новый тип связи"}</button>
+      <button class="btn btn-primary" data-action="graph-new-type">${isNode?"Новый тип ноды":"Новый тип связи"}</button>
     </div>
     ${list.length ? `
       <div class="ac-tree">
@@ -9775,7 +9784,7 @@ function GraphTypeEditorOverlay(){
             <button class="icon-btn" data-action="graph-remove-attr" data-idx="${i}" title="Удалить">${icon("x")}</button>
           </div>
         `).join("")}
-        <button class="btn btn-outline btn-sm" style="margin-bottom:var(--space-6);" data-action="graph-add-attr">${icon("plus")} Добавить атрибут</button>
+        <button class="btn btn-outline btn-sm" style="margin-bottom:var(--space-6);" data-action="graph-add-attr">Добавить атрибут</button>
 
         ${isNode ? `
           <div style="font-weight:600;margin-bottom:var(--space-3);">С кем связывать</div>
@@ -9805,7 +9814,7 @@ function GraphTypeEditorOverlay(){
               <button class="icon-btn" data-action="graph-remove-pair" data-idx="${i}" title="Удалить">${icon("x")}</button>
             </div>
           `).join("")}
-          <button class="btn btn-outline btn-sm" style="margin-bottom:var(--space-6);" data-action="graph-add-pair">${icon("plus")} Добавить пару</button>
+          <button class="btn btn-outline btn-sm" style="margin-bottom:var(--space-6);" data-action="graph-add-pair">Добавить пару</button>
         `}
 
        </div>
@@ -9942,7 +9951,7 @@ function CjLibraryPage(){
   return `
     <div class="page-title-row">
       <h1>Библиотека CJ</h1>
-      <div class="actions"><button class="btn btn-primary" data-action="cj-open-create">${icon("plus")} Создать CJ</button></div>
+      <div class="actions"><button class="btn btn-primary" data-action="cj-open-create">Создать CJ</button></div>
     </div>
     <div class="cj-toolbar">
       <div class="search-wrap field-with-icon">
@@ -10155,8 +10164,8 @@ function CjUnfilledStageCell(stageIndex){
   const col = stageIndex + 2; // 1 = колонка подписей, дальше по одной на этап
   return `
     <div class="cj-stage-unfilled" style="grid-column:${col};grid-row:2 / span ${CJ_FIELD_ROWS.length};" data-action="cj-noop">
-      <div class="txt">Добавь BI в этап</div>
-      <button class="cj-stage-unfilled-add" data-action="cj-noop">${icon("plus")}</button>
+      <div class="txt">Этап без BI</div>
+      <button class="cj-stage-unfilled-add" data-action="cj-noop">Добавить BI</button>
     </div>
   `;
 }
@@ -10222,7 +10231,6 @@ function CjSourceBadgeList(stage, sc){
       }).join("")}
       ${!hasManual ? `
         <div class="cj-source-badge add" data-action="cj-add-manual-source" data-stage="${stage.id}" data-scenario="${sc.id}">
-          ${icon("plus")}
           <span class="lbl"><span class="n">Добавить ручную привязку</span></span>
         </div>` : ""}
     </div>
@@ -10265,7 +10273,7 @@ function CjSourcePanel(){
       </div>
       <div class="side-body">
         ${CjCallEditFields(p.draft.calls)}
-        <button class="btn btn-outline btn-sm" data-action="cj-add-call">${icon("plus")} Добавить вызов</button>
+        <button class="btn btn-outline btn-sm" data-action="cj-add-call">Добавить вызов</button>
       </div>
       <div class="side-foot">
         <button class="btn btn-outline" data-action="cj-source-cancel-edit">Отменить</button>
@@ -10287,7 +10295,7 @@ function CjSourcePanel(){
       </div>
       <div class="side-body">
         ${CjCallEditFields(p.draft.calls)}
-        <button class="btn btn-outline btn-sm" data-action="cj-add-call">${icon("plus")} Добавить вызов</button>
+        <button class="btn btn-outline btn-sm" data-action="cj-add-call">Добавить вызов</button>
       </div>
       <div class="side-foot">
         <button class="btn btn-outline" data-action="cj-source-cancel-edit">Отменить</button>
@@ -11161,7 +11169,7 @@ function CjCreateOverlay(){
 
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:var(--space-3);">
           <div style="font-weight:600;">Технический ответственный</div>
-          <button class="btn btn-outline btn-sm" data-action="cj-add-tech-owner">${icon("plus")} Добавить</button>
+          <button class="btn btn-outline btn-sm" data-action="cj-add-tech-owner">Добавить</button>
         </div>
         ${cp.techOwners.map((t,i)=>`
           <div style="display:flex;gap:var(--space-2);margin-bottom:var(--space-2);">
