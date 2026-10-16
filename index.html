@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261016-174447">
+<meta name="beeatlas-build" content="20261016-175230">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -3166,9 +3166,16 @@
   /* Цвет — подмес текста к полотну, а не --bg-alt: в светлой теме вся лестница
      поверхностей схлопнута в белый, и знак становился белым по белому. Подмес
      даёт одинаковый отрыв от фона в обеих темах. */
+  /* Крупная подпись выравнивается по контентной области, а не по окну: раньше
+     она лежала вне .lp-wrap и кегль считался от vw, из-за чего слово вылезало
+     за контент на 96px с каждой стороны при 1728. Теперь блок внутри обёртки, а
+     кегль считается от ЕЁ ширины в cqw — слово тянется вместе с сеткой и за
+     край не выходит. Коэффициент из замера: ширина слова ≈ 3.88 × кегль,
+     значит 25cqw даёт примерно 97% содержимого — остаётся волосок воздуха. */
+  .lp-footer .lp-wrap{container-type:inline-size;}
   .lp-mark{
     margin-top:var(--size-spacing-x10);font-weight:700;line-height:.8;text-align:center;
-    font-size:clamp(88px,26vw,400px);letter-spacing:-.02em;user-select:none;
+    font-size:min(25cqw, 400px);letter-spacing:-.02em;user-select:none;
     color:color-mix(in srgb, var(--text) 8%, transparent);
   }
 
@@ -7808,8 +7815,8 @@ function LpFooter(){
         <span class="lp-foot-link" data-action="lp-support">${icon("mail")} Почта</span>
         <span class="lp-foot-copy">beeatlas © 2026</span>
       </div>
+      <div class="lp-mark" aria-hidden="true">beeatlas</div>
     </div>
-    <div class="lp-mark" aria-hidden="true">beeatlas</div>
   </footer>`;
 }
 
