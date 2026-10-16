@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261016-140005">
+<meta name="beeatlas-build" content="20261016-141303">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -3159,9 +3159,6 @@
   .lp-auth-body{flex:1;overflow-y:auto;display:flex;align-items:center;justify-content:center;padding:var(--size-spacing-x10) var(--size-spacing-x6);}
   .lp-auth-form{width:480px;max-width:100%;display:flex;flex-direction:column;gap:var(--size-spacing-x4);}
   .lp-auth-sub{font-size:15px;line-height:20px;letter-spacing:.2px;color:var(--text-secondary);margin:0;}
-  .lp-auth-or{display:flex;align-items:center;gap:var(--space-4);color:var(--text-secondary);font-size:13px;line-height:16px;letter-spacing:.2px;}
-  .lp-auth-or::before,.lp-auth-or::after{content:"";flex:1;height:1px;background:var(--border);}
-  .lp-auth-err{color:var(--red-text);font-size:13px;line-height:16px;letter-spacing:.2px;}
   .lp-auth-help{align-self:center;color:var(--blue);font-size:15px;line-height:20px;letter-spacing:.2px;cursor:pointer;}
   .lp-auth-help:hover{text-decoration:underline;}
 
@@ -6325,7 +6322,7 @@ const state = {
      Вход переживает перезагрузку вкладки (sessionStorage), но не новую вкладку:
      тот, кто открыл ссылку впервые, всегда попадает на лендинг. */
   auth: null,
-  authForm: null,     // {email, pass, error} — открытый экран входа
+  authOpen: false,    // открыт ли экран входа (способ один — SSO)
   authNext: null,     // id раздела, в который человек шёл с витрины лендинга
   sidebarCollapsed:false,
   route: {view:"home"},
@@ -7682,8 +7679,12 @@ function Landing(){
    это полноэкранный поп-ап: шапка Contextual header (64) и форма по центру.
    Поля неуправляемые — значение читается при отправке, иначе каждое нажатие
    клавиши перерисовывало бы лендинг целиком. */
+/* Единственный способ входа — корпоративная учётная запись, то есть SSO.
+   Формы «почта + пароль» здесь не было бы смысла: второго хранилища паролей у
+   внутренней платформы нет, а ввод корпоративных данных мимо окна провайдера —
+   прямая дорога к фишингу. Убрана 2026-10-16 вместе с полями, кнопкой «Войти»,
+   разделителем «или по почте» и разбором ошибок. */
 function AuthScreen(){
-  const d = state.authForm;
   return `
   <div class="wizard-overlay" role="dialog" aria-modal="true" aria-label="Вход в beeatlas">
     <div class="wizard-head">
@@ -7693,30 +7694,18 @@ function AuthScreen(){
     <div class="lp-auth-body">
       <div class="lp-auth-form">
         <p class="lp-auth-sub">Платформа внутренняя: вход по корпоративной учётной записи.
-          Основной способ — единый вход, почта и пароль остаются запасным</p>
+          Учётной записи нет — можно посмотреть демо</p>
         <button class="btn btn-primary" data-action="auth-sso">${icon("shield")} Войти по SSO</button>
-        <div class="lp-auth-or">или по почте</div>
-        ${FField({id:"authEmail", label:"Корпоративная почта", value:d.email})}
-        ${FField({id:"authPass", label:"Пароль", value:d.pass, type:"password"})}
-        ${d.error ? `<div class="lp-auth-err">${escapeHtml(d.error)}</div>` : ""}
-        <button class="btn btn-outline" id="authSubmit" data-action="auth-submit"${(d.email&&d.pass)?"":" disabled"}>Войти</button>
+        <button class="btn btn-outline" data-action="auth-demo">Запросить демо</button>
         <span class="lp-auth-help" data-action="lp-support">Нет доступа?</span>
       </div>
     </div>
   </div>`;
 }
 
-function syncAuthField(el){
-  const box = el.closest(".ffield");
-  if(box) box.classList.toggle("filled", !!el.value);
-  state.authForm[el.id==="authEmail" ? "email" : "pass"] = el.value;
-  const submit = document.getElementById("authSubmit");
-  if(submit) submit.disabled = !(state.authForm.email && state.authForm.pass);
-}
-
 function doLogin(){
   state.auth = {name:"Константинопольский Константин", role:"Архитектор"};
-  state.authForm = null;
+  state.authOpen = false;
   /* Пришёл из карточки раздела — открываем именно его: карточка обещала «Открыть» */
   const next = state.authNext; state.authNext = null;
   if(next){ state.activeSidebar = next; go(next); return; }
@@ -7778,7 +7767,7 @@ function renderLanding(){
     <div data-theme="${state.theme}">
       ${Landing()}
     </div>
-    ${state.authForm ? AuthScreen() : ""}
+    ${state.authOpen ? AuthScreen() : ""}
     ${state.toast ? Toast() : ""}
   `;
   document.documentElement.setAttribute("data-theme", state.theme);
@@ -15268,7 +15257,7 @@ function bindGlobalEvents(){
   };
   document.body.onkeydown = function(e){
     if(e.key === "Escape"){
-      if(state.authForm){ state.authForm=null; render(); }
+      if(state.authOpen){ state.authOpen=false; render(); }
       else if(state.cjMergeConfirm){ state.cjMergeConfirm=false; render(); }
       else if(state.cjSourcePanel){ state.cjSourcePanel=null; render(); }
       else if(state.cjMergePanel){ state.cjMergePanel=null; state.cjMergeConfirm=false; render(); }
@@ -15395,8 +15384,6 @@ function reFocus(id){
 }
 
 function handleInput(el){
-  /* Поля входа не перерисовывают лендинг — см. syncAuthField */
-  if(el.id==="authEmail" || el.id==="authPass"){ syncAuthField(el); return; }
   if(el.id==="searchInput"){
     state.search = el.value;
     clearTimeout(searchDebTimer);
@@ -15538,19 +15525,16 @@ function handleAction(action, el){
       break;
     }
     case "lp-support": showToast("Раздел вне рамок прототипа"); break;
+    /* Вход один — по корпоративной учётной записи. Тому, у кого её нет,
+       нужен путь посмотреть продукт, иначе экран входа для него тупик. */
+    case "auth-demo": showToast("Запрос на демо отправлен — ответим на корпоративную почту"); break;
     /* Карточка раздела ведёт в тот же вход, но запоминает, куда человек шёл:
        после входа он попадает в этот раздел, а не на главную. */
     case "auth-open":
       state.authNext = el.dataset.nav || null;
-      state.authForm = {email:"", pass:"", error:""}; render(); break;
-    case "auth-close": state.authForm = null; render(); break;
+      state.authOpen = true; render(); break;
+    case "auth-close": state.authOpen = false; render(); break;
     case "auth-sso": doLogin(); break;
-    case "auth-submit": {
-      const f = state.authForm;
-      if(!f.email.includes("@")){ f.error = "Почта указана не полностью: нужен адрес вида имя@example.ru"; render(); break; }
-      doLogin();
-      break;
-    }
     case "noop-assistant": showToast("Ассистент скоро будет доступен"); break;
     /* клик внутри диалога не должен закрывать его через подложку */
     case "noop-stop": break;
