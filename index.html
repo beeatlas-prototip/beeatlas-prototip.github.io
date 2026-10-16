@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261016-155342">
+<meta name="beeatlas-build" content="20261016-174447">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -1024,16 +1024,19 @@
   .btn-primary{background:var(--yellow);color:var(--md-sys-color-on-primary);}
   .btn-primary:hover{background:var(--yellow-hover);}
   /* disabled у кнопки — это opacity .48, а не отдельная пара цветов */
-  /* Неактивная кнопка — по docs/tokens.md: контейнер 12%, подпись 38% от
-     on-surface. Было opacity:.48 на брендовом жёлтом: на тёмном полотне это
-     давало оливковый — цвет, которого в палитре нет, и читался он не как
-     «недоступно», а как испорченный брендовый. */
+  /* Неактивная кнопка: подпись 38% от on-surface по docs/tokens.md, а контейнер
+     остаётся брендовым — жёлтый должен прослеживаться, нейтрально-серая кнопка
+     теряет связь с активным состоянием. Доля 24% подобрана сличением вариантов
+     16/24/32/40 в обеих темах: на 16 жёлтый пропадает в светлой теме, на 32 и
+     выше кнопка снова читается активной.
+     Было opacity:.48 на всей кнопке — на тёмном полотне это давало оливковый,
+     цвет мимо палитры, и выглядело не «недоступно», а «испорчено». */
   .btn-primary:disabled{
-    background:color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);
+    background:color-mix(in srgb, var(--yellow) 24%, transparent);
     color:color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent);
     opacity:1;cursor:not-allowed;
   }
-  .btn-primary:disabled:hover{background:color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);}
+  .btn-primary:disabled:hover{background:color-mix(in srgb, var(--yellow) 24%, transparent);}
   .btn-outline{background:var(--bg);border:1px solid var(--border-strong);color:var(--text);}
   .btn-outline:hover{background:var(--bg-alt);}
   .btn-outline:disabled{opacity:.48;cursor:not-allowed;}
@@ -1231,7 +1234,10 @@
      сам textarea, и то же правило её снимало: все шесть таких полей в прототипе
      стояли без фона, вопреки спеке поля (docs/components.md). Возвращаем фон и
      отменяем height:100%, иначе он спорит с min-height. */
-  .ffield.ftextarea .ffield-input{background:var(--input-bg);height:auto;}
+  /* display:block — иначе строчный textarea оставляет под собой 4px места под
+     базовую линию, обёртка выходит выше поля, и объявленные отступы видны
+     на 4px больше: от поля до кнопки читалось 36 вместо 32. */
+  .ffield.ftextarea .ffield-input{background:var(--input-bg);height:auto;display:block;}
   .ffield.ftextarea .ffield-input:focus{background:var(--bg);border-color:var(--text);}
   /* Диаграмма вызовов сценария — SVG из buildSequenceSvgGeneric, тот же рендерер,
      что у реализации BI Step в каталоге, но вне его CSS-скоупа. */
@@ -3185,8 +3191,15 @@
      форма на 520 и текст рядом уже не помещаются. */
   .lp-demo-sec{padding-top:var(--size-spacing-x6);}
   .lp-demo-back{align-self:flex-start;margin-bottom:var(--size-spacing-x6);}
-  .lp-demo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,520px);
-    gap:var(--size-spacing-x10);align-items:start;}
+  /* Та же 12-колоночная резиновая сетка, что у всего лендинга (.lp-bento,
+     .lp-svc-grid). Своих minmax(0,520px) здесь быть не должно: страница вставала
+     мимо сетки. Текст занимает 7 колонок, форма — 4 у правого края, восьмая
+     колонка остаётся воздухом между ними. Перенос на 1279 — как у остальных
+     блоков лендинга. */
+  .lp-demo{display:grid;grid-template-columns:repeat(12,1fr);
+    gap:var(--size-spacing-x6);align-items:start;}
+  .lp-demo-side{grid-column:span 7;}
+  .lp-demo-form{grid-column:9 / span 4;}
   .lp-demo-side{display:flex;flex-direction:column;gap:var(--size-spacing-x5);}
   .lp-demo-lead{font-size:17px;line-height:24px;letter-spacing:.2px;color:var(--text-secondary);margin:0;}
   .lp-demo-step{display:flex;gap:var(--size-spacing-x4);align-items:flex-start;}
@@ -3196,11 +3209,18 @@
   .lp-demo-step-ic svg{width:20px;height:20px;}
   .lp-demo-step-t{font-size:17px;line-height:22px;letter-spacing:.2px;font-weight:500;margin-bottom:var(--space-1);}
   .lp-demo-step-d{font-size:15px;line-height:20px;letter-spacing:.2px;color:var(--text-secondary);}
+  /* Список роли тянется, как остальные поля: по умолчанию .select-wrap
+     занимает ширину по содержимому и выбивался из колонки. */
+  .lp-demo-form .select-wrap{width:100%;}
   .lp-demo-form{background:var(--bg);border:1px solid var(--border);
     border-radius:var(--size-border-radius-x8);padding:var(--size-spacing-x8);
     display:flex;flex-direction:column;gap:var(--size-spacing-x4);}
   .lp-demo-err{color:var(--red-text);font-size:13px;line-height:16px;letter-spacing:.2px;}
-  .lp-demo-note{font-size:13px;line-height:18px;letter-spacing:.2px;color:var(--text-secondary);margin:0;}
+  /* Кнопка и подпись под ней — по центру карточки. От последнего поля до
+     кнопки 32: 16 даёт gap самой формы, ещё 16 — этот margin. */
+  .lp-demo-form .btnrow{justify-content:center;margin-top:var(--size-spacing-x4);}
+  .lp-demo-note{font-size:13px;line-height:18px;letter-spacing:.2px;color:var(--text-secondary);
+    margin:0;text-align:center;}
   .lp-demo-done{align-items:center;text-align:center;gap:var(--size-spacing-x4);}
   .lp-demo-done-ic{width:56px;height:56px;border-radius:var(--size-border-radius-x15);
     display:flex;align-items:center;justify-content:center;
@@ -3211,7 +3231,10 @@
   .lp-demo-done-t{font-size:var(--font-size-h5);line-height:var(--font-line-height-h5);letter-spacing:.2px;font-weight:500;margin:0;}
   .lp-demo-done-d{font-size:15px;line-height:20px;letter-spacing:.2px;color:var(--text-secondary);margin:0;}
   .lp-demo-done .btnrow{justify-content:center;width:100%;}
-  @media (max-width:1100px){ .lp-demo{grid-template-columns:minmax(0,1fr);} }
+  @media (max-width:1279px){
+    .lp-demo-side{grid-column:span 12;}
+    .lp-demo-form{grid-column:span 12;}
+  }
   .lp-auth-form{width:480px;max-width:100%;display:flex;flex-direction:column;gap:var(--size-spacing-x4);}
   .lp-auth-sub{font-size:15px;line-height:20px;letter-spacing:.2px;color:var(--text-secondary);margin:0;}
   .lp-auth-help{align-self:center;color:var(--blue);font-size:15px;line-height:20px;letter-spacing:.2px;cursor:pointer;}
@@ -7499,7 +7522,7 @@ function LpHero(){
     </p>
     <div ${rise(4,"lp-hero-cta")}>
       <button class="btn btn-primary" data-action="auth-open">Войти</button>
-      <button class="btn btn-primary" data-action="demo-open">Запросить демо</button>
+      <button class="btn btn-primary" data-action="demo-open">Демо</button>
     </div>
     <div ${rise(5,"lp-hero-note")}>Доступ — по корпоративной учётной записи</div>
     <div class="lp-shot-wrap">
@@ -7694,7 +7717,7 @@ function LpCta(){
         </p>
         <div class="lp-cta-actions">
           <button class="btn btn-primary" data-action="auth-open">Войти</button>
-          <button class="btn btn-primary" data-action="demo-open">Запросить демо</button>
+          <button class="btn btn-primary" data-action="demo-open">Демо</button>
           <button class="btn btn-outline" data-action="lp-support">Написать в поддержку</button>
         </div>
       </div>
