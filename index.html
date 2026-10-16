@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261016-134939">
+<meta name="beeatlas-build" content="20261016-140005">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -3124,8 +3124,12 @@
     display:flex;align-items:center;gap:var(--size-spacing-x10);flex-wrap:wrap;
   }
   /* Строка длиннее ~90 знаков читается тяжело: текст блока не тянется на всю
-     ширину, а упирается в 620 и отдаёт остальное фигуре. */
-  .lp-cta-text{flex:1 1 420px;min-width:0;max-width:620px;}
+     ширину, а упирается в предел и отдаёт остальное фигуре.
+     700, а не 620: на 620 абзац ломался на три строки и «к нужным разделам»
+     висело отдельной третьей, хотя места в карточке вдоволь (доступно 1056).
+     Замером: до 640 включительно — три строки, с 660 — две; 700 взято с
+     запасом от порога. Знаков в строке при этом около 71 — предел не нарушен. */
+  .lp-cta-text{flex:1 1 420px;min-width:0;max-width:700px;}
   .lp-cta h2{font-size:var(--font-size-h3);line-height:var(--font-line-height-h3);letter-spacing:.3px;font-weight:500;margin:0 0 var(--space-4);}
   .lp-cta p{font-size:17px;line-height:22px;letter-spacing:.2px;color:var(--text-secondary);margin:0;}
   .lp-footer{margin-top:var(--layout-gap-page);padding-bottom:var(--size-spacing-x10);overflow:hidden;}
@@ -3360,6 +3364,9 @@
        съедает текст, поэтому ниже 1280 она идёт во всю ширину ряда. */
     .lp-svc-lead{grid-column:span 12;}
     .lp-svc{grid-column:span 6;}
+    /* Фигура письма ужимается, иначе на 1024 тексту остаётся 640 при нужных
+       660, и абзац ломается на три строки с висячим словом в последней. */
+    .lp-cta-figure{width:152px;}
     .lp-h1{font-size:var(--font-size-h1);line-height:var(--font-line-height-h1);letter-spacing:var(--font-letter-spacing-h1);}
     .lp-h1-sub{font-size:var(--font-size-h4);line-height:var(--font-line-height-h4);}
     .lp-h2{font-size:var(--font-size-h3);line-height:var(--font-line-height-h3);}
@@ -16832,6 +16839,9 @@ render();
    3272 таких места, и почти все в коде. Поэтому один проход по текстовым узлам
    после каждой отрисовки: пробел после такого слова меняется на неразрывный.
 
+   Тем же проходом тире привязывается к предыдущему слову: оно не должно
+   начинать строку, поэтому пробел перед ним неразрывный, а после — обычный.
+
    Пропускаются code/pre/kbd/samp и поля ввода: там пробел значащий, а
    неразрывный в значении поля уехал бы в данные. */
 (function(){
@@ -16841,6 +16851,9 @@ render();
   /* Длинные варианты идут первыми: иначе «во» совпало бы как «в» + «о». */
   var РЕ = new RegExp('(?<=^|[\\s(\u00AB\u201E"\'>\u2014\u2013])(' +
                       СЛУЖЕБНЫЕ.join('|') + ') (?=[\u0410-\u042F\u0401\u0430-\u044F\u0451])', 'gi');
+  /* Тире не начинает строку: пробел ПЕРЕД ним неразрывный, после — обычный.
+     Дефис не трогаем, только длинное и среднее тире. */
+  var ТИРЕ = /(\S) (?=[\u2014\u2013](?:\s|$))/g;
   var ПРОПУСК = {CODE:1, PRE:1, KBD:1, SAMP:1, TEXTAREA:1, INPUT:1, SCRIPT:1, STYLE:1};
   function пройтись(корень){
     var ходок = document.createTreeWalker(корень, NodeFilter.SHOW_TEXT, {
@@ -16854,7 +16867,8 @@ render();
     var узлы = [], у;
     while ((у = ходок.nextNode())) узлы.push(у);
     for (var i = 0; i < узлы.length; i++){
-      var было = узлы[i].nodeValue, стало = было.replace(РЕ, '$1\u00A0');
+      var было = узлы[i].nodeValue;
+      var стало = было.replace(РЕ, '$1\u00A0').replace(ТИРЕ, '$1\u00A0');
       if (стало !== было) узлы[i].nodeValue = стало;
     }
   }
