@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261016-124410">
+<meta name="beeatlas-build" content="20261016-125611">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -3576,7 +3576,19 @@
 .e2ecat-scope .info-banner button:hover{background:var(--bg-hover);}
 .e2ecat-scope .info-banner.hidden{display:none;}
 
-.e2ecat-scope .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:100px 20px;text-align:center;color:var(--text-secondary);gap:20px;}
+/* Пустое состояние центрируется в своей области и по горизонтали, и по
+   вертикали. Само по себе justify-content:center ничего не давало: .content-inner
+   сжимался по содержимому (474 из доступных 936), и центрировать было не в чем —
+   блок висел вверху области. Растяжение включается через :has() только на
+   странице с пустым состоянием, остальные страницы каталога не трогаются. */
+.e2ecat-scope .content:has(.empty-state){display:flex;flex-direction:column;}
+.e2ecat-scope .content-inner:has(> .empty-state){display:flex;flex-direction:column;flex:1 1 auto;min-height:0;}
+.e2ecat-scope .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1 1 auto;padding:40px 20px;text-align:center;color:var(--text-secondary);gap:20px;}
+/* В острове расстояние до подписи держит gap самого .empty-state. Правило
+   основного приложения добавляет сюда ещё margin-bottom у иллюстрации, и зазор
+   выходил двойным — 44px вместо 20. Там margin нужен (у тех пустых состояний
+   gap нет), поэтому гасим только здесь. */
+.e2ecat-scope .empty-state .box-illustration{margin-bottom:0;}
 .e2ecat-scope .empty-state .box{filter:none;}
 .e2ecat-scope .empty-state .box svg{width:auto;height:auto;}
 .e2ecat-scope .empty-state .box .ic{width:auto;height:auto;}
