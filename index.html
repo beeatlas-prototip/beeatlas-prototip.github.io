@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261016-114713">
+<meta name="beeatlas-build" content="20261016-121631">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -529,8 +529,13 @@
   .header .icon-btn svg{width:24px;height:24px;}
   .header .icon-btn .ic{width:24px;height:24px;}
   /* Аватар: 40×40, круг, текст 14/20 вес 500, цвет — пара из палитры статусов */
+  /* Аватар красится брендовой парой, а не цветом слоя: пара слоя «Бизнес-
+     архитектура» (--orange-bg/--orange-text) — это роль warning, и её тёмный
+     контейнер даёт мутно-оливковый кружок. Брендовый контейнер один в обеих
+     темах, поэтому аватар больше не зависит от темы. */
   .avatar{
-    width:40px;height:40px;border-radius:50%;background:var(--orange-bg);color:var(--orange-text);
+    width:40px;height:40px;border-radius:50%;
+    background:var(--md-sys-color-primary-container);color:var(--md-sys-color-on-primary-container);
     display:flex;align-items:center;justify-content:center;
     font-size:15px;font-weight:500;line-height:20px;letter-spacing:.2px;
   }
@@ -1660,15 +1665,11 @@
 
   .empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:var(--space-10) var(--space-5);}
   .empty-state .box-illustration{margin-bottom:var(--space-6);}
-  /* Грани коробки пустого состояния: смесь брендового тона с фоном поверхности.
-     Объявлены один раз на оба места — и в основном слое, и в каталоге E2E. */
-  .box-illustration{
-    --box-flap:  color-mix(in srgb, var(--yellow) 22%, var(--bg));
-    --box-cap:   color-mix(in srgb, var(--yellow) 34%, var(--bg));
-    --box-left:  color-mix(in srgb, var(--yellow) 48%, var(--bg));
-    --box-right: color-mix(in srgb, var(--yellow) 62%, var(--bg));
-    filter:none;
-  }
+  /* Объект пустого состояния — лупа из того же набора, что объекты лендинга
+     (3dicons, CC0, перекрашен). Прежняя коробка красилась смесью брендового
+     тона с фоном (color-mix с --yellow), и в тёмной теме выходила оливковой.
+     Готовая картинка от темы не зависит. */
+  .box-illustration{filter:none;max-width:100%;height:auto;}
   .empty-state h3{font-size:19px;line-height:24px;letter-spacing:.2px;font-weight:500;margin:0 0 var(--space-5);}
   .uc-zero-state h3{margin-bottom:var(--space-4);}
   .uc-zero-state p{max-width:560px;margin:0 0 var(--space-6);color:var(--text-secondary);font-size:15px;line-height:20px;letter-spacing:.2px;}
@@ -3464,7 +3465,9 @@
 .e2ecat-scope .iconbtn{width:36px;height:36px;border-radius:var(--radius-sm);border:none;background:transparent;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);position:relative;}
 .e2ecat-scope .iconbtn:hover{background:var(--bg-hover);}
 /* Avatar (docs/components.md) — medium 40×40, круглый, цветовая пара amber */
-.e2ecat-scope .avatar{width:40px;height:40px;border-radius:50%;background:var(--md-sys-color-ext-warning-container);color:var(--md-sys-color-on-ext-warning-container);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;border:none;}
+/* Та же брендовая пара, что у .avatar в приложении: два разных аватара у
+   одного человека — дефект. Роль warning в тёмной теме давала оливковый кружок. */
+.e2ecat-scope .avatar{width:40px;height:40px;border-radius:50%;background:var(--md-sys-color-primary-container);color:var(--md-sys-color-on-primary-container);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;border:none;}
 
 .e2ecat-scope .dot{position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--danger-text);border:1.5px solid var(--bg);}
 
@@ -3513,7 +3516,6 @@
 .e2ecat-scope .searchbox .s-icon{position:absolute;left:var(--size-spacing-x4);top:50%;transform:translateY(-50%);color:var(--text-tertiary);pointer-events:none;}
 .e2ecat-scope .searchbox .clear-btn{position:absolute;right:var(--size-spacing-x4);top:50%;transform:translateY(-50%);border:none;background:transparent;color:var(--text-tertiary);width:24px;height:24px;border-radius:6px;display:flex;align-items:center;justify-content:center;}
 .e2ecat-scope .searchbox .clear-btn:hover{background:var(--border);color:var(--text);}
-.e2ecat-scope .chiprow{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
 /* Чип: высота 32, форма shape-s, текст 14/20 — docs/components.md */
 .e2ecat-scope .chip{border:1px solid var(--border);background:var(--bg-panel);height:32px;display:inline-flex;align-items:center;
   padding:0 12px;border-radius:var(--radius-pill);font-size:15px;line-height:18px;font-weight:500;color:var(--text-secondary);white-space:nowrap;}
@@ -3590,7 +3592,16 @@
 .e2ecat-scope .impl-chip.on{background:var(--accent);color:var(--accent-text);}
 .e2ecat-scope .impl-chip .ic-src{font-size:10px;opacity:.65;text-transform:uppercase;letter-spacing:.06em;}
 .e2ecat-scope .impl-more{height:32px;padding:0 12px;border-radius:var(--radius-pill);background:transparent;border:1px dashed var(--border);color:var(--link);font-size:13px;cursor:pointer;}
-.e2ecat-scope .impl-meta{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:13px;color:var(--text-secondary);margin:-8px 0 18px;}
+/* Источник и дата — горизонтальная карточка с отступами 16 по кругу.
+   Раньше это была голая строка мелким текстом под чипсами реализаций: она
+   читалась подписью к ним, а не сведениями о выбранной реализации.
+   Скругление --radius-lg — то же, что у соседних карточек острова:
+   у .e2ecat-scope своя плотность, см. docs/components.md. */
+.e2ecat-scope .impl-meta{display:flex;align-items:center;gap:var(--size-spacing-x6);flex-wrap:wrap;
+  font-size:13px;color:var(--text-secondary);
+  background:var(--bg-panel);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:var(--size-spacing-x4);margin:0 0 18px;}
+.e2ecat-scope .impl-meta b{font-weight:500;color:var(--text);}
 .e2ecat-scope .impl-empty{color:var(--text-secondary);font-size:15px;margin:0 0 18px;}
 
 /* Карточка — обводка без тени, как .card в основном приложении. */
@@ -4188,7 +4199,6 @@ function defaultState(){
   return {
     theme:'light',
     mode:'cj',
-    cjPublishFilter:'all',
     cjSearch:'',
     e2eSearch:'',
     renamingE2e:null,
@@ -4305,7 +4315,6 @@ function setMode(m){
   state.mode=m; state.selected=null; state.cjSearch=''; state.e2eSearch='';
   render();
 }
-function setCjFilter(f){ state.cjPublishFilter=f; render(); }
 function onCjSearch(v){ state.cjSearch=v; render(); }
 function onE2eSearch(v){ state.e2eSearch=v; render(); }
 function clearCjSearch(){ state.cjSearch=''; render(); }
@@ -4691,9 +4700,6 @@ function renderCatalog(){
         '<span class="s-icon">'+ic('search',18)+'</span>'+
         '<input id="cj-search" placeholder="Название или код cj, bi, bi step" value="'+esc(state.cjSearch)+'" oninput="onCjSearch(this.value)">'+
         (state.cjSearch?('<button class="clear-btn" onclick="clearCjSearch()">'+ic('x',18)+'</button>'):'')+
-      '</div>'+
-      '<div class="chiprow">'+
-        chip('Все','all')+chip('Опубликованные','published')+chip('Не опубликованные','unpublished')+
       '</div>';
   } else {
     head+='<div class="searchbox">'+
@@ -4707,20 +4713,13 @@ function renderCatalog(){
   var list='<div class="catalog-list">'+ (state.mode==='cj'?renderCjList():renderE2eList()) +'</div>';
   return '<div class="catalog">'+head+list+'</div>';
 }
-function chip(label,val){
-  return '<button class="chip '+(state.cjPublishFilter===val?'on':'')+'" onclick="setCjFilter(\''+val+'\')">'+label+'</button>';
-}
-
 function textMatches(t,q){ return t.toLowerCase().indexOf(q)>=0; }
 
 function renderCjList(){
   var q=state.cjSearch.trim().toLowerCase();
-  var pubFilter=state.cjPublishFilter;
-  var items=CJ_LIST.filter(function(cj){
-    if(pubFilter==='published') return cj.published;
-    if(pubFilter==='unpublished') return !cj.published;
-    return true;
-  });
+  /* Ряд чипсов «Все / Опубликованные / Не опубликованные» убран 2026-10-16:
+     список показывается целиком, отбор идёт поиском. */
+  var items=CJ_LIST;
 
   var out='';
   items.forEach(function(cj){
@@ -4809,17 +4808,13 @@ function renderEmptyState(){
     '<p>Начни поиск или выбери сущность из списка</p>'+
   '</div>';
 }
-/* Коробка пустого состояния. Грани красятся переменными --box-* (CSS рядом
-   с .empty-state): они считаются из брендового токена, поэтому фигура живёт
-   в обеих темах и не содержит заданных руками значений. */
+/* Объект пустого состояния. Один на все три места — каталог E2E, данные
+   вызова и карточка агентов: двух разных фигур одного состояния быть не должно.
+   Картинка лежит data-URI, прототип остаётся одним HTML-файлом. */
+var EMPTY_OBJ = "data:image/webp;base64,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";
 function boxSvg(size){
-  var w = size || 140, h = Math.round(w / 140 * 120);
-  return '<svg class="box-illustration" width="'+w+'" height="'+h+'" viewBox="0 0 140 120" fill="none">'+
-    '<path d="M20 46 L70 26 L120 46 L70 66 Z" fill="var(--box-cap)"/>'+
-    '<path d="M20 46 L70 66 L70 108 L20 88 Z" fill="var(--box-left)"/>'+
-    '<path d="M120 46 L70 66 L70 108 L120 88 Z" fill="var(--box-right)"/>'+
-    '<path d="M32 30 Q70 6 108 30 L120 46 L70 26 L20 46 Z" fill="var(--box-flap)"/>'+
-  '</svg>';
+  var w = size || 140;
+  return '<img class="box-illustration" width="'+w+'" height="'+w+'" src="'+EMPTY_OBJ+'" alt="" aria-hidden="true" draggable="false">';
 }
 
 function renderContent(){
@@ -4931,7 +4926,8 @@ function renderStepE2eCallsTab(step){
   }
   var cur=currentImpl(step,'e2e');
   return renderImplChips(step,'e2e')+
-    '<div class="impl-meta"><span>Источник: '+esc(cur.source)+'</span><span>Загружено: '+esc(cur.loadedAt)+'</span></div>'+
+    '<div class="impl-meta"><span>Источник: <b>'+esc(cur.source)+'</b></span>'+
+      '<span>Загружено: <b>'+esc(cur.loadedAt)+'</b></span></div>'+
     renderCallsTab(cur.offset);
 }
 
