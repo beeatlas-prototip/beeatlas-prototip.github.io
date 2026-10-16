@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261016-152337">
+<meta name="beeatlas-build" content="20261016-155342">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -1024,8 +1024,16 @@
   .btn-primary{background:var(--yellow);color:var(--md-sys-color-on-primary);}
   .btn-primary:hover{background:var(--yellow-hover);}
   /* disabled у кнопки — это opacity .48, а не отдельная пара цветов */
-  .btn-primary:disabled{opacity:.48;cursor:not-allowed;}
-  .btn-primary:disabled:hover{background:var(--yellow);}
+  /* Неактивная кнопка — по docs/tokens.md: контейнер 12%, подпись 38% от
+     on-surface. Было opacity:.48 на брендовом жёлтом: на тёмном полотне это
+     давало оливковый — цвет, которого в палитре нет, и читался он не как
+     «недоступно», а как испорченный брендовый. */
+  .btn-primary:disabled{
+    background:color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);
+    color:color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent);
+    opacity:1;cursor:not-allowed;
+  }
+  .btn-primary:disabled:hover{background:color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);}
   .btn-outline{background:var(--bg);border:1px solid var(--border-strong);color:var(--text);}
   .btn-outline:hover{background:var(--bg-alt);}
   .btn-outline:disabled{opacity:.48;cursor:not-allowed;}
