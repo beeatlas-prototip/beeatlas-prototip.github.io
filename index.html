@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261016-121631">
+<meta name="beeatlas-build" content="20261016-124410">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -302,7 +302,10 @@
     --md-sys-color-error: #f37678;
     --md-sys-color-on-error: #ffffff;
     --md-sys-color-error-container: #371313;
-    --md-sys-color-on-error-container: #7e1e25;
+    /* Тон 90 палитры error (hue 25, chroma 60) — ровно то, что задаёт MAP
+       генератора для тёмной темы. Здесь лежал тон светлой: красный значок
+       «Фитнес-функции с ошибкой» давал 1.66:1 и не читался. */
+    --md-sys-color-on-error-container: #ffdad6;
     --md-sys-color-shadow: #ffffff;
     --md-sys-color-scrim: #ffffff;
     --md-sys-color-secondary: rgba(255, 255, 255, 0.6);
@@ -341,15 +344,23 @@
     --md-sys-color-on-ext-info: #ffffff;
     --md-sys-color-on-ext-info-container: #5cb5ff;
     --md-sys-color-on-ext-teal: #ffffff;
-    --md-sys-color-on-ext-teal-container: #004954;
+    /* Чернила на приглушённых контейнерах в тёмной теме. Пять ролей из восьми
+       несли тут тон светлой темы — тёмное по тёмному: значки CJ и BI в дереве
+       Каталога E2E давали 1.6:1 и 1.4:1, то есть не читались вовсе.
+       Значения посчитаны тон-90 той же тональной палитрой, что в генераторе
+       (hue/chroma из EXTENDED в переезд-m3/m3-theme.mjs), а не подобраны глазом.
+       Прогон генератора с --apply сюда НЕ применялся намеренно: он сейчас выдаёт
+       другую палитру целиком и сменил бы брендовый тон. Если будешь обновлять
+       тему генератором — сверь эти пять ролей отдельно. */
+    --md-sys-color-on-ext-teal-container: #64f7fc;
     --md-sys-color-on-ext-purple: #ffffff;
-    --md-sys-color-on-ext-purple-container: #6009a6;
+    --md-sys-color-on-ext-purple-container: #e1dfff;
     --md-sys-color-on-ext-magenta: #ffffff;
-    --md-sys-color-on-ext-magenta-container: #7a0075;
+    --md-sys-color-on-ext-magenta-container: #fdd6ff;
     --md-sys-color-on-ext-aquamarine: #ffffff;
-    --md-sys-color-on-ext-aquamarine-container: #004b43;
+    --md-sys-color-on-ext-aquamarine-container: #7df9cb;
     --md-sys-color-on-ext-lemon: #ffffff;
-    --md-sys-color-on-ext-lemon-container: #4f4100;
+    --md-sys-color-on-ext-lemon-container: #ffe17a;
     --md-sys-color-secondary-fixed: #f7e1a6;
     --md-sys-color-secondary-fixed-dim: #dac58c;
     --md-sys-color-on-secondary-fixed: #241a00;
@@ -1669,7 +1680,10 @@
      (3dicons, CC0, перекрашен). Прежняя коробка красилась смесью брендового
      тона с фоном (color-mix с --yellow), и в тёмной теме выходила оливковой.
      Готовая картинка от темы не зависит. */
-  .box-illustration{filter:none;max-width:100%;height:auto;}
+  /* display:block обязателен: строчная картинка тащит за собой место под
+     базовую линию (+28px у 140px), и подпись отрывается от иллюстрации —
+     пара переставала читаться отцентрованной, хотя центры совпадали. */
+  .box-illustration{filter:none;max-width:100%;height:auto;display:block;margin-inline:auto;}
   .empty-state h3{font-size:19px;line-height:24px;letter-spacing:.2px;font-weight:500;margin:0 0 var(--space-5);}
   .uc-zero-state h3{margin-bottom:var(--space-4);}
   .uc-zero-state p{max-width:560px;margin:0 0 var(--space-6);color:var(--text-secondary);font-size:15px;line-height:20px;letter-spacing:.2px;}
