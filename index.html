@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261016-131151">
+<meta name="beeatlas-build" content="20261016-134939">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -16818,6 +16818,58 @@ document.addEventListener("scroll", ()=>{ positionDsSelectMenus(); positionToast
 })();
 render();
 
+})();
+</script>
+
+<script>
+/* ── Висячие предлоги ────────────────────────────────────────────────────
+   Короткий предлог или союз не должен оставаться в конце строки: «подключим к»
+   с переносом перед «нужным разделам» — типографская ошибка.
+
+   Чинится не в исходном тексте: видимые строки собираются из данных в сотне
+   мест (шаблоны, конкатенация, подстановки), и править их поштучно значит
+   пропустить половину и залить неразрывными пробелами комментарии — в файле
+   3272 таких места, и почти все в коде. Поэтому один проход по текстовым узлам
+   после каждой отрисовки: пробел после такого слова меняется на неразрывный.
+
+   Пропускаются code/pre/kbd/samp и поля ввода: там пробел значащий, а
+   неразрывный в значении поля уехал бы в данные. */
+(function(){
+  var СЛУЖЕБНЫЕ = ['во','ко','со','обо','изо','ото','над','под','при','про','для','без','или',
+                   'из','от','до','по','за','на','об','не','ни','но','да',
+                   'в','к','с','о','у','и','а'];
+  /* Длинные варианты идут первыми: иначе «во» совпало бы как «в» + «о». */
+  var РЕ = new RegExp('(?<=^|[\\s(\u00AB\u201E"\'>\u2014\u2013])(' +
+                      СЛУЖЕБНЫЕ.join('|') + ') (?=[\u0410-\u042F\u0401\u0430-\u044F\u0451])', 'gi');
+  var ПРОПУСК = {CODE:1, PRE:1, KBD:1, SAMP:1, TEXTAREA:1, INPUT:1, SCRIPT:1, STYLE:1};
+  function пройтись(корень){
+    var ходок = document.createTreeWalker(корень, NodeFilter.SHOW_TEXT, {
+      acceptNode: function(узел){
+        if (!/[\u0410-\u044F\u0401\u0451]/.test(узел.nodeValue)) return NodeFilter.FILTER_REJECT;
+        for (var р = узел.parentNode; р && р !== document; р = р.parentNode)
+          if (ПРОПУСК[р.nodeName]) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      }
+    });
+    var узлы = [], у;
+    while ((у = ходок.nextNode())) узлы.push(у);
+    for (var i = 0; i < узлы.length; i++){
+      var было = узлы[i].nodeValue, стало = было.replace(РЕ, '$1\u00A0');
+      if (стало !== было) узлы[i].nodeValue = стало;
+    }
+  }
+  var наблюдатель = new MutationObserver(function(){
+    /* Отключаемся на время собственной правки, иначе она сама себя вызывает. */
+    наблюдатель.disconnect();
+    try { пройтись(document.body); } catch(e){}
+    наблюдатель.observe(document.body, {childList:true, subtree:true, characterData:true});
+  });
+  function запустить(){
+    try { пройтись(document.body); } catch(e){}
+    наблюдатель.observe(document.body, {childList:true, subtree:true, characterData:true});
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', запустить);
+  else запустить();
 })();
 </script>
 </body>
