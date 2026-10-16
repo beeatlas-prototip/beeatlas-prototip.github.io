@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261016-141303">
+<meta name="beeatlas-build" content="20261016-152337">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -1218,6 +1218,13 @@
   /* Многострочное поле: подпись не плавает по центру — текст начинается сверху. */
   .ffield.ftextarea .ffield-label{top:6px;font-size:13px;color:var(--text-secondary);transform:none;}
   .ffield.ftextarea .textarea{padding-top:26px;}
+  /* У однострочного поля заливку несёт .ffield-box, поэтому .ffield .ffield-input
+     делает сам input прозрачным. У многострочного коробки нет — заливку несёт
+     сам textarea, и то же правило её снимало: все шесть таких полей в прототипе
+     стояли без фона, вопреки спеке поля (docs/components.md). Возвращаем фон и
+     отменяем height:100%, иначе он спорит с min-height. */
+  .ffield.ftextarea .ffield-input{background:var(--input-bg);height:auto;}
+  .ffield.ftextarea .ffield-input:focus{background:var(--bg);border-color:var(--text);}
   /* Диаграмма вызовов сценария — SVG из buildSequenceSvgGeneric, тот же рендерер,
      что у реализации BI Step в каталоге, но вне его CSS-скоупа. */
   .uc-diagram-card{border:1px solid var(--border);border-radius:var(--size-border-radius-x6);overflow:hidden;}
@@ -3157,6 +3164,46 @@
      вход это не боковая задача. Шапка — Contextual header (64, паддинги 24),
      поэтому переиспользуются .wizard-overlay / .wizard-head / .wizard-close. */
   .lp-auth-body{flex:1;overflow-y:auto;display:flex;align-items:center;justify-content:center;padding:var(--size-spacing-x10) var(--size-spacing-x6);}
+  /* Ряд кнопок карточки: по docs/components.md они стоят в правом нижнем углу.
+     Правило существовало только внутри .e2ecat-scope, то есть за пределами
+     острова документированного компонента не было. Объявляем глобально теми же
+     значениями; у острова селектор специфичнее, его версия и останется в силе. */
+  .btnrow{display:flex;justify-content:flex-end;gap:var(--space-3);flex-wrap:wrap;}
+
+  /* ── Запросить демо ────────────────────────────────────────────────────
+     Два столбца: слева объяснение по шагам, справа форма. Форма — карточка по
+     docs/components.md: обводка без тени, скругление 16, кнопка в правом
+     нижнем углу через .btnrow. Ниже 1100 столбцы встают друг под друга:
+     форма на 520 и текст рядом уже не помещаются. */
+  .lp-demo-sec{padding-top:var(--size-spacing-x6);}
+  .lp-demo-back{align-self:flex-start;margin-bottom:var(--size-spacing-x6);}
+  .lp-demo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,520px);
+    gap:var(--size-spacing-x10);align-items:start;}
+  .lp-demo-side{display:flex;flex-direction:column;gap:var(--size-spacing-x5);}
+  .lp-demo-lead{font-size:17px;line-height:24px;letter-spacing:.2px;color:var(--text-secondary);margin:0;}
+  .lp-demo-step{display:flex;gap:var(--size-spacing-x4);align-items:flex-start;}
+  .lp-demo-step-ic{flex:0 0 auto;width:40px;height:40px;border-radius:var(--size-border-radius-x6);
+    display:flex;align-items:center;justify-content:center;
+    background:var(--md-sys-color-secondary-container);color:var(--md-sys-color-on-secondary-container);}
+  .lp-demo-step-ic svg{width:20px;height:20px;}
+  .lp-demo-step-t{font-size:17px;line-height:22px;letter-spacing:.2px;font-weight:500;margin-bottom:var(--space-1);}
+  .lp-demo-step-d{font-size:15px;line-height:20px;letter-spacing:.2px;color:var(--text-secondary);}
+  .lp-demo-form{background:var(--bg);border:1px solid var(--border);
+    border-radius:var(--size-border-radius-x8);padding:var(--size-spacing-x8);
+    display:flex;flex-direction:column;gap:var(--size-spacing-x4);}
+  .lp-demo-err{color:var(--red-text);font-size:13px;line-height:16px;letter-spacing:.2px;}
+  .lp-demo-note{font-size:13px;line-height:18px;letter-spacing:.2px;color:var(--text-secondary);margin:0;}
+  .lp-demo-done{align-items:center;text-align:center;gap:var(--size-spacing-x4);}
+  .lp-demo-done-ic{width:56px;height:56px;border-radius:var(--size-border-radius-x15);
+    display:flex;align-items:center;justify-content:center;
+    /* Роль берём напрямую: алиасы --success-bg/--success-text объявлены только
+       внутри .e2ecat-scope, и на лендинге плитка выходила прозрачной. */
+    background:var(--md-sys-color-ext-success-container);
+    color:var(--md-sys-color-on-ext-success-container);}
+  .lp-demo-done-t{font-size:var(--font-size-h5);line-height:var(--font-line-height-h5);letter-spacing:.2px;font-weight:500;margin:0;}
+  .lp-demo-done-d{font-size:15px;line-height:20px;letter-spacing:.2px;color:var(--text-secondary);margin:0;}
+  .lp-demo-done .btnrow{justify-content:center;width:100%;}
+  @media (max-width:1100px){ .lp-demo{grid-template-columns:minmax(0,1fr);} }
   .lp-auth-form{width:480px;max-width:100%;display:flex;flex-direction:column;gap:var(--size-spacing-x4);}
   .lp-auth-sub{font-size:15px;line-height:20px;letter-spacing:.2px;color:var(--text-secondary);margin:0;}
   .lp-auth-help{align-self:center;color:var(--blue);font-size:15px;line-height:20px;letter-spacing:.2px;cursor:pointer;}
@@ -6323,6 +6370,11 @@ const state = {
      тот, кто открыл ссылку впервые, всегда попадает на лендинг. */
   auth: null,
   authOpen: false,    // открыт ли экран входа (способ один — SSO)
+  /* Страница «Запросить демо» — отдельный экран лендинга, не часть входа:
+     её смотрит тот, у кого учётной записи ещё нет. */
+  demoOpen: false,
+  demoForm: {name:"", email:"", role:"", unit:"", goal:""},
+  demoSent: false,
   authNext: null,     // id раздела, в который человек шёл с витрины лендинга
   sidebarCollapsed:false,
   route: {view:"home"},
@@ -7439,7 +7491,7 @@ function LpHero(){
     </p>
     <div ${rise(4,"lp-hero-cta")}>
       <button class="btn btn-primary" data-action="auth-open">Войти</button>
-      <button class="btn btn-outline" data-action="lp-scroll" data-to="lpServices">Что внутри</button>
+      <button class="btn btn-primary" data-action="demo-open">Запросить демо</button>
     </div>
     <div ${rise(5,"lp-hero-note")}>Доступ — по корпоративной учётной записи</div>
     <div class="lp-shot-wrap">
@@ -7634,10 +7686,83 @@ function LpCta(){
         </p>
         <div class="lp-cta-actions">
           <button class="btn btn-primary" data-action="auth-open">Войти</button>
+          <button class="btn btn-primary" data-action="demo-open">Запросить демо</button>
           <button class="btn btn-outline" data-action="lp-support">Написать в поддержку</button>
         </div>
       </div>
       <div class="lp-cta-figure">${LpObj("mail", "lp-cta-img")}</div>
+    </div>
+  </section>`;
+}
+
+/* ═══ Запросить демо ═══════════════════════════════════════════════════════
+   Отдельная страница лендинга, а не часть экрана входа: вход — это SSO по
+   корпоративной учётной записи, а демо смотрит тот, у кого её ещё нет.
+   Слева — что будет дальше по шагам, справа — форма. Поля свои (FField,
+   FTextarea), список ролей — FilterSelect: нативный select раскрывается
+   средствами ОС, мимо токенов. */
+const DEMO_ROLES = ["Архитектор решений", "Бизнес-аналитик", "Владелец продукта",
+                    "Руководитель направления", "Другое"];
+
+function DemoSteps(){
+  const шаги = [
+    ["doc",   "Заполни форму", "Напиши, что хочешь посмотреть: оценку проекта, клиентские пути, каталог приложений"],
+    ["users", "Обсудим задачи", "Созвонимся и разберём, что у тебя сейчас болит в архитектуре"],
+    ["play",  "Проведём демо",  "Покажем платформу на твоих сценариях, а не на общих примерах"],
+  ];
+  return шаги.map((ш, i) => `
+    <div class="lp-demo-step">
+      <div class="lp-demo-step-ic">${icon(ш[0])}</div>
+      <div>
+        <div class="lp-demo-step-t">Шаг ${i+1}. ${escapeHtml(ш[1])}</div>
+        <div class="lp-demo-step-d">${escapeHtml(ш[2])}</div>
+      </div>
+    </div>`).join("");
+}
+
+function DemoForm(){
+  const d = state.demoForm;
+  const готово = d.name.trim() && d.email.trim() && d.role;
+  return `
+    <div class="lp-demo-form">
+      ${FField({id:"demoName",  label:"Имя и фамилия", value:d.name})}
+      ${FField({id:"demoEmail", label:"Корпоративная почта", value:d.email})}
+      ${FilterSelect({id:"demoRole", label:"Роль", value:d.role, options:DEMO_ROLES, action:"demo-role"})}
+      ${FField({id:"demoUnit",  label:"Подразделение", value:d.unit})}
+      ${FTextarea({id:"demoGoal", label:"Что хочешь посмотреть", value:d.goal, rows:104})}
+      ${d.error ? `<div class="lp-demo-err">${escapeHtml(d.error)}</div>` : ""}
+      <div class="btnrow">
+        <button class="btn btn-primary" id="demoSubmit" data-action="demo-submit"${готово?"":" disabled"}>Отправить заявку</button>
+      </div>
+      <p class="lp-demo-note">Заявку получает команда beeatlas, ответ придёт на корпоративную почту</p>
+    </div>`;
+}
+
+function DemoDone(){
+  return `
+    <div class="lp-demo-form lp-demo-done">
+      <div class="lp-demo-done-ic">${icon("check", 24)}</div>
+      <h3 class="lp-demo-done-t">Заявка отправлена</h3>
+      <p class="lp-demo-done-d">Ответим на корпоративную почту и предложим время. Если понадобится
+        уточнить задачу, напишем оттуда же</p>
+      <div class="btnrow">
+        <button class="btn btn-outline" data-action="demo-close">Вернуться на главную</button>
+      </div>
+    </div>`;
+}
+
+function DemoPage(){
+  return `
+  <section class="lp-sec lp-demo-sec">
+    <button class="btn btn-plain lp-demo-back" data-action="demo-close">${icon("chevronLeft", 20)} На главную</button>
+    <div class="lp-demo">
+      <div class="lp-demo-side">
+        <h2 class="lp-h2">Покажем beeatlas в деле</h2>
+        <p class="lp-demo-lead">Платформа внутренняя, вход по корпоративной учётной записи. Если её ещё
+          нет или хочешь сперва посмотреть — оставь заявку, проведём демо на твоих задачах</p>
+        ${DemoSteps()}
+      </div>
+      ${state.demoSent ? DemoDone() : DemoForm()}
     </div>
   </section>`;
 }
@@ -7663,12 +7788,13 @@ function Landing(){
     ${LandingHeader()}
     <main role="main">
       <div class="lp-wrap">
+        ${state.demoOpen ? DemoPage() : `
         ${LpHero()}
         ${LpServices()}
         ${LpAdvantages()}
         ${LpFlow()}
         ${LpRoles()}
-        ${LpCta()}
+        ${LpCta()}`}
       </div>
     </main>
     ${LpFooter()}
@@ -7693,11 +7819,9 @@ function AuthScreen(){
     </div>
     <div class="lp-auth-body">
       <div class="lp-auth-form">
-        <p class="lp-auth-sub">Платформа внутренняя: вход по корпоративной учётной записи.
-          Учётной записи нет — можно посмотреть демо</p>
+        <p class="lp-auth-sub">Платформа внутренняя: вход по корпоративной учётной записи</p>
         <button class="btn btn-primary" data-action="auth-sso">${icon("shield")} Войти по SSO</button>
-        <button class="btn btn-outline" data-action="auth-demo">Запросить демо</button>
-        <span class="lp-auth-help" data-action="lp-support">Нет доступа?</span>
+        <span class="lp-auth-help" data-action="demo-open">Учётной записи нет?</span>
       </div>
     </div>
   </div>`;
@@ -15258,6 +15382,7 @@ function bindGlobalEvents(){
   document.body.onkeydown = function(e){
     if(e.key === "Escape"){
       if(state.authOpen){ state.authOpen=false; render(); }
+      else if(state.demoOpen){ state.demoOpen=false; state.demoSent=false; render(); }
       else if(state.cjMergeConfirm){ state.cjMergeConfirm=false; render(); }
       else if(state.cjSourcePanel){ state.cjSourcePanel=null; render(); }
       else if(state.cjMergePanel){ state.cjMergePanel=null; state.cjMergeConfirm=false; render(); }
@@ -15383,7 +15508,21 @@ function reFocus(id){
   finally{ refocusing = false; }
 }
 
+/* Поля демо не перерисовывают страницу: иначе каждое нажатие пересобирало бы
+   лендинг и курсор улетал бы из поля. Значение кладём в состояние, а классом
+   filled двигаем плавающую подпись — ровно это делает FField при сборке. */
+function syncDemoField(el){
+  const box = el.closest(".ffield");
+  if(box) box.classList.toggle("filled", !!el.value);
+  const ключ = {demoName:"name", demoEmail:"email", demoUnit:"unit", demoGoal:"goal"}[el.id];
+  state.demoForm[ключ] = el.value;
+  const submit = document.getElementById("demoSubmit");
+  const f = state.demoForm;
+  if(submit) submit.disabled = !(f.name.trim() && f.email.trim() && f.role);
+}
+
 function handleInput(el){
+  if(el.id && el.id.startsWith("demo")){ syncDemoField(el); return; }
   if(el.id==="searchInput"){
     state.search = el.value;
     clearTimeout(searchDebTimer);
@@ -15527,7 +15666,21 @@ function handleAction(action, el){
     case "lp-support": showToast("Раздел вне рамок прототипа"); break;
     /* Вход один — по корпоративной учётной записи. Тому, у кого её нет,
        нужен путь посмотреть продукт, иначе экран входа для него тупик. */
-    case "auth-demo": showToast("Запрос на демо отправлен — ответим на корпоративную почту"); break;
+    case "demo-open":
+      state.demoOpen = true; state.authOpen = false; render(); window.scrollTo(0, 0); break;
+    case "demo-close":
+      state.demoOpen = false; state.demoSent = false;
+      state.demoForm = {name:"", email:"", role:"", unit:"", goal:""};
+      render(); window.scrollTo(0, 0); break;
+    case "demo-role":
+      state.demoForm.role = el.dataset.value; state.popover = null; render(); break;
+    case "demo-submit": {
+      const f = state.demoForm;
+      if(!f.email.includes("@")){
+        f.error = "Почта указана не полностью: нужен адрес вида имя@example.ru"; render(); break;
+      }
+      f.error = ""; state.demoSent = true; render(); window.scrollTo(0, 0); break;
+    }
     /* Карточка раздела ведёт в тот же вход, но запоминает, куда человек шёл:
        после входа он попадает в этот раздел, а не на главную. */
     case "auth-open":
