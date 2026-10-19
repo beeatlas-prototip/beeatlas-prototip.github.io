@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261019-104215">
+<meta name="beeatlas-build" content="20261019-105414">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -1202,7 +1202,10 @@
      (это уже margin-bottom чипов .pill-toggle по умолчанию) — плотнее вертикали здесь
      не нужно, но это отдельный масштаб от остальных форм, поэтому переопределяем локально. */
   .uc-step-setup .field-block{margin-bottom:var(--size-spacing-x8);}
-  .uc-step-setup-row{display:grid;grid-template-columns:1fr 1fr;gap:var(--size-spacing-x8);margin-bottom:var(--size-spacing-x8);}
+  /* minmax(0,1fr), а не 1fr: у 1fr минимум — min-content, и длинное nowrap-значение
+     во втором поле растягивало свою колонку (замер: 592 против 395). Текст внутри
+     поля и так обрезается многоточием, поэтому нулевой минимум ничего не прячет. */
+  .uc-step-setup-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:var(--size-spacing-x8);margin-bottom:var(--size-spacing-x8);}
   .uc-step-setup-row .field-block{margin-bottom:0;}
   /* Состояния текстового поля по docs/components.md: подпись — обязательный
      элемент. В покое сидит по центру (margin-top 14 при высоте 48 = визуально то же,
@@ -2212,6 +2215,21 @@
   .uc-menu-item .ic{width:20px;height:20px;color:var(--text-secondary);}
   .uc-menu-item .txt{flex:1;overflow:hidden;text-overflow:ellipsis;}
   .uc-menu-divider{height:1px;background:var(--md-sys-color-outline-variant);margin:var(--menu-padding-vertical) 0;}
+  /* Подпись группы: в узкой шапке в одном меню лежат и действия с веткой, и действия
+     с Use Case — без подписей это один длинный список без границы смысла.
+     В спеке меню подписи групп нет, поэтому собрана из токенов типографики. */
+  .uc-menu-cap{padding:var(--size-spacing-x2) var(--size-spacing-x4);font-size:13px;line-height:16px;
+    color:var(--text-secondary);text-transform:uppercase;letter-spacing:.4px;}
+  .uc-menu-item .tag{font-size:13px;color:var(--text-secondary);}
+  .uc-menu-item .check{display:flex;color:var(--text);margin-left:auto;}
+  .uc-menu-item .check svg{width:20px;height:20px;color:var(--text);}
+  .uc-menu-item .check .ic{width:20px;height:20px;color:var(--text);}
+  /* Схлопнутое меню длиннее экрана не растёт — дальше прокрутка. */
+  .uc-menu.scroll{max-height:min(520px, 70vh);overflow-y:auto;overscroll-behavior:contain;}
+  /* Бейдж ветки возвращается в узкой шапке: сам переключатель уезжает в меню, но какой
+     состав показан на странице, видно должно быть без открытия меню. */
+  .uc-branch-badge svg{width:18px;height:18px;}
+  .uc-branch-badge .ic{width:18px;height:18px;}
   /* Ветка в заголовке Use Case — не бейдж, а переключатель: бейджем она читалась как
      статусная метка рядом с «Опубликован», и сменить ветку можно было только через меню
      действий. Теперь это тот же CjSelectField, что в ряду веток CJ (пункты с датой
@@ -2234,7 +2252,20 @@
      never depends on the browser's native <select> placement. */
   .cj-select-field{position:relative;display:inline-block;flex:0 0 auto;}
   .cj-branch-bar > .cj-select-field{width:260px;}
+  /* Переключатель ветки в шапке — фиксированной ширины: на auto он дышал при каждой
+     смене ветки (замер: 131 у «main», 147 у «design»), и соседние кнопки ездили. */
+  .page-title-row .cj-select-field{width:200px;}
   .page-title-row .cj-select-trigger{min-width:0;}
+  /* flex:1 у названия: в триггере три элемента (иконка, имя, шеврон), и
+     space-between при фиксированной ширине отрывал имя от иконки — теперь имя
+     занимает середину и прижато к иконке, шеврон остаётся у правого края. */
+  .page-title-row .cj-select-trigger .name{flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  /* Шапка Use Case: крошки — заголовок — код идут с одним шагом 8. Ряд заголовка выше
+     самого h1 (в нём контролы 48 против 32 у текста), и эти 8 уже даёт его собственный
+     остаток по вертикали — поэтому внешние margin здесь обнуляются, а не задаются. */
+  .uc-page-head .breadcrumb{margin-bottom:0;}
+  .uc-page-head .page-title-row{margin-bottom:0;}
+  .uc-page-head .uc-code-line{margin-top:0;}
   .cj-branch-bar > .cj-select-field .cj-select-trigger{min-width:0;}
   .cj-select-field.wide{display:block;width:100%;}
   /* Триггер повторяет поле по docs/components.md: высота 56, паддинг 0/16,
@@ -5496,7 +5527,7 @@ function renderImportModal(){
           '<a onclick="insertExample(\'ok\')">пример</a> · <a onclick="insertExample(\'warn\')">с замечаниями</a> · <a onclick="insertExample(\'error\')">с ошибкой</a>'+
         '</span>'+
       '</div>'+
-      '<textarea id="panel-input" class="puml'+(p.err?' err':'')+'" placeholder="PlantUml" oninput="onPanelInput(this.value)">'+esc(p.value)+'</textarea>'+
+      '<textarea id="panel-input" class="puml'+(p.err?' err':'')+'" placeholder="PlantUML" oninput="onPanelInput(this.value)">'+esc(p.value)+'</textarea>'+
       (p.err?('<div class="err-box" style="margin-top:14px;">'+ic('warn',18)+'<div>'+esc(p.err)+'</div></div>'):'')+
     '</div>';
     foot='<button class="btn primary" '+(hasContent?'':'disabled')+' onclick="runValidate()">Проверить</button>';
@@ -11001,17 +11032,48 @@ function CjConfirmDialog({title, text, confirmLabel, confirmAction, cancelAction
    где поле переключает и удаляет, а кнопки рядом создают и объединяют. Ряд веток целиком
    сюда не переносится: в ряду заголовка Use Case на 1280 остаётся 24px, бар занял бы 560.
    Кроме этих двух команд в меню ничего нет — «Изменить привязку к CJ» убрана 19.10. */
-function UcActionsMenu(){
+/* Порог, с которого шапка Use Case схлопывает все действия в одно меню: ниже 1440
+   переключатель ветки и четыре кнопки перестают помещаться рядом с заголовком.
+   Значение читается при каждой отрисовке страницы, а смена стороны порога
+   перерисовывает её (слушатель resize внизу файла). */
+const UC_HEAD_NARROW = 1440;
+function ucHeadNarrow(){ return window.innerWidth < UC_HEAD_NARROW; }
+
+function UcActionsMenu(p, u, narrow){
   const running = state.ucMergeRunning;
   const mergeBlocked = !!running;
   const item = (action, data, ico, txt, extra) =>
     `<div class="uc-menu-item" data-action="${action}" ${data}>${icon(ico)}<span class="txt">${txt}</span>${extra||""}</div>`;
+  const branchCmds = `
+    ${item("uc-open-branch-create","","plus","Новая ветка")}
+    <div class="uc-menu-item${mergeBlocked?" disabled":""}" ${mergeBlocked?`title="Дождитесь завершения текущего объединения"`:`data-action="uc-open-merge"`}>
+      ${icon("gitMerge")}<span class="txt">Объединить ветки</span>
+    </div>`;
+  if(!narrow) return `<div class="uc-menu">${branchCmds}</div>`;
+
+  /* Узкая шапка: переключателя ветки и кнопок рядом с заголовком нет, поэтому сюда
+     же уезжают список веток, удаление своей ветки и действия с самим Use Case.
+     Группы подписаны — иначе это один список из одиннадцати разнородных пунктов. */
+  const branches = ucBranchList(u);
+  const activeMeta = branches.find(b=>b.id===u.branch);
   return `
-    <div class="uc-menu">
-      ${item("uc-open-branch-create","","plus","Новая ветка")}
-      <div class="uc-menu-item${mergeBlocked?" disabled":""}" ${mergeBlocked?`title="Дождитесь завершения текущего объединения"`:`data-action="uc-open-merge"`}>
-        ${icon("gitMerge")}<span class="txt">Объединить ветки</span>
-      </div>
+    <div class="uc-menu scroll">
+      <div class="uc-menu-cap">Ветка</div>
+      ${branches.map(b=>`
+        <div class="uc-menu-item" data-action="uc-switch-branch" data-branch="${escapeHtml(b.id)}">
+          ${icon("gitBranch")}<span class="txt">${escapeHtml(b.id)}</span>
+          ${b.kind==="user"?`<span class="tag">своя</span>`:""}
+          ${b.id===u.branch?`<span class="check">${icon("check")}</span>`:""}
+        </div>`).join("")}
+      ${branchCmds}
+      ${activeMeta && activeMeta.kind==="user"
+        ? item("uc-branch-delete-ask",`data-branch="${escapeHtml(u.branch)}"`,"trash",`Удалить ветку «${escapeHtml(u.branch)}»`) : ""}
+      <div class="uc-menu-divider"></div>
+      <div class="uc-menu-cap">Use Case</div>
+      ${item("export-uc",`data-format="puml" data-id="${p.id}" data-uc="${u.id}"`,"upload","Экспорт в PUML")}
+      ${item("export-uc",`data-format="markdown" data-id="${p.id}" data-uc="${u.id}"`,"upload","Экспорт в Markdown")}
+      ${item("open-usecase-history",`data-id="${p.id}" data-uc="${u.id}"`,"history","История импорта")}
+      ${item("edit-usecase",`data-id="${p.id}" data-uc="${u.id}"`,"pencil","Редактировать")}
     </div>
   `;
 }
@@ -12447,7 +12509,9 @@ function UseCaseDetailPage(projectId, ucId){
   ensureUcBranches(u);
   const runs = ucImportRuns(p, u.code);
   const lastRun = runs[0] || null;
+  const narrow = ucHeadNarrow();
   return `
+    <div class="uc-page-head">
     <div class="breadcrumb">
       <a data-action="nav" data-nav="projects">Проекты</a><span class="sep">${icon("chevronRight")}</span>
       <a data-action="open-project" data-id="${p.id}">${escapeHtml(p.name)}</a><span class="sep">${icon("chevronRight")}</span>
@@ -12457,9 +12521,15 @@ function UseCaseDetailPage(projectId, ucId){
     <div class="page-title-row">
       <h1>${escapeHtml(u.name)}</h1>
       ${ucStatusBadge(u.status)}
-      ${CjSelectField({id:"uc-branch-switch", branches:ucBranchList(u), activeId:u.branch, action:"uc-switch-branch",
-                       lead:"gitBranch", meta:b=>ucBranchUpdNote(u,b), deleteAction:"uc-branch-delete-ask"})}
+      ${narrow ? `<span class="badge gray uc-branch-badge" title="Ветка, состав которой показан на странице">${icon("gitBranch")}${escapeHtml(u.branch)}</span>` : ""}
       <div class="actions">
+        ${narrow ? "" : CjSelectField({id:"uc-branch-switch", branches:ucBranchList(u), activeId:u.branch, action:"uc-switch-branch",
+                       lead:"gitBranch", meta:b=>ucBranchUpdNote(u,b), deleteAction:"uc-branch-delete-ask"})}
+        <div class="uc-menu-wrap">
+          <button class="btn btn-outline btn-icon-only" data-action="toggle-popover" data-popover="uc-actions" title="${narrow?"Действия":"Ветки"}">${icon("moreVertical")}</button>
+          ${state.popover==="uc-actions" ? UcActionsMenu(p, u, narrow) : ""}
+        </div>
+        ${narrow ? "" : `
         <div class="uc-menu-wrap">
           <button class="btn btn-outline btn-icon-only" data-action="toggle-popover" data-popover="uc-export" title="Экспорт">${icon("upload")}</button>
           ${state.popover==="uc-export" ? `
@@ -12469,14 +12539,11 @@ function UseCaseDetailPage(projectId, ucId){
             </div>` : ""}
         </div>
         <button class="btn btn-outline btn-icon-only" data-action="open-usecase-history" data-id="${p.id}" data-uc="${u.id}" title="История импорта">${icon("history")}</button>
-        <button class="btn btn-outline btn-icon-only" data-action="edit-usecase" data-id="${p.id}" data-uc="${u.id}" title="Редактировать">${icon("pencil")}</button>
-        <div class="uc-menu-wrap">
-          <button class="btn btn-outline btn-icon-only" data-action="toggle-popover" data-popover="uc-actions" title="Ветки">${icon("moreVertical")}</button>
-          ${state.popover==="uc-actions" ? UcActionsMenu() : ""}
-        </div>
+        <button class="btn btn-outline btn-icon-only" data-action="edit-usecase" data-id="${p.id}" data-uc="${u.id}" title="Редактировать">${icon("pencil")}</button>`}
       </div>
     </div>
     <div class="uc-code-line">${escapeHtml(u.code)}</div>
+    </div>
     ${UseCaseMetaRow(u, lastRun)}
     ${UcBranchStatusRow(p, u)}
     ${UseCaseLinksSection(u)}
@@ -14242,7 +14309,14 @@ function UcStepSetup(w){
       </div>`}
       <div class="uc-step-setup-row">
         <div class="field-block">
-          ${d.mode==="new" ? `
+          ${w.editing ? `
+            <div class="ffield filled">
+              <div class="ffield-box">
+                <input class="input ffield-input" readonly tabindex="-1" value="${escapeHtml(currentExisting ? currentExisting.name : "")}"/>
+              </div>
+              <label class="ffield-label">Название Use Case</label>
+            </div>
+          ` : d.mode==="new" ? `
             <div class="ffield${d.ucName?" filled":""}">
               <div class="ffield-box">
                 <input class="input ffield-input" id="ucWizName" value="${escapeHtml(d.ucName)}"/>
@@ -14267,13 +14341,13 @@ function UcStepSetup(w){
       </div>
 
       <div class="uc-form-section">
-        <h3>Вставить PlantUml текстом</h3>
+        <h3>Вставить PlantUML текстом</h3>
         <span class="reset-link" data-action="uc-fill-sample">Подставить пример</span>
       </div>
       <div class="field-block">
-        <div class="ffield${d.plantUml?" filled":""}" style="position:relative;">
-          <textarea class="textarea" id="ucWizPlantUml" style="min-height:220px;padding-top:28px;font-family:ui-monospace,monospace;font-size:13px;">${escapeHtml(d.plantUml)}</textarea>
-          <label class="ffield-label">PlantUml</label>
+        <div class="ffield ftextarea${d.plantUml?" filled":""}">
+          <textarea class="textarea ffield-input" id="ucWizPlantUml" style="min-height:220px;font-family:ui-monospace,monospace;font-size:13px;">${escapeHtml(d.plantUml)}</textarea>
+          <label class="ffield-label">PlantUML</label>
         </div>
       </div>
       <p style="color:var(--text-secondary);font-size:15px;margin:0 0 var(--space-7);">Вставь текст диаграммы последовательности в нотации PlantUML. Используй названия систем/контейнеров, соответствующие существующим в ландшафте BeeAtlas — так вызовы будут сопоставлены автоматически</p>
@@ -16932,7 +17006,15 @@ function handleAction(action, el){
 /* ============================= INIT ============================= */
 /* Прокрутка и смена размера окна сдвигают поле — пересчитываем сторону и высоту
    открытого меню. Вешается один раз: bindGlobalEvents() зовётся на каждый рендер. */
-window.addEventListener("resize", ()=>{ fitStickyDetailRows(); markStickyScrolled(); positionDsSelectMenus(); positionTablePopovers(); positionToast(); });
+let ucHeadNarrowLast = null;
+window.addEventListener("resize", ()=>{
+  fitStickyDetailRows(); markStickyScrolled(); positionDsSelectMenus(); positionTablePopovers(); positionToast();
+  /* Шапка Use Case собрана двумя разными способами по обе стороны порога 1440 —
+     перерисовываем только в момент его пересечения, а не на каждый пиксель. */
+  const n = ucHeadNarrow();
+  if(ucHeadNarrowLast !== null && n !== ucHeadNarrowLast){ ucHeadNarrowLast = n; render(); return; }
+  ucHeadNarrowLast = n;
+});
 document.addEventListener("scroll", ()=>{ positionDsSelectMenus(); positionToast(); }, true);
 
 (function applyDeepLinkFromUrl(){
