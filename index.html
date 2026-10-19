@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261019-124416">
+<meta name="beeatlas-build" content="20261019-125639">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -11044,12 +11044,38 @@ function CjConfirmDialog({title, text, confirmLabel, confirmAction, cancelAction
    где поле переключает и удаляет, а кнопки рядом создают и объединяют. Ряд веток целиком
    сюда не переносится: в ряду заголовка Use Case на 1280 остаётся 24px, бар занял бы 560.
    Кроме этих двух команд в меню ничего нет — «Изменить привязку к CJ» убрана 19.10. */
-/* Порог, с которого шапка Use Case схлопывает все действия в одно меню: ниже 1440
-   переключатель ветки и четыре кнопки перестают помещаться рядом с заголовком.
-   Значение читается при каждой отрисовке страницы, а смена стороны порога
-   перерисовывает её (слушатель resize внизу файла). */
-const UC_HEAD_NARROW = 1440;
-function ucHeadNarrow(){ return window.innerWidth < UC_HEAD_NARROW; }
+/* Схлопывание действий в шапке Use Case — по факту нехватки места, а не по ширине окна.
+   Жёсткий порог (был 1440) не знает ни про свёрнутый сайдбар, ни про длину названия:
+   на одной и той же ширине окна места может хватать и не хватать.
+   Ряд действий имеет постоянную ширину (поле ветки 200 + четыре кнопки 48 + зазоры),
+   поэтому достаточно замерить её один раз в развёрнутом состоянии и дальше сравнивать
+   с остатком строки. Поскольку сравнение идёт с ЗАПОМНЕННОЙ шириной, а не с текущей,
+   прямой и обратный переходы считаются по одному числу — мигания на границе нет.
+   UC_HEAD_MIN_TITLE — сколько места должно остаться САМОМУ заголовку: переноситься на
+   две-три строки он имеет право, но ниже этого превращается в лесенку по одному слову.
+   Бейдж статуса стоит в той же колонке и его ширина тоже вычитается — иначе при
+   «осталось 360» заголовку доставалось 245 и он рвался на три строки. */
+const UC_HEAD_MIN_TITLE = 360;
+let ucHeadActionsFull = 0;    // ширина развёрнутого ряда действий, замер
+let ucHeadNarrowState = false;
+function ucHeadNarrow(){ return ucHeadNarrowState; }
+function fitUcHead(){
+  const head = document.querySelector(".uc-page-head");
+  if(!head) return;
+  const actions = head.querySelector(".actions");
+  if(!actions) return;
+  /* Пока ряд развёрнут — обновляем замер; в схлопнутом состоянии он уже не отражает
+     полный набор, поэтому берётся запомненное значение. */
+  if(!ucHeadNarrowState) ucHeadActionsFull = actions.getBoundingClientRect().width;
+  if(!ucHeadActionsFull) return;
+  const gap = parseFloat(getComputedStyle(head).columnGap) || 0;
+  const title = head.querySelector(".uc-head-title");
+  const badge = title && title.querySelector(".badge");
+  const need = UC_HEAD_MIN_TITLE
+    + (badge ? badge.getBoundingClientRect().width + (parseFloat(getComputedStyle(title).columnGap) || 0) : 0);
+  const want = (head.clientWidth - ucHeadActionsFull - gap) < need;
+  if(want !== ucHeadNarrowState){ ucHeadNarrowState = want; render(); }
+}
 
 function UcActionsMenu(p, u, narrow){
   const running = state.ucMergeRunning;
@@ -15225,6 +15251,7 @@ function render(){
   positionTablePopovers();
   positionToast();
   bindScrollTableTooltips();
+  fitUcHead();
   saveLocation();
 }
 
@@ -17012,16 +17039,11 @@ function handleAction(action, el){
 /* ============================= INIT ============================= */
 /* Прокрутка и смена размера окна сдвигают поле — пересчитываем сторону и высоту
    открытого меню. Вешается один раз: bindGlobalEvents() зовётся на каждый рендер. */
-/* Сторона порога запоминается сразу при загрузке, а не при первом resize: иначе самый
-   первый resize только записывал значение и шапку не перерисовывал — при сужении окна
-   с 1728 до 1024 действия так и оставались развёрнутыми. */
-let ucHeadNarrowLast = ucHeadNarrow();
 window.addEventListener("resize", ()=>{
   fitStickyDetailRows(); markStickyScrolled(); positionDsSelectMenus(); positionTablePopovers(); positionToast();
-  /* Шапка Use Case собрана двумя разными способами по обе стороны порога 1440 —
-     перерисовываем только в момент его пересечения, а не на каждый пиксель. */
-  const n = ucHeadNarrow();
-  if(n !== ucHeadNarrowLast){ ucHeadNarrowLast = n; render(); }
+  /* Шапка Use Case пересобирается только когда действительно перестало хватать места
+     (или снова стало хватать) — сам fitUcHead решает, нужна ли перерисовка. */
+  fitUcHead();
 });
 document.addEventListener("scroll", ()=>{ positionDsSelectMenus(); positionToast(); }, true);
 
