@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261019-130810">
+<meta name="beeatlas-build" content="20261019-132703">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -2098,7 +2098,7 @@
   .uc-link-name{display:inline-block;font-size:17px;line-height:22px;letter-spacing:.2px;}
   .uc-link-code{font-size:15px;line-height:20px;letter-spacing:.2px;color:var(--text-secondary);margin-top:var(--space-1);}
   /* Код Use Case идёт отдельной строкой под заголовком, до строки «Источник / Дата». */
-  .uc-code-line{font-size:17px;line-height:22px;letter-spacing:.2px;color:var(--text-secondary);margin:calc(-1 * var(--space-4)) 0 var(--space-5);}
+  .detail-head-sub{font-size:17px;line-height:22px;letter-spacing:.2px;color:var(--text-secondary);margin:calc(-1 * var(--space-4)) 0 var(--space-5);}
   .uc-stat-cards{margin-bottom:var(--space-6);}
   /* Число и подпись в одну строку, тон карточки — по статусу (макет шага «Результат»). */
   .uc-stat-card{display:flex;align-items:center;gap:var(--size-spacing-x3);border:1px solid var(--border);border-radius:var(--size-border-radius-x6);padding:var(--size-spacing-x6);background:var(--bg);}
@@ -2265,28 +2265,29 @@
   .cj-branch-bar > .cj-select-field{width:260px;}
   /* Переключатель ветки в шапке — фиксированной ширины: на auto он дышал при каждой
      смене ветки (замер: 131 у «main», 147 у «design»), и соседние кнопки ездили. */
-  .uc-page-head .actions .cj-select-field{width:200px;}
-  .uc-page-head .actions .cj-select-trigger{min-width:0;}
+  .detail-head .actions .cj-select-field{width:200px;}
+  .detail-head .actions .cj-select-trigger{min-width:0;}
   /* flex:1 у названия: в триггере три элемента (иконка, имя, шеврон), и
      space-between при фиксированной ширине отрывал имя от иконки — теперь имя
      занимает середину и прижато к иконке, шеврон остаётся у правого края. */
-  .uc-page-head .actions .cj-select-trigger .name{flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  /* Шапка Use Case — сетка, а не общий .page-title-row: тот flex с переносом, и блок
-     действий при нехватке места уезжал на вторую строку, разрывая связку заголовка
-     с кодом. Здесь колонка текста и колонка действий независимы: заголовок переносится
-     на вторую и третью строку внутри своей колонки, код остаётся прямо под ним,
-     а действия стоят в правом верхнем углу и не переносятся никогда. */
-  .uc-page-head{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:var(--space-6);
+  .detail-head .actions .cj-select-trigger .name{flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  /* Шапка страницы-карточки (Use Case, приложение) — сетка, а не общий .page-title-row:
+     тот flex с переносом, и блок действий при нехватке места уезжал на вторую строку,
+     разрывая связку заголовка с подзаголовком. Здесь колонка текста и колонка действий
+     независимы: заголовок переносится на вторую и третью строку внутри своей колонки,
+     подзаголовок остаётся прямо под ним, а действия стоят в правом верхнем углу и не
+     переносятся никогда. */
+  .detail-head{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:var(--space-6);
     align-items:start;margin-bottom:var(--space-6);}
-  .uc-page-head .breadcrumb{grid-column:1 / -1;margin-bottom:var(--space-2);}
-  .uc-page-head .uc-head-text{grid-column:1;min-width:0;}
-  .uc-page-head .actions{grid-column:2;grid-row:2;display:flex;gap:var(--space-3);flex:0 0 auto;}
+  .detail-head .breadcrumb{grid-column:1 / -1;margin-bottom:var(--space-2);}
+  .detail-head .detail-head-text{grid-column:1;min-width:0;}
+  .detail-head .actions{grid-column:2;grid-row:2;display:flex;gap:var(--space-3);flex:0 0 auto;}
   /* Заголовок и бейдж: бейдж прижат к верху и опущен на (32−24)/2, чтобы стоять по
      центру ПЕРВОЙ строки заголовка, а не середины всего многострочного блока. */
-  .uc-head-title{display:flex;align-items:flex-start;gap:var(--space-4);margin-bottom:var(--space-1);}
-  .uc-head-title h1{font-size:26px;line-height:32px;letter-spacing:.2px;font-weight:500;margin:0;min-width:0;}
-  .uc-head-title .badge{margin-top:4px;flex:0 0 auto;}
-  .uc-page-head .uc-code-line{margin:0;}
+  .detail-head-title{display:flex;align-items:flex-start;gap:var(--space-4);margin-bottom:var(--space-1);}
+  .detail-head-title h1{font-size:26px;line-height:32px;letter-spacing:.2px;font-weight:500;margin:0;min-width:0;}
+  .detail-head-title .badge{margin-top:4px;flex:0 0 auto;}
+  .detail-head .detail-head-sub{margin:0;}
   .cj-branch-bar > .cj-select-field .cj-select-trigger{min-width:0;}
   .cj-select-field.wide{display:block;width:100%;}
   /* Триггер повторяет поле по docs/components.md: высота 56, паддинг 0/16,
@@ -6511,6 +6512,11 @@ const state = {
   cjMergeConfirm:false,   // показан ли диалог «Объединить ветки?» поверх панели
   cjMergeRunning:null,    // {cjId, source, target, strategy} while a merge is being processed (global — only one at a time)
   cjBranchPanelOpen:true, // whether the branch bar (select + new branch + merge) is expanded
+  acBranchPanel:null,        // {appId, name, parent} — панель создания ветки приложения
+  acMergePanel:null,         // {appId, source, target, strategy, conflicts}
+  acMergeConfirm:false,
+  acBranchDeleteConfirm:null,
+  acMergeRunning:null,       // {appId, source, target, strategy}
 
   // Ветки Use Case — та же механика, что у CJ. Активная ветка хранится на самом UC
   // (u.branch), здесь только состояние панелей; ucMergeRunning глобальный, потому что
@@ -7179,6 +7185,8 @@ function renderShell(){
     ${state.ucWizard ? UcWizardOverlay() : ""}
     ${state.ucBranchPanel ? UcBranchCreatePanel() : ""}
     ${state.ucMergePanel ? UcMergePanel() : ""}
+    ${state.acBranchPanel ? AcBranchCreatePanel() : ""}
+    ${state.acMergePanel ? AcMergePanel() : ""}
     ${state.createPanel ? CreatePanelWrap() : ""}
     ${state.sidePanel ? SidePanelWrap() : ""}
     ${state.cjOpen ? CjOverlay() : ""}
@@ -8093,6 +8101,7 @@ function defaultAppcatState(){
     listSearch:"",
     expanded:{"d-it":true, "sd-hw":true},
     detailId:null,
+    branch:"main",          // открытая ветка приложения
     tab:"general",
     generalSub:"info",
     pipelineExpanded:{"run1":true},
@@ -8536,6 +8545,127 @@ const AC_CJ_PATHS = [
     {code:"BI.00.00.05.2", name:"BI Активация совместного баланса", steps:3},
   ]},
 ];
+
+/* ============================= ВЕТКИ ПРИЛОЖЕНИЯ =============================
+   Устроены так же, как ветки Use Case: системные design/develop/main плюс
+   пользовательские, полная изоляция состава (§3.1 — состав не расшаривается),
+   объединение стратегиями «добавление»/«замена» с проверкой конфликтов.
+   На ветке висит архитектурное описание приложения — то, что архитектор правит
+   в проекте: технические возможности, интерфейсы и методы, технологии, паттерны,
+   НФТ, наблюдаемость. Вкладки «Общая информация», «Фитнес-функции», «Клиентские
+   пути», «Участие в процессах» и «Связанные проекты» остаются общими: это факты
+   о продукте и его внешние связи, а не предмет проектного ветвления. */
+const AC_SYSTEM_BRANCHES = ["design","develop","main"];
+const AC_BRANCH_FIELDS = ["techCaps","interfaces","technologies","patterns","nfrs","obs"];
+const AC_BRANCH_META = {};     // appId → [{id, kind, parent, createdBy, createdAt}]
+const AC_BRANCHES = {};        // appId → {branchId: {поля AC_BRANCH_FIELDS, updatedAt}}
+
+function acBaseBranchData(){
+  return {
+    techCaps: deepClone(AC_TECH_CAPS),
+    interfaces: deepClone(AC_INTERFACES_TREE),
+    technologies: deepClone(AC_TECHNOLOGIES),
+    patterns: deepClone(AC_PATTERNS),
+    nfrs: deepClone(AC_NFRS),
+    obs: deepClone(AC_OBS_TREE),
+  };
+}
+function acSystemBranchMeta(){
+  return AC_SYSTEM_BRANCHES.map(id=>({id, kind:"system", parent:null, createdBy:null, createdAt:null}));
+}
+/* Ветки расходятся на живых данных, а не декоративно: в develop заведён ещё не
+   описанный в main интерфейс и технология под него, в design снят паттерн. За счёт
+   этого переключение ветки видно на вкладках, а объединение develop → main честно
+   упирается в конфликт (техвозможность ссылается на метод, которого в main нет). */
+function ensureAcBranches(appId){
+  if(AC_BRANCH_META[appId]) return;
+  AC_BRANCH_META[appId] = acSystemBranchMeta();
+  const main = acBaseBranchData();
+  const design = deepClone(main);
+  design.patterns = design.patterns.slice(0, -1);
+  const develop = deepClone(main);
+  develop.interfaces.push({
+    id:"apigw4", name:"Notification API", code:"ext_apache_lb_webcrm01_20004", date:"05.02.2025, 00:00",
+    ifaceCount:1, methodCount:2, status:"Успешно",
+    interfaces:[{id:"api7", name:"API уведомлений клиента", status:"Успешно", methodCount:2, watch:true,
+      methods:[{method:"POST /2.0.0/napi/notify", desc:"Отправка уведомления", cap:"—", rps:40, lat:300, err:1, status:"Успешно"}]}],
+  });
+  develop.technologies.push({id:"kafka", name:"Apache Kafka", status:"Успешно", ki:"Успешно", src:"Технорадар"});
+  /* Новая возможность, а не правка существующей: стратегия «добавление» переносит
+     только то, чего в целевой ветке нет по id, — изменённая возможность с прежним id
+     не поехала бы вовсе, и проверка конфликтов ничего бы не увидела. */
+  develop.techCaps.push({
+    id:"tc7",
+    name:"Возможность уведомлять клиента о статусе заказа",
+    code:"B2CDIGITALRETAILDELIVERYCATALOG.009",
+    domain:"Омниканальное управление взаимодействиями",
+    methods:[{method:"POST /2.0.0/napi/notify", desc:"Отправка уведомления", cap:"—", rps:40, lat:300, err:1, status:"Успешно"}],
+  });
+  AC_BRANCHES[appId] = {
+    design: Object.assign(design, {updatedAt:"22.01.2025"}),
+    develop: Object.assign(develop, {updatedAt:"05.02.2025"}),
+    main: Object.assign(main, {updatedAt:NOW_DAY}),
+  };
+}
+function acBranchList(appId){ return AC_BRANCH_META[appId] || []; }
+function acBranchData(appId, branchId){
+  const byApp = AC_BRANCHES[appId] || {};
+  return byApp[branchId] || byApp.main || acBaseBranchData();
+}
+/* Данные открытой страницы приложения: все вкладки состава читают только отсюда. */
+function acActive(){
+  const ac = state.appcat;
+  return acBranchData(ac.detailId, ac.branch);
+}
+function acBranchUpdNote(appId, branchId){
+  const b = AC_BRANCHES[appId] && AC_BRANCHES[appId][branchId];
+  return b && b.updatedAt ? `обновлено ${b.updatedAt}` : "ещё не обновлялась";
+}
+function acBranchLocked(appId, branchId){
+  const r = state.acMergeRunning;
+  return !!(r && r.appId===appId && r.target===branchId);
+}
+/* Все методы, которые есть в интерфейсах ветки — по ним проверяется, не ссылается ли
+   переносимая техвозможность на метод, которого в целевой ветке не описано. */
+function acBranchMethods(appId, branchId){
+  const out = new Set();
+  const walk = nodes => (nodes||[]).forEach(n=>{
+    (n.methods||[]).forEach(m=>out.add(m.method));
+    walk(n.interfaces);
+  });
+  walk(acBranchData(appId, branchId).interfaces);
+  return out;
+}
+function acMergeConflicts(appId, source, target, strategy){
+  const known = acBranchMethods(appId, target);
+  const src = acBranchData(appId, source);
+  const tgt = acBranchData(appId, target);
+  const tgtIds = new Set((tgt.techCaps||[]).map(c=>c.id));
+  const out = [];
+  (src.techCaps||[]).forEach(cap=>{
+    if(strategy==="add" && tgtIds.has(cap.id)) return;   // такую возможность не переносим
+    (cap.methods||[]).forEach(m=>{
+      if(!known.has(m.method)) out.push({cap:cap.name, code:cap.code, method:m.method});
+    });
+  });
+  return out;
+}
+function acMergeExecute(appId, source, target, strategy){
+  const src = deepClone(acBranchData(appId, source));
+  const tgt = AC_BRANCHES[appId][target] || (AC_BRANCHES[appId][target] = acBaseBranchData());
+  AC_BRANCH_FIELDS.forEach(f=>{
+    if(strategy==="replace"){ tgt[f] = deepClone(src[f]); return; }
+    /* Добавление: приходит только то, чего в целевой ветке нет. Узлы наблюдаемости и
+       НФТ своего id не имеют — у них ключом служит код или подпись. */
+    const key = x => x.id || x.code || x.name || x.label;
+    const have = new Set((tgt[f]||[]).map(key));
+    (src[f]||[]).forEach(x=>{ if(!have.has(key(x))) tgt[f].push(deepClone(x)); });
+  });
+}
+function acDefaultOpenBranch(appId){
+  ensureAcBranches(appId);
+  return "main";
+}
 
 const AC_TABS = [
   {id:"general", label:"Общая информация"},
@@ -9049,16 +9179,29 @@ function AcAppsTable(apps){
 function AcAppDetailPage(app){
   const ac = state.appcat;
   return `
-    <div class="breadcrumb">
-      <a data-action="ac-back-to-list">Каталог приложений</a><span class="sep">${icon("chevronRight")}</span>
-      <span class="current">${escapeHtml(app.name)}</span>
+    <div class="detail-head" data-head="app">
+      <div class="breadcrumb">
+        <a data-action="ac-back-to-list">Каталог приложений</a><span class="sep">${icon("chevronRight")}</span>
+        <span class="current">${escapeHtml(app.name)}</span>
+      </div>
+      <div class="detail-head-text">
+        <div class="detail-head-title">
+          <h1>${escapeHtml(app.name)}</h1>
+          ${appStatusBadge(app.status)}
+          ${fitnessBadge(app.fitness)}
+        </div>
+        <div class="detail-head-sub">${escapeHtml(app.cmdb)}</div>
+      </div>
+      <div class="actions">
+        ${CjSelectField({id:"ac-branch-switch", branches:acBranchList(app.id), activeId:ac.branch, action:"ac-switch-branch",
+                         lead:"gitBranch", meta:b=>acBranchUpdNote(app.id,b), deleteAction:"ac-branch-delete-ask"})}
+        <div class="uc-menu-wrap">
+          <button class="btn btn-outline btn-icon-only" data-action="toggle-popover" data-popover="ac-actions" title="Ветки">${icon("moreVertical")}</button>
+          ${state.popover==="ac-actions" ? AcActionsMenu() : ""}
+        </div>
+      </div>
     </div>
-    <div class="page-title-row">
-      <h1>${escapeHtml(app.name)}</h1>
-      ${appStatusBadge(app.status)}
-      ${fitnessBadge(app.fitness)}
-    </div>
-    <div style="color:var(--text-secondary);font-size:13px;margin-bottom:var(--space-6);">${escapeHtml(app.cmdb)}</div>
+    ${AcBranchStatusRow(app)}
 
     <div class="ac-tabs-wrap">
       <div class="ac-tabs-track">
@@ -9217,7 +9360,7 @@ function AcFitnessTab(app){
 function AcTcTab(app){
   const ac = state.appcat;
   const q = ac.tcSearch.trim().toLowerCase();
-  let list = AC_TECH_CAPS;
+  let list = acActive().techCaps;
   if(q) list = list.filter(c=>c.name.toLowerCase().includes(q));
   if(ac.tcOnlyIfaces) list = list.filter(c=>c.methods.length);
   return `
@@ -9267,7 +9410,7 @@ function AcIfaceTab(app){
       <table>
         <thead><tr><th>Контейнер</th><th>Код</th><th>Дата изменения</th><th>Кол-во интерфейсов</th><th>Кол-во методов в интерфейсах</th><th>Статус</th></tr></thead>
         <tbody>
-          ${AC_INTERFACES_TREE.map(c=>AcIfaceContainerRows(c)).join("")}
+          ${acActive().interfaces.map(c=>AcIfaceContainerRows(c)).join("")}
         </tbody>
       </table>
     </div>
@@ -9328,7 +9471,7 @@ function AcIfaceRow(ifc){
 function AcTechTab(app){
   const ac = state.appcat;
   const q = ac.techSearch.trim().toLowerCase();
-  let list = AC_TECHNOLOGIES;
+  let list = acActive().technologies;
   if(q) list = list.filter(t=>t.name.toLowerCase().includes(q));
   if(ac.techStatusFilter!=="Все") list = list.filter(t=>t.status===ac.techStatusFilter);
   if(ac.techKiOnly) list = list.filter(t=>t.ki==="Успешно");
@@ -9402,7 +9545,7 @@ function AcTechDetailPage(){
 function AcPatternsTab(app){
   const ac = state.appcat;
   const q = ac.patternSearch.trim().toLowerCase();
-  let list = AC_PATTERNS;
+  let list = acActive().patterns;
   if(q) list = list.filter(p=>p.name.toLowerCase().includes(q));
   return `
     <div class="filters-row">
@@ -9431,7 +9574,7 @@ function AcPatternsTab(app){
 function AcNfrTab(app){
   const ac = state.appcat;
   const q = ac.nfrSearch.trim().toLowerCase();
-  let list = AC_NFRS;
+  let list = acActive().nfrs;
   if(q) list = list.filter(n=>n.name.toLowerCase().includes(q) || n.code.toLowerCase().includes(q));
   if(ac.nfrSourceFilter!=="Все") list = list.filter(n=>n.src===ac.nfrSourceFilter);
   return `
@@ -9484,7 +9627,7 @@ function AcObsTab(app){
       <div style="display:flex;font-weight:700;font-size:13px;color:var(--text-secondary);padding:var(--space-3) var(--space-5);border-bottom:1px solid var(--border);">
         <div style="flex:1;">Экземпляр приложения</div><div style="width:340px;">Ссылка на шаблон метрик в платформе наблюдаемости</div><div style="width:40px;"></div>
       </div>
-      ${AC_OBS_TREE.map(n=>AcObsRow(n)).join("")}
+      ${acActive().obs.map(n=>AcObsRow(n)).join("")}
     </div>
   `;
 }
@@ -11065,25 +11208,29 @@ function CjConfirmDialog({title, text, confirmLabel, confirmAction, cancelAction
    Бейдж статуса стоит в той же колонке и его ширина тоже вычитается — иначе при
    «осталось 360» заголовку доставалось 245 и он рвался на три строки. */
 const UC_HEAD_MIN_TITLE = 360;
-let ucHeadActionsFull = 0;    // ширина развёрнутого ряда действий, замер
-let ucHeadNarrowState = false;
-function ucHeadNarrow(){ return ucHeadNarrowState; }
+/* Шапку с этой разметкой носят две страницы — Use Case и приложение, и наборы действий
+   у них разные. Поэтому и замер, и состояние хранятся по ключу страницы
+   (data-head у .detail-head), иначе ширина чужого ряда ломала бы расчёт соседа. */
+const ucHeadActionsFull = {};
+const ucHeadNarrowState = {};
+function ucHeadNarrow(key){ return !!ucHeadNarrowState[key || "uc"]; }
 function fitUcHead(){
-  const head = document.querySelector(".uc-page-head");
+  const head = document.querySelector(".detail-head");
   if(!head) return;
   const actions = head.querySelector(".actions");
   if(!actions) return;
+  const key = head.dataset.head || "uc";
   /* Пока ряд развёрнут — обновляем замер; в схлопнутом состоянии он уже не отражает
      полный набор, поэтому берётся запомненное значение. */
-  if(!ucHeadNarrowState) ucHeadActionsFull = actions.getBoundingClientRect().width;
-  if(!ucHeadActionsFull) return;
+  if(!ucHeadNarrowState[key]) ucHeadActionsFull[key] = actions.getBoundingClientRect().width;
+  if(!ucHeadActionsFull[key]) return;
   const gap = parseFloat(getComputedStyle(head).columnGap) || 0;
-  const title = head.querySelector(".uc-head-title");
+  const title = head.querySelector(".detail-head-title");
   const badge = title && title.querySelector(".badge");
   const need = UC_HEAD_MIN_TITLE
     + (badge ? badge.getBoundingClientRect().width + (parseFloat(getComputedStyle(title).columnGap) || 0) : 0);
-  const want = (head.clientWidth - ucHeadActionsFull - gap) < need;
-  if(want !== ucHeadNarrowState){ ucHeadNarrowState = want; render(); }
+  const want = (head.clientWidth - ucHeadActionsFull[key] - gap) < need;
+  if(want !== !!ucHeadNarrowState[key]){ ucHeadNarrowState[key] = want; render(); }
 }
 
 function UcActionsMenu(p, u, narrow){
@@ -11159,19 +11306,17 @@ function ucBranchUpdNote(u, branchId){
   return info.updatedAt ? `обновлено ${info.updatedAt}` : "ещё не обновлялась";
 }
 
-function UcBranchCreatePanel(){
-  const panel = state.ucBranchPanel;
-  const p = findProject(panel.projectId);
-  const u = p && findUseCase(p, panel.ucId);
-  if(!u) return "";
+/* Панели создания и объединения ветки общие для Use Case и приложения: формы должны
+   быть одинаковы везде (см. ветки CJ — там тот же состав). Отличаются только источник
+   списка веток, набор data-action и слово, которым зовётся переносимый состав. */
+function BranchCreatePanel({panel, branches, note, reserved, actions, inputId}){
   const ent = panelEnter(panel);
-  const branches = ucBranchList(u);
   const name = panel.name.trim();
   const existing = branches.map(b=>b.id.toLowerCase());
-  const taken = !!name && (UC_SYSTEM_BRANCHES.includes(name.toLowerCase()) || existing.includes(name.toLowerCase()));
+  const taken = !!name && (reserved.includes(name.toLowerCase()) || existing.includes(name.toLowerCase()));
   const canCreate = !!name && !taken && !!panel.parent;
   return `
-    <div class="backdrop${ent}" data-action="uc-close-branch-create"></div>
+    <div class="backdrop${ent}" data-action="${actions.close}"></div>
     <div class="side-panel${ent}">
       <div class="side-head" style="display:block;">
         <h2>Создание новой ветки</h2>
@@ -11180,64 +11325,55 @@ function UcBranchCreatePanel(){
       <div class="side-body">
         <div class="field-block">
           <div class="ffield${panel.name?" filled":""}">
-            <div class="ffield-box${taken?" error":""}"><input class="input ffield-input" id="ucBranchName" value="${escapeHtml(panel.name)}" autocomplete="off"></div>
+            <div class="ffield-box${taken?" error":""}"><input class="input ffield-input" id="${inputId}" value="${escapeHtml(panel.name)}" autocomplete="off"></div>
             <label class="ffield-label">Название ветки</label>
           </div>
           ${taken?`<div style="color:var(--red-text);font-size:13px;margin-top:4px;">Ветка с таким названием уже существует</div>`:""}
         </div>
         <div class="field-block">
-          ${CjSelectField({id:"uc-branch-parent", branches, activeId:panel.parent, action:"uc-branch-set-parent", wide:true,
-                           label:"Клонировать состав из ветки", placeholder:"Клонировать состав из ветки",
-                           meta:b=>ucBranchUpdNote(u,b)})}
+          ${CjSelectField({id:actions.parentField, branches, activeId:panel.parent, action:actions.setParent, wide:true,
+                           label:"Клонировать состав из ветки", placeholder:"Клонировать состав из ветки", meta:note})}
         </div>
       </div>
       <div class="side-foot">
-        <button class="btn btn-outline" data-action="uc-close-branch-create">Отменить</button>
-        <button class="btn btn-primary" data-action="uc-branch-create-submit" ${canCreate?"":"disabled"}>Создать</button>
+        <button class="btn btn-outline" data-action="${actions.close}">Отменить</button>
+        <button class="btn btn-primary" data-action="${actions.submit}" ${canCreate?"":"disabled"}>Создать</button>
       </div>
     </div>
   `;
 }
 
-/* Панель объединения — тот же состав, что CjMergePanel (боковая панель 400, поля
-   «Откуда/Куда» с подписью и датой обновления, стратегия радио-карточками, диалог
-   подтверждения). Карточки сравнения веток и попровер «Как это работает» убраны:
-   дата переехала в значение поля, а необратимость объясняет диалог. */
-function UcMergePanel(){
-  const m = state.ucMergePanel;
-  const p = findProject(m.projectId);
-  const u = p && findUseCase(p, m.ucId);
-  if(!u) return "";
+/* `unit` — чем назван переносимый состав в описании стратегий («Шаги» у Use Case,
+   «Элементы состава» у приложения). `conflict` — {title, items:[строки], hint}. */
+function BranchMergePanel({m, branches, note, unit, conflict, actions, confirmOpen, running}){
   const ent = panelEnter(m);
-  const branches = ucBranchList(u);
-  const note = b=>ucBranchUpdNote(u, b);
-  const canMerge = !!m.source && !!m.target && m.source!==m.target && !state.ucMergeRunning;
+  const canMerge = !!m.source && !!m.target && m.source!==m.target && !running;
   return `
-    <div class="backdrop${ent}" data-action="uc-close-merge"></div>
+    <div class="backdrop${ent}" data-action="${actions.close}"></div>
     <div class="side-panel${ent}">
       <div class="side-head" style="display:block;">
         <h2>Объединение веток</h2>
       </div>
       <div class="side-body">
         <div class="field-block">
-          ${CjSelectField({id:"uc-merge-source", branches, activeId:m.source, action:"uc-merge-set-source", wide:true,
+          ${CjSelectField({id:actions.sourceField, branches, activeId:m.source, action:actions.setSource, wide:true,
                            label:"Откуда", placeholder:"Откуда", meta:note})}
         </div>
         <div class="field-block">
-          ${CjSelectField({id:"uc-merge-target", branches, activeId:m.target, action:"uc-merge-set-target", wide:true,
+          ${CjSelectField({id:actions.targetField, branches, activeId:m.target, action:actions.setTarget, wide:true,
                            label:"Куда", placeholder:"Куда", meta:note,
                            disabledId:m.source, disabledTitle:"Совпадает с источником"})}
         </div>
 
         <div class="cj-merge-strategy">
-          <div class="cj-merge-strategy-card radio ${m.strategy==="add"?"active":""}" data-action="uc-merge-set-strategy" data-strategy="add">
+          <div class="cj-merge-strategy-card radio ${m.strategy==="add"?"active":""}" data-action="${actions.setStrategy}" data-strategy="add">
             <div class="dot"></div>
             <div>
               <div class="t">Добавление</div>
-              <div class="d">Шаги, которых нет в «${escapeHtml(m.target)}», будут добавлены. Существующие — не тронуты, без диффа и cherry-pick</div>
+              <div class="d">${escapeHtml(unit)}, которых нет в «${escapeHtml(m.target)}», будут добавлены. Существующие — не тронуты, без диффа и cherry-pick</div>
             </div>
           </div>
-          <div class="cj-merge-strategy-card radio ${m.strategy==="replace"?"active":""}" data-action="uc-merge-set-strategy" data-strategy="replace">
+          <div class="cj-merge-strategy-card radio ${m.strategy==="replace"?"active":""}" data-action="${actions.setStrategy}" data-strategy="replace">
             <div class="dot"></div>
             <div>
               <div class="t">Замена</div>
@@ -11246,24 +11382,117 @@ function UcMergePanel(){
           </div>
         </div>
 
-        ${m.conflicts && m.conflicts.length ? `
+        ${conflict ? `
           <div class="cj-merge-conflict-box">
-            <div class="t">${icon("info")} Объединение невозможно: в ландшафте ветки «${escapeHtml(m.target)}» нет интерфейсов, на которые ссылается «${escapeHtml(m.source)}»</div>
-            <ul>
-              ${m.conflicts.map(c=>`<li><b>${escapeHtml(c.api)}</b> — ${escapeHtml(c.call||"")}${c.part?` (шаг ${escapeHtml(c.part)}, ${escapeHtml(c.participant||"")})`:""}</li>`).join("")}
-            </ul>
-            <div class="hint">Опиши недостающие интерфейсы в ветке «${escapeHtml(m.target)}» и повтори объединение.</div>
-          </div>
-        ` : ""}
+            <div class="t">${icon("info")} ${conflict.title}</div>
+            <ul>${conflict.items.map(x=>`<li>${x}</li>`).join("")}</ul>
+            <div class="hint">${escapeHtml(conflict.hint)}</div>
+          </div>` : ""}
       </div>
       <div class="side-foot">
-        <button class="btn btn-outline" data-action="uc-close-merge">Отменить</button>
-        <button class="btn btn-primary" data-action="uc-merge-submit" ${canMerge?"":"disabled"} title="${state.ucMergeRunning?"Дождитесь завершения текущего объединения":""}">Объединить</button>
+        <button class="btn btn-outline" data-action="${actions.close}">Отменить</button>
+        <button class="btn btn-primary" data-action="${actions.submit}" ${canMerge?"":"disabled"} title="${running?"Дождитесь завершения текущего объединения":""}">Объединить</button>
       </div>
     </div>
-    ${state.ucMergeConfirm ? CjConfirmDialog({title:"Объединить ветки?", text:"После объединения веток их нельзя будет откатить назад",
-                                              confirmLabel:"Объединить", confirmAction:"uc-merge-confirm-do", cancelAction:"uc-merge-confirm-cancel"}) : ""}
+    ${confirmOpen ? CjConfirmDialog({title:"Объединить ветки?", text:"После объединения веток их нельзя будет откатить назад",
+                                     confirmLabel:"Объединить", confirmAction:actions.confirmDo, cancelAction:actions.confirmCancel}) : ""}
   `;
+}
+
+function UcBranchCreatePanel(){
+  const panel = state.ucBranchPanel;
+  const p = findProject(panel.projectId);
+  const u = p && findUseCase(p, panel.ucId);
+  if(!u) return "";
+  return BranchCreatePanel({
+    panel, branches:ucBranchList(u), note:b=>ucBranchUpdNote(u,b),
+    reserved:UC_SYSTEM_BRANCHES, inputId:"ucBranchName",
+    actions:{close:"uc-close-branch-create", setParent:"uc-branch-set-parent",
+             submit:"uc-branch-create-submit", parentField:"uc-branch-parent"},
+  });
+}
+
+function UcMergePanel(){
+  const m = state.ucMergePanel;
+  const p = findProject(m.projectId);
+  const u = p && findUseCase(p, m.ucId);
+  if(!u) return "";
+  const conflict = m.conflicts && m.conflicts.length ? {
+    title:`Объединение невозможно: в ландшафте ветки «${escapeHtml(m.target)}» нет интерфейсов, на которые ссылается «${escapeHtml(m.source)}»`,
+    items:m.conflicts.map(c=>`<b>${escapeHtml(c.api)}</b> — ${escapeHtml(c.call||"")}${c.part?` (шаг ${escapeHtml(c.part)}, ${escapeHtml(c.participant||"")})`:""}`),
+    hint:`Опиши недостающие интерфейсы в ветке «${m.target}» и повтори объединение.`,
+  } : null;
+  return BranchMergePanel({
+    m, branches:ucBranchList(u), note:b=>ucBranchUpdNote(u,b), unit:"Шаги", conflict,
+    confirmOpen:state.ucMergeConfirm, running:state.ucMergeRunning,
+    actions:{close:"uc-close-merge", setSource:"uc-merge-set-source", setTarget:"uc-merge-set-target",
+             setStrategy:"uc-merge-set-strategy", submit:"uc-merge-submit",
+             confirmDo:"uc-merge-confirm-do", confirmCancel:"uc-merge-confirm-cancel",
+             sourceField:"uc-merge-source", targetField:"uc-merge-target"},
+  });
+}
+
+/* Команды веток приложения — в том же меню под иконкой, что на странице Use Case.
+   Переключение ветки и её удаление живут в самом переключателе рядом с заголовком. */
+function AcActionsMenu(){
+  const running = state.acMergeRunning;
+  const item = (action, ico, txt) =>
+    `<div class="uc-menu-item" data-action="${action}">${icon(ico)}<span class="txt">${txt}</span></div>`;
+  return `
+    <div class="uc-menu">
+      ${item("ac-open-branch-create","plus","Новая ветка")}
+      <div class="uc-menu-item${running?" disabled":""}" ${running?`title="Дождитесь завершения текущего объединения"`:`data-action="ac-open-merge"`}>
+        ${icon("gitMerge")}<span class="txt">Объединить ветки</span>
+      </div>
+    </div>
+  `;
+}
+
+/* Прогресс объединения — строкой под шапкой, подтверждение удаления — общим диалогом:
+   ровно как на странице Use Case. */
+function AcBranchStatusRow(app){
+  const running = state.acMergeRunning;
+  const runningHere = running && running.appId===app.id;
+  const confirm = !!state.acBranchDeleteConfirm;
+  if(!runningHere && !confirm) return "";
+  return `
+    ${runningHere ? `
+      <div class="uc-branch-status">
+        ${acBranchLocked(app.id, state.appcat.branch) ? `<span class="cj-branch-lock-badge"><span class="mini-spinner"></span>Ветка обновляется</span>` : ""}
+        <span class="cj-merge-running-banner"><span class="mini-spinner"></span>Объединение «${escapeHtml(running.source)}» → «${escapeHtml(running.target)}»…</span>
+      </div>` : ""}
+    ${confirm ? CjConfirmDialog({title:"Удалить ветку?", text:"Удалённую ветку нельзя будет восстановить",
+                                 confirmLabel:"Удалить", confirmAction:"ac-branch-delete-do",
+                                 cancelAction:"ac-branch-delete-cancel", branch:state.acBranchDeleteConfirm}) : ""}
+  `;
+}
+
+function AcBranchCreatePanel(){
+  const panel = state.acBranchPanel;
+  return BranchCreatePanel({
+    panel, branches:acBranchList(panel.appId), note:b=>acBranchUpdNote(panel.appId,b),
+    reserved:AC_SYSTEM_BRANCHES, inputId:"acBranchName",
+    actions:{close:"ac-close-branch-create", setParent:"ac-branch-set-parent",
+             submit:"ac-branch-create-submit", parentField:"ac-branch-parent"},
+  });
+}
+
+function AcMergePanel(){
+  const m = state.acMergePanel;
+  const conflict = m.conflicts && m.conflicts.length ? {
+    title:`Объединение невозможно: в ветке «${escapeHtml(m.target)}» нет методов, на которые ссылаются технические возможности «${escapeHtml(m.source)}»`,
+    items:m.conflicts.map(c=>`<b>${escapeHtml(c.method)}</b> — ${escapeHtml(c.cap)} (${escapeHtml(c.code)})`),
+    hint:`Опиши недостающие интерфейсы в ветке «${m.target}» и повтори объединение.`,
+  } : null;
+  return BranchMergePanel({
+    m, branches:acBranchList(m.appId), note:b=>acBranchUpdNote(m.appId,b),
+    unit:"Элементы состава", conflict,
+    confirmOpen:state.acMergeConfirm, running:state.acMergeRunning,
+    actions:{close:"ac-close-merge", setSource:"ac-merge-set-source", setTarget:"ac-merge-set-target",
+             setStrategy:"ac-merge-set-strategy", submit:"ac-merge-submit",
+             confirmDo:"ac-merge-confirm-do", confirmCancel:"ac-merge-confirm-cancel",
+             sourceField:"ac-merge-source", targetField:"ac-merge-target"},
+  });
 }
 
 /* ============================= CJ BPMN VIEW ============================= */
@@ -12549,21 +12778,21 @@ function UseCaseDetailPage(projectId, ucId){
   ensureUcBranches(u);
   const runs = ucImportRuns(p, u.code);
   const lastRun = runs[0] || null;
-  const narrow = ucHeadNarrow();
+  const narrow = ucHeadNarrow("uc");
   return `
-    <div class="uc-page-head">
+    <div class="detail-head" data-head="uc">
       <div class="breadcrumb">
         <a data-action="nav" data-nav="projects">Проекты</a><span class="sep">${icon("chevronRight")}</span>
         <a data-action="open-project" data-id="${p.id}">${escapeHtml(p.name)}</a><span class="sep">${icon("chevronRight")}</span>
         <a data-action="open-project-usecase" data-id="${p.id}">Use Case</a><span class="sep">${icon("chevronRight")}</span>
         <span class="current">${escapeHtml(u.name)}</span>
       </div>
-      <div class="uc-head-text">
-        <div class="uc-head-title">
+      <div class="detail-head-text">
+        <div class="detail-head-title">
           <h1>${escapeHtml(u.name)}</h1>
           ${ucStatusBadge(u.status)}
         </div>
-        <div class="uc-code-line">${escapeHtml(u.code)}</div>
+        <div class="detail-head-sub">${escapeHtml(u.code)}</div>
       </div>
       <div class="actions">
         ${CjSelectField({id:"uc-branch-switch", branches:ucBranchList(u), activeId:u.branch, action:"uc-switch-branch",
@@ -15701,6 +15930,7 @@ function handleInput(el){
   else if(el.id==="cjCreateName"){ state.cjCreatePanel.name = el.value; render(); reFocus("cjCreateName"); }
   else if(el.id==="cjBranchName"){ state.cjBranchPanel.name = el.value; render(); reFocus("cjBranchName"); }
   else if(el.id==="ucBranchName"){ state.ucBranchPanel.name = el.value; render(); reFocus("ucBranchName"); }
+  else if(el.id==="acBranchName"){ state.acBranchPanel.name = el.value; render(); reFocus("acBranchName"); }
   else if(el.id==="cjCreatePortrait"){ state.cjCreatePanel.portrait = el.value; render(); reFocus("cjCreatePortrait"); }
   else if(el.id==="cjCreateOwner"){ state.cjCreatePanel.owner = el.value; render(); reFocus("cjCreateOwner"); }
   else if(el.id==="cjCreateTags"){ state.cjCreatePanel.tags = el.value; render(); reFocus("cjCreateTags"); }
@@ -16779,8 +17009,121 @@ function handleAction(action, el){
     }
     case "ac-open-app":
       state.appcat.detailId = el.dataset.id; state.appcat.tab = "general"; state.appcat.generalSub = "info";
+      state.appcat.branch = acDefaultOpenBranch(el.dataset.id);
       render();
       break;
+    /* ---------- ветки приложения (зеркало веток Use Case) ---------- */
+    case "ac-switch-branch": {
+      state.appcat.branch = el.dataset.branch;
+      state.acBranchDeleteConfirm = null;
+      state.popover = null;
+      render();
+      break;
+    }
+    case "ac-open-branch-create":
+      state.acBranchPanel = {appId:state.appcat.detailId, name:"", parent:null};
+      state.popover = null; render(); break;
+    case "ac-branch-set-parent": state.acBranchPanel.parent = el.dataset.branch; state.popover = null; render(); break;
+    case "ac-close-branch-create": state.acBranchPanel = null; state.popover = null; render(); break;
+    case "ac-branch-create-submit": {
+      const panel = state.acBranchPanel;
+      const name = panel.name.trim();
+      const existing = acBranchList(panel.appId).map(b=>b.id.toLowerCase());
+      if(!name || !panel.parent || AC_SYSTEM_BRANCHES.includes(name.toLowerCase()) || existing.includes(name.toLowerCase())) break;
+      AC_BRANCHES[panel.appId][name] = Object.assign(deepClone(acBranchData(panel.appId, panel.parent)), {updatedAt:NOW_DAY});
+      acBranchList(panel.appId).push({id:name, kind:"user", parent:panel.parent, createdBy:ARCHITECT, createdAt:NOW_DATE});
+      state.appcat.branch = name;
+      state.acBranchPanel = null;
+      state.popover = null;
+      showToast("Ветка создана");
+      render();
+      break;
+    }
+    /* список веток остаётся раскрытым под диалогом — как в CJ */
+    case "ac-branch-delete-ask": state.acBranchDeleteConfirm = el.dataset.branch; render(); break;
+    case "ac-branch-delete-cancel": state.acBranchDeleteConfirm = null; render(); break;
+    case "ac-branch-delete-do": {
+      const appId = state.appcat.detailId;
+      const branch = el.dataset.branch;
+      if(acBranchLocked(appId, branch)){ showToast("Ветка обновляется, дождитесь завершения объединения"); break; }
+      const list = acBranchList(appId);
+      const idx = list.findIndex(b=>b.id===branch);
+      if(idx>=0) list.splice(idx,1);
+      delete AC_BRANCHES[appId][branch];
+      if(state.appcat.branch===branch) state.appcat.branch = "main";
+      state.acBranchDeleteConfirm = null;
+      state.popover = null;
+      showToast("Ветка удалена");
+      render();
+      break;
+    }
+    case "ac-open-merge": {
+      if(state.acMergeRunning){ showToast("Дождитесь завершения текущего объединения"); break; }
+      const appId = state.appcat.detailId;
+      const ids = acBranchList(appId).map(b=>b.id);
+      const source = state.appcat.branch;
+      const target = ids.find(b=>b!==source) || source;
+      state.acMergePanel = {appId, source, target, strategy:"add", conflicts:null};
+      state.acMergeConfirm = false;
+      state.popover = null;
+      render();
+      break;
+    }
+    case "ac-close-merge": state.acMergePanel = null; state.acMergeConfirm = false; state.popover = null; render(); break;
+    case "ac-merge-set-source": {
+      const m = state.acMergePanel;
+      m.source = el.dataset.branch;
+      if(m.target===m.source){
+        const alt = acBranchList(m.appId).map(b=>b.id).find(b=>b!==m.source);
+        m.target = alt || m.source;
+      }
+      m.conflicts = null; state.popover = null; render();
+      break;
+    }
+    case "ac-merge-set-target": {
+      const m = state.acMergePanel;
+      if(el.dataset.branch===m.source) break;
+      m.target = el.dataset.branch;
+      m.conflicts = null; state.popover = null; render();
+      break;
+    }
+    case "ac-merge-set-strategy": {
+      const m = state.acMergePanel;
+      m.strategy = el.dataset.strategy; m.conflicts = null; render();
+      break;
+    }
+    case "ac-merge-submit": {
+      const m = state.acMergePanel;
+      if(!m.source || !m.target || m.source===m.target || state.acMergeRunning) break;
+      const conflicts = acMergeConflicts(m.appId, m.source, m.target, m.strategy);
+      if(conflicts.length){ m.conflicts = conflicts; render(); break; }
+      state.acMergeConfirm = true;
+      state.popover = null;
+      render();
+      break;
+    }
+    case "ac-merge-confirm-cancel": state.acMergeConfirm = false; render(); break;
+    case "ac-merge-confirm-do": {
+      const m = state.acMergePanel;
+      if(!m || !m.source || !m.target || m.source===m.target || state.acMergeRunning) break;
+      /* Объединение не мгновенное — как в CJ и Use Case: панель закрывается сразу,
+         прогресс виден строкой под шапкой, целевую ветку в это время можно открыть. */
+      state.acMergeRunning = {appId:m.appId, source:m.source, target:m.target, strategy:m.strategy};
+      state.acMergePanel = null;
+      state.acMergeConfirm = false;
+      state.popover = null;
+      render();
+      setTimeout(()=>{
+        const r = state.acMergeRunning;
+        if(!r) return;
+        acMergeExecute(r.appId, r.source, r.target, r.strategy);
+        if(AC_BRANCHES[r.appId] && AC_BRANCHES[r.appId][r.target]) AC_BRANCHES[r.appId][r.target].updatedAt = NOW_DAY;
+        state.acMergeRunning = null;
+        showToast("Ветки объединены");
+        render();
+      }, 2200);
+      break;
+    }
     case "ac-back-to-list": state.appcat.detailId = null; render(); break;
     case "ac-set-e2e-sub": state.appcat.e2eSub = el.dataset.sub; render(); break;
     case "ac-e2e-sort": state.appcat.e2eSort = acToggleSort(state.appcat.e2eSort, el.dataset.key); render(); break;
@@ -16837,7 +17180,7 @@ function handleAction(action, el){
       const mode = el.dataset.mode;
       let level = "instance", values = {};
       if(mode==="edit"){
-        const node = findObsNode(el.dataset.id, AC_OBS_TREE);
+        const node = findObsNode(el.dataset.id, acActive().obs);
         if(node){
           level = node.level===1?"instance":node.level===2?"container":"interface";
           values[level] = node.label;
