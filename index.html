@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261019-180043">
+<meta name="beeatlas-build" content="20261019-183259">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -5047,7 +5047,7 @@ function renderRail(){
 function renderCatalog(){
   var head='<div class="catalog-head">'+
     '<div class="catalog-title" role="heading" aria-level="1">Каталог Е2Е-сценариев</div>'+
-    '<button class="btn primary" style="width:100%;justify-content:center;margin-bottom:12px;" onclick="openCreateE2ePanel()">Создать шаг Е2Е-сценария</button>'+
+    '<button class="btn primary" style="width:100%;justify-content:center;margin-bottom:12px;" onclick="openCreateE2ePanel()">Создать шаг</button>'+
     '<div class="pill-toggle">'+
       '<button class="'+(state.mode==='cj'?'on':'')+'" onclick="setMode(\'cj\')">CJ</button>'+
       '<button class="'+(state.mode==='e2e'?'on':'')+'" onclick="setMode(\'e2e\')">Шаги Е2Е-сценария</button>'+
