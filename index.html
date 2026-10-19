@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261019-134652">
+<meta name="beeatlas-build" content="20261019-154419">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -678,6 +678,7 @@
   .lp-auth-body::-webkit-scrollbar,
   .code-editor-body::-webkit-scrollbar,
   .table-wrap-fit::-webkit-scrollbar,
+  .table-wrap::-webkit-scrollbar,
   .ds-dialog-desc::-webkit-scrollbar,
   .suggest-dropdown::-webkit-scrollbar,
   .cj-matrix-wrap::-webkit-scrollbar,
@@ -702,6 +703,7 @@
      (прозрачная рамка ползунка) — docs/interaction.md §4. */
   .table-scroll::-webkit-scrollbar-track,
   .table-wrap-fit::-webkit-scrollbar-track,
+  .table-wrap::-webkit-scrollbar-track,
   .uc-diagram-scroll::-webkit-scrollbar-track{background-color:transparent;margin:0 var(--size-spacing-x2);}
   .sidebar::-webkit-scrollbar-thumb,
   .main::-webkit-scrollbar-thumb,
@@ -712,6 +714,7 @@
   .lp-auth-body::-webkit-scrollbar-thumb,
   .code-editor-body::-webkit-scrollbar-thumb,
   .table-wrap-fit::-webkit-scrollbar-thumb,
+  .table-wrap::-webkit-scrollbar-thumb,
   .ds-dialog-desc::-webkit-scrollbar-thumb,
   .suggest-dropdown::-webkit-scrollbar-thumb,
   .cj-matrix-wrap::-webkit-scrollbar-thumb,
@@ -729,6 +732,7 @@
   .lp-auth-body::-webkit-scrollbar-thumb:hover,
   .code-editor-body::-webkit-scrollbar-thumb:hover,
   .table-wrap-fit::-webkit-scrollbar-thumb:hover,
+  .table-wrap::-webkit-scrollbar-thumb:hover,
   .ds-dialog-desc::-webkit-scrollbar-thumb:hover,
   .suggest-dropdown::-webkit-scrollbar-thumb:hover,
   .cj-matrix-wrap::-webkit-scrollbar-thumb:hover,
@@ -736,7 +740,7 @@
   .table-scroll::-webkit-scrollbar-thumb:hover{background-color:var(--md-sys-color-on-surface-variant);}
   @supports not selector(::-webkit-scrollbar){
     .sidebar, .main, .table-scroll, .uc-diagram-scroll, .uc-menu,
-    .code-editor-body, .table-wrap-fit, .ds-dialog-desc, .suggest-dropdown, .cj-matrix-wrap,
+    .code-editor-body, .table-wrap-fit, .table-wrap, .ds-dialog-desc, .suggest-dropdown, .cj-matrix-wrap,
     .graph-search-suggest, .graph-canvas-pane, .graph-detail, .lp-auth-body,
     .e2ecat-scope .calls-list, .e2ecat-scope .detail-panel, .e2ecat-scope .catalog-list{scrollbar-width:thin;scrollbar-color:var(--text-tertiary) transparent;}
   }
@@ -1563,6 +1567,13 @@
     border-bottom:1px solid var(--md-sys-color-outline-variant);background:var(--bg);white-space:nowrap;
   }
   tbody td{padding:17px var(--size-spacing-x6);border-bottom:1px solid var(--md-sys-color-outline-variant);vertical-align:top;}
+  /* Числовая колонка: значения и заголовок прижаты к правому краю одинаково. Раньше
+     вправо уезжало только значение, а шапка оставалась слева — колонка читалась
+     как две разные. */
+  thead th.num, tbody td.num{text-align:right;}
+  /* Колонка без видимого заголовка (кнопка в строке) всё равно должна его иметь —
+     иначе колонка безымянная и для чтения с экрана, и в проверке заголовков. */
+  .vh{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
   tbody tr:last-child td{border-bottom:none;}
   /* Раскрытая часть — панель, а не строка данных: наведение на неё не должно
      её подкрашивать (выглядело как тень, наползающая на содержимое). */
@@ -1638,6 +1649,25 @@
   /* Минимальная ширина таблицы вызовов: ниже неё колонкам перестаёт хватать
      (см. расчёт в colgroup), поэтому вместо ужимания включается прокрутка. */
   .uc-scenarios-table{min-width:1200px;}
+  /* Таблицы каталога приложений, которым не хватает ширины страницы. Проценты в
+     colgroup подобраны так, чтобы при этих min-width каждой колонке хватало её
+     min-content (замер в браузере, а не на глаз) — docs/interaction.md §6.
+     Раньше все пять жили на .table-wrap: прокрутка была, но без закреплённой
+     первой колонки, и при сужении ужималось именно название — «B2C digital retail
+     delivery catalog» рвался на три строки, пока справа колонки резались. */
+  .ac-apps-table{min-width:1240px;}
+  .ac-fitness-table{min-width:1120px;}
+  .ac-iface-table{min-width:1200px;}
+  .ac-tech-table{min-width:900px;}
+  .ac-nfr-table{min-width:1560px;}
+  .ac-obs-table{min-width:860px;}
+  /* Вложенные таблицы вкладки «Интерфейсы, методы и SLA». Панель раскрытия шириной
+     с видимую область (fitStickyDetailRows), и на узких экранах этой ширины им не
+     хватает — тогда они прокручиваются сами, но колонка уже не ужимается ниже
+     своего min-content. */
+  .ac-iface-l2{min-width:760px;}
+  .ac-iface-l3{min-width:940px;}
+  .ac-iface-methods{min-width:1000px;}
   table.fixed-table thead th{white-space:normal;}
   table.fixed-table tbody td{overflow:visible;}
   .cell-clamp-wrap{position:relative;}
@@ -2590,8 +2620,13 @@
 .ac-tree-body .ac-tree-body::before{content:none;}
 .ac-tree-body .ac-tree-body{padding-left:42px;}
   .ac-tree-body:last-child{border-bottom:none;}
-  .ac-tree-body .table-wrap{border:none;border-radius:0;}
+  .ac-tree-body .table-wrap,
+  .ac-tree-body .table-scroll{border:none;border-radius:0;}
   .ac-tree-body table{background:transparent;}
+  /* Закреплённая колонка внутри дерева: фон у неё непрозрачный (иначе сквозь неё
+     видно уезжающие колонки), а дерево рисует свой — берём тот же, что у полотна. */
+  .ac-tree-body .table-scroll thead th:first-child,
+  .ac-tree-body .table-scroll tbody td:first-child{background:var(--bg);}
 
   .exp-row-btn{width:22px;height:22px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);cursor:pointer;border-radius:6px;}
   .exp-row-btn:hover{background:var(--bg-hover);}
@@ -2617,6 +2652,12 @@
   .exp-detail{position:relative;background:transparent;
     padding:var(--space-5) var(--space-5) var(--space-5) 54px;}
   .exp-detail::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--yellow);}
+  /* Второй вложенный уровень своей полосы не рисует: внешняя уже охватывает всю
+     дочернюю информацию, две параллельные читаются как дубль (docs/components.md,
+     docs/interaction.md §6). Такое же правило давно стоит у .ac-tree-body, а у
+     .exp-detail его не было — на вкладке «Интерфейсы, методы и SLA» полосы шли
+     парой. */
+  .exp-detail .exp-detail::before{content:none;}
   .exp-detail .table-wrap{background:var(--bg);margin-bottom:var(--space-4);}
   .exp-detail .table-wrap:last-child{margin-bottom:0;}
   .exp-detail-note{font-size:13px;color:var(--text-secondary);margin-bottom:var(--space-3);}
@@ -2673,18 +2714,10 @@
   .pipe-timeline .end .ic.x{width:18px;height:18px;}
   .pipe-run-foot{margin-top:var(--space-2);font-size:13px;color:var(--text-secondary);}
 
-  .obs-tree-row{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-3) var(--space-5);border-bottom:1px solid var(--border);font-size:15px;}
-  .obs-tree-row:last-child{border-bottom:none;}
-  .obs-tree-row:hover{background:var(--bg-hover);}
-  .obs-tree-row .lbl{flex:1;font-weight:500;}
-  .obs-tree-row.lvl-1 .lbl{font-weight:500;padding-left:var(--space-5);}
-  .obs-tree-row.lvl-2 .lbl{font-weight:500;padding-left:var(--space-8);}
-  .obs-tree-row .link-col{width:340px;color:var(--blue);}
-  .obs-tree-row .edit-btn{width:28px;height:28px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);border-radius:6px;cursor:pointer;}
-  .obs-tree-row .edit-btn:hover{background:var(--bg-hover);color:var(--text);}
-  .obs-tree-row .edit-btn svg{width:18px;height:18px;}
-  .obs-tree-row .edit-btn .ic{width:18px;height:18px;}
-  .obs-tree-group{border-left:3px solid var(--yellow);}
+  /* Наблюдаемость — обычная таблица (см. AcObsTab). Своей вёрстки у строки больше
+     нет: высоту, отступы и кегль задаёт раздел «Таблица», а вложенность — padding
+     ячейки. Осталось только имя первого уровня. */
+  .obs-row > td:first-child{font-weight:500;}
 
   .ac-radio-group{display:flex;flex-direction:column;gap:var(--space-4);margin-bottom:var(--space-6);}
   .ac-radio{display:flex;align-items:center;gap:var(--space-3);cursor:pointer;font-size:15px;}
@@ -9229,17 +9262,26 @@ function AcTreeNode(node, level){
 }
 
 function AcAppsTable(apps){
+  /* Семь колонок в ширину страницы не укладываются — таблица прокручивается, первая
+     колонка закрепляется (docs/interaction.md §6). Проценты от min-width 1240:
+     Приложение 223, CMDB 198, Критичность 149≥144, Владелец 223≥212, Статус 174≥165,
+     Structurizr 149≥134, Фитнес-функций 124≥113. Название и мнемоника усекаются
+     с тултипом: оба длиннее своей доли и переносом рвались на три строки. */
   return `
-    <div class="table-wrap">
-      <table>
+    <div class="table-scroll">
+      <table class="fixed-table ac-apps-table">
+        <colgroup>
+          <col style="width:18%"><col style="width:16%"><col style="width:12%"><col style="width:18%">
+          <col style="width:14%"><col style="width:12%"><col style="width:10%">
+        </colgroup>
         <thead><tr><th>Приложение</th><th>CMDB Мнемоника</th><th>Критичность</th><th>Владелец</th><th>Статус</th><th>Structurizr OnPremises</th><th>Фитнес-функций</th></tr></thead>
         <tbody>
           ${apps.map(a=>`
             <tr>
-              <td><div class="proj-link" data-action="ac-open-app" data-id="${a.id}">${escapeHtml(a.name)}</div></td>
-              <td>${escapeHtml(a.cmdb)}</td>
-              <td>${escapeHtml(a.crit)}</td>
-              <td>${escapeHtml(a.owner)}</td>
+              <td><div class="proj-link" data-action="ac-open-app" data-id="${a.id}">${clampCell(a.name)}</div></td>
+              <td>${clampCell(a.cmdb)}</td>
+              <td>${clampCell(a.crit)}</td>
+              <td>${clampCell(a.owner)}</td>
               <td>${appStatusBadge(a.status)}</td>
               <td><span class="proj-link" data-action="noop-doc">Ссылка</span></td>
               <td>${a.fitness}%</td>
@@ -9337,7 +9379,7 @@ function AcGeneralInfo(app){
     <div class="table-wrap" style="margin-bottom:var(--space-6);">
       <table>
         <thead><tr><th>ID</th><th>Дата</th><th>Тип обновления</th><th>Статус</th></tr></thead>
-        <tbody><tr><td>876.567.999</td><td>12.12.2025, 23:59</td><td>GitOPS pipeline</td><td>Какой-то статус</td></tr></tbody>
+        <tbody><tr><td>876.567.999</td><td>12.12.2025, 23:59</td><td>GitOPS pipeline</td><td><span class="badge green">Успешно</span></td></tr></tbody>
       </table>
     </div>
     <div class="ac-kv-row" style="margin-bottom:var(--space-4);"><div class="k">Репозиторий архитектуры</div><div class="v"><a class="proj-link" data-action="noop-doc">https://bw.example.ru/catalog/apps/53</a></div></div>
@@ -9403,9 +9445,17 @@ function AcFitnessTab(app){
       <div class="pill-item ${ac.fitnessSub==="check"?"active":""}" data-action="ac-set-fitness-sub" data-sub="check">Проверка</div>
       <div class="pill-item ${ac.fitnessSub==="trigger"?"active":""}" data-action="ac-set-fitness-sub" data-sub="trigger">Триггер</div>
     </div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Код ${ac.fitnessSub==="check"?"проверки":"триггера"}</th><th>Описание ${ac.fitnessSub==="check"?"проверки":"триггера"}</th><th>Статус</th><th>Результат проверки</th><th>Дата изменения</th><th>Метрика (цель/факт)</th></tr></thead>
+    <!-- Шесть колонок не укладываются уже на 1280 — прокрутка с закреплённой первой
+         колонкой (docs/interaction.md §6). Проценты от min-width 1120: Код 146≥120,
+         Описание 347≥167 (ему отдан остаток, оно же и усекается), Статус 123≥100,
+         Результат 157≥123, Дата 157≥135, Метрика 190≥113. -->
+    <div class="table-scroll">
+      <table class="fixed-table ac-fitness-table">
+        <colgroup>
+          <col style="width:13%"><col style="width:31%"><col style="width:11%">
+          <col style="width:14%"><col style="width:14%"><col style="width:17%">
+        </colgroup>
+        <thead><tr><th>Код ${ac.fitnessSub==="check"?"проверки":"триггера"}</th><th>Описание ${ac.fitnessSub==="check"?"проверки":"триггера"}</th><th>Статус</th><th>Результат проверки</th><th>Дата изменения</th><th class="num">Метрика (цель/факт)</th></tr></thead>
         <tbody>
           ${rows.map((r,i)=>{
             const key = r.code+"-"+i;
@@ -9413,11 +9463,11 @@ function AcFitnessTab(app){
             return `
               <tr class="${open?"exp-open":""}">
                 <td><div class="exp-cell"><div class="exp-row-btn ${r.detail?(open?"open":""):"none"}" ${r.detail?`data-action="ac-toggle-fitness" data-key="${key}"`:""}>${icon("chevronRight")}</div>${escapeHtml(r.code)}</div></td>
-                <td>${escapeHtml(r.desc)}</td>
+                <td>${clampCell(r.desc)}</td>
                 <td><span class="badge ${r.statusColor}">${escapeHtml(r.status)}</span></td>
                 <td><span class="badge green">${escapeHtml(r.result)}</span></td>
                 <td>${escapeHtml(r.date)}</td>
-                <td style="text-align:right;">${escapeHtml(r.metric)}</td>
+                <td class="num">${escapeHtml(r.metric)}</td>
               </tr>
               ${open ? `<tr class="exp-detail-row"><td colspan="6"><div class="exp-detail">
                 <div class="exp-detail-note">${escapeHtml(r.detail.note)}</div>
@@ -9482,8 +9532,16 @@ function AcIfaceTab(app){
     <div style="display:flex;justify-content:flex-end;margin-bottom:var(--space-3);">
       <span class="proj-link" data-action="noop-doc">${icon("bell")} Подписаться на все интерфейсы</span>
     </div>
-    <div class="table-wrap">
-      <table>
+    <!-- Прокрутка с закреплённым контейнером (docs/interaction.md §6). Проценты от
+         min-width 1200: Контейнер 288≥279, Код 288≥283 (мнемоника неразрывна и длиннее
+         прочего), Дата 144≥131, Кол-во интерфейсов 156≥147, Кол-во методов 180≥159,
+         Статус 144≥113. -->
+    <div class="table-scroll">
+      <table class="fixed-table ac-iface-table">
+        <colgroup>
+          <col style="width:24%"><col style="width:24%"><col style="width:12%">
+          <col style="width:13%"><col style="width:15%"><col style="width:12%">
+        </colgroup>
         <thead><tr><th>Контейнер</th><th>Код</th><th>Дата изменения</th><th>Кол-во интерфейсов</th><th>Кол-во методов в интерфейсах</th><th>Статус</th></tr></thead>
         <tbody>
           ${acActive().interfaces.map(c=>AcIfaceContainerRows(c)).join("")}
@@ -9498,8 +9556,8 @@ function AcIfaceContainerRows(c){
   const open = !!ac.ifaceExpanded[c.id] && !!c.interfaces;
   let rows = `
     <tr class="${open?"exp-open":""}">
-      <td><div class="exp-cell"><div class="exp-row-btn ${c.interfaces?(open?"open":""):"none"}" ${c.interfaces?`data-action="ac-toggle-iface" data-id="${c.id}"`:""}>${icon("chevronRight")}</div>${escapeHtml(c.name)}</div></td>
-      <td>${escapeHtml(c.code)}</td>
+      <td><div class="exp-cell"><div class="exp-row-btn ${c.interfaces?(open?"open":""):"none"}" ${c.interfaces?`data-action="ac-toggle-iface" data-id="${c.id}"`:""}>${icon("chevronRight")}</div><div class="exp-name">${clampCell(c.name)}</div></div></td>
+      <td>${clampCell(c.code)}</td>
       <td>${escapeHtml(c.date)}</td>
       <td>${c.ifaceCount}</td>
       <td>${c.methodCount}</td>
@@ -9509,7 +9567,8 @@ function AcIfaceContainerRows(c){
   if(open){
     rows += `<tr class="exp-detail-row"><td colspan="6"><div class="exp-detail">
       <div class="table-wrap" style="margin-bottom:var(--space-4);">
-        <table><thead><tr><th>Интерфейс</th><th>Статус</th><th>Кол-во методов</th></tr></thead>
+        <table class="fixed-table ac-iface-l2"><colgroup><col style="width:60%"><col style="width:20%"><col style="width:20%"></colgroup>
+        <thead><tr><th>Интерфейс</th><th>Статус</th><th>Кол-во методов</th></tr></thead>
         <tbody>${c.interfaces.map(ifc=>AcIfaceRow(ifc)).join("")}</tbody></table>
       </div>
     </div></td></tr>`;
@@ -9522,7 +9581,7 @@ function AcIfaceRow(ifc){
   const open = !!ac.ifaceExpanded[ifc.id] && !!ifc.containers;
   let out = `
     <tr class="${open?"exp-open":""}">
-      <td><div class="exp-cell"><div class="exp-row-btn ${ifc.containers?(open?"open":""):"none"}" ${ifc.containers?`data-action="ac-toggle-iface" data-id="${ifc.id}"`:""}>${icon("chevronRight")}</div>${escapeHtml(ifc.name)}</div></td>
+      <td><div class="exp-cell"><div class="exp-row-btn ${ifc.containers?(open?"open":""):"none"}" ${ifc.containers?`data-action="ac-toggle-iface" data-id="${ifc.id}"`:""}>${icon("chevronRight")}</div><div class="exp-name">${clampCell(ifc.name)}</div></div></td>
       <td><span class="badge green">${escapeHtml(ifc.status)}</span></td>
       <td>${ifc.methodCount}</td>
     </tr>
@@ -9531,13 +9590,15 @@ function AcIfaceRow(ifc){
     out += `<tr class="exp-detail-row"><td colspan="3"><div class="exp-detail">
       ${ifc.containers.map(ct=>`
         <div class="table-wrap" style="margin-bottom:var(--space-4);">
-          <table><thead><tr><th>Код</th><th>Протокол</th><th>Версия</th><th>Спецификация API</th><th>Техническая возможность</th><th>Дата изменения</th></tr></thead>
-          <tbody><tr><td>${escapeHtml(ct.code)}</td><td>${escapeHtml(ct.proto)}</td><td>${escapeHtml(ct.ver)}</td><td><a class="proj-link" data-action="noop-doc">${escapeHtml(ct.spec)}</a></td><td>${escapeHtml(ct.cap)}</td><td>${escapeHtml(ct.date)}</td></tr></tbody></table>
+          <table class="fixed-table ac-iface-l3"><colgroup><col style="width:25%"><col style="width:13%"><col style="width:11%"><col style="width:17%"><col style="width:18%"><col style="width:16%"></colgroup>
+          <thead><tr><th>Код</th><th>Протокол</th><th>Версия</th><th>Спецификация API</th><th>Техническая возможность</th><th>Дата изменения</th></tr></thead>
+          <tbody><tr><td>${clampCell(ct.code)}</td><td>${escapeHtml(ct.proto)}</td><td>${escapeHtml(ct.ver)}</td><td><a class="proj-link" data-action="noop-doc">${escapeHtml(ct.spec)}</a></td><td>${clampCell(ct.cap)}</td><td>${escapeHtml(ct.date)}</td></tr></tbody></table>
         </div>
       `).join("")}
       <div class="table-wrap">
-        <table><thead><tr><th>Метод</th><th>Описание</th><th>Техническая возможность</th><th>RPS</th><th>Latency, ms</th><th>Error Rate, %</th><th>Статус</th></tr></thead>
-        <tbody>${ifc.methods.map(m=>`<tr><td><a class="proj-link" data-action="noop-doc">${escapeHtml(m.method)}</a></td><td>${escapeHtml(m.desc)}</td><td>${escapeHtml(m.cap)}</td><td>${m.rps}</td><td>${m.lat}</td><td>${m.err}</td><td><span class="badge green">${escapeHtml(m.status)}</span></td></tr>`).join("")}</tbody></table>
+        <table class="fixed-table ac-iface-methods"><colgroup><col style="width:17%"><col style="width:20%"><col style="width:19%"><col style="width:8%"><col style="width:12%"><col style="width:12%"><col style="width:12%"></colgroup>
+        <thead><tr><th>Метод</th><th>Описание</th><th>Техническая возможность</th><th class="num">RPS</th><th class="num">Latency, ms</th><th class="num">Error Rate, %</th><th>Статус</th></tr></thead>
+        <tbody>${ifc.methods.map(m=>`<tr><td><a class="proj-link" data-action="noop-doc">${clampCell(m.method)}</a></td><td>${clampCell(m.desc)}</td><td>${clampCell(m.cap)}</td><td class="num">${m.rps}</td><td class="num">${m.lat}</td><td class="num">${m.err}</td><td><span class="badge green">${escapeHtml(m.status)}</span></td></tr>`).join("")}</tbody></table>
       </div>
     </div></td></tr>`;
   }
@@ -9562,13 +9623,19 @@ function AcTechTab(app){
       </div>
       ${ResetFiltersButton("ac-reset-tech", !!(state.appcat.techSearch || state.appcat.techStatusFilter!=="Все" || state.appcat.techKiOnly))}
     </div>
-    <div class="table-wrap">
-      <table>
+    <!-- Четыре колонки, но заголовки длинные: «Статус критической инфраструктуры»
+         просит 174. Прокрутка включается с 1024 (docs/interaction.md §6). Проценты
+         от min-width 900: 252 / 180≥134 / 225≥174 / 243≥219. -->
+    <div class="table-scroll">
+      <table class="fixed-table ac-tech-table">
+        <colgroup>
+          <col style="width:28%"><col style="width:20%"><col style="width:25%"><col style="width:27%">
+        </colgroup>
         <thead><tr><th>Технология</th><th>Статус технологии</th><th>Статус критической инфраструктуры</th><th>Источник</th></tr></thead>
         <tbody>
           ${list.length ? list.map(t=>`
             <tr>
-              <td><div class="proj-link" data-action="ac-open-tech" data-id="${t.id}">${escapeHtml(t.name)}</div></td>
+              <td><div class="proj-link" data-action="ac-open-tech" data-id="${t.id}">${clampCell(t.name)}</div></td>
               <td><span class="badge green">${escapeHtml(t.status)}</span></td>
               <td><span class="badge green">${escapeHtml(t.ki)}</span></td>
               <td>${escapeHtml(t.src)}</td>
@@ -9659,17 +9726,26 @@ function AcNfrTab(app){
       ${FilterSelect({id:"ac-nfr-source", label:"Источник", value:ac.nfrSourceFilter,
         options:["Все","Информационная безопасность","Надежность"], action:"ac-nfr-source-set"})}
       ${ResetFiltersButton("ac-reset-nfr", !!(state.appcat.nfrSearch || state.appcat.nfrSourceFilter!=="Все"))}
-      <button class="btn btn-primary" data-action="noop-doc">Кнопка</button>
+      <button class="btn btn-primary" data-action="noop-doc">Добавить требование</button>
     </div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Нефункциональное требование</th><th>Описание</th><th>Источник</th><th>Версия</th><th>Статус реализации</th><th>Назначение</th><th>Инициатор назначения</th><th>Дата назначения</th><th></th></tr></thead>
+    <!-- Девять колонок: таблица не укладывается даже в 1728, поэтому прокрутка с
+         закреплённым названием требования (docs/interaction.md §6). Проценты от
+         min-width 1560: требование 312≥309, Описание 218≥171, Источник 187≥178,
+         Версия 109≥103, Статус 156≥137, Назначение 140≥138, Инициатор 218≥212,
+         Дата 156≥135, колонка удаления 62≥48. -->
+    <div class="table-scroll">
+      <table class="fixed-table ac-nfr-table">
+        <colgroup>
+          <col style="width:20%"><col style="width:14%"><col style="width:12%"><col style="width:7%"><col style="width:10%">
+          <col style="width:9%"><col style="width:14%"><col style="width:10%"><col style="width:4%">
+        </colgroup>
+        <thead><tr><th>Нефункциональное требование</th><th>Описание</th><th>Источник</th><th>Версия</th><th>Статус реализации</th><th>Назначение</th><th>Инициатор назначения</th><th>Дата назначения</th><th><span class="vh">Удалить требование</span></th></tr></thead>
         <tbody>
           ${list.map(n=>`
             <tr>
               <td>${clampNameCell(n.name, n.code)}</td>
-              <td>${escapeHtml(n.desc)}</td>
-              <td>${escapeHtml(n.src)}</td>
+              <td>${clampCell(n.desc)}</td>
+              <td>${clampCell(n.src)}</td>
               <td>${n.ver}</td>
               <td><span class="badge green">${escapeHtml(n.status)}</span></td>
               <td><span class="badge green">${escapeHtml(n.assign)}</span></td>
@@ -9699,11 +9775,16 @@ function AcObsTab(app){
       <div class="search-wrap field-with-icon">${icon("search")}<input class="input" id="acObsSearch" placeholder="Название контейнера или интерфейса" value="${escapeHtml(ac.obsSearch)}"/></div>
       <div style="margin-left:auto;"><button class="btn btn-primary" data-action="ac-open-source-editor" data-mode="add">Добавить источник</button></div>
     </div>
-    <div class="table-wrap">
-      <div style="display:flex;font-weight:700;font-size:13px;color:var(--text-secondary);padding:var(--space-3) var(--space-5);border-bottom:1px solid var(--border);">
-        <div style="flex:1;">Экземпляр приложения</div><div style="width:340px;">Ссылка на шаблон метрик в платформе наблюдаемости</div><div style="width:40px;"></div>
-      </div>
-      ${acActive().obs.map(n=>AcObsRow(n)).join("")}
+    <!-- Это таблица, а не список: раньше шапку изображал flex-ряд с собственными
+         13px/700/вторичный цвет и отступом 12 × 20, то есть мимо раздела «Таблица»
+         в docs/components.md (15/20 вес 500, 18 × 24). Теперь thead/tbody, а уровни
+         дерева двигают строку целиком — вместе с шевроном, по тексту родителя. -->
+    <div class="table-scroll">
+      <table class="fixed-table ac-obs-table">
+        <colgroup><col style="width:52%"><col style="width:41%"><col style="width:7%"></colgroup>
+        <thead><tr><th>Экземпляр приложения</th><th>Ссылка на шаблон метрик в платформе наблюдаемости</th><th><span class="vh">Редактировать источник</span></th></tr></thead>
+        <tbody>${acActive().obs.map(n=>AcObsRow(n)).join("")}</tbody>
+      </table>
     </div>
   `;
 }
@@ -9711,14 +9792,15 @@ function AcObsTab(app){
 function AcObsRow(node){
   const ac = state.appcat;
   const open = ac.obsExpanded[node.id]!==false;
-  const lvlCls = node.level===1?"lvl-0":node.level===2?"lvl-1":"lvl-2";
+  /* Уровень двигает всю ячейку, а не только подпись: шаг 30 = шеврон 22 + зазор 8,
+     так шеврон ребёнка встаёт ровно под текстом родителя (docs/interaction.md §6). */
+  const indent = (node.level-1) * 30;
   return `
-    <div class="obs-tree-row ${lvlCls}">
-      <div class="exp-row-btn ${node.children?(open?"open":""):"none"}" ${node.children?`data-action="ac-toggle-obs" data-id="${node.id}"`:""}>${icon("chevronRight")}</div>
-      <div class="lbl">${escapeHtml(node.label)}</div>
-      <div class="link-col"><a class="proj-link" data-action="noop-doc">${escapeHtml(node.link)}</a></div>
-      <div class="edit-btn" data-action="ac-open-source-editor" data-mode="edit" data-id="${node.id}">${icon("pencil")}</div>
-    </div>
+    <tr class="obs-row ${(node.children && open && node.level===1)?"exp-open":""}">
+      <td><div class="exp-cell" style="padding-left:${indent}px;"><div class="exp-row-btn ${node.children?(open?"open":""):"none"}" ${node.children?`data-action="ac-toggle-obs" data-id="${node.id}"`:""}>${icon("chevronRight")}</div><div class="exp-name">${clampCell(node.label)}</div></div></td>
+      <td><a class="proj-link" data-action="noop-doc">${clampCell(node.link)}</a></td>
+      <td><div class="exp-row-btn" data-action="ac-open-source-editor" data-mode="edit" data-id="${node.id}" title="Редактировать источник">${icon("pencil")}</div></td>
+    </tr>
     ${(node.children && open) ? node.children.map(AcObsRow).join("") : ""}
   `;
 }
@@ -15578,10 +15660,29 @@ const POPOVER_GAP = 8;   /* popover-target-spacing */
 const POPOVER_EDGE = 8;  /* зазор до края окна */
 /* Панель раскрытой строки прижата к левому краю прокрутки (CSS), но ширину ей
    нужно знать в пикселях: ячейка под ней шире области просмотра на всю прокрутку. */
+/* Панель раскрытой строки прижата к левому краю своей прокрутки (position:sticky),
+   поэтому её ширина — это видимая ширина ТОГО блока, внутри которого она едет.
+   Для вложенной панели это не внешняя .table-scroll, а ближайшая прокручиваемая
+   обёртка: раньше ширину всем панелям ставила внешняя, и панель второго уровня
+   выходила за правый край ровно на свой отступ. */
+function scrollHostOf(el){
+  /* Ищем только обёртку таблицы: у .table-wrap-fit с фиксированной таблицей
+     overflow снят (ей нужны вылезающие подсказки), и такая панель ширину не
+     получает вовсе — иначе ей досталась бы ширина .main. */
+  let e = el.parentElement;
+  while(e && e !== document.body){
+    if(e.classList.contains("table-scroll") || e.classList.contains("table-wrap") || e.classList.contains("table-wrap-fit")){
+      const ox = getComputedStyle(e).overflowX;
+      return (ox === "auto" || ox === "scroll") ? e : null;
+    }
+    e = e.parentElement;
+  }
+  return null;
+}
 function fitStickyDetailRows(){
-  document.querySelectorAll(".table-scroll").forEach(wrap=>{
-    const w = wrap.clientWidth;
-    wrap.querySelectorAll("tr.exp-detail-row > td > .exp-detail").forEach(d=>{ d.style.width = w + "px"; });
+  document.querySelectorAll("tr.exp-detail-row > td > .exp-detail").forEach(d=>{
+    const host = scrollHostOf(d);
+    d.style.width = host ? host.clientWidth + "px" : "";
   });
 }
 
@@ -15711,6 +15812,7 @@ function saveLocation(){
       ucWizard: state.ucWizard ? ucWizardSnapshot(state.ucWizard) : null,
       appcat: {
         detailId: state.appcat.detailId,
+        branch: state.appcat.branch,
         tab: state.appcat.tab,
         generalSub: state.appcat.generalSub,
         fitnessSub: state.appcat.fitnessSub,
@@ -17500,7 +17602,21 @@ document.addEventListener("scroll", ()=>{ positionDsSelectMenus(); positionToast
     if(loc.projectAgentsSubTab) state.projectAgentsSubTab = loc.projectAgentsSubTab;
     if(loc.wizard && findProject(loc.wizard.projectId)) state.wizard = loc.wizard;
     if(loc.ucWizard) state.ucWizard = restoreUcWizard(loc.ucWizard);
-    if(loc.appcat) Object.assign(state.appcat, loc.appcat);
+    /* Ветки приложения живут в AC_BRANCH_META и заводятся при открытии приложения
+       (ac-open-app → acDefaultOpenBranch → ensureAcBranches). Восстановление маршрута
+       идёт мимо этого обработчика, поэтому список надо завести здесь же — иначе
+       страница открывается, а переключатель веток раскрывается пустым. Ветку из
+       прошлой сессии берём только если она есть: своя ветка перезагрузку не переживает
+       (данные не персистятся), и ссылка на неё оставила бы страницу без состава. */
+    if(loc.appcat){
+      Object.assign(state.appcat, loc.appcat);
+      if(state.appcat.detailId && findApp(state.appcat.detailId)){
+        ensureAcBranches(state.appcat.detailId);
+        if(!acBranchList(state.appcat.detailId).some(b=>b.id===state.appcat.branch)) state.appcat.branch = "main";
+      } else {
+        state.appcat.detailId = null;
+      }
+    }
     if(loc.cj){
       const o = loc.cj.open;
       if(o){
