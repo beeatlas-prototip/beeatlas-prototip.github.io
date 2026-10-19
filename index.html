@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261019-161253">
+<meta name="beeatlas-build" content="20261019-162147">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -2830,23 +2830,6 @@
   .ac-tabs-wrap.can-left .ac-tabs-btn.left{opacity:1;pointer-events:auto;}
   .ac-tabs-wrap.can-right .ac-tabs-btn.right{opacity:1;pointer-events:auto;}
 
-  .rp-legend{display:flex;gap:var(--space-5);align-items:center;margin-left:auto;}
-  .rp-legend-item{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--text-secondary);white-space:nowrap;}
-  .rp-dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;}
-  .rp-dot.green{background:var(--green-text);}
-  .rp-dot.orange{background:var(--orange-text);}
-  .rp-project{border:1px solid var(--border);border-radius:var(--radius);margin-bottom:var(--space-4);overflow:hidden;}
-  .rp-project-head{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-4) var(--space-5);cursor:pointer;font-size:15px;font-weight:700;}
-  .rp-project-head:hover{background:var(--bg-hover);}
-  .rp-project-head svg:not(.exp-row-btn svg){width:18px;height:18px;color:var(--text-tertiary);}
-  .rp-project-head .ic:not(.exp-row-btn .ic){width:18px;height:18px;color:var(--text-tertiary);font-size:18px;}
-  .rp-project-title{flex:1;}
-  .rp-uc-list{display:flex;flex-direction:column;gap:var(--space-4);padding:var(--space-5);background:var(--bg-alt);border-top:1px solid var(--border);}
-  .rp-uc-card{padding:var(--space-4) var(--space-5);margin-bottom:0;}
-  .rp-uc-card .card-title-row{display:flex;align-items:center;gap:var(--space-3);cursor:pointer;}
-  .rp-uc-card .table-wrap{margin-top:var(--space-4);}
-  .rp-uc-name{color:var(--blue);font-weight:500;font-size:15px;}
-  .rp-uc-code{color:var(--text-secondary);font-size:13px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;flex:1;}
   td.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;color:var(--text-secondary);}
 
   /* ══════════════════════════════════════════════════════════════════════
@@ -8236,11 +8219,9 @@ function defaultAppcatState(){
     obsSearch:"", obsExpanded:{"inst1":true,"cont1":true},
     sourceEditor:null,
     techDetail:null,
-    relatedSearch:"", relatedExpanded:{"proj:proj1":true},
     e2eSub:"e2e",
     e2eSearch:"", e2eSort:{key:"name", dir:"asc"}, e2eExpanded:{"E2E.00.00.01":true},
     e2eUcSearch:"", e2eUcSort:{key:"code", dir:"asc"}, e2eUcExpanded:{"UC-014":true},
-    cjSearch:"", cjSort:{key:"name", dir:"asc"}, cjExpanded:{"CJ.00.00.01.90":true},
   };
 }
 
@@ -8670,46 +8651,15 @@ const AC_E2E_UC_CASES = [
   ]},
 ];
 
-/* Клиентские пути — отдельная вкладка, а не третий раздел переключателя: содержание
-   принципиально другое, это перечень путей без методов и технических возможностей.
-   Дзюба просил три уровня детализации одной пирамидкой, но функционала «какие E2E
-   входят в Use Case» на бэке нет, поэтому пока три независимых списка.
-   Показываем пути, которыми приложение владеет; те, в которых оно только участвует,
-   архитектор находит, проваливаясь из шагов E2E-сценариев. */
-const AC_CJ_PATHS = [
-  {code:"CJ.00.00.01.90", name:"Я, как клиент, управляю балансами и переводами в приложении", status:"Опубликован", bi:[
-    {code:"BI.00.00.01.1", name:"BI Проверка баланса и доступных средств", steps:4},
-    {code:"BI.00.00.01.2", name:"BI Перенос средств между балансами", steps:6},
-    {code:"BI.00.00.01.3", name:"BI Подтверждение операции переноса", steps:3},
-  ]},
-  {code:"CJ.00.00.02.91", name:"Я, как клиент, оплачиваю покупки мобильным платежом", status:"Опубликован", bi:[
-    {code:"BI.00.00.02.1", name:"BI Выбор способа оплаты", steps:3},
-    {code:"BI.00.00.02.2", name:"BI Резервирование и списание суммы", steps:5},
-  ]},
-  {code:"CJ.00.00.03.92", name:"Я, как клиент, подключаю обещанный платёж", status:"Черновик", bi:[
-    {code:"BI.00.00.03.1", name:"BI Проверка доступной суммы", steps:2},
-    {code:"BI.00.00.03.2", name:"BI Подключение обещанного платежа", steps:4},
-  ]},
-  {code:"CJ.00.00.04.93", name:"Я, как клиент, пополняю баланс банковской картой", status:"Опубликован", bi:[
-    {code:"BI.00.00.04.1", name:"BI Ввод суммы пополнения", steps:2},
-    {code:"BI.00.00.04.2", name:"BI Оплата банковской картой", steps:5},
-    {code:"BI.00.00.04.3", name:"BI Зачисление средств на баланс", steps:3},
-  ]},
-  {code:"CJ.00.00.05.94", name:"Я, как клиент, подключаю услугу Совместный баланс", status:"Опубликован", bi:[
-    {code:"BI.00.00.05.1", name:"BI Выбор участников группы", steps:4},
-    {code:"BI.00.00.05.2", name:"BI Активация совместного баланса", steps:3},
-  ]},
-];
-
 /* ============================= ВЕТКИ ПРИЛОЖЕНИЯ =============================
    Устроены так же, как ветки Use Case: системные design/develop/main плюс
    пользовательские, полная изоляция состава (§3.1 — состав не расшаривается),
    объединение стратегиями «добавление»/«замена» с проверкой конфликтов.
    На ветке висит архитектурное описание приложения — то, что архитектор правит
    в проекте: технические возможности, интерфейсы и методы, технологии, паттерны,
-   НФТ, наблюдаемость. Вкладки «Общая информация», «Фитнес-функции», «Клиентские
-   пути», «Участие в процессах» и «Связанные проекты» остаются общими: это факты
-   о продукте и его внешние связи, а не предмет проектного ветвления. */
+   НФТ, наблюдаемость. Вкладки «Общая информация», «Фитнес-функции» и «Участие
+   в процессах» остаются общими: это факты о продукте и его внешние связи,
+   а не предмет проектного ветвления. */
 const AC_SYSTEM_BRANCHES = ["design","develop","main"];
 const AC_BRANCH_FIELDS = ["techCaps","interfaces","technologies","patterns","nfrs","obs"];
 const AC_BRANCH_META = {};     // appId → [{id, kind, parent, createdBy, createdAt}]
@@ -8831,64 +8781,8 @@ const AC_TABS = [
   {id:"patterns", label:"Паттерны"},
   {id:"nfr", label:"Нефункциональные требования"},
   {id:"obs", label:"Настройки наблюдаемости"},
-  {id:"cj", label:"Клиентские пути"},
   {id:"e2e", label:"Участие в процессах"},
-  {id:"related", label:"Связанные проекты"},
 ];
-
-/* ---- Связанные проекты: продукт участвует в N проектах, каждый раскрывается до
-   use case → интерфейс → операция, с статусом "есть в архитектуре"/"требует разработки" ---- */
-const AC_RELATED_PROJECTS = [
-  {id:"proj1", name:"Обновление eSIM-регистрации для B2C", status:"exists",
-    useCases:[
-      {id:"uc1", code:"UC-014", title:"Саморегистрация клиента по eSIM", status:"exists",
-        interfaces:[
-          {id:"if1", name:"API управление бизнес-возможностями", status:"exists",
-            operations:[
-              {id:"op1", name:"GET /2.0.0/napi/sim-info", status:"exists"},
-              {id:"op2", name:"POST /2.0.0/napi/sim-activate", status:"needs"},
-            ]},
-          {id:"if2", name:"API получение бизнес-терминов", status:"needs",
-            operations:[
-              {id:"op3", name:"GET /2.0.0/napi/terms", status:"needs"},
-            ]},
-        ]},
-      {id:"uc2", code:"UC-021", title:"Выбор тарифного плана при регистрации", status:"needs",
-        interfaces:[
-          {id:"if3", name:"API управление техническими возможностями", status:"needs",
-            operations:[
-              {id:"op4", name:"GET /2.0.0/napi/tariffs", status:"needs"},
-            ]},
-        ]},
-    ]},
-  {id:"proj2", name:"Единая платформа коммуникаций Legacy — миграция", status:"needs",
-    useCases:[
-      {id:"uc3", code:"UC-032", title:"Отправка SMS с кодом подтверждения", status:"exists",
-        interfaces:[
-          {id:"if4", name:"API управления описанием E2E процессов", status:"exists",
-            operations:[
-              {id:"op5", name:"POST /2.0.0/napi/sms-send", status:"exists"},
-              {id:"op6", name:"GET /2.0.0/napi/sms-status", status:"exists"},
-            ]},
-        ]},
-    ]},
-  {id:"proj3", name:"Программа лояльности: бонусные начисления", status:"exists",
-    useCases:[
-      {id:"uc4", code:"UC-045", title:"Начисление бонусов за покупку eSIM", status:"exists",
-        interfaces:[
-          {id:"if5", name:"API получения информации о технологиях", status:"needs",
-            operations:[
-              {id:"op7", name:"GET /2.0.0/napi/loyalty-rules", status:"needs"},
-            ]},
-        ]},
-    ]},
-];
-
-function rpStatusBadge(status){
-  return status==="exists"
-    ? '<span class="badge green">Есть в архитектуре</span>'
-    : '<span class="badge orange">Требует разработки</span>';
-}
 
 /* Сортировка таблиц: заголовок — кнопка, повторный клик по тому же столбцу
    переворачивает направление. Сравниваем как строки (localeCompare, ru) —
@@ -9129,143 +9023,6 @@ function AcUcDescCell(ucCode, m){
    Отдельная вкладка: содержание принципиально другое — перечень путей без методов.
    Показываем пути, которыми приложение владеет; пути, где оно только участвует,
    архитектор находит, проваливаясь из шагов E2E-сценариев. */
-function AcCjTab(app){
-  const ac = state.appcat;
-  const q = ac.cjSearch.trim().toLowerCase();
-  let rows = AC_CJ_PATHS;
-  if(q) rows = rows.filter(c=>acCjMatches(c, q));
-  rows = acSortRows(rows, ac.cjSort, {count:c=>c.bi.length});
-  return `
-    <p class="ac-tab-note">Клиентские пути, которыми владеет приложение. Пути, в которых приложение только участвует, видны в разделе «Участие в процессах».</p>
-    ${acSearchRow("acCjSearch", ac.cjSearch, "Клиентский путь или BI", "ac-clear-cj-search")}
-    <div class="table-wrap-fit">
-      <table class="fixed-table">
-        <colgroup><col style="width:58%"><col style="width:16%"><col style="width:26%"></colgroup>
-        <thead><tr>
-          ${acSortTh("Клиентский путь","name",ac.cjSort,"ac-cj-sort")}
-          ${acSortTh("BI","count",ac.cjSort,"ac-cj-sort")}
-          ${acSortTh("Статус","status",ac.cjSort,"ac-cj-sort")}
-        </tr></thead>
-        <tbody>
-          ${rows.length ? rows.map(c=>AcCjRows(c, q)).join("") : acEmptyRow(3)}
-        </tbody>
-      </table>
-    </div>
-  `;
-}
-
-function acCjBiText(b){ return (b.name+" "+b.code).toLowerCase(); }
-function acCjMatches(c, q){
-  return (c.name+" "+c.code).toLowerCase().includes(q) || c.bi.some(b=>acCjBiText(b).includes(q));
-}
-function acCjVisibleBi(c, q){
-  if(!q || (c.name+" "+c.code).toLowerCase().includes(q)) return c.bi;
-  return c.bi.filter(b=>acCjBiText(b).includes(q));
-}
-
-function AcCjRows(c, q){
-  const ac = state.appcat;
-  const bis = acCjVisibleBi(c, q);
-  const open = !!ac.cjExpanded[c.code] || (!!q && bis.length < c.bi.length);
-  let out = `
-    <tr class="${open?"exp-open":""}">
-      <td>${acExpNameCell(c.name, c.code, open, "ac-toggle-cj", "ac-open-cj")}</td>
-      <td>${c.bi.length}</td>
-      <td><span class="badge ${c.status==="Опубликован"?"green":"gray"}">${escapeHtml(c.status)}</span></td>
-    </tr>
-  `;
-  if(open){
-    out += `<tr class="exp-detail-row"><td colspan="3"><div class="exp-detail">
-      <div class="table-wrap">
-        <table class="fixed-table">
-          <colgroup><col style="width:58%"><col style="width:24%"><col style="width:18%"></colgroup>
-          <thead><tr><th>BI</th><th>Код</th><th class="num">Шагов</th></tr></thead>
-          <tbody>
-            ${bis.map(b=>`
-              <tr>
-                <td>${clampCell(b.name, "clamp-1")}</td>
-                <td>${escapeHtml(b.code)}</td>
-                <td class="num">${b.steps}</td>
-              </tr>
-            `).join("")}
-          </tbody>
-        </table>
-      </div>
-    </div></td></tr>`;
-  }
-  return out;
-}
-
-function AcRelatedTab(app){
-  const ac = state.appcat;
-  const q = ac.relatedSearch.trim().toLowerCase();
-  let list = AC_RELATED_PROJECTS;
-  if(q) list = list.filter(p=>p.name.toLowerCase().includes(q));
-  return `
-    <div class="filters-row">
-      <div class="search-wrap field-with-icon">${icon("search")}<input class="input" id="acRelatedSearch" placeholder="Название проекта" value="${escapeHtml(ac.relatedSearch)}"/></div>
-      <div class="rp-legend">
-        <span class="rp-legend-item"><span class="rp-dot green"></span>Есть в архитектуре</span>
-        <span class="rp-legend-item"><span class="rp-dot orange"></span>Требует разработки</span>
-      </div>
-    </div>
-    ${list.length ? list.map(rpProjectBlock).join("") : `<p style="color:var(--text-secondary);">Ничего не нашлось. Измени запрос</p>`}
-  `;
-}
-
-/* Проект — свёрнутый заголовок, раскрывается в список UC-карточек
-   (та же UC-карточка, что в Каталог Е2Е у шага BI: имя + код + статус,
-   ниже — плоская таблица интерфейс/операция/статус вместо scenario-таблицы) */
-function rpProjectBlock(p){
-  const ac = state.appcat;
-  const key = "proj:"+p.id;
-  const open = !!ac.relatedExpanded[key];
-  return `
-    <div class="rp-project">
-      <div class="rp-project-head" data-action="ac-toggle-related" data-key="${key}">
-        <span class="exp-row-btn ${open?"open":""}">${icon("chevronRight")}</span>
-        ${icon("folder")}
-        <span class="rp-project-title">${escapeHtml(p.name)}</span>
-        ${rpStatusBadge(p.status)}
-      </div>
-      ${open ? `<div class="rp-uc-list">${p.useCases.map(uc=>rpUcCard(uc,p.id)).join("")}</div>` : ""}
-    </div>
-  `;
-}
-
-function rpUcCard(uc, projId){
-  const ac = state.appcat;
-  const key = "uc:"+projId+":"+uc.id;
-  const open = !!ac.relatedExpanded[key];
-  const rows = uc.interfaces.flatMap(ifc => ifc.operations.map(op => ({ifc, op})));
-  return `
-    <div class="card rp-uc-card">
-      <div class="card-title-row" data-action="ac-toggle-related" data-key="${key}">
-        <span class="exp-row-btn ${open?"open":""}">${icon("chevronRight")}</span>
-        <span class="rp-uc-name">${escapeHtml(uc.title)}</span>
-        <span class="rp-uc-code">${escapeHtml(uc.code)}</span>
-        ${rpStatusBadge(uc.status)}
-      </div>
-      ${open ? `
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Интерфейс</th><th>Операция</th><th>Статус</th></tr></thead>
-            <tbody>
-              ${rows.map(({ifc,op})=>`
-                <tr>
-                  <td>${escapeHtml(ifc.name)}</td>
-                  <td class="mono">${escapeHtml(op.name)}</td>
-                  <td>${rpStatusBadge(op.status)}</td>
-                </tr>
-              `).join("")}
-            </tbody>
-          </table>
-        </div>
-      ` : ""}
-    </div>
-  `;
-}
-
 function AppCatalogModule(){
   const ac = state.appcat;
   if(ac.techDetail) return AcTechDetailPage();
@@ -9394,9 +9151,7 @@ function AcTabContent(app){
     case "patterns": return AcPatternsTab(app);
     case "nfr": return AcNfrTab(app);
     case "obs": return AcObsTab(app);
-    case "cj": return AcCjTab(app);
     case "e2e": return AcE2eTab(app);
-    case "related": return AcRelatedTab(app);
     default: return "";
   }
 }
@@ -16197,10 +15952,8 @@ function handleInput(el){
   else if(el.id==="acPatternSearch"){ state.appcat.patternSearch = el.value; render(); reFocus("acPatternSearch"); }
   else if(el.id==="acNfrSearch"){ state.appcat.nfrSearch = el.value; render(); reFocus("acNfrSearch"); }
   else if(el.id==="acObsSearch"){ state.appcat.obsSearch = el.value; render(); reFocus("acObsSearch"); }
-  else if(el.id==="acRelatedSearch"){ state.appcat.relatedSearch = el.value; render(); reFocus("acRelatedSearch"); }
   else if(el.id==="acE2eSearch"){ state.appcat.e2eSearch = el.value; render(); reFocus("acE2eSearch"); }
   else if(el.id==="acE2eUcSearch"){ state.appcat.e2eUcSearch = el.value; render(); reFocus("acE2eUcSearch"); }
-  else if(el.id==="acCjSearch"){ state.appcat.cjSearch = el.value; render(); reFocus("acCjSearch"); }
   else if(el.id==="acSrcSourceInput"){
     state.appcat.sourceEditor.values.source = el.value;
     state.appcat.sourceEditor.sourceOpen = el.value.trim().length>0 && el.value!=="Prometheus-Observability";
@@ -17379,17 +17132,13 @@ function handleAction(action, el){
     case "ac-set-e2e-sub": state.appcat.e2eSub = el.dataset.sub; render(); break;
     case "ac-e2e-sort": state.appcat.e2eSort = acToggleSort(state.appcat.e2eSort, el.dataset.key); render(); break;
     case "ac-e2e-uc-sort": state.appcat.e2eUcSort = acToggleSort(state.appcat.e2eUcSort, el.dataset.key); render(); break;
-    case "ac-cj-sort": state.appcat.cjSort = acToggleSort(state.appcat.cjSort, el.dataset.key); render(); break;
     case "ac-toggle-e2e": { const k=el.dataset.id; state.appcat.e2eExpanded[k]=!state.appcat.e2eExpanded[k]; render(); break; }
     case "ac-toggle-e2e-uc": { const k=el.dataset.id; state.appcat.e2eUcExpanded[k]=!state.appcat.e2eUcExpanded[k]; render(); break; }
-    case "ac-toggle-cj": { const k=el.dataset.id; state.appcat.cjExpanded[k]=!state.appcat.cjExpanded[k]; render(); break; }
     case "ac-clear-e2e-search": state.appcat.e2eSearch=""; render(); reFocus("acE2eSearch"); break;
     case "ac-clear-e2e-uc-search": state.appcat.e2eUcSearch=""; render(); reFocus("acE2eUcSearch"); break;
-    case "ac-clear-cj-search": state.appcat.cjSearch=""; render(); reFocus("acCjSearch"); break;
     case "ac-open-e2e-process": showToast(`Переход в E2E-сценарий «${el.dataset.code}» в Каталоге Е2Е — вне периметра прототипа`); break;
     case "ac-open-e2e-uc": showToast(`Переход в Use Case «${el.dataset.code}» — вне периметра прототипа`); break;
     case "ac-open-e2e-dynamic": showToast(`Реализация «${el.dataset.id}» — вне периметра прототипа`); break;
-    case "ac-open-cj": showToast(`Переход в клиентский путь «${el.dataset.code}» в Каталоге Е2Е — вне периметра прототипа`); break;
     /* Описание вызова открываем в боковой панели: обрезанный текст в ячейке не
        прочитать целиком и не скопировать, а его забирают себе в задачу. */
     case "ac-open-method-desc": {
@@ -17458,12 +17207,6 @@ function handleAction(action, el){
       showToast("Источник сохранён");
       render();
       break;
-    case "ac-toggle-related": {
-      const k = el.dataset.key;
-      state.appcat.relatedExpanded[k] = !state.appcat.relatedExpanded[k];
-      render();
-      break;
-    }
 
     /* ---- Company architecture graph ---- */
     case "graph-set-page": state.graph.page = el.dataset.page; render(); break;
@@ -17685,6 +17428,10 @@ document.addEventListener("scroll", ()=>{ positionDsSelectMenus(); positionToast
        (данные не персистятся), и ссылка на неё оставила бы страницу без состава. */
     if(loc.appcat){
       Object.assign(state.appcat, loc.appcat);
+      /* Вкладка из прошлой сессии могла быть удалена (так ушли «Клиентские пути»
+         и «Связанные проекты»): сохранённый id тогда не совпадает ни с одной
+         веткой switch, и страница открывается с пустым телом под шапкой. */
+      if(!AC_TABS.some(t=>t.id===state.appcat.tab)) state.appcat.tab = "general";
       if(state.appcat.detailId && findApp(state.appcat.detailId)){
         ensureAcBranches(state.appcat.detailId);
         if(!acBranchList(state.appcat.detailId).some(b=>b.id===state.appcat.branch)) state.appcat.branch = "main";
