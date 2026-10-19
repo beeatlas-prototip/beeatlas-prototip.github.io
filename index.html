@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261019-122042">
+<meta name="beeatlas-build" content="20261019-123451">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -1296,7 +1296,7 @@
      Теперь nowrap: элементы ужимаются до своих min-width и остаются в строке.
      Ниже 1300 суммы минимумов уже не хватает — там перенос разрешён снова,
      иначе ряд вылезал бы за край страницы. */
-  .filters-row{display:flex;align-items:center;gap:var(--space-4);margin-bottom:var(--space-6);flex-wrap:nowrap;}
+  .filters-row{display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-6);flex-wrap:nowrap;}
   @media (max-width:1300px){ .filters-row{flex-wrap:wrap;} }
   /* Поиск во всех строках фильтров — фиксированные 648 (ширина с «Проектов» и Use Case).
      Раньше поле тянулось на всю свободную ширину и у каждой вкладки получалось своим. */
@@ -1366,7 +1366,7 @@
     font-size:13px;font-weight:400;line-height:16px;letter-spacing:.2px;
     margin-top:var(--size-spacing-x2);   /* $list-caption-spacing 8 */
   }
-  .uc-impl-detail-actions{display:flex;align-items:center;gap:var(--space-5);margin-top:var(--space-4);}
+  .uc-impl-detail-actions{display:flex;align-items:center;gap:var(--space-3);margin-top:var(--space-4);}
 
   /* Маркер расхождения: Иконочная кнопка — сама иконка 18 (small) с радиусом 4,
      без круглой подложки. Цвет — status-warning: расхождение не ошибка данных,
@@ -1787,7 +1787,7 @@
   table tr.row-excluded td{opacity:.55;}
 
   .tc-step-hint{color:var(--text-secondary);font-size:15px;line-height:18px;letter-spacing:.2px;max-width:820px;margin:0 0 var(--space-6);}
-  .tc-toolbar{display:flex;align-items:center;gap:var(--space-5);flex-wrap:wrap;margin-bottom:var(--space-5);}
+  .tc-toolbar{display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap;margin-bottom:var(--space-5);}
   .tc-pager{display:flex;align-items:center;gap:var(--size-spacing-x2);}
   .tc-pager .pg-btn{min-width:40px;height:40px;border-radius:var(--size-border-radius-x6);border:1px solid var(--border);background:var(--bg);display:flex;align-items:center;justify-content:center;color:var(--text);cursor:pointer;}
   .tc-pager .pg-btn:hover:not([disabled]){background:color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);}
@@ -2150,7 +2150,7 @@
   .placeholder-page{padding:var(--space-10) var(--space-5);text-align:center;color:var(--text-secondary);}
 
   /* ---------- CJ library ---------- */
-  .cj-toolbar{display:flex;align-items:center;gap:var(--space-4);margin-bottom:var(--space-6);flex-wrap:wrap;}
+  .cj-toolbar{display:flex;align-items:center;gap:var(--space-3);margin-bottom:var(--space-6);flex-wrap:wrap;}
   .cj-toolbar .search-wrap{width:648px;flex:0 0 auto;position:relative;}
   /* 12-column fluid grid — each card spans 4 of 12 columns, so 3 cards per row at any
      container width (was auto-fill/minmax, which happened to fit 4 narrower cards). */
@@ -2250,19 +2250,28 @@
   .cj-branch-bar > .cj-select-field{width:260px;}
   /* Переключатель ветки в шапке — фиксированной ширины: на auto он дышал при каждой
      смене ветки (замер: 131 у «main», 147 у «design»), и соседние кнопки ездили. */
-  .page-title-row .cj-select-field{width:200px;}
-  .page-title-row .cj-select-trigger{min-width:0;}
+  .uc-page-head .actions .cj-select-field{width:200px;}
+  .uc-page-head .actions .cj-select-trigger{min-width:0;}
   /* flex:1 у названия: в триггере три элемента (иконка, имя, шеврон), и
      space-between при фиксированной ширине отрывал имя от иконки — теперь имя
      занимает середину и прижато к иконке, шеврон остаётся у правого края. */
-  .page-title-row .cj-select-trigger .name{flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  /* Шапка Use Case: от крошек до заголовка 8, от заголовка до кода 4. Ряд заголовка
-     выше самого h1 (в нём контролы 48 против 32 у текста), и его собственный остаток
-     по вертикали — ровно 8 сверху и снизу. Поэтому сверху margin обнуляется (8 уже
-     есть), а снизу компенсируется на 4: 8 − 4 = −4, иначе код встанет в 8. */
-  .uc-page-head .breadcrumb{margin-bottom:0;}
-  .uc-page-head .page-title-row{margin-bottom:calc(-1 * var(--space-1));}
-  .uc-page-head .uc-code-line{margin-top:0;}
+  .uc-page-head .actions .cj-select-trigger .name{flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  /* Шапка Use Case — сетка, а не общий .page-title-row: тот flex с переносом, и блок
+     действий при нехватке места уезжал на вторую строку, разрывая связку заголовка
+     с кодом. Здесь колонка текста и колонка действий независимы: заголовок переносится
+     на вторую и третью строку внутри своей колонки, код остаётся прямо под ним,
+     а действия стоят в правом верхнем углу и не переносятся никогда. */
+  .uc-page-head{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:var(--space-6);
+    align-items:start;margin-bottom:var(--space-6);}
+  .uc-page-head .breadcrumb{grid-column:1 / -1;margin-bottom:var(--space-2);}
+  .uc-page-head .uc-head-text{grid-column:1;min-width:0;}
+  .uc-page-head .actions{grid-column:2;grid-row:2;display:flex;gap:var(--space-3);flex:0 0 auto;}
+  /* Заголовок и бейдж: бейдж прижат к верху и опущен на (32−24)/2, чтобы стоять по
+     центру ПЕРВОЙ строки заголовка, а не середины всего многострочного блока. */
+  .uc-head-title{display:flex;align-items:flex-start;gap:var(--space-4);margin-bottom:var(--space-1);}
+  .uc-head-title h1{font-size:26px;line-height:32px;letter-spacing:.2px;font-weight:500;margin:0;min-width:0;}
+  .uc-head-title .badge{margin-top:4px;flex:0 0 auto;}
+  .uc-page-head .uc-code-line{margin:0;}
   .cj-branch-bar > .cj-select-field .cj-select-trigger{min-width:0;}
   .cj-select-field.wide{display:block;width:100%;}
   /* Триггер повторяет поле по docs/components.md: высота 56, паддинг 0/16,
@@ -2597,7 +2606,7 @@
 
   /* Company architecture graph (custom nodes/relationships) — filters/search live in a horizontal
      toolbar above the diagram; the row below reuses .card for chrome on both panels. */
-  .graph-toolbar{display:flex;align-items:center;gap:var(--space-4);flex-wrap:wrap;margin-bottom:var(--space-4);}
+  .graph-toolbar{display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap;margin-bottom:var(--space-4);}
   .graph-toolbar-search{width:648px;flex:0 0 auto;}
   .graph-toolbar-search .input{font-size:13px;}
   .graph-toolbar-types{display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap;}
@@ -12499,18 +12508,22 @@ function UseCaseDetailPage(projectId, ucId){
   const narrow = ucHeadNarrow();
   return `
     <div class="uc-page-head">
-    <div class="breadcrumb">
-      <a data-action="nav" data-nav="projects">Проекты</a><span class="sep">${icon("chevronRight")}</span>
-      <a data-action="open-project" data-id="${p.id}">${escapeHtml(p.name)}</a><span class="sep">${icon("chevronRight")}</span>
-      <a data-action="open-project-usecase" data-id="${p.id}">Use Case</a><span class="sep">${icon("chevronRight")}</span>
-      <span class="current">${escapeHtml(u.name)}</span>
-    </div>
-    <div class="page-title-row">
-      <h1>${escapeHtml(u.name)}</h1>
-      ${ucStatusBadge(u.status)}
+      <div class="breadcrumb">
+        <a data-action="nav" data-nav="projects">Проекты</a><span class="sep">${icon("chevronRight")}</span>
+        <a data-action="open-project" data-id="${p.id}">${escapeHtml(p.name)}</a><span class="sep">${icon("chevronRight")}</span>
+        <a data-action="open-project-usecase" data-id="${p.id}">Use Case</a><span class="sep">${icon("chevronRight")}</span>
+        <span class="current">${escapeHtml(u.name)}</span>
+      </div>
+      <div class="uc-head-text">
+        <div class="uc-head-title">
+          <h1>${escapeHtml(u.name)}</h1>
+          ${ucStatusBadge(u.status)}
+        </div>
+        <div class="uc-code-line">${escapeHtml(u.code)}</div>
+      </div>
       <div class="actions">
         ${CjSelectField({id:"uc-branch-switch", branches:ucBranchList(u), activeId:u.branch, action:"uc-switch-branch",
-                       lead:"gitBranch", meta:b=>ucBranchUpdNote(u,b), deleteAction:"uc-branch-delete-ask"})}
+                         lead:"gitBranch", meta:b=>ucBranchUpdNote(u,b), deleteAction:"uc-branch-delete-ask"})}
         <div class="uc-menu-wrap">
           <button class="btn btn-outline btn-icon-only" data-action="toggle-popover" data-popover="uc-actions" title="${narrow?"Действия":"Ветки"}">${icon("moreVertical")}</button>
           ${state.popover==="uc-actions" ? UcActionsMenu(p, u, narrow) : ""}
@@ -12527,8 +12540,6 @@ function UseCaseDetailPage(projectId, ucId){
         <button class="btn btn-outline btn-icon-only" data-action="open-usecase-history" data-id="${p.id}" data-uc="${u.id}" title="История импорта">${icon("history")}</button>
         <button class="btn btn-outline btn-icon-only" data-action="edit-usecase" data-id="${p.id}" data-uc="${u.id}" title="Редактировать">${icon("pencil")}</button>`}
       </div>
-    </div>
-    <div class="uc-code-line">${escapeHtml(u.code)}</div>
     </div>
     ${UseCaseMetaRow(u, lastRun)}
     ${UcBranchStatusRow(p, u)}
