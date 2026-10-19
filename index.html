@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261019-183259">
+<meta name="beeatlas-build" content="20261019-191132">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -9666,9 +9666,9 @@ function AcNfrTab(app){
               <td>${n.ver}</td>
               <td><span class="badge ${n.status==="Выполнено"?"green":n.status==="В работе"?"blue":"gray"}">${escapeHtml(n.status)}</span></td>
               <td>${escapeHtml(n.assign)}</td>
-              <td>${escapeHtml(n.who)}</td>
+              <td>${clampCell(n.who)}</td>
               <td>${escapeHtml(n.date)}</td>
-              <td>${n.removable ? `<div class="exp-row-btn" data-action="noop-doc">${icon("x")}</div>` : ""}</td>
+              <td>${n.removable ? `<div class="exp-row-btn" data-action="noop-doc" title="Удалить требование">${icon("x")}</div>` : ""}</td>
             </tr>
           `).join("")}
         </tbody>
@@ -15809,6 +15809,15 @@ function makeActionsFocusable(){
     if(el.dataset.action === "noop-doc") return;
     el.setAttribute("tabindex", "0");
     if(!el.hasAttribute("role")) el.setAttribute("role", "button");
+  });
+  /* Шеврон раскрытия — иконочная кнопка без подписи: по «Применению компонентов»
+     ей нужна подсказка, а читалке с экрана — состояние. Проставляем здесь, а не
+     в полутора десятках шаблонов, где этот шеврон печатается. */
+  document.querySelectorAll('.exp-row-btn[data-action*="toggle"]').forEach(el=>{
+    if(el.classList.contains("none")) return;
+    const open = el.classList.contains("open");
+    if(!el.hasAttribute("title")) el.setAttribute("title", open ? "Свернуть" : "Раскрыть");
+    el.setAttribute("aria-expanded", open ? "true" : "false");
   });
 }
 
