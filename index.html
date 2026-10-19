@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261019-103617">
+<meta name="beeatlas-build" content="20261019-104215">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -10999,8 +10999,9 @@ function CjConfirmDialog({title, text, confirmLabel, confirmAction, cancelAction
    пространства интерфейса»). Переключение ветки и её удаление здесь НЕ дублируются: то и
    другое живёт в самом переключателе ветки рядом с заголовком — ровно как в ряду веток CJ,
    где поле переключает и удаляет, а кнопки рядом создают и объединяют. Ряд веток целиком
-   сюда не переносится: в ряду заголовка Use Case на 1280 остаётся 24px, бар занял бы 560. */
-function UcActionsMenu(p, u){
+   сюда не переносится: в ряду заголовка Use Case на 1280 остаётся 24px, бар занял бы 560.
+   Кроме этих двух команд в меню ничего нет — «Изменить привязку к CJ» убрана 19.10. */
+function UcActionsMenu(){
   const running = state.ucMergeRunning;
   const mergeBlocked = !!running;
   const item = (action, data, ico, txt, extra) =>
@@ -11011,8 +11012,6 @@ function UcActionsMenu(p, u){
       <div class="uc-menu-item${mergeBlocked?" disabled":""}" ${mergeBlocked?`title="Дождитесь завершения текущего объединения"`:`data-action="uc-open-merge"`}>
         ${icon("gitMerge")}<span class="txt">Объединить ветки</span>
       </div>
-      <div class="uc-menu-divider"></div>
-      ${item("open-uc-cj-link",`data-id="${p.id}" data-uc="${u.id}"`,"pencil","Изменить привязку к CJ")}
     </div>
   `;
 }
@@ -12472,8 +12471,8 @@ function UseCaseDetailPage(projectId, ucId){
         <button class="btn btn-outline btn-icon-only" data-action="open-usecase-history" data-id="${p.id}" data-uc="${u.id}" title="История импорта">${icon("history")}</button>
         <button class="btn btn-outline btn-icon-only" data-action="edit-usecase" data-id="${p.id}" data-uc="${u.id}" title="Редактировать">${icon("pencil")}</button>
         <div class="uc-menu-wrap">
-          <button class="btn btn-outline btn-icon-only" data-action="toggle-popover" data-popover="uc-actions" title="Ветки и привязка">${icon("moreVertical")}</button>
-          ${state.popover==="uc-actions" ? UcActionsMenu(p, u) : ""}
+          <button class="btn btn-outline btn-icon-only" data-action="toggle-popover" data-popover="uc-actions" title="Ветки">${icon("moreVertical")}</button>
+          ${state.popover==="uc-actions" ? UcActionsMenu() : ""}
         </div>
       </div>
     </div>
