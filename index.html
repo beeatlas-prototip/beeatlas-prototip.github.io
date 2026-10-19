@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261019-132703">
+<meta name="beeatlas-build" content="20261019-133922">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -437,6 +437,14 @@
     --avatar-bg:        color-mix(in srgb, var(--md-sys-color-primary-container) 35%, var(--md-sys-color-surface));
     --avatar-text:      var(--md-sys-color-on-surface);
     --input-bg:         var(--md-sys-color-surface-container-highest);
+    /* Палитра схем (диаграмма последовательности, BPMN, граф). Объявлена в :root
+       намеренно: когда эти токены жили только внутри .e2ecat-scope, на странице
+       Use Case var() отдавал пустоту и плашки участников рисовались чёрными —
+       в тёмной теме чёрное на тёмном. См. docs/interaction.md §5. */
+    --diagram-line:     var(--md-sys-color-on-surface-variant);
+    --diagram-text:     var(--md-sys-color-on-surface);
+    --diagram-box:      var(--md-sys-color-surface-container-low);
+    --diagram-boxb:     var(--md-sys-color-outline-variant);
     --shadow:           var(--elevation-high);
     --shadow-sm:        var(--elevation-low);
     --radius:           var(--size-border-radius-x8);   /* 16px */
@@ -663,24 +671,73 @@
      скроллить (про скроллбары спеки нет, берём те же цвета, что у меню селекта). */
   .sidebar::-webkit-scrollbar,
   .main::-webkit-scrollbar,
+  .uc-diagram-scroll::-webkit-scrollbar,
+  .graph-search-suggest::-webkit-scrollbar,
+  .graph-canvas-pane::-webkit-scrollbar,
+  .graph-detail::-webkit-scrollbar,
+  .lp-auth-body::-webkit-scrollbar,
+  .code-editor-body::-webkit-scrollbar,
+  .table-wrap-fit::-webkit-scrollbar,
+  .ds-dialog-desc::-webkit-scrollbar,
+  .suggest-dropdown::-webkit-scrollbar,
+  .cj-matrix-wrap::-webkit-scrollbar,
+  .uc-menu::-webkit-scrollbar,
   .table-scroll::-webkit-scrollbar{width:15px;height:15px;}
   /* Дорожка прозрачная и отступает от верхнего и нижнего края на 8px (спека:
      notifications — «верхний паддинг 8, правый 4»). Боковые 4px даёт прозрачная
      рамка ползунка, поэтому видимая ширина ползунка — 7px. */
   .sidebar::-webkit-scrollbar-track,
+  .ds-dialog-desc::-webkit-scrollbar-track,
+  .suggest-dropdown::-webkit-scrollbar-track,
+  .graph-search-suggest::-webkit-scrollbar-track,
+  .graph-canvas-pane::-webkit-scrollbar-track,
+  .graph-detail::-webkit-scrollbar-track,
+  .lp-auth-body::-webkit-scrollbar-track,
+  .code-editor-body::-webkit-scrollbar-track,
+  .cj-matrix-wrap::-webkit-scrollbar-track,
+  .uc-menu::-webkit-scrollbar-track,
+  .ds-select-menu::-webkit-scrollbar-track,
   .main::-webkit-scrollbar-track{background-color:transparent;margin:var(--size-spacing-x2) 0;}
-  .table-scroll::-webkit-scrollbar-track{background-color:transparent;margin:0 var(--size-spacing-x2);}
+  /* Горизонтальная полоса: 8 слева и справа (margin трека), 4 от нижнего края
+     (прозрачная рамка ползунка) — docs/interaction.md §4. */
+  .table-scroll::-webkit-scrollbar-track,
+  .table-wrap-fit::-webkit-scrollbar-track,
+  .uc-diagram-scroll::-webkit-scrollbar-track{background-color:transparent;margin:0 var(--size-spacing-x2);}
   .sidebar::-webkit-scrollbar-thumb,
   .main::-webkit-scrollbar-thumb,
+  .uc-diagram-scroll::-webkit-scrollbar-thumb,
+  .graph-search-suggest::-webkit-scrollbar-thumb,
+  .graph-canvas-pane::-webkit-scrollbar-thumb,
+  .graph-detail::-webkit-scrollbar-thumb,
+  .lp-auth-body::-webkit-scrollbar-thumb,
+  .code-editor-body::-webkit-scrollbar-thumb,
+  .table-wrap-fit::-webkit-scrollbar-thumb,
+  .ds-dialog-desc::-webkit-scrollbar-thumb,
+  .suggest-dropdown::-webkit-scrollbar-thumb,
+  .cj-matrix-wrap::-webkit-scrollbar-thumb,
+  .uc-menu::-webkit-scrollbar-thumb,
   .table-scroll::-webkit-scrollbar-thumb{
     background-color:var(--text-tertiary);border:4px solid transparent;
     background-clip:content-box;border-radius:100px;min-height:28px;
   }
   .sidebar::-webkit-scrollbar-thumb:hover,
   .main::-webkit-scrollbar-thumb:hover,
+  .uc-diagram-scroll::-webkit-scrollbar-thumb:hover,
+  .graph-search-suggest::-webkit-scrollbar-thumb:hover,
+  .graph-canvas-pane::-webkit-scrollbar-thumb:hover,
+  .graph-detail::-webkit-scrollbar-thumb:hover,
+  .lp-auth-body::-webkit-scrollbar-thumb:hover,
+  .code-editor-body::-webkit-scrollbar-thumb:hover,
+  .table-wrap-fit::-webkit-scrollbar-thumb:hover,
+  .ds-dialog-desc::-webkit-scrollbar-thumb:hover,
+  .suggest-dropdown::-webkit-scrollbar-thumb:hover,
+  .cj-matrix-wrap::-webkit-scrollbar-thumb:hover,
+  .uc-menu::-webkit-scrollbar-thumb:hover,
   .table-scroll::-webkit-scrollbar-thumb:hover{background-color:var(--md-sys-color-on-surface-variant);}
   @supports not selector(::-webkit-scrollbar){
-    .sidebar, .main, .table-scroll,
+    .sidebar, .main, .table-scroll, .uc-diagram-scroll, .uc-menu,
+    .code-editor-body, .table-wrap-fit, .ds-dialog-desc, .suggest-dropdown, .cj-matrix-wrap,
+    .graph-search-suggest, .graph-canvas-pane, .graph-detail, .lp-auth-body,
     .e2ecat-scope .calls-list, .e2ecat-scope .detail-panel, .e2ecat-scope .catalog-list{scrollbar-width:thin;scrollbar-color:var(--text-tertiary) transparent;}
   }
   /* Отступы контентной области: 32 слева/справа/сверху, 40 снизу (x8 / x10 по шкале) */
@@ -1079,6 +1136,21 @@
     border:1px solid transparent;background:var(--input-bg);border-radius:var(--size-border-radius-x6);
     padding:0 var(--size-spacing-x4);font-size:17px;color:var(--text);outline:none;
   }
+  /* Состояния по docs/interaction.md §2: hover и active — заливкой, focus — рамкой.
+     Геометрия не меняется: рамка в покое уже есть, она прозрачная. Поля с плавающей
+     подписью сюда не попадают — у них фон несёт .ffield-box, см. ниже. */
+  .input:not(.ffield-input):hover, .select:hover, .textarea:not(.ffield-input):hover{
+    background:color-mix(in srgb, var(--md-sys-color-on-surface) 8%, var(--input-bg));
+  }
+  .input:not(.ffield-input):active, .textarea:not(.ffield-input):active{
+    background:color-mix(in srgb, var(--md-sys-color-on-surface) 12%, var(--input-bg));
+  }
+  .input:not(.ffield-input):focus, .select:focus, .textarea:not(.ffield-input):focus{
+    background:var(--bg);border-color:var(--text);
+  }
+  /* Иконка и крестик поиска подсвечиваются вместе с полем — иначе поле в фокусе
+     светлое, а глиф остаётся приглушённым, как в неактивном. */
+  .field-with-icon:focus-within svg, .field-with-icon:focus-within .ic{color:var(--text-secondary);}
   /* Стрелка раскрытия у <select> — как в фильтрах СХ: нативную прячем, свою рисуем
      с отступом 16 от края (поле: padding горизонтальный 16, иконка 20).
      Правило общее для всего прототипа, а не только для полей с .select-wrap. */
@@ -2247,7 +2319,7 @@
      обновления, корзина у своей ветки), только без подписи и с иконкой ветки слева. */
   /* Блокировка и прогресс объединения — строкой под заголовком, одной группой. */
   .uc-branch-status{display:flex;align-items:center;gap:var(--space-4);flex-wrap:wrap;margin-bottom:var(--space-6);}
-  .cj-branch-bar{flex:0 0 auto;display:flex;align-items:center;gap:var(--space-4);padding:var(--space-3) var(--space-6);border-bottom:1px solid var(--border);background:var(--bg-alt);flex-wrap:wrap;}
+  .cj-branch-bar{flex:0 0 auto;display:flex;align-items:center;gap:var(--space-3);padding:var(--space-3) var(--space-6);border-bottom:1px solid var(--border);background:var(--bg-alt);flex-wrap:wrap;}
   .cj-branch-toggle-wrap{position:relative;height:0;flex:0 0 auto;z-index:5;}
   /* Без рамки: пилюля и так отделена от матрицы тенью, рамка поверх тени читается как
      вторая граница. */
@@ -2308,10 +2380,11 @@
   .cj-select-trigger .ic{width:18px;height:18px;color:var(--text-secondary);flex:0 0 auto;transition:transform .12s ease;}
   .cj-select-trigger.open > svg:last-child{transform:rotate(180deg);}
   .cj-select-trigger.open > .ic:last-child{transform:rotate(180deg);}
-  /* menu is its own fully-rounded floating panel positioned under the field — небольшой
-     отступ 4px, собственная тень и скругление со всех сторон, не слито с триггером. */
+  /* Меню — отдельная плоскость со своим скруглением и тенью, но висит вплотную под
+     триггером: top:100%, без зазора (docs/interaction.md §3, решение 2026-10-19 —
+     оно отменяет прежний зазор 4px). */
   .cj-select-menu{
-    position:absolute;top:calc(100% + 4px);left:0;min-width:100%;width:max-content;max-width:320px;
+    position:absolute;top:100%;left:0;min-width:100%;width:max-content;max-width:320px;
     background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow);
     padding:var(--space-2);z-index:60;max-height:260px;overflow-y:auto;overscroll-behavior:contain;
   }
@@ -3765,7 +3838,7 @@
 .e2ecat-scope .field .val{font-size:15px;color:var(--text);}
 .e2ecat-scope .field .val.link{color:var(--link);cursor:pointer;}
 /* Кнопки карточки стоят в правом нижнем углу — см. docs/components.md. */
-.e2ecat-scope .btnrow{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;}
+.e2ecat-scope .btnrow{display:flex;justify-content:flex-end;gap:var(--space-3);flex-wrap:wrap;}
 .e2ecat-scope .btn{border-radius:var(--radius-sm);padding:10px 16px;font-size:15px;line-height:20px;font-weight:500;border:1px solid var(--border-strong);background:var(--bg-panel);display:inline-flex;align-items:center;gap:8px;white-space:nowrap;}
 /* Со стороны иконки отступ меньше — как в основном слое (docs/components.md) */
 .e2ecat-scope .btn:has(> .ic:first-child, > svg:first-child){padding-left:var(--size-spacing-x4);}
@@ -3822,7 +3895,7 @@
 .e2ecat-scope .typebadge{display:inline-block;background:var(--badge-sp-bg);color:var(--badge-sp-text);font-size:13px;font-weight:700;padding:3px 9px;border-radius:6px;}
 
 .e2ecat-scope .diagram-card{background:var(--bg-panel);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;}
-.e2ecat-scope .diagram-toolbar{display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;border-bottom:1px solid var(--border);}
+.e2ecat-scope .diagram-toolbar{display:flex;justify-content:flex-end;gap:var(--space-3);padding:12px 16px;border-bottom:1px solid var(--border);}
 .e2ecat-scope .diagram-scroll{overflow:auto;max-height:560px;background:var(--bg-panel);}
 .e2ecat-scope .diagram-scroll svg{display:block;width:auto;height:auto;}
 .e2ecat-scope .diagram-scroll .ic{display:block;width:auto;height:auto;}
@@ -3904,7 +3977,7 @@
 .e2ecat-scope .file-card .fbody{flex:1;min-width:0;}
 .e2ecat-scope .file-card .fname{font-size:15px;font-weight:500;}
 .e2ecat-scope .file-card .fmeta{font-size:13px;color:var(--text-secondary);margin-top:2px;}
-.e2ecat-scope .file-card .factions{display:flex;gap:4px;flex:0 0 auto;}
+.e2ecat-scope .file-card .factions{display:flex;gap:var(--space-3);flex:0 0 auto;}
 .e2ecat-scope .progress-track{height:4px;border-radius:2px;background:var(--border);margin-top:6px;overflow:hidden;}
 .e2ecat-scope .progress-fill{height:100%;background:var(--link);border-radius:2px;transition:width .2s;}
 .e2ecat-scope .stat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin:20px 0 28px;}
@@ -3957,8 +4030,8 @@
 }
 .e2ecat-scope ::-webkit-scrollbar-thumb:hover{background-color:var(--md-sys-color-on-surface-variant);}
 /* diagram color tokens (from the second, small <style> block in the source file) */
-/* Палитра схем — из токенов темы, поэтому тёмная версия получается сама */
-.e2ecat-scope{ --diagram-line:var(--md-sys-color-on-surface-variant); --diagram-text:var(--md-sys-color-on-surface); --diagram-box:var(--md-sys-color-surface-container-low); --diagram-boxb:var(--md-sys-color-outline-variant); }
+/* Палитра схем объявлена в :root (см. блок токенов) — острову она достаётся оттуда же,
+   своего набора ему не нужно. */
 
 
 </style>
