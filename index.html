@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261019-105414">
+<meta name="beeatlas-build" content="20261019-121757">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -2260,11 +2260,12 @@
      space-between при фиксированной ширине отрывал имя от иконки — теперь имя
      занимает середину и прижато к иконке, шеврон остаётся у правого края. */
   .page-title-row .cj-select-trigger .name{flex:1;text-align:left;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  /* Шапка Use Case: крошки — заголовок — код идут с одним шагом 8. Ряд заголовка выше
-     самого h1 (в нём контролы 48 против 32 у текста), и эти 8 уже даёт его собственный
-     остаток по вертикали — поэтому внешние margin здесь обнуляются, а не задаются. */
+  /* Шапка Use Case: от крошек до заголовка 8, от заголовка до кода 4. Ряд заголовка
+     выше самого h1 (в нём контролы 48 против 32 у текста), и его собственный остаток
+     по вертикали — ровно 8 сверху и снизу. Поэтому сверху margin обнуляется (8 уже
+     есть), а снизу компенсируется на 4: 8 − 4 = −4, иначе код встанет в 8. */
   .uc-page-head .breadcrumb{margin-bottom:0;}
-  .uc-page-head .page-title-row{margin-bottom:0;}
+  .uc-page-head .page-title-row{margin-bottom:calc(-1 * var(--space-1));}
   .uc-page-head .uc-code-line{margin-top:0;}
   .cj-branch-bar > .cj-select-field .cj-select-trigger{min-width:0;}
   .cj-select-field.wide{display:block;width:100%;}
