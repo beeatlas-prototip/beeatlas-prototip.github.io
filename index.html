@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261019-162147">
+<meta name="beeatlas-build" content="20261019-164726">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -627,12 +627,12 @@
   .navitem{
     display:flex;align-items:center;gap:var(--size-spacing-x4);
     /* Левый отступ 24, а не 32: вместе с иконкой и зазором на текст оставалось
-       151 px, и «Аналитический отчет фитнес-функций» на Onest уходил в три строки. */
+       151 px, и «Аналитический отчёт фитнес-функций» на Onest уходил в три строки. */
     min-height:48px;padding:0 var(--size-spacing-x4) 0 var(--size-spacing-x6);
     border-radius:0 var(--size-border-radius-x6) var(--size-border-radius-x6) 0;
     color:var(--md-sys-color-on-surface-variant);
     /* letter-spacing здесь 0, а не .2px: Onest шире прежнего шрифта, и на
-       разрядке «Аналитический отчет фитнес-функций» уходил в три строки. */
+       разрядке «Аналитический отчёт фитнес-функций» уходил в три строки. */
     font-size:15px;line-height:18px;letter-spacing:0;font-weight:400;
     cursor:pointer;position:relative;
   }
@@ -1587,6 +1587,12 @@
   .proj-link:hover{text-decoration:underline;}
   .row-sub{color:var(--text-secondary);font-size:13px;line-height:16px;letter-spacing:.2px;margin-top:var(--space-1);}
   .empty-cell{color:var(--text-secondary);}
+  /* Дата, код задачи, мнемоника — одно неразрывное значение: при переносе
+     «18.08.2026,» и «14:56» встают разными строками и читаются как две записи.
+     Колонке под такое значение отводится его полная ширина (см. colgroup).
+     Ставится на ячейку значения, а не на заголовок: заголовок переносится
+     свободно (table.fixed-table thead th), и от этого колонка не шире. */
+  td.nowrap-cell{white-space:nowrap;}
 
   /* Сортировка по столбцу (Таблица, sortable header): заголовок кликабельный,
      повторный клик переворачивает направление. Стрелка у неактивных столбцов
@@ -1641,6 +1647,13 @@
   /* Таблица прокручивается, поэтому абсолютный тултип обрезался её краем. Внутри
      такой таблицы он позиционируется фиксированно — координаты считает positionCellTooltips(). */
   .table-scroll .cell-tooltip{position:fixed;top:auto;left:auto;}
+  /* …но fixed не спасает от соседних строк: закреплённая ячейка с z-index:2 заводит
+     свой слой, и ячейка следующей строки — такой же слой, объявленный в разметке
+     позже — ложится поверх подсказки вместе с её содержимым. Подсказка остаётся
+     видна только там, где закреплённой колонки нет (так и выглядел дефект: плашка
+     обрезана ровно по ширине первой колонки). Поднимаем слой строки под курсором
+     над соседними. */
+  .table-scroll tbody tr:hover td:first-child{z-index:3;}
   /* Тем же приёмом спасается и поповер расхождения: внутри прокручиваемой таблицы
      он переходит в fixed, координаты считает positionTablePopovers() после отрисовки.
      Без этого overflow-x:auto обрезал бы его краем таблицы. */
@@ -1654,13 +1667,15 @@
   .table-scroll tbody tr.exp-detail-row > td > .exp-detail{position:sticky;left:0;box-sizing:border-box;}
   /* Минимальная ширина таблицы вызовов: ниже неё колонкам перестаёт хватать
      (см. расчёт в colgroup), поэтому вместо ужимания включается прокрутка. */
-  .uc-scenarios-table{min-width:1200px;}
+  .uc-scenarios-table{min-width:1240px;}
   /* Таблицы каталога приложений, которым не хватает ширины страницы. Проценты в
      colgroup подобраны так, чтобы при этих min-width каждой колонке хватало её
      min-content (замер в браузере, а не на глаз) — docs/interaction.md §6.
      Раньше все пять жили на .table-wrap: прокрутка была, но без закреплённой
      первой колонки, и при сужении ужималось именно название — «B2C digital retail
      delivery catalog» рвался на три строки, пока справа колонки резались. */
+  .proj-table{min-width:1000px;}
+  .uc-list-table{min-width:1000px;}
   .ac-apps-table{min-width:1240px;}
   .ac-fitness-table{min-width:1120px;}
   .ac-iface-table{min-width:1200px;}
@@ -1679,9 +1694,14 @@
   .cell-clamp-wrap{position:relative;}
   .cell-clamp{
     display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
-    overflow:hidden;text-overflow:ellipsis;word-break:break-word;line-height:1.4;
+    overflow:hidden;text-overflow:ellipsis;line-height:1.4;
+    /* не word-break:break-word: он рвал слово на любой границе, и в узкой колонке
+       «Возможность» вставала как «Возможно / сть». overflow-wrap переносит слово
+       целиком и рвёт только то, что не помещается в колонку ни при каком переносе. */
+    overflow-wrap:break-word;
   }
   .cell-clamp.clamp-5{-webkit-line-clamp:5;}
+  .cell-clamp.clamp-2{-webkit-line-clamp:2;}
   /* Таблица / Поведение: по умолчанию текст в ячейке занимает одну строку и
      обрезается по ширине колонки, полное значение показывает Tooltip. */
   .cell-clamp.clamp-1{display:block;white-space:nowrap;word-break:normal;overflow:hidden;text-overflow:ellipsis;}
@@ -2794,8 +2814,12 @@
   .ac-src-suggest{border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius-sm) var(--radius-sm);background:var(--bg);box-shadow:var(--shadow);margin-top:-1px;overflow:hidden;}
   .ac-src-suggest-item{padding:var(--space-3) var(--space-4);cursor:pointer;font-size:15px;}
   .ac-src-suggest-item:hover{background:var(--bg-hover);}
-  .ac-pattern-tech-cell{display:flex;align-items:center;gap:var(--space-2);flex-wrap:wrap;}
-  .ac-more-chip{position:relative;color:var(--blue);font-weight:500;cursor:default;}
+  /* Список технологий — одна строка с усечением, счётчик «+N» рядом с ней.
+     При flex-wrap список переносился на вторую строку, а счётчик уезжал на третью
+     и повисал отдельным элементом — ячейка вырастала втрое. */
+  .ac-pattern-tech-cell{display:flex;align-items:center;gap:var(--space-2);min-width:0;}
+  .ac-pattern-tech-list{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .ac-more-chip{position:relative;color:var(--blue);font-weight:500;cursor:default;flex:0 0 auto;}
   .ac-more-chip:hover .ac-more-pop{display:block;}
   .ac-more-pop{display:none;position:absolute;top:100%;right:0;margin-top:4px;background:var(--md-sys-color-inverse-surface);color:var(--md-sys-color-inverse-on-surface);border-radius:8px;padding:var(--space-3) var(--space-4);font-size:13px;white-space:nowrap;z-index:5;box-shadow:var(--shadow);}
   .ac-more-pop div{padding:2px 0;}
@@ -7358,7 +7382,7 @@ const NAV_GROUPS = [
       desc:"Содержит список приложений и дополнительную информацию об их архитектуре"},
     {id:"lifecat", label:"Каталог жизненных ситуаций", icon:"user",
       desc:"Жизненная ситуация связывает проблему клиента с продуктами и услугами, которые её решают"},
-    {id:"fitness", label:"Аналитический отчет фитнес-функций", icon:"chart",
+    {id:"fitness", label:"Аналитический отчёт фитнес-функций", icon:"chart",
       desc:"Это сводка автоматических проверок, которая показывает соответствие архитектуры стандартам"},
   ]},
   {label:"Архитектура решения", color:"gray", items:[
@@ -8389,15 +8413,18 @@ function defaultGraphState(){
 function findApp(id){ return APPS[id]; }
 
 /* ---- shared tab content, reused across every app in the prototype ---- */
+/* Этап назывался «Название этапа должно вмещаться в одну строку» — требование к
+   вёрстке, оставленное в данных; у неуспешного прогона этап ещё и назывался так же,
+   как у успешного, хотя он останавливается на другом шаге. */
 const AC_PUBLICATIONS = [
   {id:"run1", date:"12.12.2025, 13:43", src:"GitOPS pipeline", status:"Успешно", ok:true,
-    stageName:"Название этапа должно вмещаться в одну строку", stageDate:"13.12.2025, 15:19", total:14, done:14},
+    stageName:"Публикация модели в Structurizr", stageDate:"13.12.2025, 15:19", total:14, done:14},
   {id:"run2", date:"12.12.2025, 13:43", src:"GitOPS pipeline", status:"Успешно", ok:true,
-    stageName:"Название этапа должно вмещаться в одну строку", stageDate:"13.12.2025, 15:19", total:14, done:1, failed:true},
+    stageName:"Проверка связей между контейнерами", stageDate:"13.12.2025, 15:19", total:14, done:1, failed:true},
   {id:"run3", date:"11.12.2025, 09:02", src:"GitOPS pipeline", status:"Успешно", ok:true,
-    stageName:"Название этапа должно вмещаться в одну строку", stageDate:"11.12.2025, 09:40", total:14, done:14},
+    stageName:"Сборка описания интерфейсов", stageDate:"11.12.2025, 09:40", total:14, done:14},
   {id:"run4", date:"10.12.2025, 18:21", src:"GitOPS pipeline", status:"Успешно", ok:true,
-    stageName:"Название этапа должно вмещаться в одну строку", stageDate:"10.12.2025, 18:55", total:14, done:14},
+    stageName:"Выгрузка фитнес-функций", stageDate:"10.12.2025, 18:55", total:14, done:14},
 ];
 
 const AC_CAPS_TABLE = [
@@ -8506,12 +8533,12 @@ const TECH_DETAIL_DEFAULT = {
    стояло «Успешно» — значение из чужой колонки, да ещё и одно на всю таблицу. */
 const AC_PATTERN_TYPES = ["Интеграционный","Данные","Хранение","Надёжность"];
 const AC_PATTERNS = [
-  {id:"p1", name:"Сбор и сохранение потоковых данных", type:"Данные", tech:["React","Sparx EA","Structurizr OnPremise","Structurizr Lite","Vue","Java","Angular","Pixso"], more:2},
-  {id:"p2", name:"Витрина данных (Data Mart)", type:"Данные", tech:["React","Sparx EA","Structurizr OnPremise","Structurizr Lite"], more:1},
-  {id:"p3", name:"Реляционное хранилище операций", type:"Хранение", tech:["React","Sparx EA","Structurizr OnPremise","Structurizr Lite","Vue","Java","Angular","Pixso"], more:1},
-  {id:"p4", name:"Асинхронный обмен через очередь", type:"Интеграционный", tech:["React","Sparx EA","Structurizr OnPremise","Structurizr Lite","Vue","Java","Angular","Pixso"], more:1},
-  {id:"p5", name:"Сбор оперативных данных (ODS)", type:"Данные", tech:["React","Sparx EA","Structurizr OnPremise","Structurizr Lite","Vue","Java","Angular","Pixso"], more:1},
-  {id:"p6", name:"Повтор вызова с экспоненциальной задержкой", type:"Надёжность", tech:["React","Sparx EA","Structurizr OnPremise","Structurizr Lite","Vue","Java","Angular","Pixso"], more:1},
+  {id:"p1", name:"Сбор и сохранение потоковых данных", type:"Данные", tech:["React","Sparx EA","Structurizr OnPremise","Structurizr Lite","Vue","Java","Angular","Pixso"], hidden:["Apache Kafka","ClickHouse"]},
+  {id:"p2", name:"Витрина данных (Data Mart)", type:"Данные", tech:["React","Sparx EA","Structurizr OnPremise","Structurizr Lite"], hidden:["PostgreSQL"]},
+  {id:"p3", name:"Реляционное хранилище операций", type:"Хранение", tech:["React","Sparx EA","Structurizr OnPremise","Structurizr Lite","Vue","Java","Angular","Pixso"], hidden:["PostgreSQL"]},
+  {id:"p4", name:"Асинхронный обмен через очередь", type:"Интеграционный", tech:["React","Sparx EA","Structurizr OnPremise","Structurizr Lite","Vue","Java","Angular","Pixso"], hidden:["RabbitMQ"]},
+  {id:"p5", name:"Сбор оперативных данных (ODS)", type:"Данные", tech:["React","Sparx EA","Structurizr OnPremise","Structurizr Lite","Vue","Java","Angular","Pixso"], hidden:["Debezium"]},
+  {id:"p6", name:"Повтор вызова с экспоненциальной задержкой", type:"Надёжность", tech:["React","Sparx EA","Structurizr OnPremise","Structurizr Lite","Vue","Java","Angular","Pixso"], hidden:["Resilience4j"]},
 ];
 
 /* Колонка «Назначение» отвечает, обязательно требование или рекомендовано, —
@@ -9189,7 +9216,10 @@ function AcGeneralInfo(app){
     <div class="table-wrap">
       <table>
         <thead><tr><th>Название репозитория</th><th>Ссылка на репозиторий</th><th>Ссылка на контейнер</th></tr></thead>
-        <tbody><tr><td>Текст ячейки</td><td><a class="proj-link" data-action="noop-doc">Ссылка</a></td><td><a class="proj-link" data-action="noop-doc">Ссылка</a></td></tr></tbody>
+        <tbody>
+          <tr><td>b2c-delivery-catalog-api</td><td><a class="proj-link" data-action="noop-doc">git.example.ru/b2c/delivery-catalog-api</a></td><td><a class="proj-link" data-action="noop-doc">registry.example.ru/b2c/catalog-api</a></td></tr>
+          <tr><td>b2c-delivery-catalog-ui</td><td><a class="proj-link" data-action="noop-doc">git.example.ru/b2c/delivery-catalog-ui</a></td><td><a class="proj-link" data-action="noop-doc">registry.example.ru/b2c/catalog-ui</a></td></tr>
+        </tbody>
       </table>
     </div>
   `;
@@ -9523,15 +9553,17 @@ function AcPatternsTab(app){
         options:["Все"].concat(AC_PATTERN_TYPES), action:"ac-pattern-type-set"})}
       ${ResetFiltersButton("ac-reset-patterns", !!(state.appcat.patternSearch || state.appcat.patternTypeFilter!=="Все"))}
     </div>
+    <!-- Проценты: названию и списку технологий хватает места, тип — короткое слово. -->
     <div class="table-wrap">
-      <table>
+      <table class="fixed-table">
+        <colgroup><col style="width:34%"><col style="width:16%"><col style="width:50%"></colgroup>
         <thead><tr><th>Паттерн</th><th>Тип</th><th>Технологии</th></tr></thead>
         <tbody>
           ${list.map(p=>`
             <tr>
-              <td><div class="proj-link" data-action="noop-doc">${escapeHtml(p.name)}</div></td>
+              <td>${clampCell(p.name, "clamp-1 proj-link")}</td>
               <td>${escapeHtml(p.type)}</td>
-              <td><div class="ac-pattern-tech-cell">${p.tech.join(", ")}${p.more?` <span class="ac-more-chip">+${p.more}<div class="ac-more-pop"><div>Jira</div><div>Confluence</div></div></span>`:""}</div></td>
+              <td><div class="ac-pattern-tech-cell"><span class="ac-pattern-tech-list">${escapeHtml(p.tech.join(", "))}</span>${p.hidden&&p.hidden.length?`<span class="ac-more-chip">+${p.hidden.length}<div class="ac-more-pop">${p.hidden.map(h=>`<div>${escapeHtml(h)}</div>`).join("")}</div></span>`:""}</div></td>
             </tr>
           `).join("")}
         </tbody>
@@ -11767,8 +11799,18 @@ function ProjectsListPage(){
       ${list.length ? `<div class="agents-grid-v2">${list.map(ProjectCard).join("")}</div>`
         : `<div class="card empty-state" style="padding:var(--space-9) var(--space-5);">${boxIllustration()}<p style="color:var(--text-secondary);margin:0;">Ничего не нашлось. Измени фильтры или сбрось их</p></div>`}
     ` : `
-    <div class="table-wrap-fit">
-      <table>
+    <!-- Колонки распределяются по замеру, а не автоматически: при auto-раскладке
+         «Каркас HLD: автогенерация документации» рвался на три строки, а дате и
+         ключу Jira не хватало их неразрывной ширины. Проценты от min-width 1000:
+         Проект 270 и Архитектор 195 усекаются с подсказкой, остальным отдано их
+         полное значение — Статус 100, Оценка 165, Дата 140, Jira 130 (≥126:
+         «SFDM-6789» с отступами ячейки; при 960 ему не хватало двух пикселей). -->
+    <div class="table-scroll">
+      <table class="fixed-table proj-table">
+        <colgroup>
+          <col style="width:27%"><col style="width:10%"><col style="width:19.5%">
+          <col style="width:16.5%"><col style="width:14%"><col style="width:13%">
+        </colgroup>
         <thead><tr>
           <th>Проект</th><th>Статус</th><th>Архитектор</th><th>Оценка</th><th>Дата изменения</th><th>Jira</th>
         </tr></thead>
@@ -11776,14 +11818,14 @@ function ProjectsListPage(){
           ${list.length ? list.map(p=>`
             <tr>
               <td>
-                <div class="proj-link" data-action="open-project" data-id="${p.id}">${escapeHtml(p.name)}</div>
+                <div class="cell-clamp-wrap"><div class="cell-clamp proj-link" data-action="open-project" data-id="${p.id}">${escapeHtml(p.name)}</div><div class="cell-tooltip">${escapeHtml(p.name)}</div></div>
                 <div class="row-sub">${escapeHtml(p.code)}</div>
               </td>
               <td>${statusBadge(p.status)}</td>
-              <td>${clampCell(p.architect)}</td>
+              <td>${clampCell(p.architect, "clamp-1")}</td>
               <td>${scoreBadge(p.assessmentScore)}</td>
-              <td>${escapeHtml(p.updated)}</td>
-              <td><span class="proj-link">${escapeHtml(p.jira)}</span></td>
+              <td class="nowrap-cell">${escapeHtml(p.updated)}</td>
+              <td class="nowrap-cell"><span class="proj-link">${escapeHtml(p.jira)}</span></td>
             </tr>
           `).join("") : `
             <tr><td colspan="6" style="text-align:center;color:var(--text-secondary);padding:var(--space-8);">Ничего не нашлось. Измени фильтры или сбрось их</td></tr>
@@ -12012,21 +12054,29 @@ function UseCaseTab(p){
       <button class="btn btn-primary" data-action="uc-create" data-id="${p.id}">Создать Use Case</button>
     </div>
 
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Use Case</th><th>Статус</th><th>Источник</th><th>Дата изменения</th><th>История</th><th></th></tr></thead>
+    <!-- Раскладка по замеру: при auto дата рвалась на «18.08.2026,» и «14:56»,
+         а «Автоматический импорт» занимал две строки при свободном месте справа.
+         Проценты от min-width 1000: Use Case 320 (усекается с подсказкой),
+         Статус 140, Источник 210, Дата 160, История 120, кнопка 50. -->
+    <div class="table-scroll">
+      <table class="fixed-table uc-list-table">
+        <colgroup>
+          <col style="width:32%"><col style="width:14%"><col style="width:21%">
+          <col style="width:16%"><col style="width:12%"><col style="width:5%">
+        </colgroup>
+        <thead><tr><th>Use Case</th><th>Статус</th><th>Источник</th><th>Дата изменения</th><th>История</th><th><span class="vh">Редактировать Use Case</span></th></tr></thead>
         <tbody>
           ${list.length ? list.map(u=>`
             <tr>
               <td>
-                <div class="proj-link" data-action="open-usecase" data-id="${p.id}" data-uc="${u.id}">${escapeHtml(u.name)}</div>
+                <div class="cell-clamp-wrap"><div class="cell-clamp proj-link" data-action="open-usecase" data-id="${p.id}" data-uc="${u.id}">${escapeHtml(u.name)}</div><div class="cell-tooltip">${escapeHtml(u.name)}</div></div>
                 <div class="row-sub">${escapeHtml(u.code)}</div>
               </td>
               <td>${ucStatusBadge(u.status)}</td>
               <td>${escapeHtml(u.source)}</td>
-              <td>${escapeHtml(u.updated)}</td>
-              <td><span class="proj-link" data-action="open-usecase-history" data-id="${p.id}" data-uc="${u.id}">Посмотреть</span></td>
-              <td style="width:44px;"><button class="icon-btn" data-action="edit-usecase" data-id="${p.id}" data-uc="${u.id}" title="Редактировать">${icon("pencil")}</button></td>
+              <td class="nowrap-cell">${escapeHtml(u.updated)}</td>
+              <td class="nowrap-cell"><span class="proj-link" data-action="open-usecase-history" data-id="${p.id}" data-uc="${u.id}">Посмотреть</span></td>
+              <td><button class="icon-btn" data-action="edit-usecase" data-id="${p.id}" data-uc="${u.id}" title="Редактировать">${icon("pencil")}</button></td>
             </tr>
           `).join("") : `
             <tr><td colspan="6" style="text-align:center;color:var(--text-secondary);padding:var(--space-8);">Ничего не нашлось. Измени фильтры или сбрось их</td></tr>
@@ -12352,15 +12402,16 @@ function UseCaseScenariosTable(u, projectId, ucId){
          («Не смаппирован» просил 152px при 125). Теперь она прокручивается — Таблица,
          «Фиксирование шапки и столбцов», первый столбец закрепляется. Проценты
          подобраны так, чтобы при min-width каждой колонке хватало её минимума:
-         Шаг 120≥114 (шеврон + код), Вызывающий 120≥114 и Вызываемый 120≥111
-         (заголовок — одно слово, переносить его некуда), Реализация 156≥145,
-         Статус вызова 204≥200. «Действие», «Вызов» и «ТС» усекаются с тултипом,
-         поэтому им отдан остаток. -->
+         Шаг 112, Вызывающий 124 и Вызываемый 124 (заголовок — одно слово,
+         переносить его некуда), Вызов 198≥193, ТС 161, Реализация 136,
+         Статус вызова 198. «Действие» усекается с подсказкой на двух строках.
+         ТС прибавила: при 132 слову «Возможность» не хватало ширины, и оно
+         рвалось посреди — «Возможно / сть». -->
     <div class="table-scroll">
       <table class="fixed-table uc-scenarios-table">
         <colgroup>
-          <col style="width:10%"><col style="width:10%"><col style="width:10%"><col style="width:16%">
-          <col style="width:13%"><col style="width:11%"><col style="width:13%"><col style="width:17%">
+          <col style="width:9%"><col style="width:10%"><col style="width:10%"><col style="width:15%">
+          <col style="width:16%"><col style="width:13%"><col style="width:11%"><col style="width:16%">
         </colgroup>
         <thead><tr><th>Шаг</th><th>Вызывающий</th><th>Вызываемый</th><th>Действие</th><th>Вызов</th><th>ТС</th><th>Реализация</th><th>Статус вызова</th></tr></thead>
         <tbody>
@@ -12372,7 +12423,7 @@ function UseCaseScenariosTable(u, projectId, ucId){
               <td style="white-space:nowrap;"><div class="exp-cell"><div class="exp-row-btn ${open?"open":""}" data-action="uc-toggle-impl" data-uc="${ucId}" data-part="${escapeHtml(s.part)}">${icon("chevronRight")}</div>${escapeHtml(s.part)}</div></td>
               <td>${participantCell(pp.caller)}</td>
               <td>${participantCell(pp.callee)}</td>
-              <td>${clampCell(s.action, "clamp-5")}</td>
+              <td>${clampCell(s.action, "clamp-2")}</td>
               <td>${scenarioCallCell(s, projectId, ucId)}</td>
               <td>${s.tcName ? clampNameCell(s.tcName, s.tcCode) : '<span class="empty-cell">—</span>'}</td>
               <td>${scenarioImplCell(s, projectId, ucId)}</td>
