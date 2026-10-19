@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261016-182831">
+<meta name="beeatlas-build" content="20261019-101846">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -394,8 +394,10 @@
      tooltip, snackbar, popover и FAB. Компоненты перечислены прямо в селекторе —
      это «Вариант 1» из разбора тем (переопределение на классах компонентов).
      .popover здесь НЕТ намеренно: в прототипе этот класс — дропдаун-меню (DS Menu),
-     а не подсказка; настоящий Popover — только .cj-merge-help-popover. */
-  :root .invertedTheme, :root .toast, :root .fab, :root .cell-tooltip, :root .ds-tip, :root .cj-merge-help-popover,
+     а не подсказка. Настоящий Popover в файле один — .ds-popover (маркер расхождения
+     в таблице вызовов); он рисуется в текущей теме, а не в обратной, и в этом списке
+     его нет — расхождение известное, чинить вместе со всеми подсказками. */
+  :root .invertedTheme, :root .toast, :root .fab, :root .cell-tooltip, :root .ds-tip,
   [data-theme="light"] .invertedTheme, [data-theme="light"] .toast, [data-theme="light"] .fab,
 
   [data-theme="dark"] .invertedTheme, [data-theme="dark"] .toast, [data-theme="dark"] .fab,
@@ -2277,34 +2279,6 @@
   .cj-select-item .check svg{width:18px;height:18px;}
   .cj-select-item .check .ic{width:18px;height:18px;}
 
-  .cj-branch-del-confirm{background:var(--bg-alt);border:1px solid var(--border-strong);border-radius:8px;padding:var(--space-3);margin:2px 0;}
-  .cj-branch-del-confirm .txt{font-size:13px;color:var(--text);margin-bottom:var(--space-2);line-height:1.4;}
-  .cj-branch-del-confirm .row{display:flex;gap:var(--space-2);justify-content:flex-end;}
-
-  .cj-merge-title-wrap{position:relative;display:flex;align-items:center;gap:6px;}
-  .cj-merge-help-btn{width:24px;height:24px;}
-  .cj-merge-help-btn svg{width:18px;height:18px;}
-  .cj-merge-help-btn .ic{width:18px;height:18px;}
-  /* Настоящий Popover из (развёрнутая подсказка): фон background-low, радиус 16px,
-     padding 16 по бокам и сверху / 8 снизу, elevation-high, инвертированная тема. */
-  .cj-merge-help-popover{
-    top:32px;left:0;right:auto;width:280px;
-    background:var(--md-sys-color-surface-container-low);
-    border-radius:var(--size-border-radius-x8);
-    box-shadow:var(--elevation-high);
-    padding:var(--size-spacing-x4) var(--size-spacing-x4) var(--size-spacing-x2);
-    color:var(--md-sys-color-on-surface);
-  }
-  .cj-merge-help-popover .pv-title{padding:0;}
-  .cj-merge-help-list{margin:0;padding-left:18px;font-size:13px;color:var(--text-secondary);line-height:1.6;}
-  .cj-merge-help-list li{margin-bottom:var(--space-2);}
-  .cj-merge-help-list li:last-child{margin-bottom:0;}
-
-  .cj-merge-info-cards{display:flex;align-items:stretch;gap:var(--space-3);margin-top:var(--space-5);}
-  .cj-merge-info-card{flex:1;border:1px solid var(--border);border-radius:var(--radius-sm);padding:var(--space-4);}
-  .cj-merge-info-card .hd{font-weight:700;font-size:13px;display:flex;align-items:baseline;gap:6px;}
-  .cj-merge-info-card .hd .sub{font-size:10px;font-weight:500;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.03em;}
-  .cj-merge-info-card .upd{font-size:13px;color:var(--text-secondary);margin-top:var(--space-2);}
   .cj-merge-strategy{display:flex;flex-direction:column;gap:var(--space-3);}
   .cj-merge-strategy-card{border:1px solid var(--border-strong);border-radius:var(--radius-sm);padding:var(--space-4);cursor:pointer;}
   .cj-merge-strategy-card .t{font-weight:700;font-size:13px;margin-bottom:4px;}
@@ -6299,7 +6273,9 @@ function ensureUcBranches(u){
   u.branchInfo = {
     design: {updatedAt:null},
     develop: {updatedAt:null},
-    main: {updatedAt:u.updated},
+    /* Только день: дата ветки живёт одной строкой внутри значения поля
+       («main, обновлено 18.08.2026»), и время дало бы там вторую запятую. */
+    main: {updatedAt: String(u.updated||"").split(",")[0] || null},
   };
 }
 /* Ветка открывается по тому же правилу, что и в Библиотеке CJ: main, если он заполнен,
@@ -6496,6 +6472,7 @@ const state = {
   ucBranchPanel:null,        // {projectId, ucId, name, parent} — панель создания ветки
   ucMergePanel:null,         // {projectId, ucId, source, target, strategy, description, conflicts}
   ucBranchDeleteConfirm:null, // id ветки, для которой открыт запрос подтверждения
+  ucMergeConfirm:false,      // открыт диалог «Объединить ветки?» (как cjMergeConfirm)
   ucMergeRunning:null,       // {projectId, ucId, source, target, strategy, description}
 
   appcat: defaultAppcatState(),
@@ -11015,9 +10992,12 @@ function CjConfirmDialog({title, text, confirmLabel, confirmAction, cancelAction
 }
 
 /* ============================= ВЕТКИ USE CASE — UI ============================= */
-/* Компоненты повторяют ветки Библиотеки CJ: поле-селект по (CjSelectField, не нативный
-   <select>), создание ветки в боковой панели, объединение — полноэкранным визардом.
-   Классы оформления переиспользуются как есть, чтобы ветки везде выглядели одинаково. */
+/* Создание и объединение ветки — те же две формы, что в Библиотеке CJ (2026-10-19):
+   боковая панель 400, поля-селекты с подписью и датой обновления (CjSelectField
+   с label/meta, не нативный <select>), стратегия радио-карточками, необратимое
+   действие подтверждается диалогом CjConfirmDialog. Разница осталась только в точке
+   входа — в CJ это ряд веток под заголовком, в Use Case пункты меню действий
+   (переключение ветки там же, а какая открыта, видно по бейджу у заголовка). */
 /* Все действия страницы Use Case — под одной иконочной кнопкой в заголовке (спека:
    components/menu — «если есть несколько действий, которые необходимо скрыть из-за
    ограниченного пространства интерфейса»). Первая группа переключает ветку, активная
@@ -11051,9 +11031,10 @@ function UcActionsMenu(p, u){
   `;
 }
 
-/* Прогресс объединения и запрос подтверждения на удаление ветки — отдельной строкой под
-   заголовком: в выпадающем меню им не место (меню закрывается по выбору пункта), а
-   плавающий блок внутри меню повторил бы ошибку с обрезкой, уже пойманную на ветках CJ. */
+/* Прогресс объединения — отдельной строкой под заголовком: в выпадающем меню ему не
+   место (меню закрывается по выбору пункта), а плавающий блок внутри меню повторил бы
+   ошибку с обрезкой, уже пойманную на ветках CJ. Подтверждение удаления рисуется тем же
+   диалогом, что в CJ, — он лежит поверх страницы и от меню не зависит. */
 function UcBranchStatusRow(p, u){
   const running = state.ucMergeRunning;
   const runningHere = running && running.ucId===u.id;
@@ -11066,16 +11047,9 @@ function UcBranchStatusRow(p, u){
         ${locked ? `<span class="cj-branch-lock-badge"><span class="mini-spinner"></span>Ветка обновляется</span>` : ""}
         <span class="cj-merge-running-banner"><span class="mini-spinner"></span>Объединение «${escapeHtml(running.source)}» → «${escapeHtml(running.target)}»…</span>
       </div>` : ""}
-    ${confirm ? `
-      <div style="margin-bottom:var(--space-6);">
-        <div class="cj-branch-del-confirm">
-          <div class="txt">Удалить «${escapeHtml(u.branch)}»? Состав ветки будет потерян без восстановления.</div>
-          <div class="row">
-            <button class="btn btn-outline btn-sm" data-action="uc-branch-delete-cancel">Отмена</button>
-            <button class="btn btn-primary btn-sm" data-action="uc-branch-delete-do" data-branch="${escapeHtml(u.branch)}">Удалить</button>
-          </div>
-        </div>
-      </div>` : ""}
+    ${confirm ? CjConfirmDialog({title:"Удалить ветку?", text:"Удалённую ветку нельзя будет восстановить",
+                                 confirmLabel:"Удалить", confirmAction:"uc-branch-delete-do",
+                                 cancelAction:"uc-branch-delete-cancel", branch:u.branch}) : ""}
   `;
 }
 /* Ноль шагов — сценарий в этой ветке ещё не заводили. Ветки полностью изолированы (§3.1),
@@ -11094,41 +11068,43 @@ function UcBranchEmptyState(u){
   `;
 }
 
+/* «обновлено 22.01.2025» / «ещё не обновлялась» — вторая строка у пунктов списка веток
+   и хвост значения в поле, как cjBranchUpdNote у веток CJ. */
+function ucBranchUpdNote(u, branchId){
+  const info = ucBranchInfo(u, branchId);
+  return info.updatedAt ? `обновлено ${info.updatedAt}` : "ещё не обновлялась";
+}
+
 function UcBranchCreatePanel(){
   const panel = state.ucBranchPanel;
   const p = findProject(panel.projectId);
   const u = p && findUseCase(p, panel.ucId);
   if(!u) return "";
+  const ent = panelEnter(panel);
   const branches = ucBranchList(u);
   const name = panel.name.trim();
   const existing = branches.map(b=>b.id.toLowerCase());
   const taken = !!name && (UC_SYSTEM_BRANCHES.includes(name.toLowerCase()) || existing.includes(name.toLowerCase()));
-  const canCreate = !!name && !taken;
-  // Панель перерисовывается целиком на каждый ввод и клик, поэтому класс анимации
-  // появления ставим только на первую отрисовку — иначе она переигрывается и мигает.
-  const enter = panel._entered ? "" : " enter";
-  panel._entered = true;
+  const canCreate = !!name && !taken && !!panel.parent;
   return `
-    <div class="backdrop${enter}" data-action="uc-close-branch-create"></div>
-    <div class="side-panel${enter}">
-      <div class="side-head">
-        <h2>Новая ветка Use Case</h2>
-        <button class="wizard-close" data-action="uc-close-branch-create">${icon("x")}</button>
+    <div class="backdrop${ent}" data-action="uc-close-branch-create"></div>
+    <div class="side-panel${ent}">
+      <div class="side-head" style="display:block;">
+        <h2>Создание новой ветки</h2>
+        <p class="side-desc">Новая ветка получит полную независимую копию состава выбранной ветки. Дальнейшие изменения в одной ветке не затронут другую</p>
       </div>
       <div class="side-body">
         <div class="field-block">
           <div class="ffield${panel.name?" filled":""}">
             <div class="ffield-box${taken?" error":""}"><input class="input ffield-input" id="ucBranchName" value="${escapeHtml(panel.name)}" autocomplete="off"></div>
-            <label class="ffield-label">Название ветки*</label>
+            <label class="ffield-label">Название ветки</label>
           </div>
           ${taken?`<div style="color:var(--red-text);font-size:13px;margin-top:4px;">Ветка с таким названием уже существует</div>`:""}
         </div>
         <div class="field-block">
-          ${CjSelectField({id:"uc-branch-parent", label:"Клонировать состав из ветки", branches, activeId:panel.parent, action:"uc-branch-set-parent", wide:true})}
-        </div>
-        <div class="readonly-note" style="align-items:flex-start;">
-          ${icon("info")}
-          <span>Новая ветка получит полную независимую копию шагов выбранной ветки. Дальнейшие изменения в одной ветке не затронут другую.</span>
+          ${CjSelectField({id:"uc-branch-parent", branches, activeId:panel.parent, action:"uc-branch-set-parent", wide:true,
+                           label:"Клонировать состав из ветки", placeholder:"Клонировать состав из ветки",
+                           meta:b=>ucBranchUpdNote(u,b)})}
         </div>
       </div>
       <div class="side-foot">
@@ -11139,70 +11115,49 @@ function UcBranchCreatePanel(){
   `;
 }
 
-function UcMergeBranchInfo(u, branchId, label){
-  const info = ucBranchInfo(u, branchId);
-  const steps = ucBranchData(u, branchId).scenarios.length;
-  return `
-    <div class="cj-merge-info-card">
-      <div class="hd">${escapeHtml(branchId)}<span class="sub">${label}</span></div>
-      <div class="upd">${info.updatedAt ? `Обновлено: ${escapeHtml(info.updatedAt)}` : "Ещё не обновлялась"} · ${steps ? `Шагов: ${steps}` : "Сценарий не заполнен"}</div>
-    </div>
-  `;
-}
-
+/* Панель объединения — тот же состав, что CjMergePanel (боковая панель 400, поля
+   «Откуда/Куда» с подписью и датой обновления, стратегия радио-карточками, диалог
+   подтверждения). Карточки сравнения веток и попровер «Как это работает» убраны:
+   дата переехала в значение поля, а необратимость объясняет диалог. */
 function UcMergePanel(){
   const m = state.ucMergePanel;
   const p = findProject(m.projectId);
   const u = p && findUseCase(p, m.ucId);
   if(!u) return "";
+  const ent = panelEnter(m);
   const branches = ucBranchList(u);
+  const note = b=>ucBranchUpdNote(u, b);
   const canMerge = !!m.source && !!m.target && m.source!==m.target && !state.ucMergeRunning;
   return `
-    <div class="wizard-overlay">
-      <div class="wizard-head">
-        <div class="proj-link" style="display:flex;align-items:center;gap:var(--space-2);color:var(--text);font-weight:500;" data-action="uc-close-merge">${icon("chevronLeft")} Назад</div>
+    <div class="backdrop${ent}" data-action="uc-close-merge"></div>
+    <div class="side-panel${ent}">
+      <div class="side-head" style="display:block;">
+        <h2>Объединение веток</h2>
       </div>
-      <div class="wizard-body">
-       <div style="max-width:640px;margin:0 auto;">
-        <div class="cj-merge-title-wrap">
-          <h2 style="margin-bottom:var(--space-2);">Объединение веток Use Case</h2>
-          <button class="icon-btn cj-merge-help-btn" data-action="toggle-popover" data-popover="uc-merge-help" title="Как это работает">${icon("info")}</button>
-          ${state.popover==="uc-merge-help" ? `
-            <div class="popover cj-merge-help-popover">
-              <div class="pv-title">Как работает объединение</div>
-              <ul class="cj-merge-help-list">
-                <li><b>Откуда → Куда</b> — из какой ветки берём изменения и в какую их вносим</li>
-                <li><b>Добавление</b> — добавит только те шаги, которых нет в целевой ветке; те, что там уже есть, не трогает</li>
-                <li><b>Замена</b> — полностью заменит состав целевой ветки составом исходной</li>
-              </ul>
-            </div>` : ""}
+      <div class="side-body">
+        <div class="field-block">
+          ${CjSelectField({id:"uc-merge-source", branches, activeId:m.source, action:"uc-merge-set-source", wide:true,
+                           label:"Откуда", placeholder:"Откуда", meta:note})}
         </div>
-        <div style="color:var(--text-secondary);font-size:13px;margin-bottom:var(--space-6);">Выбери, откуда и куда переносим изменения Use Case «${escapeHtml(u.name)}»</div>
-
-        <div style="display:flex;gap:var(--space-4);">
-          <div class="field-block" style="flex:1;">
-            ${CjSelectField({id:"uc-merge-source", label:"Откуда", branches, activeId:m.source, action:"uc-merge-set-source", wide:true})}
-          </div>
-          <div class="field-block" style="flex:1;">
-            ${CjSelectField({id:"uc-merge-target", label:"Куда", branches, activeId:m.target, action:"uc-merge-set-target", disabledId:m.source, disabledTitle:"Совпадает с источником", wide:true})}
-          </div>
+        <div class="field-block">
+          ${CjSelectField({id:"uc-merge-target", branches, activeId:m.target, action:"uc-merge-set-target", wide:true,
+                           label:"Куда", placeholder:"Куда", meta:note,
+                           disabledId:m.source, disabledTitle:"Совпадает с источником"})}
         </div>
 
-        <div class="cj-merge-info-cards">
-          ${UcMergeBranchInfo(u, m.source, "Откуда")}
-          ${UcMergeBranchInfo(u, m.target, "Куда")}
-        </div>
-
-        <div class="field-block" style="margin-top:var(--space-5);">
-          <div style="font-weight:500;margin-bottom:var(--space-3);">Стратегия объединения</div>
-          <div class="cj-merge-strategy">
-            <div class="cj-merge-strategy-card ${m.strategy==="add"?"active":""}" data-action="uc-merge-set-strategy" data-strategy="add">
-              <div class="t">Добавление (add)</div>
-              <div class="d">Шаги, которых нет в «${escapeHtml(m.target)}», будут добавлены. Существующие — не тронуты, без диффа и cherry-pick.</div>
+        <div class="cj-merge-strategy">
+          <div class="cj-merge-strategy-card radio ${m.strategy==="add"?"active":""}" data-action="uc-merge-set-strategy" data-strategy="add">
+            <div class="dot"></div>
+            <div>
+              <div class="t">Добавление</div>
+              <div class="d">Шаги, которых нет в «${escapeHtml(m.target)}», будут добавлены. Существующие — не тронуты, без диффа и cherry-pick</div>
             </div>
-            <div class="cj-merge-strategy-card ${m.strategy==="replace"?"active":""}" data-action="uc-merge-set-strategy" data-strategy="replace">
-              <div class="t">Замена (replace)</div>
-              <div class="d">Весь состав «${escapeHtml(m.target)}» будет полностью заменён составом «${escapeHtml(m.source)}».</div>
+          </div>
+          <div class="cj-merge-strategy-card radio ${m.strategy==="replace"?"active":""}" data-action="uc-merge-set-strategy" data-strategy="replace">
+            <div class="dot"></div>
+            <div>
+              <div class="t">Замена</div>
+              <div class="d">Весь состав «${escapeHtml(m.target)}» будет полностью заменён составом «${escapeHtml(m.source)}»</div>
             </div>
           </div>
         </div>
@@ -11216,17 +11171,14 @@ function UcMergePanel(){
             <div class="hint">Опиши недостающие интерфейсы в ветке «${escapeHtml(m.target)}» и повтори объединение.</div>
           </div>
         ` : ""}
-
-        ${m.target==="main" ? `<div class="readonly-note" style="align-items:flex-start;margin-top:var(--space-5);background:var(--blue-bg);color:var(--blue-text);">${icon("info")} Объединение с main обновит канон сразу после подтверждения — действие необратимо.</div>` : ""}
-       </div>
       </div>
-      <div class="wizard-foot">
-        <div style="max-width:640px;width:100%;margin:0 auto;display:flex;gap:var(--space-3);justify-content:flex-end;">
-          <button class="btn btn-outline" data-action="uc-close-merge">Отменить</button>
-          <button class="btn btn-primary" data-action="uc-merge-submit" ${canMerge?"":"disabled"} title="${state.ucMergeRunning?"Дождитесь завершения текущего объединения":""}">Объединить</button>
-        </div>
+      <div class="side-foot">
+        <button class="btn btn-outline" data-action="uc-close-merge">Отменить</button>
+        <button class="btn btn-primary" data-action="uc-merge-submit" ${canMerge?"":"disabled"} title="${state.ucMergeRunning?"Дождитесь завершения текущего объединения":""}">Объединить</button>
       </div>
     </div>
+    ${state.ucMergeConfirm ? CjConfirmDialog({title:"Объединить ветки?", text:"После объединения веток их нельзя будет откатить назад",
+                                              confirmLabel:"Объединить", confirmAction:"uc-merge-confirm-do", cancelAction:"uc-merge-confirm-cancel"}) : ""}
   `;
 }
 
@@ -15956,7 +15908,7 @@ function handleAction(action, el){
       const p = findProject(state.route.projectId);
       const u = p && findUseCase(p, state.route.ucId);
       if(!u) break;
-      state.ucBranchPanel = {projectId:p.id, ucId:u.id, name:"", parent:u.branch};
+      state.ucBranchPanel = {projectId:p.id, ucId:u.id, name:"", parent:null};
       state.popover = null;
       render();
       break;
@@ -15970,14 +15922,16 @@ function handleAction(action, el){
       if(!u) break;
       const name = panel.name.trim();
       const existing = ucBranchList(u).map(b=>b.id.toLowerCase());
-      if(!name || UC_SYSTEM_BRANCHES.includes(name.toLowerCase()) || existing.includes(name.toLowerCase())) break;
+      if(!name || !panel.parent || UC_SYSTEM_BRANCHES.includes(name.toLowerCase()) || existing.includes(name.toLowerCase())) break;
       u.branchStore[name] = deepClone(ucBranchData(u, panel.parent));
-      u.branchInfo[name] = {updatedAt: NOW_DATE};
+      /* NOW_DAY, а не NOW_DATE: дата показывается одной строкой внутри значения поля
+         («design, обновлено 18.08.2026»), и время дало бы вторую запятую — как в CJ. */
+      u.branchInfo[name] = {updatedAt: NOW_DAY};
       ucBranchList(u).push({id:name, kind:"user", parent:panel.parent, createdBy:ARCHITECT, createdAt:NOW_DATE});
       ucApplyBranch(u, name);
       state.ucBranchPanel = null;
       state.popover = null;
-      showToast(`Ветка «${name}» создана из «${panel.parent}»`);
+      showToast("Ветка создана");
       render();
       break;
     }
@@ -15996,7 +15950,7 @@ function handleAction(action, el){
       delete u.branchStore[branch];
       delete u.branchInfo[branch];
       state.ucBranchDeleteConfirm = null;
-      showToast(`Ветка «${branch}» удалена`);
+      showToast("Ветка удалена");
       render();
       break;
     }
@@ -16009,11 +15963,12 @@ function handleAction(action, el){
       const source = u.branch;
       const target = ids.find(b=>b!==source) || source;
       state.ucMergePanel = {projectId:p.id, ucId:u.id, source, target, strategy:"add", conflicts:null};
+      state.ucMergeConfirm = false;
       state.popover = null;
       render();
       break;
     }
-    case "uc-close-merge": state.ucMergePanel = null; state.popover = null; render(); break;
+    case "uc-close-merge": state.ucMergePanel = null; state.ucMergeConfirm = false; state.popover = null; render(); break;
     case "uc-merge-set-source": {
       const m = state.ucMergePanel;
       const p = findProject(m.projectId);
@@ -16051,11 +16006,26 @@ function handleAction(action, el){
       if(!u || !m.source || !m.target || m.source===m.target || state.ucMergeRunning) break;
       const conflicts = ucMergeConflicts(u, m.source, m.target, m.strategy);
       if(conflicts.length){ m.conflicts = conflicts; render(); break; }
+      // Конфликтов нет — спрашиваем подтверждение необратимого действия (тот же диалог,
+      // что в CJ); само объединение запускает uc-merge-confirm-do.
+      state.ucMergeConfirm = true;
+      state.popover = null;
+      render();
+      break;
+    }
+    case "uc-merge-confirm-cancel": state.ucMergeConfirm = false; render(); break;
+    case "uc-merge-confirm-do": {
+      const m = state.ucMergePanel;
+      if(!m) break;
+      const p = findProject(m.projectId);
+      const u = p && findUseCase(p, m.ucId);
+      if(!u || !m.source || !m.target || m.source===m.target || state.ucMergeRunning) break;
       // Объединение не мгновенное: ссылки пересобираются под ландшафт целевой ветки.
       // Панель закрывается сразу, прогресс виден в строке веток, а целевую ветку в это
       // время можно открыть и посмотреть — но не редактировать.
       state.ucMergeRunning = {projectId:p.id, ucId:u.id, source:m.source, target:m.target, strategy:m.strategy};
       state.ucMergePanel = null;
+      state.ucMergeConfirm = false;
       state.popover = null;
       render();
       setTimeout(()=>{
@@ -16065,10 +16035,10 @@ function handleAction(action, el){
         const uc = proj && findUseCase(proj, r.ucId);
         if(uc){
           ucMergeExecute(uc, r.source, r.target, r.strategy);
-          uc.branchInfo[r.target] = {updatedAt: NOW_DATE};
+          uc.branchInfo[r.target] = {updatedAt: NOW_DAY};
         }
         state.ucMergeRunning = null;
-        showToast(`Ветка «${r.source}» объединена с «${r.target}» (${r.strategy==="replace"?"замена":"добавление"})`);
+        showToast("Ветки объединены");
         render();
       }, 2200);
       break;
