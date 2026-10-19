@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261019-101846">
+<meta name="beeatlas-build" content="20261019-103617">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -2211,18 +2211,11 @@
   .uc-menu-item svg{width:20px;height:20px;flex:0 0 auto;color:var(--text-secondary);}
   .uc-menu-item .ic{width:20px;height:20px;color:var(--text-secondary);}
   .uc-menu-item .txt{flex:1;overflow:hidden;text-overflow:ellipsis;}
-  .uc-menu-item .tag{font-size:13px;color:var(--text-secondary);}
-  .uc-menu-item .check{display:flex;color:var(--text);}
-  .uc-menu-item .check svg{width:20px;height:20px;color:var(--text);}
   .uc-menu-divider{height:1px;background:var(--md-sys-color-outline-variant);margin:var(--menu-padding-vertical) 0;}
-  /* Подпись группы — в у меню её нет (только divider), поэтому собрана из токенов
-     типографики и отступов, как разрешает сборный компонент. */
-  .uc-menu-cap{padding:var(--size-spacing-x2) var(--size-spacing-x4);font-size:13px;line-height:16px;
-    color:var(--text-secondary);text-transform:uppercase;letter-spacing:.4px;}
-  /* Бейдж ветки в заголовке — badge, тип fade, семантика neutral (.badge.gray).
-     Рядом уже стоит бейдж статуса, поэтому fill здесь не годится по правилу спека. */
-  .uc-branch-badge svg{width:18px;height:18px;}
-  .uc-branch-badge .ic{width:18px;height:18px;}
+  /* Ветка в заголовке Use Case — не бейдж, а переключатель: бейджем она читалась как
+     статусная метка рядом с «Опубликован», и сменить ветку можно было только через меню
+     действий. Теперь это тот же CjSelectField, что в ряду веток CJ (пункты с датой
+     обновления, корзина у своей ветки), только без подписи и с иконкой ветки слева. */
   /* Блокировка и прогресс объединения — строкой под заголовком, одной группой. */
   .uc-branch-status{display:flex;align-items:center;gap:var(--space-4);flex-wrap:wrap;margin-bottom:var(--space-6);}
   .cj-branch-bar{flex:0 0 auto;display:flex;align-items:center;gap:var(--space-4);padding:var(--space-3) var(--space-6);border-bottom:1px solid var(--border);background:var(--bg-alt);flex-wrap:wrap;}
@@ -2241,6 +2234,7 @@
      never depends on the browser's native <select> placement. */
   .cj-select-field{position:relative;display:inline-block;flex:0 0 auto;}
   .cj-branch-bar > .cj-select-field{width:260px;}
+  .page-title-row .cj-select-trigger{min-width:0;}
   .cj-branch-bar > .cj-select-field .cj-select-trigger{min-width:0;}
   .cj-select-field.wide{display:block;width:100%;}
   /* Триггер повторяет поле по docs/components.md: высота 56, паддинг 0/16,
@@ -2259,8 +2253,8 @@
   .cj-select-trigger.open{background:var(--bg);border-color:var(--text);}
   .cj-select-trigger svg{width:18px;height:18px;color:var(--text-secondary);flex:0 0 auto;transition:transform .12s ease;}
   .cj-select-trigger .ic{width:18px;height:18px;color:var(--text-secondary);flex:0 0 auto;transition:transform .12s ease;}
-  .cj-select-trigger.open svg{transform:rotate(180deg);}
-  .cj-select-trigger.open .ic{transform:rotate(180deg);}
+  .cj-select-trigger.open > svg:last-child{transform:rotate(180deg);}
+  .cj-select-trigger.open > .ic:last-child{transform:rotate(180deg);}
   /* menu is its own fully-rounded floating panel positioned under the field — небольшой
      отступ 4px, собственная тень и скругление со всех сторон, не слито с триггером. */
   .cj-select-menu{
@@ -10663,7 +10657,9 @@ function CjBranchBar(cjId){
 /* `label` + `meta` — вариант поля с макетов панелей веток: подпись над значением и
    вторая строка «обновлено …» у каждого пункта. Без них компонент рисуется как раньше
    (одна строка + галочка у выбранного), поэтому вызовы на странице Use Case не меняются. */
-function CjSelectField({id, branches, activeId, action, excludeId, disabledId, disabledTitle, wide, label, placeholder, meta, deleteAction}){
+/* `lead` — иконка перед значением. Нужна там, где поле стоит без подписи и вне ряда
+   веток: в шапке Use Case «main» без глифа ветки читается как что угодно. */
+function CjSelectField({id, branches, activeId, action, excludeId, disabledId, disabledTitle, wide, label, placeholder, meta, deleteAction, lead}){
   const opts = branches.filter(b=>b.id!==excludeId);
   const open = state.popover===id;
   const metaOf = typeof meta==="function" ? meta : null;
@@ -10675,7 +10671,7 @@ function CjSelectField({id, branches, activeId, action, excludeId, disabledId, d
   return `
     <div class="cj-select-field${wide?" wide":""}">
       <button class="cj-select-trigger${open?" open":""}${label?" labeled":""}" data-action="toggle-popover" data-popover="${id}">
-        ${trigger}${icon("chevronDown")}
+        ${lead?icon(lead):""}${trigger}${icon("chevronDown")}
       </button>
       ${open ? `
         <div class="cj-select-menu">
@@ -10998,33 +10994,23 @@ function CjConfirmDialog({title, text, confirmLabel, confirmAction, cancelAction
    действие подтверждается диалогом CjConfirmDialog. Разница осталась только в точке
    входа — в CJ это ряд веток под заголовком, в Use Case пункты меню действий
    (переключение ветки там же, а какая открыта, видно по бейджу у заголовка). */
-/* Все действия страницы Use Case — под одной иконочной кнопкой в заголовке (спека:
-   components/menu — «если есть несколько действий, которые необходимо скрыть из-за
-   ограниченного пространства интерфейса»). Первая группа переключает ветку, активная
-   помечена галочкой — та же конвенция, что у CjSelectField; какая ветка открыта, видно
-   по бейджу рядом с заголовком, поэтому отдельное поле-селект тут не нужно. */
+/* Команды страницы Use Case — под иконочной кнопкой в заголовке (спека: components/menu —
+   «если есть несколько действий, которые необходимо скрыть из-за ограниченного
+   пространства интерфейса»). Переключение ветки и её удаление здесь НЕ дублируются: то и
+   другое живёт в самом переключателе ветки рядом с заголовком — ровно как в ряду веток CJ,
+   где поле переключает и удаляет, а кнопки рядом создают и объединяют. Ряд веток целиком
+   сюда не переносится: в ряду заголовка Use Case на 1280 остаётся 24px, бар занял бы 560. */
 function UcActionsMenu(p, u){
-  const branches = ucBranchList(u);
-  const activeMeta = branches.find(b=>b.id===u.branch);
   const running = state.ucMergeRunning;
   const mergeBlocked = !!running;
   const item = (action, data, ico, txt, extra) =>
     `<div class="uc-menu-item" data-action="${action}" ${data}>${icon(ico)}<span class="txt">${txt}</span>${extra||""}</div>`;
   return `
     <div class="uc-menu">
-      <div class="uc-menu-cap">Ветка Use Case</div>
-      ${branches.map(b=>`
-        <div class="uc-menu-item" data-action="uc-switch-branch" data-branch="${escapeHtml(b.id)}">
-          ${icon("gitBranch")}<span class="txt">${escapeHtml(b.id)}</span>
-          ${b.kind==="user"?`<span class="tag">своя</span>`:""}
-          ${b.id===u.branch?`<span class="check">${icon("check")}</span>`:""}
-        </div>`).join("")}
-      <div class="uc-menu-divider"></div>
       ${item("uc-open-branch-create","","plus","Новая ветка")}
       <div class="uc-menu-item${mergeBlocked?" disabled":""}" ${mergeBlocked?`title="Дождитесь завершения текущего объединения"`:`data-action="uc-open-merge"`}>
         ${icon("gitMerge")}<span class="txt">Объединить ветки</span>
       </div>
-      ${activeMeta && activeMeta.kind==="user" ? item("uc-branch-delete-ask",`data-branch="${escapeHtml(u.branch)}"`,"trash",`Удалить ветку «${escapeHtml(u.branch)}»`) : ""}
       <div class="uc-menu-divider"></div>
       ${item("open-uc-cj-link",`data-id="${p.id}" data-uc="${u.id}"`,"pencil","Изменить привязку к CJ")}
     </div>
@@ -11039,7 +11025,7 @@ function UcBranchStatusRow(p, u){
   const running = state.ucMergeRunning;
   const runningHere = running && running.ucId===u.id;
   const locked = ucBranchLocked(u, u.branch);
-  const confirm = state.ucBranchDeleteConfirm===u.branch;
+  const confirm = !!state.ucBranchDeleteConfirm;
   if(!runningHere && !confirm) return "";
   return `
     ${runningHere ? `
@@ -11049,7 +11035,7 @@ function UcBranchStatusRow(p, u){
       </div>` : ""}
     ${confirm ? CjConfirmDialog({title:"Удалить ветку?", text:"Удалённую ветку нельзя будет восстановить",
                                  confirmLabel:"Удалить", confirmAction:"uc-branch-delete-do",
-                                 cancelAction:"uc-branch-delete-cancel", branch:u.branch}) : ""}
+                                 cancelAction:"uc-branch-delete-cancel", branch:state.ucBranchDeleteConfirm}) : ""}
   `;
 }
 /* Ноль шагов — сценарий в этой ветке ещё не заводили. Ветки полностью изолированы (§3.1),
@@ -12472,7 +12458,8 @@ function UseCaseDetailPage(projectId, ucId){
     <div class="page-title-row">
       <h1>${escapeHtml(u.name)}</h1>
       ${ucStatusBadge(u.status)}
-      <span class="badge gray uc-branch-badge" title="Ветка, состав которой показан на странице">${icon("gitBranch")}${escapeHtml(u.branch)}</span>
+      ${CjSelectField({id:"uc-branch-switch", branches:ucBranchList(u), activeId:u.branch, action:"uc-switch-branch",
+                       lead:"gitBranch", meta:b=>ucBranchUpdNote(u,b), deleteAction:"uc-branch-delete-ask"})}
       <div class="actions">
         <div class="uc-menu-wrap">
           <button class="btn btn-outline btn-icon-only" data-action="toggle-popover" data-popover="uc-export" title="Экспорт">${icon("upload")}</button>
@@ -15935,7 +15922,8 @@ function handleAction(action, el){
       render();
       break;
     }
-    case "uc-branch-delete-ask": state.ucBranchDeleteConfirm = el.dataset.branch; state.popover = null; render(); break;
+    /* список веток остаётся раскрытым под диалогом — как в CJ */
+    case "uc-branch-delete-ask": state.ucBranchDeleteConfirm = el.dataset.branch; render(); break;
     case "uc-branch-delete-cancel": state.ucBranchDeleteConfirm = null; render(); break;
     case "uc-branch-delete-do": {
       const p = findProject(state.route.projectId);
