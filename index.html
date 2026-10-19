@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261019-172720">
+<meta name="beeatlas-build" content="20261019-180043">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -547,6 +547,23 @@
     position:relative;
   }
   .icon-btn:hover{background:var(--bg-alt);}
+  .icon-btn:active{background:color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);}
+  .icon-btn:disabled{opacity:.38;cursor:default;}
+
+  /* ── Фокус с клавиатуры ───────────────────────────────────────────────────
+     Состояний у контрола шесть (interaction.md §2), и фокус до сих пор был
+     описан только у полей: остальные элементы при ходьбе табом не показывали
+     ничего. Рамка рисуется контуром, а не границей, — она не занимает место
+     и не двигает соседей. :focus-visible, а не :focus: после клика мышью
+     рамка не нужна. */
+  .btn:focus-visible, .icon-btn:focus-visible, .btn-plain:focus-visible,
+  .page-tab:focus-visible, .pill-item:focus-visible, .toggle:focus-visible,
+  .navitem:focus-visible, .ac-tree-row:focus-visible, .exp-row-btn:focus-visible,
+  .pg-btn:focus-visible, .ds-select-trigger:focus-visible, .cj-select-trigger:focus-visible,
+  .ds-select-item:focus-visible, .uc-menu-item:focus-visible, .th-sort:focus-visible,
+  .proj-link:focus-visible, .reset-link:focus-visible{
+    outline:2px solid var(--text);outline-offset:2px;border-radius:var(--size-border-radius-x4);
+  }
   .icon-btn svg{width:20px;height:20px;}
   .icon-btn .ic{width:20px;height:20px;}
   /* Иконочная кнопка шапки: сама иконка 24 с радиусом 4 и цветом inactive,
@@ -1507,6 +1524,10 @@
   /* Switcher (docs/components.md) — трек 44×24 радиус 10, бегунок 16 круглый, фон трека control-background */
   .toggle{width:44px;height:24px;border-radius:var(--size-border-radius-x5);background:var(--md-sys-color-surface-container-highest);position:relative;cursor:pointer;border:none;flex:0 0 auto;}
   .toggle.on{background:var(--md-sys-color-primary);}
+  /* Переключатель — тоже контрол: наведение и нажатие читаются на дорожке,
+     иначе он выглядит картинкой, а не элементом управления. */
+  .toggle:hover{box-shadow:0 0 0 4px color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);}
+  .toggle:active{box-shadow:0 0 0 4px color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);}
   .toggle .knob{position:absolute;top:4px;left:4px;width:16px;height:16px;border-radius:50%;background:var(--md-sys-color-surface-container-lowest);transition:left .15s ease;box-shadow:var(--elevation-low);}
   .toggle.on .knob{left:24px;}
   /* components/button, type=plain size=small: фон прозрачный, текст и иконка
@@ -1767,6 +1788,13 @@
   .page-tab{display:inline-flex;align-items:center;height:48px;padding:0 var(--size-spacing-x6);
     font-size:15px;line-height:20px;letter-spacing:.2px;font-weight:500;color:var(--text-secondary);cursor:pointer;position:relative;}
   .page-tab:first-child{padding-left:0;}
+  /* Вкладка не реагировала на курсор: по interaction.md §2 состояний у неё
+     столько же, сколько у кнопки. Заливка берётся скруглённым пятном сверху,
+     чтобы не спорить с индикатором снизу. */
+  .page-tab:hover{color:var(--text);}
+  .page-tab:hover::before{content:"";position:absolute;inset:4px 8px 6px;border-radius:var(--size-border-radius-x4);
+    background:color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);z-index:-1;}
+  .page-tab:active::before{background:color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);}
   .page-tab.active{color:var(--text);}
   .page-tab.active::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:4px;min-width:40px;
     border-radius:var(--size-border-radius-x2) var(--size-border-radius-x2) 0 0;background:var(--yellow);}
@@ -7350,6 +7378,7 @@ function renderShell(){
   document.documentElement.setAttribute("data-theme", state.theme);
   renderPage();
   bindGlobalEvents();
+  makeActionsFocusable();
   if(prevWizardScroll!==null){ const wb = document.querySelector(".wizard-body"); if(wb) wb.scrollTop = prevWizardScroll; }
   if(prevMainScroll!==null){ const ms = document.getElementById("mainScroll"); if(ms) ms.scrollTop = prevMainScroll; }
   if(prevSidebarScroll!==null){ const sb = document.getElementById("sidebarScroll"); if(sb) sb.scrollTop = prevSidebarScroll; }
@@ -8130,6 +8159,7 @@ function renderLanding(){
   `;
   document.documentElement.setAttribute("data-theme", state.theme);
   bindGlobalEvents();
+  makeActionsFocusable();
   setupLandingMotion();
   positionToast();
   if(prevScroll) window.scrollTo(0, prevScroll);
@@ -15767,7 +15797,31 @@ function loadLocation(){
 
 let searchDebTimer=null;
 let archDebTimer=null;
+/* Контролы прототипа собраны дивами с data-action: мышью они работают, а табом
+   до них не дойти и Enter их не нажимает. Проставляем фокусируемость и роль тем,
+   кто не является нативной кнопкой, ссылкой или полем, — тогда рамка фокуса
+   (:focus-visible) и клавиатура работают везде одинаково. */
+function makeActionsFocusable(){
+  const NATIVE = new Set(["BUTTON","A","INPUT","SELECT","TEXTAREA","SUMMARY"]);
+  document.querySelectorAll("[data-action]").forEach(el=>{
+    if(NATIVE.has(el.tagName) || el.hasAttribute("tabindex")) return;
+    /* noop-doc — заглушка «вне периметра прототипа», ходить по ней табом незачем */
+    if(el.dataset.action === "noop-doc") return;
+    el.setAttribute("tabindex", "0");
+    if(!el.hasAttribute("role")) el.setAttribute("role", "button");
+  });
+}
+
 function bindGlobalEvents(){
+  /* Enter и пробел на таком контроле должны делать то же, что клик. Пробел ещё и
+     прокручивает страницу — это отменяем, иначе нажатие уводит экран вниз. */
+  document.body.onkeydown = function(e){
+    if(e.key !== "Enter" && e.key !== " ") return;
+    const t = e.target.closest("[data-action]");
+    if(!t || !t.hasAttribute("tabindex")) return;
+    e.preventDefault();
+    t.click();
+  };
   document.body.onclick = function(e){
     const t = e.target.closest("[data-action]");
     if(!t) {
