@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261019-154419">
+<meta name="beeatlas-build" content="20261019-161253">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -1573,7 +1573,12 @@
   thead th.num, tbody td.num{text-align:right;}
   /* Колонка без видимого заголовка (кнопка в строке) всё равно должна его иметь —
      иначе колонка безымянная и для чтения с экрана, и в проверке заголовков. */
-  .vh{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0;}
+  /* Один clip:rect у absolute-элемента без позиционированного предка не удерживает
+     его содержимое: на вкладке НФТ подпись «Удалить требование» расширяла документ
+     до 1811 при окне 1728 (горизонтальная прокрутка страницы). Поэтому ячейка с
+     подписью становится точкой отсчёта, а к clip добавлен clip-path. */
+  .vh{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0;}
+  th:has(> .vh), td:has(> .vh){position:relative;}
   tbody tr:last-child td{border-bottom:none;}
   /* Раскрытая часть — панель, а не строка данных: наведение на неё не должно
      её подкрашивать (выглядело как тень, наползающая на содержимое). */
@@ -1588,6 +1593,7 @@
      проявляется только по ховеру, чтобы шапка не рябила. */
   thead th.th-sort{cursor:pointer;user-select:none;}
   .th-sort-inner{display:inline-flex;align-items:center;gap:var(--space-2);}
+  thead th.th-sort.num .th-sort-inner{flex-direction:row-reverse;}
   .th-sort-arrow{display:inline-flex;font-size:18px;opacity:0;transition:opacity .12s ease,transform .12s ease;}
   thead th.th-sort:hover .th-sort-arrow{opacity:.38;}
   thead th.th-sort.on .th-sort-arrow{opacity:1;}
@@ -2718,6 +2724,12 @@
      нет: высоту, отступы и кегль задаёт раздел «Таблица», а вложенность — padding
      ячейки. Осталось только имя первого уровня. */
   .obs-row > td:first-child{font-weight:500;}
+  /* Брендовая полоса 3px у края таблицы охватывает всю дочернюю информацию
+     (docs/interaction.md §6). Дерево здесь собрано строками, а не панелью раскрытия,
+     поэтому полосу даёт каждая вложенная строка — соседние сливаются в одну.
+     Рисуется inset-тенью, а не border: первая колонка закреплена (sticky), и
+     граница у неё уезжала бы вместе с собственным фоном ячейки. */
+  .obs-row.obs-nested > td:first-child{font-weight:400;box-shadow:inset 3px 0 0 var(--yellow);}
 
   .ac-radio-group{display:flex;flex-direction:column;gap:var(--space-4);margin-bottom:var(--space-6);}
   .ac-radio{display:flex;align-items:center;gap:var(--space-3);cursor:pointer;font-size:15px;}
@@ -8234,7 +8246,7 @@ function defaultAppcatState(){
 
 const APPS = {
   b2c:{id:"b2c", name:"B2C digital retail delivery catalog", cmdb:"B2C DIGITAL RETAIL DELIVERY CATALOG", crit:"0-Core", owner:"Константинопольский Константин Константинович", architect:"Крестовоздвиженский Филипп Пантелеймонович", status:"В эксплуатации", fitness:95},
-  filesharing:{id:"filesharing", name:"Система обмена и хранения файлов", cmdb:"FILE SHARING AND STORAGE SYSTE", crit:"1-Mission Critical", owner:"Константинопольский Константин Константинович", architect:"Крестовоздвиженский Филипп Пантелеймонович", status:"В эксплуатации", fitness:29},
+  filesharing:{id:"filesharing", name:"Система обмена и хранения файлов", cmdb:"FILE SHARING AND STORAGE SYSTEM", crit:"1-Mission Critical", owner:"Константинопольский Константин Константинович", architect:"Крестовоздвиженский Филипп Пантелеймонович", status:"В эксплуатации", fitness:29},
   commplatform:{id:"commplatform", name:"Единая платформа коммуникаций Legacy", cmdb:"SCP.LEGACY", crit:"2-Business Critical", owner:"Константинопольский Константин Константинович", architect:"Крестовоздвиженский Филипп Пантелеймонович", status:"В резерве", fitness:23},
   payments:{id:"payments", name:"Сервис Платежи и переводы", cmdb:"MCPT", crit:"3-Business Operation", owner:"Константинопольский Константин Константинович", architect:"Крестовоздвиженский Филипп Пантелеймонович", status:"В эксплуатации", fitness:78},
   switchctrl:{id:"switchctrl", name:"Switch Control (SC)", cmdb:"SC", crit:"4-Office Productivity", owner:"Константинопольский Константин Константинович", architect:"Крестовоздвиженский Филипп Пантелеймонович", status:"В эксплуатации", fitness:0},
@@ -8418,17 +8430,21 @@ const AC_ADR_TABLE = [
 function fitnessRows(kind){
   const label = kind==="check" ? "проверки" : "триггера";
   return [
-    {code:"ADR.01", desc:"Наличие хотя бы одного ADR", status:"Test", statusColor:"blue", result:"Успешно", date:"25.05.2026, 14:43", metric:"145/145"},
-    {code:"CTX.03", desc:"Есть capability в Structurizr", status:"Trial", statusColor:"orange", result:"Успешно", date:"25.05.2026, 14:43", metric:"145/145",
+    /* Коды проверок уникальны: три строки «ADR.01 / Наличие хотя бы одного ADR»
+       читались как сбой отрисовки. Результат тоже не всегда «Успешно» — в шапке
+       приложения висит «Фитнес-функции с ошибкой» и 95%, а в таблице до этого
+       не было ни одной незачтённой проверки. */
+    {code:"ADR.01", desc:"Наличие хотя бы одного ADR", status:"Test", statusColor:"blue", result:"Успешно", resultColor:"green", date:"25.05.2026, 14:43", metric:"145/145"},
+    {code:"CTX.03", desc:"Есть capability в Structurizr", status:"Trial", statusColor:"orange", result:"Успешно", resultColor:"green", date:"25.05.2026, 14:43", metric:"145/145",
       detail:{note:"У продукта найдены capability в Structurizr :", table:AC_CAPS_TABLE}},
-    {code:"ADR.01", desc:"Наличие хотя бы одного ADR", status:"Adopt", statusColor:"green", result:"Успешно", date:"25.05.2026, 14:43", metric:"145/145",
+    {code:"ADR.04", desc:"Каждое архитектурное решение связано с требованием", status:"Adopt", statusColor:"green", result:"Успешно", resultColor:"green", date:"25.05.2026, 14:43", metric:"145/145",
       detail:{note:"У продукта найдены adr:", adrTable:AC_ADR_TABLE}},
-    {code:"SQ.01", desc:"Для всех technical capability указаны sequence", status:"Test", statusColor:"blue", result:"Успешно", date:"25.05.2026, 14:43", metric:"145/0"},
-    {code:"CPB.03", desc:"Есть capability в Structurizr", status:"Test", statusColor:"blue", result:"Успешно", date:"25.05.2026, 14:43", metric:"145/145",
+    {code:"SQ.01", desc:"Для всех technical capability указаны sequence", status:"Test", statusColor:"blue", result:"Ошибка", resultColor:"red", date:"25.05.2026, 14:43", metric:"145/0"},
+    {code:"CPB.03", desc:"Есть capability в Structurizr", status:"Test", statusColor:"blue", result:"Успешно", resultColor:"green", date:"25.05.2026, 14:43", metric:"145/145",
       detail:{note:"У продукта найдены adr:", table:AC_CAPS_TABLE}},
-    {code:"TECH.05", desc:"Технологии найденные по мониторингу продуктивной среды и Git описаны в архитектуре", status:"Test", statusColor:"blue", result:"Успешно", date:"25.05.2026, 14:43", metric:"145/105",
-      detail:{note:"Технологии, которые есть по данным мониторинга продуктивной среды и gitlab, но отсутствуют в архитектуре:", techTable:[{status:"Успешно",name:"C++"},{status:"Успешно",name:"Alpine Linux"}]}},
-    {code:"ADR.01", desc:"Наличие хотя бы одного ADR", status:"Test", statusColor:"blue", result:"Успешно", date:"25.05.2026, 14:43", metric:"145/145"},
+    {code:"TECH.05", desc:"Технологии найденные по мониторингу продуктивной среды и Git описаны в архитектуре", status:"Test", statusColor:"blue", result:"Ошибка", resultColor:"red", date:"25.05.2026, 14:43", metric:"145/105",
+      detail:{note:"Технологии, которые есть по данным мониторинга продуктивной среды и gitlab, но отсутствуют в архитектуре:", techTable:[{status:"Не описана",name:"C++"},{status:"Не описана",name:"Alpine Linux"}]}},
+    {code:"DEP.02", desc:"Все зависимости контейнеров описаны в архитектуре", status:"Test", statusColor:"blue", result:"Успешно", resultColor:"green", date:"25.05.2026, 14:43", metric:"145/145"},
   ];
 }
 
@@ -8436,11 +8452,26 @@ const AC_TECH_METHODS = [
   {method:"GET /2.0.0/napi/sim-info", desc:"Текстовое описание метода выводим до 2x …", cap:"Возможность online отображения инф…", rps:10, lat:1500, err:99, status:"Успешно"},
   {method:"GET /2.0.0/napi/sim-info", desc:"Текстовое описание метода выводим до 2x …", cap:"Возможность online отображения инф…", rps:10, lat:1500, err:99, status:"Успешно"},
 ];
-const AC_TECH_CAPS = Array.from({length:6}).map((_,i)=>({
+/* Шесть карточек с одним названием, кодом и доменом читались как сбой отрисовки:
+   отличить их друг от друга было нечем. */
+const AC_TECH_CAPS = [
+  {name:"Возможность online-отображения информации в процессе коммуникации сотрудников офисов и call-центров с абонентами",
+   domain:"Омниканальное управление взаимодействиями; Реализация возможностей Communication Platform"},
+  {name:"Возможность получения остатков и балансов абонента по номеру телефона",
+   domain:"Управление балансами; Реализация возможностей Billing Platform"},
+  {name:"Возможность переноса средств между балансами одного клиента",
+   domain:"Управление балансами; Реализация возможностей Payment Platform"},
+  {name:"Возможность установки и снятия блокировки номера по заявке клиента",
+   domain:"Обслуживание номера; Реализация возможностей Service Platform"},
+  {name:"Возможность получения статуса заказа и плана доставки для мобильного приложения",
+   domain:"Доставка и логистика; Реализация возможностей Delivery Platform"},
+  {name:"Возможность подбора тарифного плана по профилю потребления",
+   domain:"Управление тарифами; Реализация возможностей Product Platform"},
+].map((c,i)=>({
   id:"tc"+(i+1),
-  name:"Возможность online-отображения информации в процессе коммуникации сотрудников офисов и call-центров с абонентами",
-  code:"B2CDIGITALRETAILDELIVERYCATALOG.002",
-  domain:"Омниканальное управление взаимодействиями; Реализация возможностей Communication Platform",
+  name:c.name,
+  code:"B2CDIGITALRETAILDELIVERYCATALOG.00"+(i+1),
+  domain:c.domain,
   methods: i%3===0 ? AC_TECH_METHODS : [],
 }));
 
@@ -8461,17 +8492,22 @@ const AC_INTERFACES_TREE = [
   {id:"apigw3", name:"API Gateway", code:"ext_apache_lb_webcrm01_20001", date:"12.03.2025, 00:00", ifaceCount:6, methodCount:56, status:"Успешно"},
 ];
 
+/* Статус технологии — решение технорадара, а не «Успешно»: колонка повторяла
+   значение из колонки результата и ничего не различала. То же с допуском в
+   критическую инфраструктуру — там ответ «Допустима» / «Не допустима».
+   Семь строк «Structurizr OnPremise» подряд были копиями одной. */
+const AC_TECH_STATUSES = ["Разрешена","Ограниченно","Не разрешена"];
 const AC_TECHNOLOGIES = [
-  {id:"angular", name:"Angular", status:"Успешно", ki:"Успешно", src:"Технорадар/Structurizr"},
-  {id:"structurizr1", name:"Structurizr OnPremise", status:"Успешно", ki:"Успешно", src:"Structurizr/Технорадар"},
-  {id:"structurizr2", name:"Structurizr OnPremise", status:"Успешно", ki:"Успешно", src:"Structurizr"},
-  {id:"structurizr3", name:"Structurizr OnPremise", status:"Успешно", ki:"Успешно", src:"Технорадар"},
-  {id:"structurizr4", name:"Structurizr OnPremise", status:"Успешно", ki:"Успешно", src:"Технорадар"},
-  {id:"structurizr5", name:"Structurizr OnPremise", status:"Успешно", ki:"Успешно", src:"Технорадар"},
-  {id:"structurizr6", name:"Structurizr OnPremise", status:"Успешно", ki:"Успешно", src:"Технорадар"},
-  {id:"structurizr7", name:"Structurizr OnPremise", status:"Успешно", ki:"Успешно", src:"Технорадар"},
-  {id:"structurizrlite", name:"Structurizr Lite", status:"Успешно", ki:"Успешно", src:"Технорадар"},
-  {id:"nodejs", name:"Node.js", status:"Успешно", ki:"Успешно", src:"Технорадар"},
+  {id:"angular", name:"Angular", status:"Разрешена", ki:"Допустима", src:"Технорадар/Structurizr"},
+  {id:"structurizr1", name:"Structurizr OnPremise", status:"Разрешена", ki:"Допустима", src:"Structurizr/Технорадар"},
+  {id:"postgres", name:"PostgreSQL", status:"Разрешена", ki:"Допустима", src:"Технорадар"},
+  {id:"kafka", name:"Apache Kafka", status:"Разрешена", ki:"Допустима", src:"Технорадар"},
+  {id:"redis", name:"Redis", status:"Ограниченно", ki:"Не допустима", src:"Технорадар"},
+  {id:"nginx", name:"nginx", status:"Разрешена", ki:"Допустима", src:"Технорадар/Structurizr"},
+  {id:"keycloak", name:"Keycloak", status:"Ограниченно", ki:"Допустима", src:"Structurizr"},
+  {id:"rabbit", name:"RabbitMQ", status:"Не разрешена", ki:"Не допустима", src:"Технорадар"},
+  {id:"structurizrlite", name:"Structurizr Lite", status:"Ограниченно", ki:"Не допустима", src:"Технорадар"},
+  {id:"nodejs", name:"Node.js", status:"Разрешена", ki:"Допустима", src:"Технорадар"},
 ];
 
 const TECH_DETAIL_DEFAULT = {
@@ -8485,35 +8521,45 @@ const TECH_DETAIL_DEFAULT = {
   appsCount:4,
 };
 
+/* Колонка «Тип» показывает тип паттерна, а не статус: раньше во всех строках
+   стояло «Успешно» — значение из чужой колонки, да ещё и одно на всю таблицу. */
+const AC_PATTERN_TYPES = ["Интеграционный","Данные","Хранение","Надёжность"];
 const AC_PATTERNS = [
-  {id:"p1", name:"Сбор и сохранение потоковых данных", type:"Успешно", tech:["React","Sparx EA","Structurizr OnPremise","Structurizr Lite","Vue","Java","Angular","Pixso"], more:2},
-  {id:"p2", name:"Витрина данных (Data Mart)", type:"Успешно", tech:["React","Sparx EA","Structurizr OnPremise","Structurizr Lite"], more:1},
-  {id:"p3", name:"Oracle Database", type:"Успешно", tech:["React","Sparx EA","Structurizr OnPremise","Structurizr Lite","Vue","Java","Angular","Pixso"], more:1},
-  {id:"p4", name:"Сбор и сохранение потоковых данных", type:"Успешно", tech:["React","Sparx EA","Structurizr OnPremise","Structurizr Lite","Vue","Java","Angular","Pixso"], more:1},
-  {id:"p5", name:"Сбор оперативных данных (ODS)", type:"Успешно", tech:["React","Sparx EA","Structurizr OnPremise","Structurizr Lite","Vue","Java","Angular","Pixso"], more:1},
-  {id:"p6", name:"Сбор оперативных данных (ODS)", type:"Успешно", tech:["React","Sparx EA","Structurizr OnPremise","Structurizr Lite","Vue","Java","Angular","Pixso"], more:1},
+  {id:"p1", name:"Сбор и сохранение потоковых данных", type:"Данные", tech:["React","Sparx EA","Structurizr OnPremise","Structurizr Lite","Vue","Java","Angular","Pixso"], more:2},
+  {id:"p2", name:"Витрина данных (Data Mart)", type:"Данные", tech:["React","Sparx EA","Structurizr OnPremise","Structurizr Lite"], more:1},
+  {id:"p3", name:"Реляционное хранилище операций", type:"Хранение", tech:["React","Sparx EA","Structurizr OnPremise","Structurizr Lite","Vue","Java","Angular","Pixso"], more:1},
+  {id:"p4", name:"Асинхронный обмен через очередь", type:"Интеграционный", tech:["React","Sparx EA","Structurizr OnPremise","Structurizr Lite","Vue","Java","Angular","Pixso"], more:1},
+  {id:"p5", name:"Сбор оперативных данных (ODS)", type:"Данные", tech:["React","Sparx EA","Structurizr OnPremise","Structurizr Lite","Vue","Java","Angular","Pixso"], more:1},
+  {id:"p6", name:"Повтор вызова с экспоненциальной задержкой", type:"Надёжность", tech:["React","Sparx EA","Structurizr OnPremise","Structurizr Lite","Vue","Java","Angular","Pixso"], more:1},
 ];
 
+/* Колонка «Назначение» отвечает, обязательно требование или рекомендовано, —
+   раньше там стояло «Успешно», то есть значение статуса реализации. Код был
+   один на все пять строк, а описания лежали в данных уже с многоточием: теперь
+   текст полный, усекает его clampCell и показывает целиком в подсказке. */
 const AC_NFRS = [
-  {code:"NFR.00.00.00.98", name:"Безопасное сегментирование сети", desc:"В сегменте DMZ реализуется принци…", src:"Информационная безопасность", ver:1, status:"Успешно", assign:"Успешно", who:"Beeatlas", date:"16.03.2026, 14:43"},
-  {code:"NFR.00.00.00.98", name:"Отсутствие прямого доступа", desc:"DMZ функционирует исключительно как …", src:"Информационная безопасность", ver:1, status:"Успешно", assign:"Успешно", who:"Константинопольский Константин …", date:"16.03.2026, 14:43", removable:true},
-  {code:"NFR.00.00.00.98", name:"Поддержка аутентификации", desc:"Аутентификация всех запросов к DMZ …", src:"Информационная безопасность", ver:1, status:"Успешно", assign:"Успешно", who:"Beeatlas", date:"16.03.2026, 14:43"},
-  {code:"NFR.00.00.00.98", name:"Безопасное резервирование", desc:"В сегменте DMZ реализуется принци…", src:"Надежность", ver:1, status:"Успешно", assign:"Успешно", who:"Beeatlas", date:"16.03.2026, 14:43"},
-  {code:"NFR.00.00.00.98", name:"Безопасное масштабирование", desc:"В сегменте DMZ реализуется принци…", src:"Надежность", ver:1, status:"Успешно", assign:"Успешно", who:"Beeatlas", date:"16.03.2026, 14:43"},
+  {code:"NFR.00.00.00.98", name:"Безопасное сегментирование сети", desc:"В сегменте DMZ реализуется принцип минимальных привилегий: доступ между зонами открывается только для заявленных потоков", src:"Информационная безопасность", ver:1, status:"Выполнено", assign:"Обязательное", who:"Beeatlas", date:"16.03.2026, 14:43"},
+  {code:"NFR.00.00.01.02", name:"Отсутствие прямого доступа", desc:"DMZ функционирует исключительно как транзитная зона: прямые обращения из внешней сети во внутреннюю запрещены", src:"Информационная безопасность", ver:2, status:"Выполнено", assign:"Обязательное", who:"Константинопольский Константин Константинович", date:"16.03.2026, 14:43", removable:true},
+  {code:"NFR.00.00.01.14", name:"Поддержка аутентификации", desc:"Аутентификация всех запросов к DMZ выполняется по токену с ограниченным сроком жизни", src:"Информационная безопасность", ver:1, status:"В работе", assign:"Обязательное", who:"Beeatlas", date:"16.03.2026, 14:43"},
+  {code:"NFR.00.00.02.07", name:"Безопасное резервирование", desc:"Экземпляры разнесены по двум площадкам, отказ одной не приводит к недоступности сервиса", src:"Надёжность", ver:1, status:"В работе", assign:"Рекомендованное", who:"Beeatlas", date:"16.03.2026, 14:43"},
+  {code:"NFR.00.00.02.11", name:"Безопасное масштабирование", desc:"Горизонтальное масштабирование не требует остановки сервиса и перенастройки смежных систем", src:"Надёжность", ver:3, status:"Не начато", assign:"Рекомендованное", who:"Beeatlas", date:"16.03.2026, 14:43"},
 ];
 
+/* Раньше в дереве стояли подписи полей макета — «Название экземпляра»,
+   «Название контейнера», «Название интерфейса», — и три уровня было не отличить
+   друг от друга ничем, кроме отступа. */
 const AC_OBS_TREE = [
-  {id:"inst1", label:"Название экземпляра", link:"opensearch-ens-napi-queries", level:1,
+  {id:"inst1", label:"catalog-prod-ru-central", link:"opensearch-ens-napi-queries", level:1,
     children:[
-      {id:"cont1", label:"Название контейнера", link:"opensearch-ens-napi-queries", level:2,
+      {id:"cont1", label:"Dashboard API&UI", link:"opensearch-ens-napi-queries", level:2,
         children:[
-          {id:"ifc1", label:"Название интерфейса", link:"opensearch-ensemble-logstash-f4ac-waltz-tuxedo", level:3},
-          {id:"ifc2", label:"Название интерфейса", link:"opensearch-ensemble-logstash-f4ac-waltz-tuxedo", level:3},
-          {id:"ifc3", label:"Название интерфейса", link:"opensearch-ensemble-logstash-f4ac-waltz-tuxedo", level:3},
-          {id:"ifc4", label:"Название интерфейса", link:"opensearch-ensemble-logstash-f4ac-waltz-tuxedo", level:3},
+          {id:"ifc1", label:"API управление бизнес-возможностями", link:"opensearch-ensemble-logstash-f4ac-waltz-tuxedo", level:3},
+          {id:"ifc2", label:"API получение бизнес-терминов", link:"opensearch-ensemble-logstash-f4ac-waltz-tuxedo", level:3},
+          {id:"ifc3", label:"API управления описанием систем", link:"opensearch-ensemble-logstash-f4ac-waltz-tuxedo", level:3},
+          {id:"ifc4", label:"API управления описанием E2E процессов", link:"opensearch-ensemble-logstash-f4ac-waltz-tuxedo", level:3},
         ]},
-      {id:"cont2", label:"Название контейнера", link:"opensearch-ens-napi-queries", level:2},
-      {id:"cont3", label:"Название контейнера", link:"opensearch-ens-napi-queries", level:2},
+      {id:"cont2", label:"API Gateway", link:"opensearch-ens-napi-queries", level:2},
+      {id:"cont3", label:"Обработчик очереди публикаций", link:"opensearch-ens-napi-queries", level:2},
     ]},
 ];
 
@@ -8847,9 +8893,11 @@ function rpStatusBadge(status){
 /* Сортировка таблиц: заголовок — кнопка, повторный клик по тому же столбцу
    переворачивает направление. Сравниваем как строки (localeCompare, ru) —
    во всех сортируемых колонках лежит текст. */
-function acSortTh(label, key, sort, action){
+/* num — числовая колонка: подпись вместе со стрелкой уезжает вправо, к значениям
+   (thead th.num / tbody td.num), иначе шапка и числа читаются как разные колонки. */
+function acSortTh(label, key, sort, action, num){
   const on = sort.key===key;
-  return `<th class="th-sort${on?" on":""}${on&&sort.dir==="desc"?" desc":""}" data-action="${action}" data-key="${key}">`
+  return `<th class="th-sort${on?" on":""}${on&&sort.dir==="desc"?" desc":""}${num?" num":""}" data-action="${action}" data-key="${key}">`
     + `<span class="th-sort-inner">${escapeHtml(label)}<span class="th-sort-arrow">${icon("chevronDown")}</span></span></th>`;
 }
 function acToggleSort(sort, key){
@@ -8963,7 +9011,7 @@ function AcE2eProcessTable(){
         <colgroup><col style="width:76%"><col style="width:24%"></colgroup>
         <thead><tr>
           ${acSortTh("E2E-процесс","name",ac.e2eSort,"ac-e2e-sort")}
-          ${acSortTh("Методов приложения","count",ac.e2eSort,"ac-e2e-sort")}
+          ${acSortTh("Методов приложения","count",ac.e2eSort,"ac-e2e-sort",true)}
         </tr></thead>
         <tbody>
           ${rows.length ? rows.map(g=>AcE2eProcessRows(g, q)).join("") : acEmptyRow(2)}
@@ -8980,7 +9028,7 @@ function AcE2eProcessRows(g, q){
   let out = `
     <tr class="${open?"exp-open":""}">
       <td>${acExpNameCell(g.name, g.code, open, "ac-toggle-e2e", "ac-open-e2e-process")}</td>
-      <td>${g.methods.length}</td>
+      <td class="num">${g.methods.length}</td>
     </tr>
   `;
   if(open){
@@ -9020,7 +9068,7 @@ function AcE2eUcTable(){
         <colgroup><col style="width:76%"><col style="width:24%"></colgroup>
         <thead><tr>
           ${acSortTh("Use Case","name",ac.e2eUcSort,"ac-e2e-uc-sort")}
-          ${acSortTh("Методов приложения","count",ac.e2eUcSort,"ac-e2e-uc-sort")}
+          ${acSortTh("Методов приложения","count",ac.e2eUcSort,"ac-e2e-uc-sort",true)}
         </tr></thead>
         <tbody>
           ${rows.length ? rows.map(g=>AcE2eUcRows(g, q)).join("") : acEmptyRow(2)}
@@ -9037,7 +9085,7 @@ function AcE2eUcRows(g, q){
   let out = `
     <tr class="${open?"exp-open":""}">
       <td>${acExpNameCell(g.name, g.code, open, "ac-toggle-e2e-uc", "ac-open-e2e-uc")}</td>
-      <td>${g.methods.length}</td>
+      <td class="num">${g.methods.length}</td>
     </tr>
   `;
   if(open){
@@ -9131,13 +9179,13 @@ function AcCjRows(c, q){
       <div class="table-wrap">
         <table class="fixed-table">
           <colgroup><col style="width:58%"><col style="width:24%"><col style="width:18%"></colgroup>
-          <thead><tr><th>BI</th><th>Код</th><th>Шагов</th></tr></thead>
+          <thead><tr><th>BI</th><th>Код</th><th class="num">Шагов</th></tr></thead>
           <tbody>
             ${bis.map(b=>`
               <tr>
                 <td>${clampCell(b.name, "clamp-1")}</td>
                 <td>${escapeHtml(b.code)}</td>
-                <td>${b.steps}</td>
+                <td class="num">${b.steps}</td>
               </tr>
             `).join("")}
           </tbody>
@@ -9274,7 +9322,7 @@ function AcAppsTable(apps){
           <col style="width:18%"><col style="width:16%"><col style="width:12%"><col style="width:18%">
           <col style="width:14%"><col style="width:12%"><col style="width:10%">
         </colgroup>
-        <thead><tr><th>Приложение</th><th>CMDB Мнемоника</th><th>Критичность</th><th>Владелец</th><th>Статус</th><th>Structurizr OnPremises</th><th>Фитнес-функций</th></tr></thead>
+        <thead><tr><th>Приложение</th><th>CMDB Мнемоника</th><th>Критичность</th><th>Владелец</th><th>Статус</th><th>Structurizr OnPremises</th><th class="num">Фитнес-функций</th></tr></thead>
         <tbody>
           ${apps.map(a=>`
             <tr>
@@ -9284,7 +9332,7 @@ function AcAppsTable(apps){
               <td>${clampCell(a.owner)}</td>
               <td>${appStatusBadge(a.status)}</td>
               <td><span class="proj-link" data-action="noop-doc">Ссылка</span></td>
-              <td>${a.fitness}%</td>
+              <td class="num">${a.fitness}%</td>
             </tr>
           `).join("")}
         </tbody>
@@ -9465,7 +9513,7 @@ function AcFitnessTab(app){
                 <td><div class="exp-cell"><div class="exp-row-btn ${r.detail?(open?"open":""):"none"}" ${r.detail?`data-action="ac-toggle-fitness" data-key="${key}"`:""}>${icon("chevronRight")}</div>${escapeHtml(r.code)}</div></td>
                 <td>${clampCell(r.desc)}</td>
                 <td><span class="badge ${r.statusColor}">${escapeHtml(r.status)}</span></td>
-                <td><span class="badge green">${escapeHtml(r.result)}</span></td>
+                <td><span class="badge ${r.resultColor||"green"}">${escapeHtml(r.result)}</span></td>
                 <td>${escapeHtml(r.date)}</td>
                 <td class="num">${escapeHtml(r.metric)}</td>
               </tr>
@@ -9473,7 +9521,7 @@ function AcFitnessTab(app){
                 <div class="exp-detail-note">${escapeHtml(r.detail.note)}</div>
                 ${r.detail.table ? `<div class="table-wrap"><table><thead><tr><th>Статус публикации</th><th>Название</th><th>Код</th></tr></thead><tbody>${r.detail.table.map(t=>`<tr><td><span class="badge green">${escapeHtml(t.status)}</span></td><td><a class="proj-link" data-action="noop-doc">${escapeHtml(t.name)}</a></td><td>${escapeHtml(t.code)}</td></tr>`).join("")}</tbody></table></div>`:""}
                 ${r.detail.adrTable ? `<div class="table-wrap"><table><thead><tr><th>Название</th><th>Дата</th></tr></thead><tbody>${r.detail.adrTable.map(t=>`<tr><td><a class="proj-link" data-action="noop-doc">${escapeHtml(t.name)}</a></td><td>${escapeHtml(t.date)}</td></tr>`).join("")}</tbody></table></div>`:""}
-                ${r.detail.techTable ? `<div class="table-wrap"><table><thead><tr><th>Статус публикации</th><th>Название</th></tr></thead><tbody>${r.detail.techTable.map(t=>`<tr><td><span class="badge green">${escapeHtml(t.status)}</span></td><td><a class="proj-link" data-action="noop-doc">${escapeHtml(t.name)}</a></td></tr>`).join("")}</tbody></table></div>`:""}
+                ${r.detail.techTable ? `<div class="table-wrap"><table><thead><tr><th>Статус публикации</th><th>Название</th></tr></thead><tbody>${r.detail.techTable.map(t=>`<tr><td><span class="badge ${t.status==="Не описана"?"gray":"green"}">${escapeHtml(t.status)}</span></td><td><a class="proj-link" data-action="noop-doc">${escapeHtml(t.name)}</a></td></tr>`).join("")}</tbody></table></div>`:""}
               </div></td></tr>` : ""}
             `;
           }).join("")}
@@ -9517,13 +9565,35 @@ function AcTcCard(c){
   `;
 }
 
+/* Поиск ищет и по интерфейсам внутри контейнера: совпадение во вложенном уровне
+   должно оставить родителя в списке, иначе строка с совпадением просто исчезает. */
+function acIfaceList(){
+  const ac = state.appcat;
+  const q = ac.ifaceSearch.trim().toLowerCase();
+  let list = acActive().interfaces;
+  if(ac.ifaceHideEmpty) list = list.filter(c=>c.ifaceCount > 0);
+  if(q) list = list.filter(c=>
+    c.name.toLowerCase().includes(q) ||
+    c.code.toLowerCase().includes(q) ||
+    (c.interfaces||[]).some(i=>i.name.toLowerCase().includes(q) ||
+      (i.methods||[]).some(m=>m.method.toLowerCase().includes(q))));
+  return list;
+}
+
 function AcIfaceTab(app){
   const ac = state.appcat;
   return `
     <div class="filters-row">
       <div class="search-wrap field-with-icon">${icon("search")}<input class="input" id="acIfaceSearch" placeholder="Название интерфейса или метода" value="${escapeHtml(ac.ifaceSearch)}"/></div>
-      <div class="input" style="width:200px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;" data-action="noop-doc">Скрыть ${icon("eye")}</div>
-      <span class="reset-link" data-action="noop-doc">Сбросить</span>
+      <!-- Булев фильтр собирается переключателем, как «ТС с интерфейсами» и «Допустимо КИ»
+           на соседних вкладках. Раньше здесь стоял div.input шириной 200 с подписью
+           «Скрыть» и глазом: ни поле, ни кнопка, и неясно, что скрывает. Состояние
+           ifaceHideEmpty в state было заведено с самого начала, но ни к чему не привязано. -->
+      <div style="display:flex;align-items:center;gap:var(--space-3);">
+        <div class="toggle ${ac.ifaceHideEmpty?"on":""}" data-action="ac-toggle-iface-empty"><div class="knob"></div></div>
+        <span style="font-size:15px;">Скрыть контейнеры без интерфейсов</span>
+      </div>
+      ${ResetFiltersButton("ac-reset-iface", !!(ac.ifaceSearch || ac.ifaceHideEmpty))}
     </div>
     <div class="pill-toggle">
       <div class="pill-item ${ac.ifaceMode==="structurizr"?"active":""}" data-action="ac-set-iface-mode" data-mode="structurizr">Structurizr</div>
@@ -9542,9 +9612,9 @@ function AcIfaceTab(app){
           <col style="width:24%"><col style="width:24%"><col style="width:12%">
           <col style="width:13%"><col style="width:15%"><col style="width:12%">
         </colgroup>
-        <thead><tr><th>Контейнер</th><th>Код</th><th>Дата изменения</th><th>Кол-во интерфейсов</th><th>Кол-во методов в интерфейсах</th><th>Статус</th></tr></thead>
+        <thead><tr><th>Контейнер</th><th>Код</th><th>Дата изменения</th><th class="num">Кол-во интерфейсов</th><th class="num">Кол-во методов в интерфейсах</th><th>Статус</th></tr></thead>
         <tbody>
-          ${acActive().interfaces.map(c=>AcIfaceContainerRows(c)).join("")}
+          ${acIfaceList().map(c=>AcIfaceContainerRows(c)).join("")}
         </tbody>
       </table>
     </div>
@@ -9559,8 +9629,8 @@ function AcIfaceContainerRows(c){
       <td><div class="exp-cell"><div class="exp-row-btn ${c.interfaces?(open?"open":""):"none"}" ${c.interfaces?`data-action="ac-toggle-iface" data-id="${c.id}"`:""}>${icon("chevronRight")}</div><div class="exp-name">${clampCell(c.name)}</div></div></td>
       <td>${clampCell(c.code)}</td>
       <td>${escapeHtml(c.date)}</td>
-      <td>${c.ifaceCount}</td>
-      <td>${c.methodCount}</td>
+      <td class="num">${c.ifaceCount}</td>
+      <td class="num">${c.methodCount}</td>
       <td><span class="badge green">${escapeHtml(c.status)}</span></td>
     </tr>
   `;
@@ -9568,7 +9638,7 @@ function AcIfaceContainerRows(c){
     rows += `<tr class="exp-detail-row"><td colspan="6"><div class="exp-detail">
       <div class="table-wrap" style="margin-bottom:var(--space-4);">
         <table class="fixed-table ac-iface-l2"><colgroup><col style="width:60%"><col style="width:20%"><col style="width:20%"></colgroup>
-        <thead><tr><th>Интерфейс</th><th>Статус</th><th>Кол-во методов</th></tr></thead>
+        <thead><tr><th>Интерфейс</th><th>Статус</th><th class="num">Кол-во методов</th></tr></thead>
         <tbody>${c.interfaces.map(ifc=>AcIfaceRow(ifc)).join("")}</tbody></table>
       </div>
     </div></td></tr>`;
@@ -9583,7 +9653,7 @@ function AcIfaceRow(ifc){
     <tr class="${open?"exp-open":""}">
       <td><div class="exp-cell"><div class="exp-row-btn ${ifc.containers?(open?"open":""):"none"}" ${ifc.containers?`data-action="ac-toggle-iface" data-id="${ifc.id}"`:""}>${icon("chevronRight")}</div><div class="exp-name">${clampCell(ifc.name)}</div></div></td>
       <td><span class="badge green">${escapeHtml(ifc.status)}</span></td>
-      <td>${ifc.methodCount}</td>
+      <td class="num">${ifc.methodCount}</td>
     </tr>
   `;
   if(open){
@@ -9611,12 +9681,12 @@ function AcTechTab(app){
   let list = acActive().technologies;
   if(q) list = list.filter(t=>t.name.toLowerCase().includes(q));
   if(ac.techStatusFilter!=="Все") list = list.filter(t=>t.status===ac.techStatusFilter);
-  if(ac.techKiOnly) list = list.filter(t=>t.ki==="Успешно");
+  if(ac.techKiOnly) list = list.filter(t=>t.ki==="Допустима");
   return `
     <div class="filters-row">
       <div class="search-wrap field-with-icon">${icon("search")}<input class="input" id="acTechSearch" placeholder="Название технологии" value="${escapeHtml(ac.techSearch)}"/></div>
       ${FilterSelect({id:"ac-tech-status", label:"Статус технологии", value:ac.techStatusFilter,
-        options:["Все","Успешно"], action:"ac-tech-status-set"})}
+        options:["Все"].concat(AC_TECH_STATUSES), action:"ac-tech-status-set"})}
       <div style="display:flex;align-items:center;gap:var(--space-3);">
         <div class="toggle ${ac.techKiOnly?"on":""}" data-action="ac-toggle-tech-ki"><div class="knob"></div></div>
         <span style="font-size:15px;">Допустимо КИ</span>
@@ -9636,8 +9706,8 @@ function AcTechTab(app){
           ${list.length ? list.map(t=>`
             <tr>
               <td><div class="proj-link" data-action="ac-open-tech" data-id="${t.id}">${clampCell(t.name)}</div></td>
-              <td><span class="badge green">${escapeHtml(t.status)}</span></td>
-              <td><span class="badge green">${escapeHtml(t.ki)}</span></td>
+              <td><span class="badge ${t.status==="Разрешена"?"green":t.status==="Ограниченно"?"orange":"red"}">${escapeHtml(t.status)}</span></td>
+              <td><span class="badge ${t.ki==="Допустима"?"green":"gray"}">${escapeHtml(t.ki)}</span></td>
               <td>${escapeHtml(t.src)}</td>
             </tr>
           `).join("") : `<tr><td colspan="4" style="text-align:center;color:var(--text-secondary);padding:var(--space-8);">Ничего не нашлось. Измени фильтры или сбрось их</td></tr>`}
@@ -9690,11 +9760,12 @@ function AcPatternsTab(app){
   const q = ac.patternSearch.trim().toLowerCase();
   let list = acActive().patterns;
   if(q) list = list.filter(p=>p.name.toLowerCase().includes(q));
+  if(ac.patternTypeFilter!=="Все") list = list.filter(p=>p.type===ac.patternTypeFilter);
   return `
     <div class="filters-row">
       <div class="search-wrap field-with-icon">${icon("search")}<input class="input" id="acPatternSearch" placeholder="Название паттерна" value="${escapeHtml(ac.patternSearch)}"/></div>
       ${FilterSelect({id:"ac-pattern-type", label:"Тип паттерна", value:ac.patternTypeFilter,
-        options:["Все","Успешно"], action:"ac-pattern-type-set"})}
+        options:["Все"].concat(AC_PATTERN_TYPES), action:"ac-pattern-type-set"})}
       ${ResetFiltersButton("ac-reset-patterns", !!(state.appcat.patternSearch || state.appcat.patternTypeFilter!=="Все"))}
     </div>
     <div class="table-wrap">
@@ -9704,7 +9775,7 @@ function AcPatternsTab(app){
           ${list.map(p=>`
             <tr>
               <td><div class="proj-link" data-action="noop-doc">${escapeHtml(p.name)}</div></td>
-              <td><span class="badge green">${escapeHtml(p.type)}</span></td>
+              <td>${escapeHtml(p.type)}</td>
               <td><div class="ac-pattern-tech-cell">${p.tech.join(", ")}${p.more?` <span class="ac-more-chip">+${p.more}<div class="ac-more-pop"><div>Jira</div><div>Confluence</div></div></span>`:""}</div></td>
             </tr>
           `).join("")}
@@ -9730,14 +9801,16 @@ function AcNfrTab(app){
     </div>
     <!-- Девять колонок: таблица не укладывается даже в 1728, поэтому прокрутка с
          закреплённым названием требования (docs/interaction.md §6). Проценты от
-         min-width 1560: требование 312≥309, Описание 218≥171, Источник 187≥178,
-         Версия 109≥103, Статус 156≥137, Назначение 140≥138, Инициатор 218≥212,
-         Дата 156≥135, колонка удаления 62≥48. -->
+         min-width 1560: требование 312≥309, Описание 171 (усекается с подсказкой),
+         Источник 187≥178, Версия 109≥103, Статус 156≥137, Назначение 187≥184,
+         Инициатор 218≥212, Дата 156≥135, колонка удаления 62≥48.
+         «Рекомендованное» — одно слово шириной 136 плюс отступы ячейки 48: при
+         прежних 140 оно не переносилось и наезжало на соседнюю колонку. -->
     <div class="table-scroll">
       <table class="fixed-table ac-nfr-table">
         <colgroup>
-          <col style="width:20%"><col style="width:14%"><col style="width:12%"><col style="width:7%"><col style="width:10%">
-          <col style="width:9%"><col style="width:14%"><col style="width:10%"><col style="width:4%">
+          <col style="width:20%"><col style="width:11%"><col style="width:12%"><col style="width:7%"><col style="width:10%">
+          <col style="width:12%"><col style="width:14%"><col style="width:10%"><col style="width:4%">
         </colgroup>
         <thead><tr><th>Нефункциональное требование</th><th>Описание</th><th>Источник</th><th>Версия</th><th>Статус реализации</th><th>Назначение</th><th>Инициатор назначения</th><th>Дата назначения</th><th><span class="vh">Удалить требование</span></th></tr></thead>
         <tbody>
@@ -9747,8 +9820,8 @@ function AcNfrTab(app){
               <td>${clampCell(n.desc)}</td>
               <td>${clampCell(n.src)}</td>
               <td>${n.ver}</td>
-              <td><span class="badge green">${escapeHtml(n.status)}</span></td>
-              <td><span class="badge green">${escapeHtml(n.assign)}</span></td>
+              <td><span class="badge ${n.status==="Выполнено"?"green":n.status==="В работе"?"blue":"gray"}">${escapeHtml(n.status)}</span></td>
+              <td>${escapeHtml(n.assign)}</td>
               <td>${escapeHtml(n.who)}</td>
               <td>${escapeHtml(n.date)}</td>
               <td>${n.removable ? `<div class="exp-row-btn" data-action="noop-doc">${icon("x")}</div>` : ""}</td>
@@ -9796,7 +9869,7 @@ function AcObsRow(node){
      так шеврон ребёнка встаёт ровно под текстом родителя (docs/interaction.md §6). */
   const indent = (node.level-1) * 30;
   return `
-    <tr class="obs-row ${(node.children && open && node.level===1)?"exp-open":""}">
+    <tr class="obs-row ${node.level>1?"obs-nested":""} ${(node.children && open && node.level===1)?"exp-open":""}">
       <td><div class="exp-cell" style="padding-left:${indent}px;"><div class="exp-row-btn ${node.children?(open?"open":""):"none"}" ${node.children?`data-action="ac-toggle-obs" data-id="${node.id}"`:""}>${icon("chevronRight")}</div><div class="exp-name">${clampCell(node.label)}</div></div></td>
       <td><a class="proj-link" data-action="noop-doc">${clampCell(node.link)}</a></td>
       <td><div class="exp-row-btn" data-action="ac-open-source-editor" data-mode="edit" data-id="${node.id}" title="Редактировать источник">${icon("pencil")}</div></td>
@@ -17338,6 +17411,8 @@ function handleAction(action, el){
     case "ac-set-fitness-sub": state.appcat.fitnessSub = el.dataset.sub; render(); break;
     case "ac-toggle-fitness": { const k=el.dataset.key; state.appcat.fitnessExpanded[k]=!state.appcat.fitnessExpanded[k]; render(); break; }
     case "ac-toggle-tc-ifaces": state.appcat.tcOnlyIfaces = !state.appcat.tcOnlyIfaces; render(); break;
+    case "ac-toggle-iface-empty": state.appcat.ifaceHideEmpty = !state.appcat.ifaceHideEmpty; render(); break;
+    case "ac-reset-iface": state.appcat.ifaceSearch=""; state.appcat.ifaceHideEmpty=false; render(); break;
     case "ac-reset-tc": state.appcat.tcSearch=""; state.appcat.tcOnlyIfaces=false; render(); break;
     case "ac-toggle-tc": { const k=el.dataset.id; state.appcat.tcExpanded[k]=!state.appcat.tcExpanded[k]; render(); break; }
     case "ac-set-iface-mode": state.appcat.ifaceMode = el.dataset.mode; render(); break;
