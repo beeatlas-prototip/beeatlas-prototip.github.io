@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261019-133922">
+<meta name="beeatlas-build" content="20261019-134652">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -2611,6 +2611,9 @@
      — дочерние строки выравниваются по тексту в Expandable cell родителя:
        24 падинга ячейки + 22 шеврон + 8 зазор = 54. */
   tbody tr.exp-open > td{background:color-mix(in srgb, var(--md-sys-color-on-surface) 5%, transparent);}
+  /* Base Selected в тёмной теме плотнее: 0.08 против 0.05 — на тёмном полотне
+     пятипроцентная заливка не отличима от обычной строки. */
+  [data-theme="dark"] tbody tr.exp-open > td{background:color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);}
   .exp-detail{position:relative;background:transparent;
     padding:var(--space-5) var(--space-5) var(--space-5) 54px;}
   .exp-detail::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--yellow);}
