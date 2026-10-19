@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261019-123451">
+<meta name="beeatlas-build" content="20261019-124416">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -2078,6 +2078,12 @@
 
 
   /* Блок «Связи»: две карточки в ряд, подпись капсом, под ссылкой — код. */
+  /* Подпись Use Case — карточка в той же анатомии, что карточки «Связей»:
+     обводка, радиус 12, паддинг 24. Колонки равные, как в сетке ниже. */
+  .uc-meta-card{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--size-spacing-x6);
+    margin-bottom:var(--size-spacing-x8);}   /* 32, как было у прежней строки (--space-7 == x8) */
+  .uc-meta-cap{font-size:13px;line-height:16px;color:var(--text-secondary);margin-bottom:var(--space-2);}
+  .uc-meta-val{font-size:15px;line-height:20px;letter-spacing:.2px;font-weight:500;}
   .uc-links-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--size-spacing-x6);}
   .uc-link-cap{font-size:10px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.03em;margin-bottom:var(--space-3);}
   .uc-link-name{display:inline-block;font-size:17px;line-height:22px;letter-spacing:.2px;}
@@ -11884,12 +11890,15 @@ function UcParticipantSystemsTable(rows){
   `;
 }
 
+/* Те же данные, что и были, но в карточке с обводкой — как карточки блока «Связи»
+   ниже. Заголовка у блока нет намеренно: это не секция, а подпись к самому Use Case. */
 function UseCaseMetaRow(u, lastRun){
+  const item = (cap, val) => `<div><div class="uc-meta-cap">${escapeHtml(cap)}</div><div class="uc-meta-val">${val}</div></div>`;
   return `
-    <div style="display:flex;gap:var(--space-9);flex-wrap:wrap;align-items:flex-start;margin-bottom:var(--space-7);">
-      <div><div style="font-size:13px;color:var(--text-secondary);margin-bottom:var(--space-2);">Источник</div><div style="font-size:15px;font-weight:500;">${escapeHtml(u.source)}</div></div>
-      <div><div style="font-size:13px;color:var(--text-secondary);margin-bottom:var(--space-2);">Дата изменения</div><div style="font-size:15px;font-weight:500;">${escapeHtml(u.updated)}</div></div>
-      ${lastRun ? `<div><div style="font-size:13px;color:var(--text-secondary);margin-bottom:var(--space-2);">Запуск импорта</div><div style="font-size:15px;font-weight:500;">${escapeHtml(lastRun.id)} · ${lastRun.status==="Применён"?"completed":escapeHtml(lastRun.status)}</div></div>` : ""}
+    <div class="card uc-meta-card">
+      ${item("Источник", escapeHtml(u.source))}
+      ${item("Дата изменения", escapeHtml(u.updated))}
+      ${lastRun ? item("Запуск импорта", `${escapeHtml(lastRun.id)} · ${lastRun.status==="Применён"?"completed":escapeHtml(lastRun.status)}`) : ""}
     </div>
   `;
 }
@@ -17003,14 +17012,16 @@ function handleAction(action, el){
 /* ============================= INIT ============================= */
 /* Прокрутка и смена размера окна сдвигают поле — пересчитываем сторону и высоту
    открытого меню. Вешается один раз: bindGlobalEvents() зовётся на каждый рендер. */
-let ucHeadNarrowLast = null;
+/* Сторона порога запоминается сразу при загрузке, а не при первом resize: иначе самый
+   первый resize только записывал значение и шапку не перерисовывал — при сужении окна
+   с 1728 до 1024 действия так и оставались развёрнутыми. */
+let ucHeadNarrowLast = ucHeadNarrow();
 window.addEventListener("resize", ()=>{
   fitStickyDetailRows(); markStickyScrolled(); positionDsSelectMenus(); positionTablePopovers(); positionToast();
   /* Шапка Use Case собрана двумя разными способами по обе стороны порога 1440 —
      перерисовываем только в момент его пересечения, а не на каждый пиксель. */
   const n = ucHeadNarrow();
-  if(ucHeadNarrowLast !== null && n !== ucHeadNarrowLast){ ucHeadNarrowLast = n; render(); return; }
-  ucHeadNarrowLast = n;
+  if(n !== ucHeadNarrowLast){ ucHeadNarrowLast = n; render(); }
 });
 document.addEventListener("scroll", ()=>{ positionDsSelectMenus(); positionToast(); }, true);
 
