@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261019-164726">
+<meta name="beeatlas-build" content="20261019-172720">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -1616,31 +1616,34 @@
      по горизонтали, а первый столбец закрепляется — Таблица, «Фиксирование шапки
      и столбцов»: у закреплённого столбца при скролле тень Low. */
   .table-scroll{border:1px solid var(--border);border-radius:var(--size-border-radius-x6);overflow-x:auto;overflow-y:hidden;}
-  .table-scroll thead th:first-child,
-  .table-scroll tbody td:first-child{position:sticky;left:0;z-index:2;background:var(--bg);}
+  /* Только СВОЯ таблица: селектор без «>» доставал и до вложенных таблиц в панели
+     раскрытия — их первые колонки тоже становились липкими и подсвечивались вместе
+     с родительской строкой, хотя прокручивается внешняя таблица, а не они. */
+  .table-scroll > table > thead th:first-child,
+  .table-scroll > table > tbody > tr > td:first-child{position:sticky;left:0;z-index:2;background:var(--bg);}
   /* Тень появляется только когда столбец реально что-то перекрывает: класс ставит
      markStickyScrolled() по scrollLeft. Безусловная тень читалась как лишний
      разделитель между первой и второй колонкой на непрокрученной таблице. */
-  .table-scroll.is-xscrolled thead th:first-child,
-  .table-scroll.is-xscrolled tbody td:first-child{box-shadow:var(--elevation-low);}
+  .table-scroll.is-xscrolled > table > thead th:first-child,
+  .table-scroll.is-xscrolled > table > tbody > tr > td:first-child{box-shadow:var(--elevation-low);}
   /* Подсветка раскрытой строки на закреплённой ячейке: обычное правило
      tbody tr.exp-open > td проигрывает .table-scroll tbody td:first-child по
      специфичности, и первая колонка оставалась белой. Токен полупрозрачный,
      поэтому кладём его слоем поверх непрозрачного фона — иначе сквозь липкую
      ячейку видно уезжающие под неё колонки. Правило стоит ДО ховера, чтобы
      наведение на раскрытую строку всё ещё читалось. */
-  .table-scroll tbody tr.exp-open td:first-child{
+  .table-scroll > table > tbody > tr.exp-open > td:first-child{
     background:linear-gradient(color-mix(in srgb, var(--md-sys-color-on-surface) 5%, transparent),color-mix(in srgb, var(--md-sys-color-on-surface) 5%, transparent)), var(--bg);
   }
   /* Токен ховера полупрозрачный: если положить его на sticky-ячейку одним цветом,
      сквозь неё видно уезжающие под низ ячейки. Кладём его слоем поверх фона страницы. */
-  .table-scroll tbody tr:not(.exp-detail-row):hover td:first-child{
+  .table-scroll > table > tbody > tr:not(.exp-detail-row):hover > td:first-child{
     background:linear-gradient(color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent),color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent)), var(--bg);
   }
   /* У раскрытой строки ховер ложится ПОВЕРХ выделения: иначе закреплённая первая
      колонка получала чистый hover и оказывалась светлее остальных ячеек, где
      hover строки и selected ячейки складываются. */
-  .table-scroll tbody tr.exp-open:hover td:first-child{
+  .table-scroll > table > tbody > tr.exp-open:hover > td:first-child{
     background:linear-gradient(color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent),color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent)),
                linear-gradient(color-mix(in srgb, var(--md-sys-color-on-surface) 5%, transparent),color-mix(in srgb, var(--md-sys-color-on-surface) 5%, transparent)), var(--bg);
   }
@@ -1653,18 +1656,18 @@
      видна только там, где закреплённой колонки нет (так и выглядел дефект: плашка
      обрезана ровно по ширине первой колонки). Поднимаем слой строки под курсором
      над соседними. */
-  .table-scroll tbody tr:hover td:first-child{z-index:3;}
+  .table-scroll > table > tbody > tr:hover > td:first-child{z-index:3;}
   /* Тем же приёмом спасается и поповер расхождения: внутри прокручиваемой таблицы
      он переходит в fixed, координаты считает positionTablePopovers() после отрисовки.
      Без этого overflow-x:auto обрезал бы его краем таблицы. */
   .table-scroll .ds-popover{position:fixed;top:auto;left:auto;right:auto;}
   /* Раскрытая строка расстелена на все колонки (colspan), закреплять её «первую
      ячейку» нечему — иначе весь её контент уезжал бы липким блоком поверх таблицы. */
-  .table-scroll tbody tr.exp-detail-row > td{position:static;box-shadow:none;background:transparent;}
+  .table-scroll > table > tbody > tr.exp-detail-row > td{position:static;box-shadow:none;background:transparent;}
   /* Содержимое раскрытой строки — панель, а не колонки: при горизонтальной прокрутке
      оно уезжало влево и обрезалось. Прижимаем к левому краю области просмотра,
      ширину по ней же проставляет fitStickyDetailRows(). */
-  .table-scroll tbody tr.exp-detail-row > td > .exp-detail{position:sticky;left:0;box-sizing:border-box;}
+  .table-scroll > table > tbody > tr.exp-detail-row > td > .exp-detail{position:sticky;left:0;box-sizing:border-box;}
   /* Минимальная ширина таблицы вызовов: ниже неё колонкам перестаёт хватать
      (см. расчёт в colgroup), поэтому вместо ужимания включается прокрутка. */
   .uc-scenarios-table{min-width:1240px;}
@@ -1682,6 +1685,7 @@
   .ac-tech-table{min-width:900px;}
   .ac-nfr-table{min-width:1560px;}
   .ac-obs-table{min-width:860px;}
+  .ac-patterns-table{min-width:900px;}
   /* Вложенные таблицы вкладки «Интерфейсы, методы и SLA». Панель раскрытия шириной
      с видимую область (fitStickyDetailRows), и на узких экранах этой ширины им не
      хватает — тогда они прокручиваются сами, но колонка уже не ужимается ниже
@@ -2621,38 +2625,41 @@
 
   /* ============================= APP CATALOG ============================= */
   .ac-tree{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
-  .ac-tree-row{display:flex;align-items:center;gap:var(--space-2);padding:var(--space-4) var(--space-5);cursor:pointer;border-bottom:1px solid var(--border);font-size:15px;font-weight:500;}
+  /* Строка-группа устроена как строка таблицы: те же 17 × 24, тот же шеврон 22
+     с зазором 8. Только при одинаковой анатомии уровень считается одним шагом —
+     раньше у строки был свой падинг 20 и шеврон 18, к ним прибавлялся падинг
+     вложенного блока, и «Аппаратная и программная инфраструктура» стояла на 351,
+     а такие же строки второго уровня «BSS» и «Без домена» — на 329. */
+  .ac-tree-row{display:flex;align-items:center;gap:var(--space-2);padding:17px var(--size-spacing-x6);cursor:pointer;border-bottom:1px solid var(--border);font-size:15px;font-weight:500;}
   .ac-tree-row:last-child{border-bottom:none;}
   .ac-tree-row:hover{background:var(--bg-hover);}
-  .ac-tree-row.lvl-1{padding-left:var(--space-5);}
-  .ac-tree-row.lvl-2{padding-left:var(--space-8);font-weight:500;}
-  .ac-tree-row .chev{width:18px;height:18px;flex:0 0 auto;color:var(--text-tertiary);transition:transform .12s;}
+  .ac-tree-row .chev{width:22px;height:22px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);transition:transform .12s;}
+  .ac-tree-row .chev svg{width:18px;height:18px;}
   .ac-tree-row .chev.open{transform:rotate(90deg);}
-  /* Уровни таблицы по docs/components.md: раскрытая строка — заливка Base Selected,
-   вложенный уровень заливки НЕ меняет, его начало и конец отбивает жёлтая полоса,
-   прижатая к краю. Отступ 22 добавляет к 24 падинга ячейки ровно столько, чтобы
-   текст колонки встал под текстом родителя (20 падинг + 18 шеврон + 8 зазор = 46).
-   Нижней границы у раскрытой строки нет: её роль берёт верхняя граница вложенного
-   блока — иначе две линии вставали вплотную и читались двойным разделителем. */
-.ac-tree-row.is-open{background:color-mix(in srgb, var(--md-sys-color-on-surface) 5%, transparent);border-bottom:none;}
-.ac-tree-body{position:relative;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:transparent;padding-left:22px;}
-.ac-tree-body::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--yellow);}
-.ac-tree > :last-child{border-bottom:none;}
-/* Второй уровень вложенности (каталог приложений) своей полосы не рисует:
-   внешняя уже охватывает всю дочернюю информацию, а две параллельные читались
-   как дубль. Отступ 42 вместо 22 — у строки lvl-2 свой padding --space-8,
-   а это 40px, не 32 (историческое имя, см. комментарий у токена): 40 + 18
-   шеврон + 8 зазор = 66, минус 24 падинга ячейки = 42. */
-.ac-tree-body .ac-tree-body::before{content:none;}
-.ac-tree-body .ac-tree-body{padding-left:42px;}
+  /* Уровни таблицы (docs/components.md, «Уровни таблицы» ДС):
+     — фон Base Selected получает ТОЛЬКО раскрытая строка 1 уровня; последующие
+       уровни при разворачивании свой цвет не меняют;
+     — жёлтая полоса отбивает начало и конец дочерней информации и идёт по высоте
+       ВНУТРЕННЕГО уровня — то есть у самой глубокой вложенной группы, а не у внешней;
+     — нижней границы у раскрытой строки нет: её роль берёт верхняя граница
+       вложенного блока, иначе две линии встают вплотную. */
+  .ac-tree-row.is-open{border-bottom:none;}
+  .ac-tree > .ac-tree-row.is-open{background:color-mix(in srgb, var(--md-sys-color-on-surface) 5%, transparent);}
+  [data-theme="dark"] .ac-tree > .ac-tree-row.is-open{background:color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);}
+  /* Шаг вложенности один для любого содержимого: 22 шеврон + 8 зазор = 30.
+     Строка-ребёнок ставит свой шеврон ровно под текст родителя (24 падинг + 30),
+     таблица-ребёнок — текст первой колонки туда же (30 + 24 падинга ячейки). */
+  .ac-tree-body{position:relative;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:transparent;padding-left:30px;}
+  .ac-tree-body:not(:has(.ac-tree-body))::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--yellow);}
+  .ac-tree > :last-child{border-bottom:none;}
   .ac-tree-body:last-child{border-bottom:none;}
   .ac-tree-body .table-wrap,
   .ac-tree-body .table-scroll{border:none;border-radius:0;}
   .ac-tree-body table{background:transparent;}
   /* Закреплённая колонка внутри дерева: фон у неё непрозрачный (иначе сквозь неё
      видно уезжающие колонки), а дерево рисует свой — берём тот же, что у полотна. */
-  .ac-tree-body .table-scroll thead th:first-child,
-  .ac-tree-body .table-scroll tbody td:first-child{background:var(--bg);}
+  .ac-tree-body .table-scroll > table > thead th:first-child,
+  .ac-tree-body .table-scroll > table > tbody > tr > td:first-child{background:var(--bg);}
 
   .exp-row-btn{width:22px;height:22px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);cursor:pointer;border-radius:6px;}
   .exp-row-btn:hover{background:var(--bg-hover);}
@@ -2675,15 +2682,20 @@
   /* Base Selected в тёмной теме плотнее: 0.08 против 0.05 — на тёмном полотне
      пятипроцентная заливка не отличима от обычной строки. */
   [data-theme="dark"] tbody tr.exp-open > td{background:color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);}
+  /* «Последующие уровни не изменяют свой цвет при разворачивании»: таблица внутри
+     панели раскрытия — уже второй уровень, и её раскрытая строка заливки не
+     получает. Раньше подсвечивались обе — и контейнер, и интерфейс внутри него. */
+  .exp-detail tbody tr.exp-open > td,
+  [data-theme="dark"] .exp-detail tbody tr.exp-open > td,
+  .ac-tree-body tbody tr.exp-open > td,
+  [data-theme="dark"] .ac-tree-body tbody tr.exp-open > td{background:transparent;}
   .exp-detail{position:relative;background:transparent;
     padding:var(--space-5) var(--space-5) var(--space-5) 54px;}
-  .exp-detail::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--yellow);}
-  /* Второй вложенный уровень своей полосы не рисует: внешняя уже охватывает всю
-     дочернюю информацию, две параллельные читаются как дубль (docs/components.md,
-     docs/interaction.md §6). Такое же правило давно стоит у .ac-tree-body, а у
-     .exp-detail его не было — на вкладке «Интерфейсы, методы и SLA» полосы шли
-     парой. */
-  .exp-detail .exp-detail::before{content:none;}
+  /* Полоса идёт «по высоте внутреннего уровня»: её рисует самая глубокая панель
+     раскрытия — та, внутри которой нет другой. Раньше было наоборот (полоса у
+     внешней, у вложенной снята), и на вкладке «Интерфейсы, методы и SLA» она
+     отбивала не дочернюю информацию, а весь блок целиком. */
+  .exp-detail:not(:has(.exp-detail))::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--yellow);}
   .exp-detail .table-wrap{background:var(--bg);margin-bottom:var(--space-4);}
   .exp-detail .table-wrap:last-child{margin-bottom:0;}
   .exp-detail-note{font-size:13px;color:var(--text-secondary);margin-bottom:var(--space-3);}
@@ -2749,7 +2761,17 @@
      поэтому полосу даёт каждая вложенная строка — соседние сливаются в одну.
      Рисуется inset-тенью, а не border: первая колонка закреплена (sticky), и
      граница у неё уезжала бы вместе с собственным фоном ячейки. */
-  .obs-row.obs-nested > td:first-child{font-weight:400;box-shadow:inset 3px 0 0 var(--yellow);}
+  .obs-row.obs-nested > td:first-child{font-weight:400;}
+  /* Полосу рисует только самый глубокий уровень (класс ставит AcObsRow): у строк
+     промежуточной группы её нет, иначе линии идут параллельно на разных отступах.
+     Стоит она на отступе своего уровня, а не у края таблицы — ровно как в дереве
+     каталога, где полоса прижата к краю вложенного блока. Позицию приносит
+     --stripe: это тот же отступ, что двигает содержимое ячейки. */
+  .obs-row.obs-stripe > td:first-child{
+    background-image:linear-gradient(var(--yellow),var(--yellow));
+    background-repeat:no-repeat;background-size:3px 100%;
+    background-position:var(--stripe,0) 0;
+  }
 
   .ac-radio-group{display:flex;flex-direction:column;gap:var(--space-4);margin-bottom:var(--space-6);}
   .ac-radio{display:flex;align-items:center;gap:var(--space-3);cursor:pointer;font-size:15px;}
@@ -9086,7 +9108,10 @@ function AcTreeNode(node, level){
     body = AcAppsTable(apps);
   }
   return `
-    <div class="ac-tree-row lvl-${Math.min(level,2)} ${open?"is-open":""}" data-action="ac-toggle-tree" data-id="${node.id}">
+    <!-- Уровень задаёт вложенность контейнера (.ac-tree-body), а не класс на строке:
+         при двух источниках отступа одинаковые по смыслу строки стояли на разных
+         позициях в зависимости от того, лежат ли они внутри раскрытой группы. -->
+    <div class="ac-tree-row ${open?"is-open":""}" data-action="ac-toggle-tree" data-id="${node.id}">
       <span class="chev ${open?"open":""}">${icon("chevronRight")}</span><span>${escapeHtml(node.label)}</span>
     </div>
     ${open ? `<div class="ac-tree-body">${body}</div>` : ""}
@@ -9553,9 +9578,11 @@ function AcPatternsTab(app){
         options:["Все"].concat(AC_PATTERN_TYPES), action:"ac-pattern-type-set"})}
       ${ResetFiltersButton("ac-reset-patterns", !!(state.appcat.patternSearch || state.appcat.patternTypeFilter!=="Все"))}
     </div>
-    <!-- Проценты: названию и списку технологий хватает места, тип — короткое слово. -->
-    <div class="table-wrap">
-      <table class="fixed-table">
+    <!-- Проценты: названию и списку технологий хватает места, тип — короткое слово.
+         min-width: на 1024 «Интеграционный» переставал помещаться в свои 16% и
+         обрезался — ниже этой ширины таблица прокручивается. -->
+    <div class="table-scroll">
+      <table class="fixed-table ac-patterns-table">
         <colgroup><col style="width:34%"><col style="width:16%"><col style="width:50%"></colgroup>
         <thead><tr><th>Паттерн</th><th>Тип</th><th>Технологии</th></tr></thead>
         <tbody>
@@ -9649,19 +9676,24 @@ function AcObsTab(app){
   `;
 }
 
-function AcObsRow(node){
+/* stripe — рисует ли строка жёлтую полосу. По «Уровням таблицы» полоса отбивает
+   дочернюю информацию по высоте ВНУТРЕННЕГО уровня, поэтому её получает только
+   самая глубокая группа: дети узла, среди которых нет собственных групп. Раньше
+   полосу рисовал каждый вложенный уровень, и они шли параллельными линиями. */
+function AcObsRow(node, stripe){
   const ac = state.appcat;
   const open = ac.obsExpanded[node.id]!==false;
   /* Уровень двигает всю ячейку, а не только подпись: шаг 30 = шеврон 22 + зазор 8,
      так шеврон ребёнка встаёт ровно под текстом родителя (docs/interaction.md §6). */
   const indent = (node.level-1) * 30;
+  const kidsAreLeaves = node.children ? !node.children.some(c=>c.children) : false;
   return `
-    <tr class="obs-row ${node.level>1?"obs-nested":""} ${(node.children && open && node.level===1)?"exp-open":""}">
-      <td><div class="exp-cell" style="padding-left:${indent}px;"><div class="exp-row-btn ${node.children?(open?"open":""):"none"}" ${node.children?`data-action="ac-toggle-obs" data-id="${node.id}"`:""}>${icon("chevronRight")}</div><div class="exp-name">${clampCell(node.label)}</div></div></td>
+    <tr class="obs-row ${stripe?"obs-stripe":""} ${node.level>1?"obs-nested":""} ${(node.children && open && node.level===1)?"exp-open":""}">
+      <td style="--stripe:${indent}px;"><div class="exp-cell" style="padding-left:${indent}px;"><div class="exp-row-btn ${node.children?(open?"open":""):"none"}" ${node.children?`data-action="ac-toggle-obs" data-id="${node.id}"`:""}>${icon("chevronRight")}</div><div class="exp-name">${clampCell(node.label)}</div></div></td>
       <td><a class="proj-link" data-action="noop-doc">${clampCell(node.link)}</a></td>
       <td><div class="exp-row-btn" data-action="ac-open-source-editor" data-mode="edit" data-id="${node.id}" title="Редактировать источник">${icon("pencil")}</div></td>
     </tr>
-    ${(node.children && open) ? node.children.map(AcObsRow).join("") : ""}
+    ${(node.children && open) ? node.children.map(c=>AcObsRow(c, kidsAreLeaves)).join("") : ""}
   `;
 }
 
@@ -10143,7 +10175,7 @@ function GraphTypesPage(){
 function GraphTypeTreeRoot(root, items, isNode){
   const open = !!state.graph.typeTreeExpanded[root.id];
   return `
-    <div class="ac-tree-row lvl-1 ${open?"is-open":""}" data-action="graph-toggle-type-tree" data-id="${root.id}">
+    <div class="ac-tree-row ${open?"is-open":""}" data-action="graph-toggle-type-tree" data-id="${root.id}">
       <span class="chev ${open?"open":""}">${icon("chevronRight")}</span><span>${escapeHtml(root.label)}</span>
       <span class="badge gray" style="margin-left:auto;">${items.length}</span>
     </div>
