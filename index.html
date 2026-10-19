@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261019-125639">
+<meta name="beeatlas-build" content="20261019-130810">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -431,6 +431,11 @@
     --red-text:         var(--md-sys-color-on-error-container);
     --pink-bg:          var(--md-sys-color-ext-magenta-container);
     --pink-text:        var(--md-sys-color-ext-magenta);
+    /* Аватар: брендовый тон, разбавленный полотном. Чистый primary-container
+       (#fdc435) в шапке читался как кнопка и выглядел грязновато рядом с мягкой
+       палитрой остального интерфейса. */
+    --avatar-bg:        color-mix(in srgb, var(--md-sys-color-primary-container) 35%, var(--md-sys-color-surface));
+    --avatar-text:      var(--md-sys-color-on-surface);
     --input-bg:         var(--md-sys-color-surface-container-highest);
     --shadow:           var(--elevation-high);
     --shadow-sm:        var(--elevation-low);
@@ -472,6 +477,10 @@
        выше полотна; боковое меню — на тон ниже, чтобы отделялось от контента. */
     --bg-alt:var(--md-sys-color-surface-container);
     --sidebar-bg:color-mix(in srgb, var(--md-sys-color-surface) 72%, #000);
+    /* В тёмной тот же рецепт даёт мутно-оливковый кружок (жёлтый, разбавленный
+       тёмным полотном) — здесь бренд несут буквы, а заливка нейтральная. */
+    --avatar-bg:var(--md-sys-color-surface-container-highest);
+    --avatar-text:var(--md-sys-color-primary);
     /* Тень из макета дана для светлой темы: альфа .08 на тёмной поверхности
        не видна. Геометрия та же, глубже только альфа. */
     --elevation-low:    0 2px 10px rgba(0, 0, 0, .30), 0 2px 8px rgba(0, 0, 0, .14);
@@ -542,13 +551,13 @@
   .header .icon-btn svg{width:24px;height:24px;}
   .header .icon-btn .ic{width:24px;height:24px;}
   /* Аватар: 40×40, круг, текст 14/20 вес 500, цвет — пара из палитры статусов */
-  /* Аватар красится брендовой парой, а не цветом слоя: пара слоя «Бизнес-
-     архитектура» (--orange-bg/--orange-text) — это роль warning, и её тёмный
-     контейнер даёт мутно-оливковый кружок. Брендовый контейнер один в обеих
-     темах, поэтому аватар больше не зависит от темы. */
+  /* Аватар — мягкая пара --avatar-bg/--avatar-text (см. токены): в светлой это
+     брендовый тон, разбавленный полотном, в тёмной — нейтральная заливка с
+     брендовыми буквами. Пару слоя «Бизнес-архитектура» (--orange-bg/--orange-text)
+     брать нельзя: это роль warning, и её тёмный контейнер даёт мутный кружок. */
   .avatar{
     width:40px;height:40px;border-radius:50%;
-    background:var(--md-sys-color-primary-container);color:var(--md-sys-color-on-primary-container);
+    background:var(--avatar-bg);color:var(--avatar-text);
     display:flex;align-items:center;justify-content:center;
     font-size:15px;font-weight:500;line-height:20px;letter-spacing:.2px;
   }
@@ -3597,7 +3606,7 @@
 /* Avatar (docs/components.md) — medium 40×40, круглый, цветовая пара amber */
 /* Та же брендовая пара, что у .avatar в приложении: два разных аватара у
    одного человека — дефект. Роль warning в тёмной теме давала оливковый кружок. */
-.e2ecat-scope .avatar{width:40px;height:40px;border-radius:50%;background:var(--md-sys-color-primary-container);color:var(--md-sys-color-on-primary-container);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;border:none;}
+.e2ecat-scope .avatar{width:40px;height:40px;border-radius:50%;background:var(--avatar-bg);color:var(--avatar-text);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;border:none;}
 
 .e2ecat-scope .dot{position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--danger-text);border:1.5px solid var(--bg);}
 
