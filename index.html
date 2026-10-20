@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261019-191132">
+<meta name="beeatlas-build" content="20261020-164102">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -190,7 +190,11 @@
     --md-sys-color-surface-container-low: #ffffff;
     --md-sys-color-surface-container: #ffffff;
     --md-sys-color-surface-container-high: #ffffff;
-    --md-sys-color-surface-container-highest: #f9f9f9;
+    /* Утопленные поверхности (поля, пилюли, нейтральный алерт) в светлой теме.
+       Было #f9f9f9 — на белом полотне разница 2%, и поле поиска со списком-
+       селектом пропадали: граница поля видна только по тексту плейсхолдера.
+       Тёмной темы это не касается, там #36383c на #141414 читается. */
+    --md-sys-color-surface-container-highest: #ebedf1;
     --md-sys-color-surface-dim: #f9f9f9;
     --md-sys-color-surface-bright: #ffffff;
     --md-sys-color-surface-variant: #f9f9f9;
@@ -207,7 +211,10 @@
     --md-sys-color-scrim: #000000;
     --md-sys-color-secondary: rgba(25, 28, 52, 0.7);
     --md-sys-color-on-secondary: #ffffff;
-    --md-sys-color-secondary-container: #f9f9f9;
+    /* Выбранный пункт меню и раскрытая строка (docs/tokens.md). Было #f9f9f9 —
+       та же беда, что у полей: выбор не читался на белом полотне. Чуть плотнее
+       заливки поля, чтобы выделение было видно и поверх поля. */
+    --md-sys-color-secondary-container: #e6e9ef;
     --md-sys-color-on-secondary-container: rgba(9, 11, 22, 0.94);
     --md-sys-color-tertiary: #7e00ed;
     --md-sys-color-on-tertiary: #ffffff;
@@ -431,6 +438,11 @@
     --red-text:         var(--md-sys-color-on-error-container);
     --pink-bg:          var(--md-sys-color-ext-magenta-container);
     --pink-text:        var(--md-sys-color-ext-magenta);
+    /* Аквамарин уже жил в каталоге E2E как --badge-bi-bg, но внутри
+       .e2ecat-scope: на странице Use Case он отдавал пустоту. Алиас в :root —
+       для бейджей типа в карточках связей. */
+    --teal-bg:          var(--md-sys-color-ext-aquamarine-container);
+    --teal-text:        var(--md-sys-color-on-ext-aquamarine-container);
     /* Аватар: брендовый тон, разбавленный полотном. Чистый primary-container
        (#fdc435) в шапке читался как кнопка и выглядел грязновато рядом с мягкой
        палитрой остального интерфейса. */
@@ -2254,7 +2266,20 @@
   .uc-meta-cap{font-size:13px;line-height:16px;color:var(--text-secondary);margin-bottom:var(--space-2);}
   .uc-meta-val{font-size:15px;line-height:20px;letter-spacing:.2px;font-weight:500;}
   .uc-links-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--size-spacing-x6);}
-  .uc-link-cap{font-size:10px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.03em;margin-bottom:var(--space-3);}
+  /* Карточка связи: бейдж типа + текст. Ряд контролов внутри карточки — тот же
+     шаг 12, что и везде (docs/interaction.md). */
+  .uc-link-card{display:flex;align-items:center;gap:var(--space-3);}
+  .uc-link-txt{min-width:0;}
+  .uc-link-ava{
+    width:40px;height:40px;flex:0 0 auto;border-radius:var(--size-border-radius-x6);
+    display:flex;align-items:center;justify-content:center;
+    font-size:13px;line-height:16px;font-weight:700;letter-spacing:.02em;
+  }
+  /* Текст бейджа — пара on-*-container к своей заливке (как --badge-cj-text в
+     каталоге E2E), а не --pink-text: тот ярче и на светлом контейнере не
+     добирает контраста. */
+  .uc-link-ava.pink{background:var(--pink-bg);color:var(--md-sys-color-on-ext-magenta-container);}
+  .uc-link-ava.teal{background:var(--teal-bg);color:var(--teal-text);}
   .uc-link-name{display:inline-block;font-size:17px;line-height:22px;letter-spacing:.2px;}
   .uc-link-code{font-size:15px;line-height:20px;letter-spacing:.2px;color:var(--text-secondary);margin-top:var(--space-1);}
   /* Код Use Case идёт отдельной строкой под заголовком, до строки «Источник / Дата». */
@@ -2478,8 +2503,17 @@
   }
   .cj-select-field.wide .cj-select-menu{width:100%;max-width:none;}
   .cj-select-item{display:flex;align-items:center;gap:6px;padding:var(--space-3) var(--space-4);border-radius:8px;font-size:15px;cursor:pointer;}
-  .cj-select-item:hover{background:var(--bg-alt);}
-  .cj-select-item.active{background:var(--bg-alt);}
+  .cj-select-item:hover{background:color-mix(in srgb, var(--md-sys-color-on-surface) 8%, var(--md-sys-color-surface));}
+  /* Выбранный пункт меню — secondary-container (docs/tokens.md). Был --bg-alt,
+     а он в светлой теме равен полотну: активная ветка ничем не отличалась от
+     остальных, и в двухстрочном пункте отметки не было вовсе. */
+  .cj-select-item.active{background:var(--md-sys-color-secondary-container);}
+  /* Подпись группы веток: не пункт — курсор обычный, клика нет. */
+  .cj-select-group{
+    padding:var(--space-3) var(--space-4) var(--space-2);
+    font-size:13px;line-height:16px;color:var(--text-secondary);
+  }
+  .cj-select-group:first-child{padding-top:var(--space-2);}
   .cj-select-item.disabled{opacity:.4;cursor:not-allowed;}
   .cj-select-item .name{flex:1;}
   .cj-select-item .tag{font-size:10px;color:var(--text-secondary);border:1px solid var(--border);border-radius:6px;padding:1px 6px;}
@@ -9199,7 +9233,7 @@ function AcAppDetailPage(app){
       </div>
       <div class="actions">
         ${CjSelectField({id:"ac-branch-switch", branches:acBranchList(app.id), activeId:ac.branch, action:"ac-switch-branch",
-                         lead:"gitBranch", meta:b=>acBranchUpdNote(app.id,b), deleteAction:"ac-branch-delete-ask"})}
+                         meta:b=>acBranchUpdNote(app.id,b), deleteAction:"ac-branch-delete-ask"})}
         <div class="uc-menu-wrap">
           <button class="btn btn-outline btn-icon-only" data-action="toggle-popover" data-popover="ac-actions" title="Ветки">${icon("moreVertical")}</button>
           ${state.popover==="ac-actions" ? AcActionsMenu() : ""}
@@ -10934,7 +10968,20 @@ function CjBranchBar(cjId){
    (одна строка + галочка у выбранного), поэтому вызовы на странице Use Case не меняются. */
 /* `lead` — иконка перед значением. Нужна там, где поле стоит без подписи и вне ряда
    веток: в шапке Use Case «main» без глифа ветки читается как что угодно. */
-function CjSelectField({id, branches, activeId, action, excludeId, disabledId, disabledTitle, wide, label, placeholder, meta, deleteAction, lead}){
+/* Ветки в меню разложены на две группы с подписями (макет UC, 20.10): системные
+   ветки артефакта и то, что завели руками. Раньше принадлежность показывал тег
+   «своя» у имени — он читался как состояние ветки, а не как её происхождение,
+   и в двухстрочном пункте с датой обновления спорил с подписью за ту же строку.
+   Подписи появляются, только когда есть обе группы: над единственным списком
+   заголовок ничего не разделяет. */
+function branchGroups(list){
+  const sys  = list.filter(b=>b.kind!=="user");
+  const user = list.filter(b=>b.kind==="user");
+  if(!sys.length || !user.length) return [{title:"", items:list}];
+  return [{title:"Изолированные ветки", items:sys}, {title:"Созданные ветки", items:user}];
+}
+
+function CjSelectField({id, branches, activeId, action, excludeId, disabledId, disabledTitle, wide, label, placeholder, meta, deleteAction}){
   const opts = branches.filter(b=>b.id!==excludeId);
   const open = state.popover===id;
   const metaOf = typeof meta==="function" ? meta : null;
@@ -10946,19 +10993,22 @@ function CjSelectField({id, branches, activeId, action, excludeId, disabledId, d
   return `
     <div class="cj-select-field${wide?" wide":""}">
       <button class="cj-select-trigger${open?" open":""}${label?" labeled":""}" data-action="toggle-popover" data-popover="${id}">
-        ${lead?icon(lead):""}${trigger}${icon("chevronDown")}
+        ${trigger}${icon("chevronDown")}
       </button>
       ${open ? `
         <div class="cj-select-menu">
-          ${opts.map(b=>{
-            const isDisabled = b.id===disabledId;
-            const sub = metaOf ? metaOf(b.id) : "";
-            const canDelete = deleteAction && b.kind==="user";
-            return `<div class="cj-select-item ${sub?"two-line":""} ${!sub&&b.id===activeId?"active":""} ${isDisabled?"disabled":""}" ${isDisabled?`title="${escapeHtml(disabledTitle||"")}"`:`data-action="${action}" data-branch="${b.id}"`}>
-              <span class="name">${escapeHtml(b.id)}${!sub&&b.kind==="user"?`<span class="tag" style="margin-left:6px;">своя</span>`:""}</span>${sub?`<span class="sub">${escapeHtml(sub)}</span>`:`${b.id===activeId?`<span class="check">${icon("check")}</span>`:""}`}
-              ${canDelete?`<button class="icon-btn del" data-action="${deleteAction}" data-branch="${b.id}" title="Удалить ветку">${icon("trash")}</button>`:""}
-            </div>`;
-          }).join("")}
+          ${branchGroups(opts).map(g=>`
+            ${g.title?`<div class="cj-select-group">${escapeHtml(g.title)}</div>`:""}
+            ${g.items.map(b=>{
+              const isDisabled = b.id===disabledId;
+              const sub = metaOf ? metaOf(b.id) : "";
+              const canDelete = deleteAction && b.kind==="user";
+              return `<div class="cj-select-item ${sub?"two-line":""} ${b.id===activeId?"active":""} ${isDisabled?"disabled":""}" ${isDisabled?`title="${escapeHtml(disabledTitle||"")}"`:`data-action="${action}" data-branch="${b.id}"`}>
+                <span class="name">${escapeHtml(b.id)}</span>${sub?`<span class="sub">${escapeHtml(sub)}</span>`:`${b.id===activeId?`<span class="check">${icon("check")}</span>`:""}`}
+                ${canDelete?`<button class="icon-btn del" data-action="${deleteAction}" data-branch="${b.id}" title="Удалить ветку">${icon("trash")}</button>`:""}
+              </div>`;
+            }).join("")}
+          `).join("")}
         </div>` : ""}
     </div>
   `;
@@ -12269,18 +12319,24 @@ function UseCaseMetaRow(u, lastRun){
    «Связь с CJ»: та же пара ссылок, но читается как связи объекта, а не как данные.
    Перепривязка к CJ уехала в меню действий — на карточках её в макете нет. */
 function UseCaseLinksSection(u){
-  const card = (cap, name, code, href) => `
+  /* Тип связи несёт бейдж слева (макет 20.10), а не надзаголовок капсом:
+     подпись «СВЯЗАННЫЙ ШАГ E2E-СЦЕНАРИЯ» занимала строку шире названия и
+     читалась тяжелее самого названия. Полное имя типа осталось в title —
+     двухбуквенный бейдж без расшифровки непонятен тому, кто здесь впервые. */
+  const card = (tone, abbr, cap, name, code, href) => `
     <div class="card uc-link-card">
-      <div class="uc-link-cap">${escapeHtml(cap)}</div>
-      <a href="${href}" target="_blank" rel="noopener" class="proj-link uc-link-name">${escapeHtml(name)}</a>
-      <div class="uc-link-code">${escapeHtml(code)}</div>
+      <span class="uc-link-ava ${tone}" title="${escapeHtml(cap)}">${escapeHtml(abbr)}</span>
+      <div class="uc-link-txt">
+        <a href="${href}" target="_blank" rel="noopener" class="proj-link uc-link-name">${escapeHtml(name)}</a>
+        <div class="uc-link-code">${escapeHtml(code)}</div>
+      </div>
     </div>`;
   return `
     <div class="section" id="sec-cj">
       <h2>Связи</h2>
       <div class="uc-links-row">
-        ${card("Связанный CJ", u.cj.name, u.cj.code, "?home=cj")}
-        ${card("Связанный шаг E2E-сценария", u.cjStep.name, u.cjStep.code, "?home=e2e")}
+        ${card("pink", "CJ", "Связанный CJ", u.cj.name, u.cj.code, "?home=cj")}
+        ${card("teal", "ST", "Связанный шаг E2E-сценария", u.cjStep.name, u.cjStep.code, "?home=e2e")}
       </div>
     </div>
   `;
@@ -12895,7 +12951,7 @@ function UseCaseDetailPage(projectId, ucId){
       </div>
       <div class="actions">
         ${CjSelectField({id:"uc-branch-switch", branches:ucBranchList(u), activeId:u.branch, action:"uc-switch-branch",
-                         lead:"gitBranch", meta:b=>ucBranchUpdNote(u,b), deleteAction:"uc-branch-delete-ask"})}
+                         meta:b=>ucBranchUpdNote(u,b), deleteAction:"uc-branch-delete-ask"})}
         <div class="uc-menu-wrap">
           <button class="btn btn-outline btn-icon-only" data-action="toggle-popover" data-popover="uc-actions" title="${narrow?"Действия":"Ветки"}">${icon("moreVertical")}</button>
           ${state.popover==="uc-actions" ? UcActionsMenu(p, u, narrow) : ""}
