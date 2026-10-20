@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261020-170925">
+<meta name="beeatlas-build" content="20261020-174224">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -2718,11 +2718,31 @@
      Строка-ребёнок ставит свой шеврон ровно под текст родителя (24 падинг + 30),
      таблица-ребёнок — текст первой колонки туда же (30 + 24 падинга ячейки). */
   .ac-tree-body{position:relative;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:transparent;padding-left:30px;}
-  .ac-tree-body:not(:has(.ac-tree-body))::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--yellow);}
+  /* Полоса-индикатор: рисует её только самый глубокий уровень (внутри которого
+     нет другого), а стоит она у ЛЕВОГО КРАЯ ВСЕЙ ТАБЛИЦЫ, а не на отступе своего
+     уровня. Каждый уровень добавляет padding-left:30, поэтому блок уровня N
+     отстоит от края дерева на 30×(N−1) — на столько же полосу и отводим назад.
+     Правка 20.10: раньше полоса стояла на left:0 своего блока и на третьем
+     уровне висела посреди таблицы. */
+  .ac-tree-body:not(:has(.ac-tree-body))::before{
+    content:"";position:absolute;top:0;bottom:0;width:3px;background:var(--yellow);
+    left:calc(-30px * (var(--lvl, 1) - 1));
+  }
   .ac-tree > :last-child{border-bottom:none;}
   .ac-tree-body:last-child{border-bottom:none;}
   .ac-tree-body .table-wrap,
   .ac-tree-body .table-scroll{border:none;border-radius:0;}
+  /* «Таблица внутри дерева рамки и скругления не имеет» (docs/components.md).
+     Обёртке радиус снят выше, но крайние ячейки получали свой — он нужен только
+     самостоятельной таблице, чтобы фон не вылезал за скруглённую рамку. Здесь он
+     давал скруглённые углы у подсвеченной первой и последней строки: фон строки
+     обрезался там, где никакой рамки нет. То же в панели раскрытия. */
+  /* Специфичность важнее порядка: у правила-источника
+     «.table-scroll > table thead th:first-child» три элемента, и короткий
+     селектор «.ac-tree-body thead th» ему проигрывал — скругление оставалось.
+     Здесь на класс больше, поэтому правило выигрывает в обеих обёртках. */
+  .ac-tree-body :is(.table-scroll, .table-wrap, .table-wrap-fit) > table :is(thead th, tbody tr:last-child td),
+  .exp-detail  :is(.table-scroll, .table-wrap, .table-wrap-fit) > table :is(thead th, tbody tr:last-child td){border-radius:0;}
   .ac-tree-body table{background:transparent;}
   /* Закреплённая колонка внутри дерева: фон у неё непрозрачный (иначе сквозь неё
      видно уезжающие колонки), а дерево рисует свой — берём тот же, что у полотна. */
@@ -2832,13 +2852,14 @@
   .obs-row.obs-nested > td:first-child{font-weight:400;}
   /* Полосу рисует только самый глубокий уровень (класс ставит AcObsRow): у строк
      промежуточной группы её нет, иначе линии идут параллельно на разных отступах.
-     Стоит она на отступе своего уровня, а не у края таблицы — ровно как в дереве
-     каталога, где полоса прижата к краю вложенного блока. Позицию приносит
-     --stripe: это тот же отступ, что двигает содержимое ячейки. */
+     Стоит она у ЛЕВОГО КРАЯ ТАБЛИЦЫ (docs/components.md, «Уровни таблицы»), то
+     есть на 0, а не на отступе своего уровня: 20.10 правило поправлено и здесь —
+     раньше полоса уезжала вправо вместе с содержимым ячейки. --stripe больше не
+     нужен, отступ двигает только текст. */
   .obs-row.obs-stripe > td:first-child{
     background-image:linear-gradient(var(--yellow),var(--yellow));
     background-repeat:no-repeat;background-size:3px 100%;
-    background-position:var(--stripe,0) 0;
+    background-position:0 0;
   }
 
   .ac-radio-group{display:flex;flex-direction:column;gap:var(--space-4);margin-bottom:var(--space-6);}
@@ -2923,7 +2944,15 @@
   .ac-kv{display:flex;flex-direction:column;gap:var(--space-5);margin-bottom:var(--space-6);}
   .ac-kv-row{display:grid;grid-template-columns:220px 1fr;gap:var(--space-4);align-items:start;}
   .ac-kv-row .k{font-size:15px;color:var(--text-secondary);}
-  .ac-kv-row .v{font-size:15px;}
+  .ac-kv-row .v{font-size:15px;min-width:0;}
+  /* Ряд контролов у ссылки — шаг 12 (docs/interaction.md). Копирование — тихая
+     иконочная кнопка вплотную к ссылке, обновление и скачивание — контурные
+     размера small (40), как в макете. */
+  .ac-url-row{display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap;}
+  .ac-url-row .ac-url-copy{margin-left:calc(-1 * var(--space-2));}
+  /* Таблица принадлежит своей строке «ключ — значение», поэтому живёт в колонке
+     значения и отбивается от ссылки сверху тем же шагом 12. */
+  .ac-kv-table{margin-top:var(--space-3);}
   /* Ссылка не выделяется весом — её и так отличает цвет. */
 .ac-kv-row .v a, .ac-kv-row .v.link{color:var(--blue);}
 
@@ -9184,7 +9213,7 @@ function AcTreeNode(node, level){
     <div class="ac-tree-row ${open?"is-open":""}" data-action="ac-toggle-tree" data-id="${node.id}">
       <span class="chev ${open?"open":""}">${icon("chevronRight")}</span><span>${escapeHtml(node.label)}</span>
     </div>
-    ${open ? `<div class="ac-tree-body">${body}</div>` : ""}
+    ${open ? `<div class="ac-tree-body" style="--lvl:${level}">${body}</div>` : ""}
   `;
 }
 
@@ -9289,33 +9318,50 @@ function AcGeneralTab(app){
   `;
 }
 
+/* Вкладка «Общая информация» по макету 20.10: строки «ключ — значение», и всё,
+   что относится к значению, живёт внутри его колонки — включая таблицы. Раньше
+   две таблицы стояли на всю ширину страницы и теряли связь со своей подписью:
+   «Репозитории кода» вообще остались без неё. Ссылки демонстрационные
+   (*.example.ru) — чужих адресов в прототипе не держим. */
 function AcGeneralInfo(app){
+  const link = (text) => `<a class="proj-link" data-action="noop-doc">${escapeHtml(text)}</a>`;
+  const row = (k, v) => `<div class="ac-kv-row"><div class="k">${escapeHtml(k)}</div><div class="v">${v}</div></div>`;
+  const repoRows = [
+    ["b2c-delivery-catalog-api", "git.example.ru/b2c/delivery-catalog-api", "registry.example.ru/b2c/catalog-api"],
+    ["b2c-delivery-catalog-ui",  "git.example.ru/b2c/delivery-catalog-ui",  "registry.example.ru/b2c/catalog-ui"],
+  ];
   return `
     <div class="ac-kv">
-      <div class="ac-kv-row"><div class="k">Владелец приложения</div><div class="v">${escapeHtml(app.owner)}</div></div>
-      <div class="ac-kv-row"><div class="k">Архитектор приложения</div><div class="v">${escapeHtml(app.architect)}</div></div>
-      <div class="ac-kv-row"><div class="k">Критичность</div><div class="v">${escapeHtml(app.crit)}</div></div>
-      <div class="ac-kv-row"><div class="k">Описание</div><div class="v ac-desc">${escapeHtml(app.name)} — интеграционный сервис, предоставляет смежным системам данные о складах и номенклатуре, поступлении товара, статусах заказов клиентов и плане работы сотрудников для мобильного приложения. Контур обслуживания номера передаёт операции по абоненту: установку и снятие блокировки номера, информацию о наличии отложенного отключения и данные о номере для проверок…<div class="ac-desc-more" data-action="noop-doc">Показать полностью ${icon("chevronDown")}</div></div></div>
-      <div class="ac-kv-row"><div class="k">Влияние приложения</div><div class="v"><span class="proj-link" data-action="noop-doc">Посмотреть влияние ${icon("externalLink")}</span></div></div>
-      <div class="ac-kv-row"><div class="k">Информация о приложении</div><div class="v"><a class="proj-link" data-action="noop-doc">https://bw.example.ru/catalog/apps/53</a></div></div>
-      <div class="ac-kv-row"><div class="k">Дашборд приложения</div><div class="v"><a class="proj-link" data-action="noop-doc">https://bw.example.ru/catalog/apps/53</a></div></div>
-      <div class="ac-kv-row"><div class="k">Structurizr URL</div><div class="v"><a class="proj-link" data-action="noop-doc">https://bw.example.ru/catalog/apps/53</a></div></div>
-    </div>
-    <div class="table-wrap" style="margin-bottom:var(--space-6);">
-      <table>
-        <thead><tr><th>ID</th><th>Дата</th><th>Тип обновления</th><th>Статус</th></tr></thead>
-        <tbody><tr><td>876.567.999</td><td>12.12.2025, 23:59</td><td>GitOPS pipeline</td><td><span class="badge green">Успешно</span></td></tr></tbody>
-      </table>
-    </div>
-    <div class="ac-kv-row" style="margin-bottom:var(--space-4);"><div class="k">Репозиторий архитектуры</div><div class="v"><a class="proj-link" data-action="noop-doc">https://bw.example.ru/catalog/apps/53</a></div></div>
-    <div class="table-wrap">
-      <table>
-        <thead><tr><th>Название репозитория</th><th>Ссылка на репозиторий</th><th>Ссылка на контейнер</th></tr></thead>
-        <tbody>
-          <tr><td>b2c-delivery-catalog-api</td><td><a class="proj-link" data-action="noop-doc">git.example.ru/b2c/delivery-catalog-api</a></td><td><a class="proj-link" data-action="noop-doc">registry.example.ru/b2c/catalog-api</a></td></tr>
-          <tr><td>b2c-delivery-catalog-ui</td><td><a class="proj-link" data-action="noop-doc">git.example.ru/b2c/delivery-catalog-ui</a></td><td><a class="proj-link" data-action="noop-doc">registry.example.ru/b2c/catalog-ui</a></td></tr>
-        </tbody>
-      </table>
+      ${row("Владелец приложения", escapeHtml(app.owner))}
+      ${row("Архитектор приложения", escapeHtml(app.architect))}
+      ${row("Критичность", escapeHtml(app.crit))}
+      ${row("Описание", `<div class="ac-desc">${escapeHtml(app.name)} — интеграционный сервис, предоставляет смежным системам данные о складах и номенклатуре, поступлении товара, статусах заказов клиентов и плане работы сотрудников для мобильного приложения. Контур обслуживания номера передаёт операции по абоненту: установку и снятие блокировки номера, информацию о наличии отложенного отключения и данные о номере для проверок…</div><div class="ac-desc-more" data-action="noop-doc">Показать полностью ${icon("chevronDown")}</div>`)}
+      ${row("Влияние приложения", `<span class="proj-link" data-action="noop-doc">Посмотреть влияние ${icon("externalLink")}</span>`)}
+      ${row("Информация о приложении", link("https://bw.example.ru/catalog/apps/53"))}
+      ${row("Дашборд приложения", link("https://bw.example.ru/catalog/apps/53"))}
+      ${row("Structurizr URL", `
+        <div class="ac-url-row">
+          ${link("https://bw.example.ru/catalog/apps/53")}
+          <button class="btn btn-plain btn-icon-only btn-sm ac-url-copy" data-action="noop-doc" title="Скопировать ссылку">${icon("copy")}</button>
+          <button class="btn btn-outline btn-icon-only btn-sm" data-action="noop-doc" title="Обновить из Structurizr">${icon("refresh")}</button>
+          <button class="btn btn-outline btn-icon-only btn-sm" data-action="noop-doc" title="Скачать архитектуру">${icon("download")}</button>
+        </div>
+        <div class="table-wrap ac-kv-table">
+          <table>
+            <thead><tr><th>ID</th><th>Дата</th><th>Тип обновления</th><th>Статус</th></tr></thead>
+            <tbody><tr><td>876.567.999</td><td>12.12.2025, 23:59</td><td>GitOPS pipeline</td><td><span class="badge green">Успешно</span></td></tr></tbody>
+          </table>
+        </div>`)}
+      ${row("Репозиторий архитектуры", link("https://bw.example.ru/catalog/apps/53"))}
+      ${row("Репозитории кода", `
+        <div class="table-wrap ac-kv-table">
+          <table>
+            <thead><tr><th>Название репозитория</th><th>Ссылка на репозиторий</th><th>Ссылка на контейнер</th></tr></thead>
+            <tbody>
+              ${repoRows.map(([name, repo, reg])=>`<tr><td>${escapeHtml(name)}</td><td>${link(repo)}</td><td>${link(reg)}</td></tr>`).join("")}
+            </tbody>
+          </table>
+        </div>`)}
     </div>
   `;
 }
@@ -9759,7 +9805,7 @@ function AcObsRow(node, stripe){
   const kidsAreLeaves = node.children ? !node.children.some(c=>c.children) : false;
   return `
     <tr class="obs-row ${stripe?"obs-stripe":""} ${node.level>1?"obs-nested":""} ${(node.children && open && node.level===1)?"exp-open":""}">
-      <td style="--stripe:${indent}px;"><div class="exp-cell" style="padding-left:${indent}px;"><div class="exp-row-btn ${node.children?(open?"open":""):"none"}" ${node.children?`data-action="ac-toggle-obs" data-id="${node.id}"`:""}>${icon("chevronRight")}</div><div class="exp-name">${clampCell(node.label)}</div></div></td>
+      <td><div class="exp-cell" style="padding-left:${indent}px;"><div class="exp-row-btn ${node.children?(open?"open":""):"none"}" ${node.children?`data-action="ac-toggle-obs" data-id="${node.id}"`:""}>${icon("chevronRight")}</div><div class="exp-name">${clampCell(node.label)}</div></div></td>
       <td><a class="proj-link" data-action="noop-doc">${clampCell(node.link)}</a></td>
       <td><div class="exp-row-btn" data-action="ac-open-source-editor" data-mode="edit" data-id="${node.id}" title="Редактировать источник">${icon("pencil")}</div></td>
     </tr>
