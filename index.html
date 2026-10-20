@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261020-164102">
+<meta name="beeatlas-build" content="20261020-170925">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -2499,10 +2499,16 @@
   .cj-select-menu{
     position:absolute;top:100%;left:0;min-width:100%;width:max-content;max-width:320px;
     background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);box-shadow:var(--shadow);
-    padding:var(--space-2);z-index:60;max-height:260px;overflow-y:auto;overscroll-behavior:contain;
+    /* Горизонтального паддинга нет: подсветка пункта идёт во всю ширину меню
+       (макет 20.10). Вертикальный остаётся — иначе первый и последний пункты
+       упираются в край. overflow по вертикали заодно обрезает подсветку по
+       скруглению меню, поэтому крайним пунктам свой радиус не нужен. */
+    padding:var(--space-2) 0;z-index:60;max-height:260px;overflow-y:auto;overscroll-behavior:contain;
   }
   .cj-select-field.wide .cj-select-menu{width:100%;max-width:none;}
-  .cj-select-item{display:flex;align-items:center;gap:6px;padding:var(--space-3) var(--space-4);border-radius:8px;font-size:15px;cursor:pointer;}
+  /* Пункт — прямоугольник во всю ширину меню (макет 20.10): скруглённая плашка
+     с отступом от краёв читалась как вложенная карточка, а не как строка списка. */
+  .cj-select-item{display:flex;align-items:center;gap:6px;padding:var(--space-3) var(--space-4);font-size:15px;cursor:pointer;}
   .cj-select-item:hover{background:color-mix(in srgb, var(--md-sys-color-on-surface) 8%, var(--md-sys-color-surface));}
   /* Выбранный пункт меню — secondary-container (docs/tokens.md). Был --bg-alt,
      а он в светлой теме равен полотну: активная ветка ничем не отличалась от
