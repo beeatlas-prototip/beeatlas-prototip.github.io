@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261021-111742">
+<meta name="beeatlas-build" content="20261021-115104">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -2903,6 +2903,29 @@
   .pipe-timeline .end svg.x{width:18px;height:18px;}
   .pipe-timeline .end .ic.x{width:18px;height:18px;}
   .pipe-run-foot{margin-top:var(--space-2);font-size:13px;color:var(--text-secondary);}
+
+  /* Ветка прогона в строке журнала: не статус и не ссылка, поэтому не бейдж
+     и не пилюля, а приглушённая подпись фиксированной ширины — иначе колонка
+     статусов в списке прогонов разъезжается. */
+  .pipe-branch{width:84px;flex:0 0 auto;font-size:13px;line-height:16px;letter-spacing:.2px;
+    color:var(--text-secondary);white-space:nowrap;}
+  /* Блок внутри раскрытого прогона: фитнес-функция, ручная стадия, задание GitLab.
+     Карточка по docs/components.md — скругление 12, отступ 24, кант; тени нет.
+     Предупреждение и блокировка красятся кантом, а не заливкой: заливка здесь
+     спорила бы с жёлтой полосой самого прогона. */
+  .pipe-block{margin-top:var(--space-5);padding:var(--size-spacing-x6);background:var(--bg);
+    border:1px solid var(--border);border-radius:var(--size-border-radius-x6);}
+  .pipe-block.is-warn{border-color:var(--orange-text);}
+  .pipe-block.is-block{border-color:var(--red-text);}
+  .pipe-block-head{display:flex;align-items:center;gap:var(--space-3);flex-wrap:wrap;margin-bottom:var(--space-4);}
+  .pipe-block-cap{font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);}
+  .pipe-block-text{margin:0 0 var(--space-3);font-size:15px;line-height:22px;letter-spacing:.2px;color:var(--text);}
+  .pipe-block-text:last-child{margin-bottom:0;}
+  .pipe-list{margin:0 0 var(--space-4);padding-left:20px;font-size:15px;line-height:22px;letter-spacing:.2px;color:var(--text);}
+  .pipe-list li{margin-bottom:var(--space-1);}
+  .pipe-group{margin-bottom:var(--space-5);}
+  .pipe-group:last-of-type{margin-bottom:var(--space-4);}
+  .pipe-group-title{font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);margin-bottom:var(--space-2);}
 
   /* Наблюдаемость — обычная таблица (см. AcObsTab). Своей вёрстки у строки больше
      нет: высоту, отступы и кегль задаёт раздел «Таблица», а вложенность — padding
@@ -6936,6 +6959,8 @@ const state = {
   ucImplExpanded:{},
   /* Закладка страницы реализации и её полноэкранная диаграмма (R-4). */
   implTab:"tree",
+  crossBranch:"main",     // ветка на рабочем месте корпоративной архитектуры
+  crossExpanded:{},       // раскрытые Use Case там же
   /* Раскрытые вызовы дерева расширений. Ключ — путь кодов e2e от корня плюс
      номер вызова: один и тот же e2e в разных местах дерева раскрывается
      независимо, иначе разворот в одной ветке дёргал бы остальные. */
@@ -7703,6 +7728,8 @@ const NAV_GROUPS = [
       desc:"Это инструмент, который позволяет анализировать и визуализировать бизнес-возможности компании"},
     {id:"e2e", label:"Каталог Е2Е-сценариев", icon:"folder", filled:true,
       desc:"Содержит список сценариев и подробную информацию о вызовах, диаграммах и наблюдаемости шагов"},
+    {id:"crossflow", label:"Сквозные сценарии", icon:"sitemap", filled:true,
+      desc:"Показывает, какой сценарий уже собирается из опубликованных e2e целиком, а какой шаг пока без реализации"},
   ]},
   {label:"Архитектура приложения", color:"blue", items:[
     {id:"appcat", label:"Каталог приложений", icon:"grid", filled:true,
@@ -8519,6 +8546,8 @@ function renderPage(){
     html = E2eCatalogPage();
   } else if(state.activeSidebar === "appcat"){
     html = AppCatalogModule();
+  } else if(state.activeSidebar === "crossflow"){
+    html = CrossFlowPage();
   } else if(state.activeSidebar === "companyarch"){
     html = CompanyArchModule();
   } else if(state.activeSidebar !== "projects"){
@@ -8549,6 +8578,126 @@ function renderPage(){
   root.innerHTML = html;
 }
 
+/* ═══ Сквозные сценарии: рабочее место корпоративной архитектуры (§5.3) ═══
+   Отвечает на один вопрос: какой сценарий уже собирается из опубликованных e2e
+   целиком, а какой шаг пока без реализации. Место только читает опубликованную
+   ветку и своего контура записи не заводит.
+   Цепочка считается через границы продуктов: от шага use-case вглубь по
+   расширениям, пока находятся совпадения. Защита от цикла — по уже пройденным
+   кодам, как в дереве расширений. */
+function crossChain(code, branch, seen){
+  seen = seen || [];
+  if(!code || seen.includes(code)) return {products:[], depth:0};
+  const r = E2E_REGISTRY[code];
+  if(!r) return {products:[], depth:0};
+  const next = seen.concat([code]);
+  let products = [r.product];
+  let depth = 1;
+  r.calls.forEach((c, idx)=>{
+    if(idx===0) return;
+    e2eStartingWith({label:c.label, opId:c.opId||null}, {branch, exclude:code}).forEach(other=>{
+      if(next.includes(other)) return;
+      const sub = crossChain(other, branch, next);
+      products = products.concat(sub.products);
+      depth = Math.max(depth, 1 + sub.depth);
+    });
+  });
+  return {products:[...new Set(products)], depth};
+}
+/* Три состояния шага, и «есть кандидаты» не равно «реализация известна»:
+   при нескольких кандидатах система победителя не выбирает, поэтому и цепочку
+   выбрать не может — строить её по первому попавшемуся значило бы выдать
+   случайный порядок за решение. */
+function crossStepInfo(sc, branch){
+  const manual = sc.manual && e2eBranch(sc.manual)===branch ? sc.manual : null;
+  const cand = scenarioCandidates(sc, branch);
+  const root = manual || (cand.length===1 ? cand[0] : null);
+  const chain = root ? crossChain(root, branch, []) : {products:[], depth:0};
+  return {manual, cand, root, chain,
+          state: root ? "resolved" : (cand.length ? "ambiguous" : "none")};
+}
+/* Состав ветки Use Case лежит в branchStore: `u.branch` — лишь та ветка, что
+   открыта сейчас, а сам артефакт существует во всех. Поэтому шаги берём
+   снимком нужной ветки, иначе в design и develop не нашлось бы ничего. */
+function crossUseCases(branch){
+  const out = [];
+  (state.projects||[]).forEach(p=>{
+    (p.useCases||[]).forEach(u=>{
+      ensureUcBranches(u);
+      const scenarios = (ucBranchData(u, branch) || {}).scenarios || [];
+      if(!scenarios.length) return;
+      const steps = scenarios.map(sc=>Object.assign({sc}, crossStepInfo(sc, branch)));
+      out.push({project:p, uc:u, steps});
+    });
+  });
+  return out;
+}
+function CrossFlowPage(){
+  const branch = state.crossBranch || "main";
+  const rows = crossUseCases(branch);
+  const allSteps = rows.reduce((n,r)=>n+r.steps.length, 0);
+  const none = rows.reduce((n,r)=>n+r.steps.filter(x=>x.state==="none").length, 0);
+  const ambiguous = rows.reduce((n,r)=>n+r.steps.filter(x=>x.state==="ambiguous").length, 0);
+
+  return `
+    <h1>Сквозные сценарии</h1>
+    <p class="page-lead">Какой сценарий уже собирается из опубликованных e2e целиком, а какой шаг пока без реализации. Цепочка идёт через границы продуктов и читается внутри одной ветки</p>
+
+    <!-- Селектор ветки шириной 260, как в панели веток CJ: растянутый на всю
+         страницу он читается как поиск, а не как выбор из трёх значений. -->
+    <div class="filters-row" style="margin-bottom:var(--space-6);">
+      <div style="width:260px;">
+        ${DsSelect({id:"cross-branch", value:branch, placeholder:"Ветка", options:["design","develop","main"], action:"cross-set-branch"})}
+      </div>
+    </div>
+
+    <!-- четыре плитки в ряд — это дефолт .uc-stat-cards (span 3 из 12), свой класс не нужен -->
+    <div class="uc-stat-cards" style="margin-bottom:var(--space-7);">
+      <div class="uc-stat-card"><div class="val">${rows.length}</div><div class="lbl">Use Case в ветке ${escapeHtml(branch)}</div></div>
+      <div class="uc-stat-card"><div class="val">${allSteps}</div><div class="lbl">Шагов всего</div></div>
+      <div class="uc-stat-card ${none?"orange":""}"><div class="val">${none}</div><div class="lbl">Шагов без реализации</div></div>
+      <div class="uc-stat-card"><div class="val">${ambiguous}</div><div class="lbl">Реализация не выбрана</div></div>
+    </div>
+
+    ${rows.length ? `<div class="ac-tree">${rows.map(CrossUcNode).join("")}</div>`
+      : `<div class="card"><p style="margin:0;color:var(--text-secondary);">В ветке ${escapeHtml(branch)} нет ни одного Use Case — переключи ветку</p></div>`}
+  `;
+}
+function CrossUcNode(row){
+  const open = !!(state.crossExpanded||{})[row.uc.id];
+  const covered = row.steps.filter(x=>x.state!=="none").length;
+  const branch = state.crossBranch || "main";
+  return `
+    <div class="ac-tree-row ${open?"is-open":""}" data-action="cross-toggle-uc" data-id="${row.uc.id}">
+      <span class="chev ${open?"open":""}">${icon("chevronRight")}</span>
+      <span>${escapeHtml(row.uc.code)} · ${escapeHtml(row.uc.name)}</span>
+      <span class="e2t-exp">${covered} из ${row.steps.length} ${ruPlural(row.steps.length,"шаг покрыт","шага покрыто","шагов покрыто")}</span>
+    </div>
+    ${open ? `<div class="ac-tree-body" style="--lvl:1">
+      <div class="table-wrap">
+        <table class="fixed-table">
+          <colgroup><col style="width:9%"><col style="width:23%"><col style="width:18%"><col style="width:35%"><col style="width:15%"></colgroup>
+          <thead><tr><th>Шаг</th><th>Вызов</th><th>Реализация</th><th>Цепочка продуктов</th><th>Глубина вложенности</th></tr></thead>
+          <tbody>
+            ${row.steps.map(x=>`
+              <tr>
+                <td>${escapeHtml(x.sc.part)}</td>
+                <td>${clampCell(x.sc.call, "clamp-1")}</td>
+                <td>${x.state==="resolved"
+                      ? `<span class="proj-link" data-action="ac-open-e2e-dynamic" data-id="${escapeHtml(x.root)}">${escapeHtml(x.root)}</span>${x.manual?' <span class="uc-impl-rest">· вручную</span>':""}`
+                      : (x.state==="ambiguous"
+                          ? `<span class="uc-impl-rest">${x.cand.length} ${ruPlural(x.cand.length,"кандидат","кандидата","кандидатов")}, не выбрана</span>`
+                          : `<span class="badge orange">Без реализации</span>`)}</td>
+                <td>${x.chain.products.length ? escapeHtml(x.chain.products.join(" → ")) : '<span class="empty-cell">—</span>'}</td>
+                <td>${x.chain.depth ? x.chain.depth : '<span class="empty-cell">—</span>'}</td>
+              </tr>`).join("")}
+          </tbody>
+        </table>
+      </div>
+    </div>` : ""}
+  `;
+}
+
 function PlaceholderPage(){
   const item = NAV_GROUPS.flatMap(g=>g.items).find(i=>i.id===state.activeSidebar);
   return `
@@ -8569,6 +8718,9 @@ function defaultAppcatState(){
     tab:"general",
     generalSub:"info",
     pipelineExpanded:{"run1":true},
+    /* Решение человека по ручной стадии: {runId: "confirmed"|"stopped"}.
+       В данных прогона его нет — прогон журнальный, решение принимается здесь. */
+    pipelineDecision:{},
     fitnessSub:"check",
     fitnessExpanded:{"CTX.03":true,"ADR.01":true},
     tcSearch:"", tcOnlyIfaces:false, tcExpanded:{"tc1":true},
@@ -8751,16 +8903,48 @@ function findApp(id){ return APPS[id]; }
 /* ---- shared tab content, reused across every app in the prototype ---- */
 /* Этап назывался «Название этапа должно вмещаться в одну строку» — требование к
    вёрстке, оставленное в данных; у неуспешного прогона этап ещё и назывался так же,
-   как у успешного, хотя он останавливается на другом шаге. */
+   как у успешного, хотя он останавливается на другом шаге.
+
+   Концепция 16.10.2026 §4 добавила прогону три вещи, которых тут не было:
+   — `branch`: старт пайплайна принимает ветку, снимок пишется в неё, по умолчанию main;
+   — `fitness`: фитнес-функция обратной совместимости. Метод, которого больше нет
+     в публикуемой архитектуре, но который ещё используется в e2e, use-case и CJ
+     той же ветки, на design даёт предупреждение, а на develop и main останавливает
+     публикацию. Это один и тот же инвариант с разным исходом по ветке;
+   — `manual`: ручная стадия на выгрузке e2e. До публикации в продуктовую модель
+     человек видит две группы фактов — на что публикация влияет и чему противоречит —
+     и решает сам. Отказ и непройденная блокирующая ФФ останавливают одинаково:
+     снимок ветки от этой выгрузки не обновляется. */
 const AC_PUBLICATIONS = [
-  {id:"run1", date:"12.12.2025, 13:43", src:"GitOPS pipeline", status:"Успешно", ok:true,
-    stageName:"Публикация модели в Structurizr", stageDate:"13.12.2025, 15:19", total:14, done:14},
-  {id:"run2", date:"12.12.2025, 13:43", src:"GitOPS pipeline", status:"Успешно", ok:true,
-    stageName:"Проверка связей между контейнерами", stageDate:"13.12.2025, 15:19", total:14, done:1, failed:true},
-  {id:"run3", date:"11.12.2025, 09:02", src:"GitOPS pipeline", status:"Успешно", ok:true,
-    stageName:"Сборка описания интерфейсов", stageDate:"11.12.2025, 09:40", total:14, done:14},
-  {id:"run4", date:"10.12.2025, 18:21", src:"GitOPS pipeline", status:"Успешно", ok:true,
-    stageName:"Выгрузка фитнес-функций", stageDate:"10.12.2025, 18:55", total:14, done:14},
+  {id:"run1", date:"12.12.2025, 13:43", src:"GitOPS pipeline", status:"Успешно", ok:true, branch:"design",
+    stageName:"Публикация модели в Structurizr", stageDate:"13.12.2025, 15:19", total:14, done:14,
+    fitness:{result:"warn", method:"GET /api/v1/tariffs",
+             used:["E2E.00.02.08 — вызов в цепочке", "UC-003 · шаг P-02", "CJ-0042 · шаг «Выбор тарифа»"]},
+    manual:{state:"confirmed", by:"архитектор решения", at:"13.12.2025, 15:04",
+            affects:["E2E.00.02.06 — новый e2e становится расширением шага POST /api/v1/orders",
+                     "UC-001 · шаг P-04 — меняется метод, на который он опирается"],
+            conflicts:[]},
+    gitlab:{job:"publish-architecture #4412", state:"Запуск принят"}},
+  {id:"run2", date:"12.12.2025, 13:43", src:"GitOPS pipeline", status:"Остановлена", ok:false, branch:"main",
+    stageName:"Фитнес-функции обратной совместимости", stageDate:"13.12.2025, 15:19", total:14, done:1, failed:true,
+    fitness:{result:"block", method:"POST /api/v1/payments/reserve",
+             used:["E2E.00.02.01 — вызов в цепочке", "E2E.00.02.07 — начальный метод", "UC-001 · шаг P-05"]},
+    manual:null,
+    gitlab:{job:"publish-architecture #4410", state:"Запуск принят"}},
+  {id:"run3", date:"11.12.2025, 09:02", src:"GitOPS pipeline", status:"Ждёт решения", ok:false, branch:"develop",
+    stageName:"Выгрузка e2e — ручная стадия", stageDate:"11.12.2025, 09:40", total:14, done:9,
+    fitness:{result:"ok", method:null, used:[]},
+    manual:{state:"waiting",
+            affects:["E2E.00.02.11 — новый e2e становится расширением шага GET /api/v1/cart/{id}",
+                     "UC-002 · шаг P-02 — появляется второй кандидат на реализацию"],
+            conflicts:["UC-004 · шаг P-03 требует метод POST /api/v1/promo/apply, которого в этой выгрузке нет",
+                       "E2E.00.02.02 — дерево расходится с подтверждённым сценарием: порядок вызовов другой"]},
+    gitlab:{job:"publish-architecture #4408", state:"Запуск принят"}},
+  {id:"run4", date:"10.12.2025, 18:21", src:"GitOPS pipeline", status:"Успешно", ok:true, branch:"main",
+    stageName:"Выгрузка фитнес-функций", stageDate:"10.12.2025, 18:55", total:14, done:14,
+    fitness:{result:"ok", method:null, used:[]},
+    manual:{state:"confirmed", by:"архитектор решения", at:"10.12.2025, 18:40", affects:[], conflicts:[]},
+    gitlab:{job:"publish-architecture #4401", state:"Запуск принят"}},
 ];
 
 const AC_CAPS_TABLE = [
@@ -9252,8 +9436,10 @@ function acOutgoingExpansions(app){
     });
     (state.projects||[]).forEach(pr=>{
       (pr.useCases||[]).forEach(u=>{
-        if((u.branch||"main")!==acE2eBranch()) return;
-        (u.scenarios||[]).forEach(sc=>{
+        /* Состав ветки — в branchStore, а не в текущих полях артефакта:
+           по `u.branch` сюда попадала бы только та ветка, что открыта сейчас. */
+        ensureUcBranches(u);
+        ((ucBranchData(u, acE2eBranch())||{}).scenarios||[]).forEach(sc=>{
           if(e2eMatchKind(code, {label:sc.call, opId:sc.opId||null})){
             out.push({mine:code, where:u.code, kind:"uc", what:sc.part+" · "+sc.call, product:u.name});
           }
@@ -9719,17 +9905,84 @@ function AcGeneralPipeline(app){
   `;
 }
 
+/* Решение по ручной стадии живёт в состоянии, а не в данных прогона: прогон —
+   журнальная запись, а решение человек принимает здесь и сейчас. */
+function acPipelineDecision(runId){ return (state.appcat.pipelineDecision||{})[runId] || null; }
+
+/* Исход фитнес-функции совместимости зависит от ветки публикации: один инвариант,
+   разный исход. На design — предупреждение, публикация идёт дальше; на develop
+   и main — блок, пока расхождение не снято. */
+function AcPipelineFitness(r){
+  const f = r.fitness;
+  if(!f || f.result==="ok"){
+    return `<div class="pipe-block">
+        <div class="pipe-block-head"><span class="badge green">Совместимость пройдена</span></div>
+        <p class="pipe-block-text">Методы, на которые опираются e2e, use-case и CJ ветки ${escapeHtml(r.branch)}, в публикуемой архитектуре остались</p>
+      </div>`;
+  }
+  const blocking = f.result==="block";
+  return `
+    <div class="pipe-block ${blocking?"is-block":"is-warn"}">
+      <div class="pipe-block-head">
+        <span class="badge ${blocking?"red":"orange"}">${blocking?"Публикация остановлена":"Предупреждение"}</span>
+        <span class="pipe-block-cap">фитнес-функция обратной совместимости · ветка ${escapeHtml(r.branch)}</span>
+      </div>
+      <p class="pipe-block-text">Метода <b>${escapeHtml(f.method)}</b> в публикуемой архитектуре больше нет, но на него опираются сценарии этой ветки:</p>
+      <ul class="pipe-list">${f.used.map(x=>`<li>${escapeHtml(x)}</li>`).join("")}</ul>
+      <p class="pipe-block-text">${blocking
+        ? "Снять расхождение можно двумя способами: вернуть метод в архитектуру этой ветки или изменить связанные e2e, use-case и CJ с учётом удаления. До этого снимок ветки не обновится"
+        : "На design это предупреждение, и публикация продолжается. На develop и main тот же инвариант станет блокирующим"}</p>
+    </div>`;
+}
+
+/* Ручная стадия staging: две группы фактов и решение человека. Отказ
+   останавливает движение так же, как непройденная блокирующая ФФ. */
+function AcPipelineManual(r){
+  const m = r.manual;
+  if(!m) return "";
+  const decided = acPipelineDecision(r.id);
+  const state_ = decided || m.state;
+  const group = (title, items, empty) => `
+    <div class="pipe-group">
+      <div class="pipe-group-title">${escapeHtml(title)}</div>
+      ${items.length
+        ? `<ul class="pipe-list">${items.map(x=>`<li>${escapeHtml(x)}</li>`).join("")}</ul>`
+        : `<p class="pipe-block-text">${escapeHtml(empty)}</p>`}
+    </div>`;
+  const foot = state_==="waiting"
+    ? `<div class="btnrow">
+         <button class="btn btn-outline" data-action="ac-pipeline-stop" data-id="${r.id}">Остановить публикацию</button>
+         <button class="btn btn-primary" data-action="ac-pipeline-continue" data-id="${r.id}">Данные актуальны, продолжить</button>
+       </div>`
+    : state_==="stopped"
+      ? `<p class="pipe-block-text">Публикация остановлена на ручной стадии: снимок ветки ${escapeHtml(r.branch)} от этой выгрузки не обновлён</p>`
+      : `<p class="pipe-block-text">Подтверждено${m.by?" — "+escapeHtml(m.by):""}${m.at?", "+escapeHtml(m.at):""}</p>`;
+  return `
+    <div class="pipe-block ${state_==="waiting"?"is-warn":""}">
+      <div class="pipe-block-head">
+        <span class="badge ${state_==="waiting"?"orange":(state_==="stopped"?"red":"green")}">${state_==="waiting"?"Ждёт решения":(state_==="stopped"?"Остановлена":"Подтверждена")}</span>
+        <span class="pipe-block-cap">ручная стадия выгрузки e2e</span>
+      </div>
+      ${group("На что публикация влияет", m.affects, "Ни один e2e и use-case этой ветки публикация не задевает")}
+      ${group("Чему публикация противоречит", m.conflicts, "Противоречий со сценариями ветки нет")}
+      ${foot}
+    </div>`;
+}
+
 function AcPipelineRun(r){
   const ac = state.appcat;
   const open = !!ac.pipelineExpanded[r.id];
-  const pct = Math.round((r.done/r.total)*100);
+  const decided = acPipelineDecision(r.id);
+  const statusText = decided==="stopped" ? "Остановлена" : (decided==="confirmed" ? "Успешно" : r.status);
+  const statusClass = statusText==="Успешно" ? "green" : (statusText==="Остановлена" ? "red" : "orange");
   return `
     <div class="pipe-run">
       <div class="pipe-run-row" data-action="ac-toggle-pipeline" data-id="${r.id}">
         <div class="exp-row-btn ${open?"open":""}">${icon("chevronRight")}</div>
         <div class="name">Публикация архитектуры от ${escapeHtml(r.date)}</div>
         <div class="src">${escapeHtml(r.src)}</div>
-        <span class="badge green">${escapeHtml(r.status)}</span>
+        <span class="pipe-branch">${escapeHtml(r.branch||"main")}</span>
+        <span class="badge ${statusClass}">${escapeHtml(statusText)}</span>
       </div>
       ${open ? `
         <div class="pipe-run-detail">
@@ -9745,7 +9998,18 @@ function AcPipelineRun(r){
             ${Array.from({length:r.total}).map((_,i)=>`<div class="dot ${i<r.done?"":"pending"}"></div><div class="seg ${i<r.done-1?"":"pending"}"></div>`).join("")}
             <div class="end ${r.failed?"fail":""}">${icon(r.failed?"x":"check")}</div>
           </div>
-          <div class="pipe-run-foot">Завершено ${r.done} из ${r.total}</div>
+          <div class="pipe-run-foot">Завершено ${r.done} из ${r.total} · ветка ${escapeHtml(r.branch||"main")}</div>
+          ${AcPipelineFitness(r)}
+          ${AcPipelineManual(r)}
+          ${r.gitlab ? `
+            <div class="pipe-block">
+              <div class="pipe-block-head">
+                <span class="badge gray">Задание GitLab</span>
+                <span class="pipe-block-cap">${escapeHtml(r.gitlab.job)} · ${escapeHtml(r.gitlab.state)}</span>
+              </div>
+              <p class="pipe-block-text">Задание завершилось сразу после приёма запуска: ожидание графов, фитнес-функций и ручной стадии остаётся в пайплайне. Зелёный статус задания значит «запуск принят», а не «публикация ветки завершена». <span class="pipe-block-cap">Шаг на согласовании</span></p>
+              <div class="btnrow"><button class="btn btn-outline" data-action="noop-doc">${icon("externalLink")} Смотреть продвижение публикации</button></div>
+            </div>` : ""}
         </div>
       ` : ""}
     </div>
@@ -17254,6 +17518,13 @@ function handleAction(action, el){
       go("impl-detail", {projectId: el.dataset.id, ucId: el.dataset.uc, part: el.dataset.part, implCode: el.dataset.code});
       break;
     case "set-impl-tab": state.implTab = el.dataset.tab; render(); break;
+    case "cross-set-branch": state.crossBranch = el.dataset.value; state.popover = null; render(); break;
+    case "cross-toggle-uc": {
+      const k = el.dataset.id;
+      state.crossExpanded[k] = !state.crossExpanded[k];
+      render();
+      break;
+    }
     case "e2e-toggle-call": {
       const k = el.dataset.key;
       state.e2eTreeOpen[k] = !state.e2eTreeOpen[k];
@@ -17915,6 +18186,22 @@ function handleAction(action, el){
     }
     case "ac-set-tab": state.appcat.tab = el.dataset.tab; render(); break;
     case "ac-set-general-sub": state.appcat.generalSub = el.dataset.sub; render(); break;
+    /* Ручная стадия: отказ останавливает движение так же, как непройденная
+       блокирующая фитнес-функция — снимок ветки от этой выгрузки не обновляется. */
+    case "ac-pipeline-continue": {
+      const run = AC_PUBLICATIONS.find(x=>x.id===el.dataset.id);
+      state.appcat.pipelineDecision[el.dataset.id] = "confirmed";
+      showToast(`Публикация ветки ${run ? run.branch : ""} продолжена`);
+      render();
+      break;
+    }
+    case "ac-pipeline-stop": {
+      const run = AC_PUBLICATIONS.find(x=>x.id===el.dataset.id);
+      state.appcat.pipelineDecision[el.dataset.id] = "stopped";
+      showToast(`Публикация остановлена: снимок ветки ${run ? run.branch : ""} не обновлён`);
+      render();
+      break;
+    }
     case "ac-toggle-pipeline": { const k=el.dataset.id; state.appcat.pipelineExpanded[k]=!state.appcat.pipelineExpanded[k]; render(); break; }
     case "ac-set-fitness-sub": state.appcat.fitnessSub = el.dataset.sub; render(); break;
     case "ac-toggle-fitness": { const k=el.dataset.key; state.appcat.fitnessExpanded[k]=!state.appcat.fitnessExpanded[k]; render(); break; }
