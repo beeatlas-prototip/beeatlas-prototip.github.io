@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261021-110833">
+<meta name="beeatlas-build" content="20261021-111742">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -4501,11 +4501,18 @@ function findCj(id){ return CJ_LIST.find(function(c){return c.id===id;}); }
 function findBi(id){ return ALL_BI.find(function(b){return b.id===id;}); }
 function findStep(id){ return ALL_STEPS.find(function(s){return s.id===id;}); }
 
+/* Источник карточки — загрузчик канона: PlantUML, Structurizr (dynamic view)
+   или Sparx. До концепции 16.10.2026 источник был один и зашит в название
+   вкладки; теперь он у карточки свой, а ветка — её же, как у ветвящегося
+   артефакта. */
+var E2E_SOURCES = ['PlantUML','Structurizr','Sparx'];
 var E2E_LIST_COMBINED = E2E_TITLES.map(function(t,i){
-  return {id:'e2e-c'+i, type:'e2e', title:t, code:'E2E.00.00.'+pad2(i+1), createdAt:daysAgoStr(60-i), versions:[]};
+  return {id:'e2e-c'+i, type:'e2e', title:t, code:'E2E.00.00.'+pad2(i+1), createdAt:daysAgoStr(60-i),
+          source:E2E_SOURCES[i%E2E_SOURCES.length], branch:'main', versions:[]};
 });
 var E2E_LIST_CALLS = E2E_CALLS_ONLY.map(function(t,i){
-  return {id:'e2e-o'+i, type:'e2e', title:t, mono:true, code:'E2E.00.01.'+pad2(i+1), createdAt:daysAgoStr(45-i), versions:[]};
+  return {id:'e2e-o'+i, type:'e2e', title:t, mono:true, code:'E2E.00.01.'+pad2(i+1), createdAt:daysAgoStr(45-i),
+          source:E2E_SOURCES[(i+1)%E2E_SOURCES.length], branch:'main', versions:[]};
 });
 function findE2e(id){
   return E2E_LIST_COMBINED.concat(E2E_LIST_CALLS).find(function(e){return e.id===id;});
@@ -5488,7 +5495,7 @@ function renderE2ePage(id){
       {key:'calls',label:'Последовательность вызовов'},
       {key:'cj',label:'Связанные CJ ('+linkedCj.length+')'},
       {key:'steps',label:'Связанные BI Step ('+linkedSteps.length+')'},
-      {key:'plantuml',label:'PlantUML'}
+      {key:'source',label:'Источник'}
     ],active);
 
   if(active==='calls') html+=renderCallsTab();
@@ -5498,22 +5505,30 @@ function renderE2ePage(id){
   else if(active==='steps') html+='<div class="related-list">'+linkedSteps.map(function(s){
       return '<div class="related-item"><a onclick="selectStep(\''+s.id+'\')">'+esc(s.title)+'</a><span class="meta">'+esc(s.code)+'</span></div>';
     }).join('')+'</div>';
-  else html+=renderPlantUmlTab(e);
+  else html+=renderSourceTab(e);
   return html;
 }
 
-/* ---- PlantUML tab (внутри карточки E2E-сценария) ---- */
-function renderPlantUmlTab(e){
+/* ---- вкладка «Источник» (внутри карточки E2E-сценария) ----
+   Загрузчиков канона несколько, поэтому вкладка называется по смыслу, а не по
+   одному из них. Ручная загрузка остаётся только у PlantUML: dynamic view
+   и модель Sparx приезжают пайплайном, и кнопка «загрузить» там обманывала бы. */
+function renderSourceTab(e){
+  var src=e.source||'PlantUML';
   var html='<div class="card">'+
-    '<div class="card-title">PlantUML-описание процесса</div>'+
+    '<div class="card-title">Описание процесса</div>'+
     '<div class="field-grid">'+
+      '<div class="field"><div class="lbl">Источник</div><div class="val">'+esc(src)+'</div></div>'+
+      '<div class="field"><div class="lbl">Ветка</div><div class="val">'+esc(e.branch||'main')+'</div></div>'+
       '<div class="field"><div class="lbl">Дата создания</div><div class="val">'+esc(e.createdAt)+'</div></div>'+
       '<div class="field"><div class="lbl">Версий</div><div class="val">'+e.versions.length+'</div></div>'+
       '<div class="field"><div class="lbl">Последняя валидация</div><div class="val">'+statusPillFor(e)+'</div></div>'+
     '</div>'+
-    '<div class="btnrow" style="margin-top:4px;">'+
-      '<button class="btn primary" onclick="openUploadPanel(\''+e.id+'\')">'+ic('upload',18)+' Загрузить PlantUML</button>'+
-    '</div>'+
+    (src==='PlantUML'
+      ? '<div class="btnrow" style="margin-top:4px;">'+
+          '<button class="btn primary" onclick="openUploadPanel(\''+e.id+'\')">'+ic('upload',18)+' Загрузить PlantUML</button>'+
+        '</div>'
+      : '<p class="impl-empty" style="margin:4px 0 0;">Канон приезжает пайплайном выгрузки архитектуры, вручную его здесь не загружают</p>')+
   '</div>';
   html+=renderVersionHistory(e);
   return html;
@@ -8488,6 +8503,14 @@ function renderPage(){
   if(!root) return;
   const r = state.route;
   let html = "";
+  /* Карточка e2e без контекста Use Case открывается из каталога приложений и живёт
+     в его разделе: подсветка слева остаётся на «Каталоге приложений», крошки ведут
+     туда же. Поэтому проверка маршрута идёт до разбора сайдбара — иначе раздел
+     перерисовал бы себя и страница не показалась бы. */
+  if(state.route.view==="impl-detail" && !state.route.projectId){
+    root.innerHTML = UseCaseImplPage(null, null, null, state.route.implCode);
+    return;
+  }
   if(state.activeSidebar === "home"){
     html = HomePage();
   } else if(state.activeSidebar === "cj"){
@@ -9167,10 +9190,10 @@ function acMethodStatusBadge(s){
   return '<span class="badge blue">На ревью</span>';
 }
 /* Раскрывающий e2e — не хранимое значение, а результат поиска по начальному
-   методу в ветке main: на этом экране продукт смотрит опубликованную ветку.
+   методу в ветке, выбранной на странице приложения.
    Несколько e2e на один метод — обычное дело, победителя не выбираем. */
 function acE2eCell(method, opId){
-  const found = e2eStartingWith({label:method, opId:opId||null}, {branch:"main"});
+  const found = e2eStartingWith({label:method, opId:opId||null}, {branch:acE2eBranch()});
   if(!found.length) return '<span class="empty-cell">—</span>';
   if(found.length===1){
     return `<span class="proj-link" style="white-space:nowrap;" data-action="ac-open-e2e-dynamic" data-id="${escapeHtml(found[0])}">${escapeHtml(found[0])}</span>`;
@@ -9188,9 +9211,10 @@ function acEmptyRow(cols){
    что продукт-владелец карточки.
    Читается опубликованная ветка main: рабочие места не заводят второй контур
    записи и смотрят уже опубликованные снимки. */
+function acE2eBranch(){ return (state.appcat && state.appcat.branch) || "main"; }
 function acProductE2e(app){
-  const prod = app.product;
-  return prod ? e2eCodes().filter(c => e2eBranch(c)==="main" && E2E_REGISTRY[c].product===prod) : [];
+  const prod = app.product, br = acE2eBranch();
+  return prod ? e2eCodes().filter(c => e2eBranch(c)===br && E2E_REGISTRY[c].product===prod) : [];
 }
 /* Кто расширяет мои e2e: чужой e2e, чей начальный метод совпал с вызовом внутри
    моего. */
@@ -9200,7 +9224,7 @@ function acIncomingExpansions(app){
   mine.forEach(code=>{
     E2E_REGISTRY[code].calls.forEach((c, idx)=>{
       if(idx===0) return;   // корень раскрывает сам себя, это не расширение
-      e2eStartingWith({label:c.label, opId:c.opId||null}, {branch:"main", exclude:code}).forEach(other=>{
+      e2eStartingWith({label:c.label, opId:c.opId||null}, {branch:acE2eBranch(), exclude:code}).forEach(other=>{
         if(E2E_REGISTRY[other].product===app.product) return;
         out.push({mine:code, call:c.label, other, how:e2eMatchKind(other, c)});
       });
@@ -9217,7 +9241,7 @@ function acOutgoingExpansions(app){
   mine.forEach(code=>{
     const start = E2E_REGISTRY[code].calls[0];
     e2eCodes().forEach(other=>{
-      if(other===code || e2eBranch(other)!=="main") return;
+      if(other===code || e2eBranch(other)!==acE2eBranch()) return;
       if(E2E_REGISTRY[other].product===app.product) return;
       E2E_REGISTRY[other].calls.forEach((c, idx)=>{
         if(idx===0) return;
@@ -9228,7 +9252,7 @@ function acOutgoingExpansions(app){
     });
     (state.projects||[]).forEach(pr=>{
       (pr.useCases||[]).forEach(u=>{
-        if((u.branch||"main")!=="main") return;
+        if((u.branch||"main")!==acE2eBranch()) return;
         (u.scenarios||[]).forEach(sc=>{
           if(e2eMatchKind(code, {label:sc.call, opId:sc.opId||null})){
             out.push({mine:code, where:u.code, kind:"uc", what:sc.part+" · "+sc.call, product:u.name});
@@ -9246,10 +9270,11 @@ function AcExpansionsTables(app){
   const incoming = acIncomingExpansions(app);
   const outgoing = acOutgoingExpansions(app);
   const mineCount = acProductE2e(app).length;
+  const branch = acE2eBranch();
   const how = h => h==="operation" ? " · по операции архитектуры" : "";
   const empty = text => `<tr><td colspan="4" style="text-align:center;color:var(--text-secondary);padding:var(--space-8);">${text}</td></tr>`;
   return `
-    <p class="uc-impl-detail-lbl" style="margin-bottom:var(--space-5);">Продукт-владелец — <b>${escapeHtml(app.product)}</b>, у него ${mineCount} ${ruPlural(mineCount,"e2e","e2e","e2e")} в ветке main. Направления считаются по совпадению методов, ветка — опубликованная</p>
+    <p class="uc-impl-detail-lbl" style="margin-bottom:var(--space-5);">Продукт-владелец — <b>${escapeHtml(app.product)}</b>, у него ${mineCount} ${ruPlural(mineCount,"e2e","e2e","e2e")} в ветке ${escapeHtml(branch)}. Направления считаются по совпадению методов и не пересекают границу ветки</p>
 
     <div class="section-head-row" style="margin-bottom:var(--space-4);">
       <h3 style="margin:0;font-size:15px;">Кто расширяет мои e2e</h3>
@@ -9276,7 +9301,7 @@ function AcExpansionsTables(app){
     <div class="table-wrap">
       <table class="fixed-table">
         <colgroup><col style="width:20%"><col style="width:16%"><col style="width:34%"><col style="width:30%"></colgroup>
-        <thead><tr><th>Мой e2e</th><th>Где</th><th>Что раскрывает</th><th>Владелец</th></tr></thead>
+        <thead><tr><th>Мой e2e</th><th>Где</th><th>Что раскрывает</th><th>Продукт или сценарий</th></tr></thead>
         <tbody>
           ${outgoing.length ? outgoing.map(r=>`
             <tr>
@@ -12807,15 +12832,21 @@ function scenarioMismatchMarker(s, projectId, ucId){
    не делает (концепция §1, открытый вопрос 2). Полный список — в раскрытой строке. */
 function scenarioImplCell(s, projectId, ucId){
   const marker = scenarioMismatchMarker(s, projectId, ucId);
+  const branch = ucScenarioBranch(projectId, ucId);
   const manual = scenarioManual(s);
-  const cand = scenarioCandidates(s, ucScenarioBranch(projectId, ucId));
+  /* Ветвление уносит шаг вместе с привязкой, а e2e остаётся в своей ветке.
+     Такая привязка в этой ветке не действует — показываем это, а не выдаём
+     её за рабочую. */
+  const manualForeign = manual && e2eBranch(manual.code)!==branch;
+  const cand = scenarioCandidates(s, branch);
   const codeLink = (code) => (projectId && ucId)
     ? `<span class="proj-link uc-impl-code" data-action="open-uc-impl" data-id="${projectId}" data-uc="${ucId}" data-part="${escapeHtml(s.part)}" data-code="${escapeHtml(code)}">${escapeHtml(code)}</span>`
     : `<span class="uc-impl-code">${escapeHtml(code)}</span>`;
   if(manual){
     /* Пометка «вручную» обязательна: иначе ручная привязка читается так же, как
        найденная автоматически, и решение архитектора теряется. */
-    return `<div class="uc-impl-cell">${codeLink(manual.code)}<span class="uc-impl-manual">вручную</span>${marker}</div>`;
+    const note = manualForeign ? `ветка ${e2eBranch(manual.code)}` : "вручную";
+    return `<div class="uc-impl-cell">${codeLink(manual.code)}<span class="uc-impl-manual">${escapeHtml(note)}</span>${marker}</div>`;
   }
   if(!cand.length){
     /* Прочерк остаётся прочерком — пустое значение не маскируем ссылкой. */
@@ -12860,14 +12891,18 @@ function scenarioImplDetailRow(s, projectId, ucId, cols){
     ? `<div class="uc-impl-detail-lbl">Нашлись по начальному методу в ветке ${escapeHtml(branch)} — ${cand.length} ${ruPlural(cand.length,"e2e","e2e","e2e")}${cand.length>1 ? ". Ни один из них система не выбирает: порядок в списке приоритета не значит" : ""}</div>
        <div class="uc-cand-list">${candRows}</div>`
     : `<div class="uc-impl-detail-lbl">В ветке ${escapeHtml(branch)} ни один e2e с этого вызова не начинается — автоматических кандидатов нет.${othersText}</div>`;
+  const manualForeign = manual && e2eBranch(manual.code)!==branch;
+  const manualCaption = manualForeign
+    ? `Этот e2e лежит в ветке ${e2eBranch(manual.code)}, а шаг читается в ветке ${branch} — здесь привязка не действует. Привяжи e2e этой ветки`
+    : (e2eMatchKind(manual && manual.code, callRef)
+        ? "Источник: " + (manual ? manual.origin : "")
+        : "Начальный метод этого e2e с вызовом не совпадает — привязка закрепляет решение архитектора");
   const manualBlock = manual
     ? `${DsList({
-          overline:"Ручная привязка",
+          overline: manualForeign ? "Ручная привязка из другой ветки" : "Ручная привязка",
           title:manual.code,
           text:manual.source + " · " + manual.product,
-          caption: e2eStartMethod(manual.code)===s.call
-            ? "Источник: " + manual.origin
-            : "Начальный метод этого e2e с вызовом не совпадает — привязка закрепляет решение архитектора",
+          caption: manualCaption,
         })}`
     : `<div class="uc-impl-detail-lbl">Ручной привязки нет. Привяжи e2e, если автоматика реализацию не находит или кандидатов несколько</div>`;
   return `<tr class="exp-detail-row"><td colspan="${cols}"><div class="exp-detail">
@@ -13168,14 +13203,17 @@ function ucImportRuns(p, code){
    Сайдшит uc-dynamic снят, код реализации в таблице вызовов ведёт сюда.
    Две закладки — исходные данные и визуализация — показывают один и тот же
    состав вызовов: текст PlantUML и диаграмма строятся из общего `calls`. */
+/* Страница открывается с двух входов: из шага Use Case (тогда есть проект,
+   сценарий и шаг) и из рабочего места продукта в каталоге приложений, где
+   никакого Use Case нет. Во втором случае крошки ведут в каталог приложений,
+   а лид называет продукт-владельца. */
 function UseCaseImplPage(projectId, ucId, part, code){
-  const p = findProject(projectId);
-  if(!p) return `<div class="placeholder-page">Проект не найден</div>`;
-  const u = findUseCase(p, ucId);
-  if(!u) return `<div class="placeholder-page">Use case не найден</div>`;
   const info = implInfo(code);
   if(!info) return `<div class="placeholder-page">E2E не найден</div>`;
-  const sc = u.scenarios.find(x=>x.part===part);
+  const p = projectId ? findProject(projectId) : null;
+  const u = p ? findUseCase(p, ucId) : null;
+  if(projectId && !p) return `<div class="placeholder-page">Проект не найден</div>`;
+  const sc = u ? u.scenarios.find(x=>x.part===part) : null;
   const tab = state.implTab || "source";
   const meta = (cap, val) => `
     <div class="impl-meta-item">
@@ -13184,9 +13222,13 @@ function UseCaseImplPage(projectId, ucId, part, code){
     </div>`;
   return `
     <div class="breadcrumb">
-      <a data-action="nav" data-nav="projects">Проекты</a><span class="sep">${icon("chevronRight")}</span>
-      <a data-action="open-project" data-id="${p.id}">${escapeHtml(p.name)}</a><span class="sep">${icon("chevronRight")}</span>
-      <a data-action="open-usecase" data-id="${p.id}" data-uc="${u.id}">${escapeHtml(u.name)}</a><span class="sep">${icon("chevronRight")}</span>
+      ${u ? `
+        <a data-action="nav" data-nav="projects">Проекты</a><span class="sep">${icon("chevronRight")}</span>
+        <a data-action="open-project" data-id="${p.id}">${escapeHtml(p.name)}</a><span class="sep">${icon("chevronRight")}</span>
+        <a data-action="open-usecase" data-id="${p.id}" data-uc="${u.id}">${escapeHtml(u.name)}</a><span class="sep">${icon("chevronRight")}</span>
+      ` : `
+        <a data-action="nav" data-nav="appcat">Каталог приложений</a><span class="sep">${icon("chevronRight")}</span>
+      `}
       <span class="current">${escapeHtml(info.code)}</span>
     </div>
     <h1>${escapeHtml(info.code)}</h1>
@@ -13194,7 +13236,8 @@ function UseCaseImplPage(projectId, ucId, part, code){
       ? (sc.manual===info.code
           ? `E2E, привязанный вручную к вызову <b>${escapeHtml(sc.call)}</b> шага ${escapeHtml(sc.part)} в Use Case «${escapeHtml(u.name)}»`
           : `E2E, раскрывающий вызов <b>${escapeHtml(sc.call)}</b> шага ${escapeHtml(sc.part)} в Use Case «${escapeHtml(u.name)}»`)
-      : `E2E, связанный с Use Case «${escapeHtml(u.name)}»`}</p>
+      : (u ? `E2E, связанный с Use Case «${escapeHtml(u.name)}»`
+           : `E2E продукта «${escapeHtml(info.product)}», ветка ${escapeHtml(info.branch||"main")}`)}</p>
 
     <div class="impl-meta-row">
       ${meta("Источник", escapeHtml(info.source))}
@@ -16332,7 +16375,7 @@ function restoreRoute(r){
   const ok =
     r.view==="assessment-detail" ? !!findAssessment(p, r.assessmentId) :
     r.view==="usecase-detail"    ? !!findUseCase(p, r.ucId) :
-    r.view==="impl-detail"       ? (!!findUseCase(p, r.ucId) && !!implInfo(r.implCode)) :
+    r.view==="impl-detail"       ? (!!implInfo(r.implCode) && (!r.ucId || !!findUseCase(p, r.ucId))) :
     r.view==="hld-report"        ? ((p.agents.hld.reports[r.reportType]||[]).some(x=>x.id===r.reportId)) :
     r.view==="hld-skeleton"      ? !!p.agents.hld.skeleton : true;
   return ok ? r : {view:"project", projectId:r.projectId};
@@ -17846,7 +17889,15 @@ function handleAction(action, el){
     case "ac-clear-e2e-uc-search": state.appcat.e2eUcSearch=""; render(); reFocus("acE2eUcSearch"); break;
     case "ac-open-e2e-process": showToast(`Переход в E2E-сценарий «${el.dataset.code}» в Каталоге Е2Е — вне периметра прототипа`); break;
     case "ac-open-e2e-uc": showToast(`Переход в Use Case «${el.dataset.code}» — вне периметра прототипа`); break;
-    case "ac-open-e2e-dynamic": showToast(`Реализация «${el.dataset.id}» — вне периметра прототипа`); break;
+    /* Карточка e2e теперь в прототипе есть, и открывать её надо и отсюда:
+       раньше тут стоял тост «вне периметра». Контекста Use Case на этом экране
+       нет, страница это умеет. */
+    case "ac-open-e2e-dynamic":
+      if(!implInfo(el.dataset.id)){ showToast(`E2E «${el.dataset.id}» — вне периметра прототипа`); break; }
+      state.implTab = "tree";
+      state.implDiagramOpen = false;
+      go("impl-detail", {projectId:null, ucId:null, part:null, implCode: el.dataset.id});
+      break;
     /* Описание вызова открываем в боковой панели: обрезанный текст в ячейке не
        прочитать целиком и не скопировать, а его забирают себе в задачу. */
     case "ac-open-method-desc": {
