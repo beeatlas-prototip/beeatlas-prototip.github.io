@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261021-104846">
+<meta name="beeatlas-build" content="20261021-105704">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -4402,14 +4402,17 @@ function buildStepUcs(n, stepTitle){
   return list;
 }
 
-/* Реализации, пришедшие из E2E-сценариев. Код — идентификатор загрузки, как в
-   проде: читать его человеку незачем, он нужен только чтобы различать загрузки. */
 /* Коды e2e для демо-данных каталога Е2Е: те же, что в реестре e2e ниже, —
    иначе в таблице стоял бы код, по которому страница не открывается. */
 var E2E_DEMO_CODES=['E2E.00.02.01','E2E.00.02.02','E2E.00.02.03','E2E.00.02.04',
   'E2E.00.02.05','E2E.00.02.06','E2E.00.02.07','E2E.00.02.08','E2E.00.02.09'];
 
-var E2E_IMPL_CODES=[
+/* E2E, раскрывающие шаг BI Step. Раньше в чипсе стоял идентификатор загрузки
+   (`curl_demo_…`), и один и тот же e2e звался в каталоге Е2Е одним способом,
+   а в Use Case — другим. Теперь в чипсе код e2e, а идентификатор загрузки ушёл
+   в метаданные под чипсами: читать его человеку незачем, он нужен только чтобы
+   различать загрузки. */
+var E2E_LOAD_IDS=[
   'curl_demo_1789544308',
   'curl_demo_1789544593',
   '{F9E33510-A375-4a76-A65C-75EDB6045D1E}',
@@ -4420,11 +4423,12 @@ function buildStepE2eImpls(n){
   var count=1+(n%4);
   var out=[];
   for(var i=0;i<count;i++){
-    var idx=(n+i)%E2E_IMPL_CODES.length;
+    var idx=(n+i)%E2E_LOAD_IDS.length;
     out.push({
       id:'e2eimpl-'+n+'-'+i,
       kind:'e2e',
-      code:E2E_IMPL_CODES[idx],
+      code:'E2E.00.03.'+pad2(1+((n+i)%12)),
+      loadId:E2E_LOAD_IDS[idx],
       source:E2E_TITLES[(n+i)%E2E_TITLES.length],
       loadedAt:daysAgoStr(3+i*4),
       offset:i
@@ -5404,7 +5408,10 @@ function renderImplChips(step, kind){
   var more='';
   if(hidden>0) more='<button class="impl-more" onclick="toggleImplMore(\''+step.id+'\',\''+kind+'\')">ещё '+hidden+'</button>';
   else if(expanded && list.length>IMPL_CHIPS_VISIBLE) more='<button class="impl-more" onclick="toggleImplMore(\''+step.id+'\',\''+kind+'\')">свернуть</button>';
-  return '<div class="impl-row"><span class="impl-lbl">Реализация</span>'+chips+more+'</div>';
+  /* «Раскрывают шаг» вместо «Реализация»: это весь набор e2e, совпавших по методу,
+     а не выбор верного — победителя система не выбирает (концепция §1). */
+  var lbl = kind==='uc' ? 'Use Case' : 'Раскрывают шаг';
+  return '<div class="impl-row"><span class="impl-lbl">'+lbl+'</span>'+chips+more+'</div>';
 }
 
 function renderStepE2eCallsTab(step){
@@ -5417,7 +5424,8 @@ function renderStepE2eCallsTab(step){
   var cur=currentImpl(step,'e2e');
   return renderImplChips(step,'e2e')+
     '<div class="impl-meta"><span>Источник: <b>'+esc(cur.source)+'</b></span>'+
-      '<span>Загружено: <b>'+esc(cur.loadedAt)+'</b></span></div>'+
+      '<span>Загружено: <b>'+esc(cur.loadedAt)+'</b></span>'+
+      '<span>Идентификатор загрузки: <b>'+esc(cur.loadId||'—')+'</b></span></div>'+
     renderCallsTab(cur.offset);
 }
 
