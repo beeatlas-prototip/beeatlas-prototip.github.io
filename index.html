@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261021-104121">
+<meta name="beeatlas-build" content="20261021-104846">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -1427,7 +1427,11 @@
      остальных: ширины колонки на список кодов не хватает. Полный список —
      в раскрывающейся строке (.exp-row-btn / .exp-detail-row, паттерн Каталога
      приложений), там же выбор чипсами (.pill-item). */
-  .uc-impl-cell{display:flex;align-items:center;gap:var(--space-2);min-width:0;}
+  /* Пометке «вручную» разрешено уйти на вторую строку: в ячейку шириной 126
+     код и маркер расхождения встают рядом, а вместе с пометкой просят 161.
+     Ячейка в две строки — норма (docs/behaviour.md §5), усечение кода — нет. */
+  .uc-impl-cell{display:flex;align-items:center;gap:var(--space-2);min-width:0;flex-wrap:wrap;}
+  .uc-impl-manual{flex-basis:100%;}
   .uc-impl-code{font-size:15px;line-height:20px;letter-spacing:.2px;white-space:nowrap;}
   /* align-items:center ровняет БОКСЫ, а глаз видит чернила. Замер видимых пикселей
      в ячейке высотой 20: код 4.50–17.50 (центр 11.00), «+N» 5.00–14.00 (центр 9.50 —
@@ -6819,7 +6823,6 @@ const state = {
   projectAgentsSubTab:"internal",
   ucSearch:"",
   ucSourceFilter:"Все",
-  ucStatusFilter:"Все",
   ucScenarioSearch:"",        // поиск по вызову в блоке «Сценарий» карточки Use Case
   ucScenarioStatusFilter:"Все",
   /* Какие строки таблицы вызовов раскрыты, ключ "<ucId>:<part>". Раскрытие —
@@ -9232,7 +9235,10 @@ function AcE2eUcRows(g, q){
     out += `<tr class="exp-detail-row"><td colspan="2"><div class="exp-detail">
       <div class="table-wrap">
         <table class="fixed-table">
-          <colgroup><col style="width:21%"><col style="width:29%"><col style="width:23%"><col style="width:11%"><col style="width:16%"></colgroup>
+          <!-- «Реализация» 11% → 14%: код e2e («E2E.00.02.03») шире прежнего
+               «SEQ-104» и стоит с nowrap. Добавку отдало «Описание» — оно
+               усекается по строкам и раскрывается подсказкой. -->
+          <colgroup><col style="width:21%"><col style="width:26%"><col style="width:23%"><col style="width:14%"><col style="width:16%"></colgroup>
           <thead><tr><th>Метод</th><th>Описание</th><th>Техническая возможность</th><th>Реализация</th><th>Статус метода</th></tr></thead>
           <tbody>
             ${methods.map(m=>`
@@ -12288,10 +12294,6 @@ function filteredUseCases(p){
     const q = state.ucSearch.trim().toLowerCase();
     if(q && !(u.name.toLowerCase().includes(q) || u.code.toLowerCase().includes(q))) return false;
     if(state.ucSourceFilter!=="Все" && u.source!==state.ucSourceFilter) return false;
-    if(state.ucStatusFilter!=="Все"){
-      const wantPublished = state.ucStatusFilter==="Опубликован";
-      if((u.status==="published") !== wantPublished) return false;
-    }
     return true;
   });
 }
@@ -12308,8 +12310,7 @@ function UseCaseTab(p){
         </div>
       </div>
       ${FilterSelect({id:"uc-filter-source", label:"Источник", value:state.ucSourceFilter, options:["Все","Ручной импорт","Автоматический импорт"], action:"uc-source-filter-set"})}
-      ${FilterSelect({id:"uc-filter-status", label:"Статус", value:state.ucStatusFilter, options:["Все","Опубликован","Черновик"], action:"uc-status-filter-set"})}
-      ${ResetFiltersButton("reset-uc-filters", !!(state.ucSearch || state.ucSourceFilter!=="Все" || state.ucStatusFilter!=="Все"))}
+      ${ResetFiltersButton("reset-uc-filters", !!(state.ucSearch || state.ucSourceFilter!=="Все"))}
       <!-- Кнопка без .btn-sm: .btn и есть размер medium по (48 / 17-22-500 / padding 20),
            тот же, что у поиска и фильтров рядом. -->
       <button class="btn btn-primary" data-action="uc-create" data-id="${p.id}">Создать Use Case</button>
@@ -12707,15 +12708,20 @@ function UseCaseScenariosTable(u, projectId, ucId){
          «Фиксирование шапки и столбцов», первый столбец закрепляется. Проценты
          подобраны так, чтобы при min-width каждой колонке хватало её минимума:
          Шаг 112, Вызывающий 124 и Вызываемый 124 (заголовок — одно слово,
-         переносить его некуда), Вызов 198≥193, ТС 161, Реализация 136,
+         переносить его некуда), Вызов 198≥193, ТС 161, Реализация 174,
          Статус вызова 198. «Действие» усекается с подсказкой на двух строках.
          ТС прибавила: при 132 слову «Возможность» не хватало ширины, и оно
-         рвалось посреди — «Возможно / сть». -->
+         рвалось посреди — «Возможно / сть».
+         Реализация прибавила 136 → 174 после перехода на коды e2e: «SEQ-88»
+         просил 107, «E2E.00.02.08» с маркером расхождения — 124, а с пометкой
+         «вручную» — 161. Добавку отдало «Действие» (15% → 12%): оно усекается
+         по строкам, и подсказка показывает текст целиком, а код в колонке
+         «Реализация» усечь нельзя — по нему открывают страницу. -->
     <div class="table-scroll">
       <table class="fixed-table uc-scenarios-table">
         <colgroup>
-          <col style="width:9%"><col style="width:10%"><col style="width:10%"><col style="width:15%">
-          <col style="width:16%"><col style="width:13%"><col style="width:11%"><col style="width:16%">
+          <col style="width:9%"><col style="width:10%"><col style="width:10%"><col style="width:12%">
+          <col style="width:16%"><col style="width:13%"><col style="width:14%"><col style="width:16%">
         </colgroup>
         <thead><tr><th>Шаг</th><th>Вызывающий</th><th>Вызываемый</th><th>Действие</th><th>Вызов</th><th>ТС</th><th>Реализация</th><th>Статус вызова</th></tr></thead>
         <tbody>
@@ -15116,9 +15122,13 @@ function UcStepResult(w){
       </div>
       <div class="table-wrap-fit" style="margin-bottom:var(--space-7);">
         <table class="fixed-table">
+          <!-- «Реализация» прибавила 7% → 12% вслед за переходом на коды e2e:
+               «SEQ-88» помещался в 7%, «E2E.00.02.06» — нет, а код в этой колонке
+               стоит с white-space:nowrap и усечься не может. Добавку отдало
+               «Действие», оно усекается по строкам (clampCell). -->
           <colgroup>
-            <col style="width:5%"><col style="width:13%"><col style="width:13%"><col style="width:20%">
-            <col style="width:16%"><col style="width:13%"><col style="width:7%"><col style="width:13%">
+            <col style="width:5%"><col style="width:13%"><col style="width:13%"><col style="width:15%">
+            <col style="width:16%"><col style="width:13%"><col style="width:12%"><col style="width:13%">
           </colgroup>
           <thead><tr><th>Шаг</th><th>Вызывающий</th><th>Вызываемый</th><th>Действие</th><th>Вызов</th><th>ТС</th><th>Реализация</th><th>Статус вызова</th></tr></thead>
           <tbody>
@@ -16933,12 +16943,11 @@ function handleAction(action, el){
     case "open-usecase": openUseCase(el.dataset.id, el.dataset.uc); break;
     case "open-usecase-history": state.popover = null; go("usecase-history", {projectId: el.dataset.id, ucId: el.dataset.uc}); break;
     case "edit-usecase": state.popover = null; if(ucActiveBranchLocked(el.dataset.id, el.dataset.uc)){ render(); break; } startUcWizard(el.dataset.id, {editUcId: el.dataset.uc}); break;
-    case "reset-uc-filters": state.ucSearch=""; state.ucSourceFilter="Все"; state.ucStatusFilter="Все"; render(); break;
+    case "reset-uc-filters": state.ucSearch=""; state.ucSourceFilter="Все"; render(); break;
     case "reset-uc-scenario-filters": state.ucScenarioSearch=""; state.ucScenarioStatusFilter="Все"; render(); break;
     case "uc-scenario-search-clear": state.ucScenarioSearch=""; render(); break;
     case "uc-scenario-status-set": state.ucScenarioStatusFilter = el.dataset.value; state.popover=null; render(); break;
     case "uc-source-filter-set": state.ucSourceFilter = el.dataset.value; state.popover=null; render(); break;
-    case "uc-status-filter-set": state.ucStatusFilter = el.dataset.value; state.popover=null; render(); break;
     case "proj-status-filter-set": state.statusFilter = el.dataset.value; state.popover=null; render(); break;
     case "graph-add-node-type":
       state.graph.addNode.draft.typeCode = el.dataset.value;
