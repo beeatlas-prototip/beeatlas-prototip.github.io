@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261021-115104">
+<meta name="beeatlas-build" content="20261021-131821">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -712,6 +712,7 @@
   .suggest-dropdown::-webkit-scrollbar,
   .cj-matrix-wrap::-webkit-scrollbar,
   .uc-menu::-webkit-scrollbar,
+  .uc-chain::-webkit-scrollbar,
   .table-scroll::-webkit-scrollbar{width:15px;height:15px;}
   /* Дорожка прозрачная и отступает от верхнего и нижнего края на 8px (спека:
      notifications — «верхний паддинг 8, правый 4»). Боковые 4px даёт прозрачная
@@ -727,6 +728,7 @@
   .cj-matrix-wrap::-webkit-scrollbar-track,
   .uc-menu::-webkit-scrollbar-track,
   .ds-select-menu::-webkit-scrollbar-track,
+  .uc-chain::-webkit-scrollbar-track,
   .main::-webkit-scrollbar-track{background-color:transparent;margin:var(--size-spacing-x2) 0;}
   /* Горизонтальная полоса: 8 слева и справа (margin трека), 4 от нижнего края
      (прозрачная рамка ползунка) — docs/interaction.md §4. */
@@ -748,6 +750,7 @@
   .suggest-dropdown::-webkit-scrollbar-thumb,
   .cj-matrix-wrap::-webkit-scrollbar-thumb,
   .uc-menu::-webkit-scrollbar-thumb,
+  .uc-chain::-webkit-scrollbar-thumb,
   .table-scroll::-webkit-scrollbar-thumb{
     background-color:var(--text-tertiary);border:4px solid transparent;
     background-clip:content-box;border-radius:100px;min-height:28px;
@@ -1458,6 +1461,12 @@
   /* Ручная привязка отбита от кандидатов линией: это связь другого сорта,
      и видно это должно быть без чтения подписей. */
   .uc-manual-block{border-top:1px solid var(--border);padding-top:var(--space-2);}
+  /* Ссылка «показать цепочку» уходит вправо: она про строку целиком, а не про
+     название e2e, и рядом с кодом читалась бы как часть его подписи. */
+  .uc-chain-toggle{margin-left:auto;white-space:nowrap;font-size:13px;line-height:16px;letter-spacing:.2px;}
+  /* Дерево цепочки в раскрытой строке шага: отступ сверху и ограничение высоты —
+     у длинных цепочек строка шага иначе уезжает на два экрана. */
+  .uc-chain{margin:var(--space-3) 0 var(--space-5);max-height:420px;overflow-y:auto;}
 
   /* ── Дерево расширений e2e ───────────────────────────────────────────────
      Строки берут компонент «Уровни таблицы» (.ac-tree / .ac-tree-row /
@@ -6959,6 +6968,7 @@ const state = {
   ucImplExpanded:{},
   /* Закладка страницы реализации и её полноэкранная диаграмма (R-4). */
   implTab:"tree",
+  ucChainOpen:{},         // раскрытые цепочки e2e в строках шагов Use Case
   crossBranch:"main",     // ветка на рабочем месте корпоративной архитектуры
   crossExpanded:{},       // раскрытые Use Case там же
   /* Раскрытые вызовы дерева расширений. Ключ — путь кодов e2e от корня плюс
@@ -13132,18 +13142,29 @@ function scenarioImplDetailRow(s, projectId, ucId, cols){
   const callRef = {label:s.call, opId:s.opId||null};
   const cand = scenarioCandidates(s, branch);
   const manual = scenarioManual(s);
-  const candRows = cand.map(code=>{
+  /* Цепочка раскрывается прямо здесь, а не только на странице e2e: §5.2 требует,
+     чтобы архитектор видел раскрытие каждого шага и вложенные e2e, не уходя
+     с Use Case. Ключ раскрытия свой у каждой пары «шаг + e2e». */
+  const chainRow = (code, how) => {
     const i = implInfo(code);
     const n = i.calls.length;
+    const key = `${ucId}:${s.part}:${code}`;
+    const open = !!(state.ucChainOpen||{})[key];
+    return `
+      <div class="uc-cand-row">
+        <span class="proj-link uc-impl-code" data-action="open-uc-impl" data-id="${projectId}" data-uc="${ucId}" data-part="${escapeHtml(s.part)}" data-code="${escapeHtml(code)}">${escapeHtml(code)}</span>
+        <span class="uc-cand-meta">${escapeHtml(i.source)} · ${escapeHtml(i.product)} · ${n} ${ruPlural(n,"вызов","вызова","вызовов")} в цепочке${how}</span>
+        <span class="proj-link uc-chain-toggle" data-action="uc-toggle-chain" data-key="${escapeHtml(key)}">${open ? "Скрыть цепочку" : "Показать цепочку"}</span>
+      </div>
+      ${open ? `<div class="uc-chain"><div class="ac-tree">${e2eTreeRows(code, [code], 1, false, key)}</div></div>` : ""}`;
+  };
+  const candRows = cand.map(code=>{
     /* Совпадение по операции архитектуры называем вслух: путь метода при этом
        другой, и без пояснения кандидат выглядит случайным. */
     const how = e2eMatchKind(code, callRef)==="operation"
-      ? ` · совпало по операции ${escapeHtml(i.calls[0].opId)}`
+      ? ` · совпало по операции ${escapeHtml(implInfo(code).calls[0].opId)}`
       : "";
-    return `<div class="uc-cand-row">
-        <span class="proj-link uc-impl-code" data-action="open-uc-impl" data-id="${projectId}" data-uc="${ucId}" data-part="${escapeHtml(s.part)}" data-code="${escapeHtml(code)}">${escapeHtml(code)}</span>
-        <span class="uc-cand-meta">${escapeHtml(i.source)} · ${escapeHtml(i.product)} · ${n} ${ruPlural(n,"вызов","вызова","вызовов")} в цепочке${how}</span>
-      </div>`;
+    return chainRow(code, how);
   }).join("");
   const others = e2eOtherBranchesWith(callRef, {branch});
   const othersText = Object.keys(others).length
@@ -13161,18 +13182,26 @@ function scenarioImplDetailRow(s, projectId, ucId, cols){
     : (e2eMatchKind(manual && manual.code, callRef)
         ? "Источник: " + (manual ? manual.origin : "")
         : "Начальный метод этого e2e с вызовом не совпадает — привязка закрепляет решение архитектора");
+  /* У привязки из другой ветки цепочку не показываем: она в этой ветке
+     не читается, и дерево под ней выглядело бы действующей реализацией. */
+  const manualChainKey = manual ? `${ucId}:${s.part}:manual:${manual.code}` : "";
+  const manualChainOpen = !!(state.ucChainOpen||{})[manualChainKey];
   const manualBlock = manual
     ? `${DsList({
           overline: manualForeign ? "Ручная привязка из другой ветки" : "Ручная привязка",
           title:manual.code,
           text:manual.source + " · " + manual.product,
           caption: manualCaption,
-        })}`
+        })}
+       ${manualChainOpen && !manualForeign
+          ? `<div class="uc-chain"><div class="ac-tree">${e2eTreeRows(manual.code, [manual.code], 1, false, manualChainKey)}</div></div>`
+          : ""}`
     : `<div class="uc-impl-detail-lbl">Ручной привязки нет. Привяжи e2e, если автоматика реализацию не находит или кандидатов несколько</div>`;
   return `<tr class="exp-detail-row"><td colspan="${cols}"><div class="exp-detail">
       ${candBlock}
       <div class="uc-manual-block">${manualBlock}</div>
       <div class="uc-impl-detail-actions">
+        ${manual && !manualForeign ? `<span class="proj-link" data-action="uc-toggle-chain" data-key="${escapeHtml(manualChainKey)}">${manualChainOpen ? "Скрыть цепочку привязки" : "Показать цепочку привязки"}</span>` : ""}
         <span class="proj-link" data-action="uc-open-impl-match" data-id="${projectId}" data-uc="${ucId}" data-part="${escapeHtml(s.part)}">${manual ? "Заменить привязку" : "Привязать e2e"}</span>
         ${manual ? `<span class="proj-link" data-action="uc-clear-manual" data-id="${projectId}" data-uc="${ucId}" data-part="${escapeHtml(s.part)}">Снять привязку</span>` : ""}
       </div>
@@ -13560,7 +13589,10 @@ function e2eExpansionsFor(call, path){
    он раскрывает, и печатать его внутри себя же значит показать строку дважды.
    Индекс для ключа берём настоящий, иначе ключи вложенного и корневого уровня
    совпали бы. */
-function e2eTreeRows(code, path, level, skipFirst){
+/* `ctx` — где именно показано дерево: на странице e2e или в раскрытой строке шага
+   Use Case. Без него ключи раскрытия совпадали бы, и разворот в одном месте дёргал
+   бы другое — а это разные рабочие ситуации. */
+function e2eTreeRows(code, path, level, skipFirst, ctx){
   const info = implInfo(code);
   if(!info) return "";
   const calls = skipFirst ? info.calls.slice(1) : info.calls;
@@ -13568,7 +13600,7 @@ function e2eTreeRows(code, path, level, skipFirst){
   return calls.map((c, i)=>{
     const idx = skipFirst ? i+1 : i;
     const exps = e2eExpansionsFor({label:c.label, opId:c.opId||null}, path);
-    const key = path.join(">") + "#" + idx;
+    const key = (ctx||"page") + "|" + path.join(">") + "#" + idx;
     const open = !!state.e2eTreeOpen[key];
     const n = exps.length;
     const mark = n
@@ -13592,7 +13624,7 @@ function e2eTreeRows(code, path, level, skipFirst){
         </div>`;
       return e.seen
         ? head + `<div class="uc-impl-detail-lbl" style="padding:0 var(--size-spacing-x6) var(--space-4);">Этот e2e уже раскрыт выше в этой цепочке — вглубь он не разворачивается</div>`
-        : head + e2eTreeRows(e.code, path.concat([e.code]), level+1, true);
+        : head + e2eTreeRows(e.code, path.concat([e.code]), level+1, true, ctx);
     }).join("");
     return row + `<div class="ac-tree-body" style="--lvl:${level}">${body}</div>`;
   }).join("");
@@ -13602,7 +13634,7 @@ function E2eTreeCard(code){
   const start = e2eStartMethod(code);
   return `
     <p class="uc-impl-detail-lbl">Начальный метод — <b>${escapeHtml(start||"—")}</b>: по нему этот e2e находят шаги, которые он раскрывает. Разверни вызов, чтобы увидеть e2e ветки ${escapeHtml(e2eBranch(code)||"main")}, раскрывающие его — связи не пересекают границу ветки. У вложенного e2e начальный метод не повторяется: он и есть раскрытый вызов</p>
-    <div class="ac-tree">${e2eTreeRows(code, [code], 1)}</div>`;
+    <div class="ac-tree">${e2eTreeRows(code, [code], 1, false, "page")}</div>`;
 }
 
 /* Диаграмма строится тем же рендерером, что и остальные sequence в прототипе,
@@ -17557,6 +17589,12 @@ function handleAction(action, el){
     case "uc-toggle-impl": {
       const k = el.dataset.uc+":"+el.dataset.part;
       state.ucImplExpanded[k] = !state.ucImplExpanded[k];
+      render();
+      break;
+    }
+    case "uc-toggle-chain": {
+      const k = el.dataset.key;
+      state.ucChainOpen[k] = !state.ucChainOpen[k];
       render();
       break;
     }
