@@ -6,7 +6,7 @@
 <title>beeatlas (прототип)</title>
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261021-105704">
+<meta name="beeatlas-build" content="20261021-110833">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -1421,6 +1421,12 @@
   .uc-filters .search-wrap{flex:1 1 280px;width:auto;min-width:280px;max-width:648px;}
   .uc-filters .select-wrap{flex:0 1 260px;width:260px;min-width:170px;}
   .uc-filters .reset-link{flex:0 0 auto;white-space:nowrap;}
+  /* Создать Use Case — на правый край строки: без этого после снятия колонки
+     «Статус» поиск упирается в свои 648 раньше, чем кончается строка, и кнопка
+     остаётся там же, где её оставил поиск, — с пустым хвостом до края карточки,
+     как у таблицы ниже. Авто-отступ не крадёт место у поиска: он забирает только
+     остаток, который не доедает флекс-рост поиска (и тот всё равно доходит до 648). */
+  .uc-filters .btn-primary{margin-left:auto;}
 
   /* ═══ Реализация вызова: 1-ко-многим ═══════════════════════════════════════
      Ячейка колонки «Реализация» показывает только выбранную реализацию и счётчик
@@ -6344,6 +6350,12 @@ function freshProject(name, code){
    `source` — загрузчик канона (Sparx, PlantUML, Structurizr и следующие),
    `origin` — откуда именно взято описание, `product` — продукт-владелец
    карточки; продукт метода в дереве к нему не приравнивается.
+   `branch` — ветка артефакта (design, develop, main и пользовательские).
+   Связи читаются внутри одной ветки: e2e ветки design расширяет use-case
+   и другие e2e ветки design, в main их не видно.
+   `opId` у вызова — сопоставленная операция архитектуры
+   (connection_operation_id). Совпадение начального метода считается и по нему:
+   достаточно одной стороны — самого метода или операции.
    `calls` служит сразу обеим закладкам страницы: из него строится и текст
    исходных данных, и диаграмма, поэтому разъехаться они не могут.
    Первый вызов `calls[0]` — начальный метод: по нему и считается, какой шаг
@@ -6351,74 +6363,115 @@ function freshProject(name, code){
 const E2E_REGISTRY = {
   "E2E.00.02.01": {
     source:"PlantUML", origin:"E2E-сценарий «Онлайн заказ»", product:"Платформа заказов",
-    loadedAt:"10.10.2026, 14:32", objectId:"e2e-0088",
+    branch:"main", loadedAt:"10.10.2026, 14:32", objectId:"e2e-0088",
     calls:[
       {from:"app", to:"ext_gateway", label:"GET /api/v1/users/{id}"},
-      {from:"app", to:"cart_service", label:"GET /api/v1/cart/{id}"},
-      {from:"app", to:"pricing_service", label:"POST /api/v1/price/calc"},
-      {from:"app", to:"order_service", label:"POST /api/v1/orders"},
-      {from:"order_service", to:"billing", label:"POST /api/v1/payments/reserve"},
+      {from:"app", to:"cart_service", label:"GET /api/v1/cart/{id}", opId:"ARCH-OP-0203"},
+      {from:"app", to:"pricing_service", label:"POST /api/v1/price/calc", opId:"ARCH-OP-0333"},
+      {from:"app", to:"order_service", label:"POST /api/v1/orders", opId:"ARCH-OP-0441"},
+      {from:"order_service", to:"billing", label:"POST /api/v1/payments/reserve", opId:"ARCH-OP-0512"},
       {from:"order_service", to:"notification", label:"POST /api/v1/notify/send"},
     ]},
   "E2E.00.02.02": {
     source:"PlantUML", origin:"E2E-сценарий «Онлайн заказ»", product:"Каталог и корзина",
-    loadedAt:"10.10.2026, 14:32", objectId:"e2e-0091",
+    branch:"main", loadedAt:"10.10.2026, 14:32", objectId:"e2e-0091",
     calls:[
-      {from:"app", to:"cart_service", label:"GET /api/v1/cart/{id}"},
+      {from:"app", to:"cart_service", label:"GET /api/v1/cart/{id}", opId:"ARCH-OP-0203"},
       {from:"cart_service", to:"catalog_service", label:"GET /api/v1/catalog/offers"},
     ]},
   "E2E.00.02.03": {
     source:"PlantUML", origin:"Use Case «Оформление заказа в мобильном приложении»", product:"Мобильное приложение",
-    loadedAt:"09.10.2026, 11:05", objectId:"e2e-0104",
+    branch:"main", loadedAt:"09.10.2026, 11:05", objectId:"e2e-0104",
     calls:[
       {from:"app", to:"ext_gateway", label:"GET /api/v1/users/{id}"},
-      {from:"app", to:"order_service", label:"POST /api/v1/orders"},
-      {from:"order_service", to:"billing", label:"POST /api/v1/payments/reserve"},
+      {from:"app", to:"order_service", label:"POST /api/v1/orders", opId:"ARCH-OP-0441"},
+      {from:"order_service", to:"billing", label:"POST /api/v1/payments/reserve", opId:"ARCH-OP-0512"},
     ]},
   "E2E.00.02.04": {
     source:"PlantUML", origin:"Use Case «Авторизация в личном кабинете»", product:"Личный кабинет",
-    loadedAt:"08.10.2026, 17:48", objectId:"e2e-0109",
+    branch:"main", loadedAt:"08.10.2026, 17:48", objectId:"e2e-0109",
     calls:[
       {from:"app", to:"ext_gateway", label:"GET /api/v1/users/{id}"},
       {from:"ext_gateway", to:"ldap", label:"bind"},
     ]},
   "E2E.00.02.05": {
-    source:"Structurizr", origin:"Dynamic view, ветка develop, сборка от 10.10.2026", product:"Уведомления",
-    loadedAt:"10.10.2026, 09:14", objectId:"e2e-0117",
+    source:"Structurizr", origin:"Dynamic view, сборка от 10.10.2026", product:"Уведомления",
+    branch:"main", loadedAt:"10.10.2026, 09:14", objectId:"e2e-0117",
     calls:[
       {from:"order_service", to:"notification", label:"POST /api/v1/notify/send"},
       {from:"notification", to:"sms_gateway", label:"POST /api/v1/sms"},
     ]},
   "E2E.00.02.06": {
     source:"PlantUML", origin:"E2E-сценарий «Заказ оборудования»", product:"Платформа заказов",
-    loadedAt:"07.10.2026, 12:20", objectId:"e2e-0121",
+    branch:"main", loadedAt:"07.10.2026, 12:20", objectId:"e2e-0121",
     calls:[
-      {from:"app", to:"order_service", label:"POST /api/v1/orders"},
+      {from:"app", to:"order_service", label:"POST /api/v1/orders", opId:"ARCH-OP-0441"},
       {from:"order_service", to:"notification", label:"POST /api/v1/notify/send"},
     ]},
   "E2E.00.02.07": {
     source:"PlantUML", origin:"E2E-сценарий «Пополнение баланса»", product:"Биллинг",
-    loadedAt:"06.10.2026, 16:03", objectId:"e2e-0134",
+    branch:"main", loadedAt:"06.10.2026, 16:03", objectId:"e2e-0134",
     calls:[
-      {from:"app", to:"billing", label:"POST /api/v1/payments/reserve"},
+      {from:"app", to:"billing", label:"POST /api/v1/payments/reserve", opId:"ARCH-OP-0512"},
       {from:"billing", to:"ledger", label:"POST /api/v1/ledger/hold"},
     ]},
+  /* Начинается другим путём, чем вызов шага P-03, но той же операцией
+     архитектуры: по вижену совпадения достаточно с одной стороны — по методу
+     или по сопоставленной операции. Этот e2e и показывает второй случай. */
   "E2E.00.02.08": {
-    source:"Structurizr", origin:"Dynamic view, ветка design, сборка от 09.10.2026", product:"Тарифы и цены",
-    loadedAt:"09.10.2026, 19:37", objectId:"e2e-0140",
+    source:"Structurizr", origin:"Dynamic view, сборка от 09.10.2026", product:"Тарифы и цены",
+    branch:"main", loadedAt:"09.10.2026, 19:37", objectId:"e2e-0140",
     calls:[
-      {from:"app", to:"pricing_service", label:"POST /api/v1/price/calc"},
+      {from:"app", to:"pricing_service", label:"POST /api/v1/pricing/calculate", opId:"ARCH-OP-0333"},
       {from:"pricing_service", to:"tariff_service", label:"GET /api/v1/tariffs"},
     ]},
   /* Второй e2e с тем же начальным методом, что у E2E.00.02.06, и из другого
      источника: концепция (§1) прямо допускает, что один шаг совпадёт
      с несколькими e2e — разные источники и разные продукты начинают с одного
      метода. Победителя система не выбирает. */
+  /* Две записи в неглавных ветках: по ним видно, что набор кандидатов зависит
+     от ветки, а не лежит общим списком. E2E.00.02.10 — черновик цепочки заказа
+     с проверкой лимитов: это тот самый промежуточный вызов, которого не хватает
+     шагу P-05 в main. */
+  "E2E.00.02.10": {
+    source:"Structurizr", origin:"Dynamic view, сборка от 20.10.2026", product:"Платформа заказов",
+    branch:"design", loadedAt:"20.10.2026, 16:12", objectId:"e2e-0150",
+    calls:[
+      {from:"app", to:"order_service", label:"POST /api/v1/orders", opId:"ARCH-OP-0441"},
+      {from:"order_service", to:"limits", label:"POST /api/v1/limits/check"},
+      {from:"order_service", to:"billing", label:"POST /api/v1/payments/reserve", opId:"ARCH-OP-0512"},
+    ]},
+  "E2E.00.02.11": {
+    source:"PlantUML", origin:"E2E-сценарий «Онлайн заказ», черновик разработки", product:"Каталог и корзина",
+    branch:"develop", loadedAt:"19.10.2026, 11:40", objectId:"e2e-0152",
+    calls:[
+      {from:"app", to:"cart_service", label:"GET /api/v1/cart/{id}", opId:"ARCH-OP-0203"},
+      {from:"cart_service", to:"catalog_service", label:"GET /api/v1/catalog/offers"},
+      {from:"cart_service", to:"promo_service", label:"POST /api/v1/promo/apply"},
+    ]},
+  /* E2E продуктов, которые раскрывают методы из вкладки «Участие в процессах»:
+     до этого колонка там стояла пустой, потому что ни один e2e с этих методов
+     не начинался и связывать было нечего. */
+  "E2E.00.02.12": {
+    source:"PlantUML", origin:"E2E-сценарий «Перенос средств»", product:"Балансы и платежи",
+    branch:"main", loadedAt:"16.10.2026, 13:05", objectId:"e2e-0161",
+    calls:[
+      {from:"app", to:"balance_service", label:"POST /transferBalance", opId:"ARCH-OP-0710"},
+      {from:"balance_service", to:"ledger", label:"POST /api/v1/ledger/hold"},
+      {from:"balance_service", to:"notification", label:"POST /api/v1/notify/send", opId:"ARCH-OP-0602"},
+    ]},
+  "E2E.00.02.13": {
+    source:"Sparx", origin:"Модель Sparx EA, пакет «Лимиты»", product:"Кредитные лимиты",
+    branch:"main", loadedAt:"14.10.2026, 09:22", objectId:"e2e-0166",
+    calls:[
+      {from:"app", to:"limits", label:"GET /creditlimit", opId:"ARCH-OP-0733"},
+      {from:"limits", to:"ledger", label:"GET /api/v1/ledger/balance"},
+    ]},
   "E2E.00.02.09": {
     source:"Sparx", origin:"Модель Sparx EA, пакет «Заказы»", product:"Складская логистика",
-    loadedAt:"05.10.2026, 10:48", objectId:"e2e-0126",
+    branch:"main", loadedAt:"05.10.2026, 10:48", objectId:"e2e-0126",
     calls:[
-      {from:"app", to:"order_service", label:"POST /api/v1/orders"},
+      {from:"app", to:"order_service", label:"POST /api/v1/orders", opId:"ARCH-OP-0441"},
       {from:"order_service", to:"warehouse", label:"POST /api/v1/warehouse/reserve"},
       {from:"warehouse", to:"stock_service", label:"GET /api/v1/warehouse/stock"},
     ]},
@@ -6436,19 +6489,49 @@ function e2eStartMethod(code){
   return r && r.calls.length ? r.calls[0].label : null;
 }
 function e2eCodes(){ return Object.keys(E2E_REGISTRY); }
+function e2eBranch(code){ const r=E2E_REGISTRY[code]; return r ? (r.branch||"main") : null; }
+/* Вызов для поиска — это метод плюс сопоставленная операция архитектуры.
+   Строку принимаем тоже: во многих местах известен только путь метода. */
+function e2eCallRef(call){ return typeof call==="string" ? {label:call, opId:null} : (call||{label:null,opId:null}); }
+/* Чем совпал начальный метод e2e с вызовом: самим методом или сопоставленной
+   операцией архитектуры. Достаточно одной стороны (концепция §1). */
+function e2eMatchKind(code, call){
+  const r=E2E_REGISTRY[code]; if(!r||!r.calls.length) return null;
+  const start=r.calls[0], ref=e2eCallRef(call);
+  if(ref.label && start.label===ref.label) return "method";
+  if(ref.opId && start.opId && start.opId===ref.opId) return "operation";
+  return null;
+}
 /* Код e2e для вызова: сперва тот, который этот вызов действительно начинает,
    иначе первый из реестра — показывать код, которого в прототипе нет, нельзя,
    по нему открывается страница. */
 function e2eCodeForCall(call){
-  const found = e2eStartingWith(call);
+  const found = e2eStartingWith(call, {branch:"main"});
   return found.length ? found[0] : e2eCodes()[0];
 }
 /* Ядро автоматической связи: какие e2e способны раскрыть вызов `method`.
    Один метод может начинать несколько e2e — разные источники и разные продукты.
    Победителя функция не выбирает и порядок не трактует как приоритет. */
-function e2eStartingWith(method, exclude){
-  if(!method) return [];
-  return e2eCodes().filter(c => c!==exclude && e2eStartMethod(c)===method);
+function e2eStartingWith(call, opts){
+  const ref=e2eCallRef(call);
+  if(!ref.label && !ref.opId) return [];
+  opts = opts || {};
+  const branch = opts.branch || "main";
+  return e2eCodes().filter(c =>
+    c!==opts.exclude && e2eBranch(c)===branch && !!e2eMatchKind(c, ref));
+}
+/* В каких ещё ветках этот вызов кого-то находит. Пустой список кандидатов
+   в своей ветке — не то же самое, что «такого e2e нет вообще», и человеку
+   это надо сказать прямо. */
+function e2eOtherBranchesWith(call, opts){
+  opts = opts || {};
+  const branch = opts.branch || "main";
+  const out = {};
+  e2eCodes().forEach(c=>{
+    if(c===opts.exclude || e2eBranch(c)===branch) return;
+    if(e2eMatchKind(c, call)) out[e2eBranch(c)] = (out[e2eBranch(c)]||0) + 1;
+  });
+  return out;
 }
 /* Текст PlantUML собирается из того же `calls`, что и диаграмма, — так закладка
    «исходные данные» всегда описывает ровно то, что нарисовано в «визуализации». */
@@ -6479,13 +6562,13 @@ function implPlantUml(info){
 const UC_SCENARIOS_TEMPLATE = [
   {part:"P-01", participant:"app — ext_gateway", action:"Пользователь вводит логин и пароль в форме приложения. Приложение передаёт учётные данные во внешний шлюз авторизации, который проверяет их в LDAP и в случае успеха возвращает токен доступа, а при ошибке — код и текст сообщения для показа пользователю.", api:"users_api", call:"GET /api/v1/users/{id}", tcName:"Возможность авторизации пользователя", tcCode:"ТС-101", status:"confirmed",
    manual:null, mismatch:null},
-  {part:"P-02", participant:"app — cart_service", action:"Приложение запрашивает у сервиса корзины её содержимое: позиции, количество и параметры доставки.", api:"cart_api", call:"GET /api/v1/cart/{id}", tcName:"Возможность получения корзины", tcCode:"ТС-108", status:"confirmed",
+  {part:"P-02", participant:"app — cart_service", action:"Приложение запрашивает у сервиса корзины её содержимое: позиции, количество и параметры доставки.", api:"cart_api", call:"GET /api/v1/cart/{id}", opId:"ARCH-OP-0203", tcName:"Возможность получения корзины", tcCode:"ТС-108", status:"confirmed",
    manual:null, mismatch:null},
-  {part:"P-03", participant:"app — pricing_service", action:"Приложение передаёт состав корзины в сервис расчёта, который применяет тарифы и скидки и возвращает итоговую стоимость.", api:"pricing_api", call:"POST /api/v1/price/calc", tcName:"Возможность расчёта стоимости", tcCode:"ТС-114", status:"confirmed",
+  {part:"P-03", participant:"app — pricing_service", action:"Приложение передаёт состав корзины в сервис расчёта, который применяет тарифы и скидки и возвращает итоговую стоимость.", api:"pricing_api", call:"POST /api/v1/price/calc", opId:"ARCH-OP-0333", tcName:"Возможность расчёта стоимости", tcCode:"ТС-114", status:"confirmed",
    manual:null, mismatch:{type:"wrong-start", first:"GET /api/v1/catalog/offers"}},
-  {part:"P-04", participant:"app — order_service", action:"Приложение формирует заказ на основании содержимого корзины и рассчитанной стоимости. Сервис заказов проверяет остатки на складе, резервирует их и создаёт заказ со статусом «Новый», возвращая его идентификатор обратно в приложение.", api:"orders_api", call:"POST /api/v1/orders", tcName:"Возможность создания заказа", tcCode:"ТС-142", status:"confirmed",
+  {part:"P-04", participant:"app — order_service", action:"Приложение формирует заказ на основании содержимого корзины и рассчитанной стоимости. Сервис заказов проверяет остатки на складе, резервирует их и создаёт заказ со статусом «Новый», возвращая его идентификатор обратно в приложение.", api:"orders_api", call:"POST /api/v1/orders", opId:"ARCH-OP-0441", tcName:"Возможность создания заказа", tcCode:"ТС-142", status:"confirmed",
    manual:"E2E.00.02.06", mismatch:null},
-  {part:"P-05", participant:"order_service — billing", action:"Сервис заказов просит биллинг зарезервировать сумму заказа и получает в ответ идентификатор резерва.", api:"billing_api", call:"POST /api/v1/payments/reserve", tcName:"Возможность резервирования оплаты", tcCode:"ТС-150", status:"confirmed",
+  {part:"P-05", participant:"order_service — billing", action:"Сервис заказов просит биллинг зарезервировать сумму заказа и получает в ответ идентификатор резерва.", api:"billing_api", call:"POST /api/v1/payments/reserve", opId:"ARCH-OP-0512", tcName:"Возможность резервирования оплаты", tcCode:"ТС-150", status:"confirmed",
    manual:null, mismatch:{type:"mid-chain", between:"POST /api/v1/limits/check"}},
   {part:"P-06", participant:"order_service — notification", action:"Сервис заказов передаёт в сервис уведомлений адресата и текст подтверждения о созданном заказе.", api:"notify_api", call:"POST /api/v1/notify/send", tcName:"Возможность отправки уведомления", tcCode:"ТС-163", status:"confirmed",
    manual:null, mismatch:null},
@@ -8480,14 +8563,14 @@ function defaultAppcatState(){
 }
 
 const APPS = {
-  b2c:{id:"b2c", name:"B2C digital retail delivery catalog", cmdb:"B2C DIGITAL RETAIL DELIVERY CATALOG", crit:"0-Core", owner:"Константинопольский Константин Константинович", architect:"Крестовоздвиженский Филипп Пантелеймонович", status:"В эксплуатации", fitness:95},
-  filesharing:{id:"filesharing", name:"Система обмена и хранения файлов", cmdb:"FILE SHARING AND STORAGE SYSTEM", crit:"1-Mission Critical", owner:"Константинопольский Константин Константинович", architect:"Крестовоздвиженский Филипп Пантелеймонович", status:"В эксплуатации", fitness:29},
-  commplatform:{id:"commplatform", name:"Единая платформа коммуникаций Legacy", cmdb:"SCP.LEGACY", crit:"2-Business Critical", owner:"Константинопольский Константин Константинович", architect:"Крестовоздвиженский Филипп Пантелеймонович", status:"В резерве", fitness:23},
-  payments:{id:"payments", name:"Сервис Платежи и переводы", cmdb:"MCPT", crit:"3-Business Operation", owner:"Константинопольский Константин Константинович", architect:"Крестовоздвиженский Филипп Пантелеймонович", status:"В эксплуатации", fitness:78},
-  switchctrl:{id:"switchctrl", name:"Switch Control (SC)", cmdb:"SC", crit:"4-Office Productivity", owner:"Константинопольский Константин Константинович", architect:"Крестовоздвиженский Филипп Пантелеймонович", status:"В эксплуатации", fitness:0},
-  crmcore:{id:"crmcore", name:"CRM Core Platform", cmdb:"CRM.CORE", crit:"1-Mission Critical", owner:"Островидова Анна Сергеевна", architect:"Крестовоздвиженский Филипп Пантелеймонович", status:"В эксплуатации", fitness:61},
-  billing:{id:"billing", name:"BSS Billing Engine", cmdb:"BSS.BILLING", crit:"0-Core", owner:"Островидова Анна Сергеевна", architect:"Крестовоздвиженский Филипп Пантелеймонович", status:"В эксплуатации", fitness:88},
-  ess:{id:"ess", name:"ESS Employee Self-Service", cmdb:"ESS.PORTAL", crit:"4-Office Productivity", owner:"Островидова Анна Сергеевна", architect:"Крестовоздвиженский Филипп Пантелеймонович", status:"Выведено из эксплуатации", fitness:12},
+  b2c:{id:"b2c", name:"B2C digital retail delivery catalog", cmdb:"B2C DIGITAL RETAIL DELIVERY CATALOG", product:"Платформа заказов", crit:"0-Core", owner:"Константинопольский Константин Константинович", architect:"Крестовоздвиженский Филипп Пантелеймонович", status:"В эксплуатации", fitness:95},
+  filesharing:{id:"filesharing", name:"Система обмена и хранения файлов", cmdb:"FILE SHARING AND STORAGE SYSTEM", product:"Складская логистика", crit:"1-Mission Critical", owner:"Константинопольский Константин Константинович", architect:"Крестовоздвиженский Филипп Пантелеймонович", status:"В эксплуатации", fitness:29},
+  commplatform:{id:"commplatform", name:"Единая платформа коммуникаций Legacy", cmdb:"SCP.LEGACY", product:"Уведомления", crit:"2-Business Critical", owner:"Константинопольский Константин Константинович", architect:"Крестовоздвиженский Филипп Пантелеймонович", status:"В резерве", fitness:23},
+  payments:{id:"payments", name:"Сервис Платежи и переводы", cmdb:"MCPT", product:"Балансы и платежи", crit:"3-Business Operation", owner:"Константинопольский Константин Константинович", architect:"Крестовоздвиженский Филипп Пантелеймонович", status:"В эксплуатации", fitness:78},
+  switchctrl:{id:"switchctrl", name:"Switch Control (SC)", cmdb:"SC", product:"Кредитные лимиты", crit:"4-Office Productivity", owner:"Константинопольский Константин Константинович", architect:"Крестовоздвиженский Филипп Пантелеймонович", status:"В эксплуатации", fitness:0},
+  crmcore:{id:"crmcore", name:"CRM Core Platform", cmdb:"CRM.CORE", product:"Личный кабинет", crit:"1-Mission Critical", owner:"Островидова Анна Сергеевна", architect:"Крестовоздвиженский Филипп Пантелеймонович", status:"В эксплуатации", fitness:61},
+  billing:{id:"billing", name:"BSS Billing Engine", cmdb:"BSS.BILLING", product:"Биллинг", crit:"0-Core", owner:"Островидова Анна Сергеевна", architect:"Крестовоздвиженский Филипп Пантелеймонович", status:"В эксплуатации", fitness:88},
+  ess:{id:"ess", name:"ESS Employee Self-Service", cmdb:"ESS.PORTAL", product:"Тарифы и цены", crit:"4-Office Productivity", owner:"Островидова Анна Сергеевна", architect:"Крестовоздвиженский Филипп Пантелеймонович", status:"Выведено из эксплуатации", fitness:12},
 };
 
 const APP_TREE = [
@@ -9083,13 +9166,130 @@ function acMethodStatusBadge(s){
   if(s==="Планируется") return '<span class="badge orange">Планируется</span>';
   return '<span class="badge blue">На ревью</span>';
 }
-function acDynamicCell(id){
-  return id
-    ? `<span class="proj-link" style="white-space:nowrap;" data-action="ac-open-e2e-dynamic" data-id="${escapeHtml(id)}">${escapeHtml(id)}</span>`
-    : '<span class="empty-cell">—</span>';
+/* Раскрывающий e2e — не хранимое значение, а результат поиска по начальному
+   методу в ветке main: на этом экране продукт смотрит опубликованную ветку.
+   Несколько e2e на один метод — обычное дело, победителя не выбираем. */
+function acE2eCell(method, opId){
+  const found = e2eStartingWith({label:method, opId:opId||null}, {branch:"main"});
+  if(!found.length) return '<span class="empty-cell">—</span>';
+  if(found.length===1){
+    return `<span class="proj-link" style="white-space:nowrap;" data-action="ac-open-e2e-dynamic" data-id="${escapeHtml(found[0])}">${escapeHtml(found[0])}</span>`;
+  }
+  const n = found.length;
+  return `<span class="proj-link" style="white-space:nowrap;" data-action="ac-open-e2e-dynamic" data-id="${escapeHtml(found[0])}" title="${escapeHtml(found.join(", "))}">${n} ${ruPlural(n,"кандидат","кандидата","кандидатов")}</span>`;
 }
 function acEmptyRow(cols){
   return `<tr><td colspan="${cols}" style="text-align:center;color:var(--text-secondary);padding:var(--space-8);">Ничего не нашлось. Измени запрос или сбрось его</td></tr>`;
+}
+
+/* ═══ Рабочее место продукта: два направления расширения (концепция §5.1) ══
+   Экран строится по владельцу карточки e2e и по совпадению методов, а не по
+   продуктам всех узлов дерева: продукт метода внутри чужой цепочки — не тот же,
+   что продукт-владелец карточки.
+   Читается опубликованная ветка main: рабочие места не заводят второй контур
+   записи и смотрят уже опубликованные снимки. */
+function acProductE2e(app){
+  const prod = app.product;
+  return prod ? e2eCodes().filter(c => e2eBranch(c)==="main" && E2E_REGISTRY[c].product===prod) : [];
+}
+/* Кто расширяет мои e2e: чужой e2e, чей начальный метод совпал с вызовом внутри
+   моего. */
+function acIncomingExpansions(app){
+  const mine = acProductE2e(app);
+  const out = [];
+  mine.forEach(code=>{
+    E2E_REGISTRY[code].calls.forEach((c, idx)=>{
+      if(idx===0) return;   // корень раскрывает сам себя, это не расширение
+      e2eStartingWith({label:c.label, opId:c.opId||null}, {branch:"main", exclude:code}).forEach(other=>{
+        if(E2E_REGISTRY[other].product===app.product) return;
+        out.push({mine:code, call:c.label, other, how:e2eMatchKind(other, c)});
+      });
+    });
+  });
+  return out;
+}
+/* Какие e2e мой продукт расширяет: мой e2e, чей начальный метод совпал с шагом
+   чужого e2e или с шагом use-case. Use Case берём из проектов — они и есть
+   верхнеуровневые сценарии, которые эти e2e раскрывают. */
+function acOutgoingExpansions(app){
+  const mine = acProductE2e(app);
+  const out = [];
+  mine.forEach(code=>{
+    const start = E2E_REGISTRY[code].calls[0];
+    e2eCodes().forEach(other=>{
+      if(other===code || e2eBranch(other)!=="main") return;
+      if(E2E_REGISTRY[other].product===app.product) return;
+      E2E_REGISTRY[other].calls.forEach((c, idx)=>{
+        if(idx===0) return;
+        if(e2eMatchKind(code, {label:c.label, opId:c.opId||null})){
+          out.push({mine:code, where:other, kind:"e2e", what:c.label, product:E2E_REGISTRY[other].product});
+        }
+      });
+    });
+    (state.projects||[]).forEach(pr=>{
+      (pr.useCases||[]).forEach(u=>{
+        if((u.branch||"main")!=="main") return;
+        (u.scenarios||[]).forEach(sc=>{
+          if(e2eMatchKind(code, {label:sc.call, opId:sc.opId||null})){
+            out.push({mine:code, where:u.code, kind:"uc", what:sc.part+" · "+sc.call, product:u.name});
+          }
+        });
+      });
+    });
+  });
+  return out;
+}
+function AcExpansionsTables(app){
+  if(!app.product){
+    return `<div class="card"><p style="margin:0;color:var(--text-secondary);">У приложения не указан продукт-владелец, поэтому направления расширения посчитать не из чего</p></div>`;
+  }
+  const incoming = acIncomingExpansions(app);
+  const outgoing = acOutgoingExpansions(app);
+  const mineCount = acProductE2e(app).length;
+  const how = h => h==="operation" ? " · по операции архитектуры" : "";
+  const empty = text => `<tr><td colspan="4" style="text-align:center;color:var(--text-secondary);padding:var(--space-8);">${text}</td></tr>`;
+  return `
+    <p class="uc-impl-detail-lbl" style="margin-bottom:var(--space-5);">Продукт-владелец — <b>${escapeHtml(app.product)}</b>, у него ${mineCount} ${ruPlural(mineCount,"e2e","e2e","e2e")} в ветке main. Направления считаются по совпадению методов, ветка — опубликованная</p>
+
+    <div class="section-head-row" style="margin-bottom:var(--space-4);">
+      <h3 style="margin:0;font-size:15px;">Кто расширяет мои e2e</h3>
+    </div>
+    <div class="table-wrap" style="margin-bottom:var(--space-7);">
+      <table class="fixed-table">
+        <colgroup><col style="width:20%"><col style="width:30%"><col style="width:20%"><col style="width:30%"></colgroup>
+        <thead><tr><th>Мой e2e</th><th>Вызов внутри него</th><th>Расширяющий e2e</th><th>Продукт-владелец</th></tr></thead>
+        <tbody>
+          ${incoming.length ? incoming.map(r=>`
+            <tr>
+              <td><span class="proj-link" data-action="ac-open-e2e-dynamic" data-id="${escapeHtml(r.mine)}">${escapeHtml(r.mine)}</span></td>
+              <td>${clampCell(r.call, "clamp-1")}</td>
+              <td><span class="proj-link" data-action="ac-open-e2e-dynamic" data-id="${escapeHtml(r.other)}">${escapeHtml(r.other)}</span></td>
+              <td>${escapeHtml(E2E_REGISTRY[r.other].product)}${how(r.how)}</td>
+            </tr>`).join("") : empty("Чужие e2e внутрь моих цепочек пока не заходят")}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="section-head-row" style="margin-bottom:var(--space-4);">
+      <h3 style="margin:0;font-size:15px;">Какие e2e мой продукт расширяет</h3>
+    </div>
+    <div class="table-wrap">
+      <table class="fixed-table">
+        <colgroup><col style="width:20%"><col style="width:16%"><col style="width:34%"><col style="width:30%"></colgroup>
+        <thead><tr><th>Мой e2e</th><th>Где</th><th>Что раскрывает</th><th>Владелец</th></tr></thead>
+        <tbody>
+          ${outgoing.length ? outgoing.map(r=>`
+            <tr>
+              <td><span class="proj-link" data-action="ac-open-e2e-dynamic" data-id="${escapeHtml(r.mine)}">${escapeHtml(r.mine)}</span></td>
+              <td>${r.kind==="e2e"
+                   ? `<span class="proj-link" data-action="ac-open-e2e-dynamic" data-id="${escapeHtml(r.where)}">${escapeHtml(r.where)}</span>`
+                   : escapeHtml(r.where)}</td>
+              <td>${clampCell(r.what, "clamp-1")}</td>
+              <td>${escapeHtml(r.product)}</td>
+            </tr>`).join("") : empty("Мои e2e пока ничьих шагов не раскрывают")}
+        </tbody>
+      </table>
+    </div>`;
 }
 
 function AcE2eTab(app){
@@ -9098,8 +9298,9 @@ function AcE2eTab(app){
     <div class="pill-toggle">
       <div class="pill-item ${ac.e2eSub==="e2e"?"active":""}" data-action="ac-set-e2e-sub" data-sub="e2e">Шаги E2E-сценариев</div>
       <div class="pill-item ${ac.e2eSub==="uc"?"active":""}" data-action="ac-set-e2e-sub" data-sub="uc">Шаги Use Case</div>
+      <div class="pill-item ${ac.e2eSub==="exp"?"active":""}" data-action="ac-set-e2e-sub" data-sub="exp">Расширения e2e</div>
     </div>
-    ${ac.e2eSub==="e2e" ? AcE2eProcessTable() : AcE2eUcTable()}
+    ${ac.e2eSub==="exp" ? AcExpansionsTables(app) : (ac.e2eSub==="e2e" ? AcE2eProcessTable() : AcE2eUcTable())}
   `;
 }
 
@@ -9187,13 +9388,13 @@ function AcE2eProcessRows(g, q){
       <div class="table-wrap">
         <table class="fixed-table">
           <colgroup><col style="width:34%"><col style="width:46%"><col style="width:20%"></colgroup>
-          <thead><tr><th>Метод</th><th>Техническая возможность</th><th>Реализация</th></tr></thead>
+          <thead><tr><th>Метод</th><th>Техническая возможность</th><th>Раскрывающий e2e</th></tr></thead>
           <tbody>
             ${methods.map(m=>`
               <tr>
                 <td>${clampCell(m.method, "clamp-1")}</td>
                 <td>${acTcCell(m.tcName, m.tcCode)}</td>
-                <td>${acDynamicCell(m.dynamic)}</td>
+                <td>${acE2eCell(m.method)}</td>
               </tr>
             `).join("")}
           </tbody>
@@ -9247,14 +9448,14 @@ function AcE2eUcRows(g, q){
                «SEQ-104» и стоит с nowrap. Добавку отдало «Описание» — оно
                усекается по строкам и раскрывается подсказкой. -->
           <colgroup><col style="width:21%"><col style="width:26%"><col style="width:23%"><col style="width:14%"><col style="width:16%"></colgroup>
-          <thead><tr><th>Метод</th><th>Описание</th><th>Техническая возможность</th><th>Реализация</th><th>Статус метода</th></tr></thead>
+          <thead><tr><th>Метод</th><th>Описание</th><th>Техническая возможность</th><th>Раскрывающий e2e</th><th>Статус метода</th></tr></thead>
           <tbody>
             ${methods.map(m=>`
               <tr>
                 <td>${clampCell(m.method, "clamp-1")}</td>
                 <td>${AcUcDescCell(g.code, m)}</td>
                 <td>${acTcCell(m.tcName, m.tcCode)}</td>
-                <td>${acDynamicCell(m.dynamic)}</td>
+                <td>${acE2eCell(m.method)}</td>
                 <td>${acMethodStatusBadge(m.status)}</td>
               </tr>
             `).join("")}
@@ -12531,19 +12732,18 @@ function ResetFiltersButton(action, active){
 
 /* Кандидаты в шаге не хранятся: это результат поиска e2e, у которых вызов шага —
    начальный метод. Порядок приоритетом не является, система победителя не выбирает. */
-function scenarioCandidates(s){ return e2eStartingWith(s.call); }
+function scenarioCandidates(s, branch){
+  return e2eStartingWith({label:s.call, opId:s.opId||null}, {branch: branch || "main"});
+}
+/* Ветка, в которой читается шаг: та, что открыта у Use Case. Связи не пересекают
+   границу ветки, поэтому и кандидаты считаются внутри неё. */
+function ucScenarioBranch(projectId, ucId){
+  const u = findUseCase(findProject(projectId), ucId);
+  return (u && u.branch) || "main";
+}
 /* Ручная привязка архитектора. Она не выводится из автоматики и автоматикой
    не затирается; допускается и к e2e, чей начальный метод с вызовом не совпал. */
 function scenarioManual(s){ return s.manual ? implInfo(s.manual) : null; }
-/* На что ведёт код в колонке «Реализация»: на ручную привязку, если она есть,
-   иначе на единственного кандидата. При нескольких кандидатах ссылки на один
-   e2e нет — выбора тоже нет. */
-function scenarioLinkedImpl(s){
-  const manual = scenarioManual(s);
-  if(manual) return manual;
-  const cand = scenarioCandidates(s);
-  return cand.length===1 ? implInfo(cand[0]) : null;
-}
 function ucScenarioByPart(projectId, ucId, part){
   const u = findUseCase(findProject(projectId), ucId);
   return u && u.scenarios.find(x=>x.part===part);
@@ -12608,7 +12808,7 @@ function scenarioMismatchMarker(s, projectId, ucId){
 function scenarioImplCell(s, projectId, ucId){
   const marker = scenarioMismatchMarker(s, projectId, ucId);
   const manual = scenarioManual(s);
-  const cand = scenarioCandidates(s);
+  const cand = scenarioCandidates(s, ucScenarioBranch(projectId, ucId));
   const codeLink = (code) => (projectId && ucId)
     ? `<span class="proj-link uc-impl-code" data-action="open-uc-impl" data-id="${projectId}" data-uc="${ucId}" data-part="${escapeHtml(s.part)}" data-code="${escapeHtml(code)}">${escapeHtml(code)}</span>`
     : `<span class="uc-impl-code">${escapeHtml(code)}</span>`;
@@ -12633,20 +12833,33 @@ function scenarioImplCell(s, projectId, ucId){
    кандидаты (их нашёл поиск по начальному методу), снизу ручная привязка — решение
    архитектора. Выбора чипсами здесь больше нет: он и был «система выбрала». */
 function scenarioImplDetailRow(s, projectId, ucId, cols){
-  const cand = scenarioCandidates(s);
+  const branch = ucScenarioBranch(projectId, ucId);
+  const callRef = {label:s.call, opId:s.opId||null};
+  const cand = scenarioCandidates(s, branch);
   const manual = scenarioManual(s);
   const candRows = cand.map(code=>{
     const i = implInfo(code);
     const n = i.calls.length;
+    /* Совпадение по операции архитектуры называем вслух: путь метода при этом
+       другой, и без пояснения кандидат выглядит случайным. */
+    const how = e2eMatchKind(code, callRef)==="operation"
+      ? ` · совпало по операции ${escapeHtml(i.calls[0].opId)}`
+      : "";
     return `<div class="uc-cand-row">
         <span class="proj-link uc-impl-code" data-action="open-uc-impl" data-id="${projectId}" data-uc="${ucId}" data-part="${escapeHtml(s.part)}" data-code="${escapeHtml(code)}">${escapeHtml(code)}</span>
-        <span class="uc-cand-meta">${escapeHtml(i.source)} · ${escapeHtml(i.product)} · ${n} ${ruPlural(n,"вызов","вызова","вызовов")} в цепочке</span>
+        <span class="uc-cand-meta">${escapeHtml(i.source)} · ${escapeHtml(i.product)} · ${n} ${ruPlural(n,"вызов","вызова","вызовов")} в цепочке${how}</span>
       </div>`;
   }).join("");
+  const others = e2eOtherBranchesWith(callRef, {branch});
+  const othersText = Object.keys(others).length
+    ? ` В других ветках такие e2e есть: ${Object.keys(others).map(b=>`${b} — ${others[b]}`).join(", ")}`
+    : "";
+  /* Фраза про отсутствие выбора нужна, только когда кандидатов больше одного:
+     «ни один из них» про единственный e2e читается как ошибка. */
   const candBlock = cand.length
-    ? `<div class="uc-impl-detail-lbl">Автоматически по начальному методу — ${cand.length} ${ruPlural(cand.length,"e2e","e2e","e2e")}. Ни один из них система не выбирает: порядок в списке приоритета не значит</div>
+    ? `<div class="uc-impl-detail-lbl">Нашлись по начальному методу в ветке ${escapeHtml(branch)} — ${cand.length} ${ruPlural(cand.length,"e2e","e2e","e2e")}${cand.length>1 ? ". Ни один из них система не выбирает: порядок в списке приоритета не значит" : ""}</div>
        <div class="uc-cand-list">${candRows}</div>`
-    : `<div class="uc-impl-detail-lbl">Ни один e2e не начинается с этого вызова — автоматических кандидатов нет</div>`;
+    : `<div class="uc-impl-detail-lbl">В ветке ${escapeHtml(branch)} ни один e2e с этого вызова не начинается — автоматических кандидатов нет.${othersText}</div>`;
   const manualBlock = manual
     ? `${DsList({
           overline:"Ручная привязка",
@@ -12841,8 +13054,9 @@ function ucImplMatchResults(sp){
      кандидатов не скрываем: привязка к кандидату — законный способ закрепить
      реализацию до того, как кандидатов станет несколько. */
   const bound = ucImplMatchScenario(sp)?.manual || null;
+  const branch = ucScenarioBranch(sp.projectId, sp.ucId);
   return e2eCodes()
-    .filter(code=>code!==bound)
+    .filter(code=>code!==bound && e2eBranch(code)===branch)
     .map(implInfo)
     .filter(x=>{
       if(!q) return true;
@@ -12986,7 +13200,11 @@ function UseCaseImplPage(projectId, ucId, part, code){
       ${meta("Источник", escapeHtml(info.source))}
       ${meta("Откуда загружено", escapeHtml(info.origin))}
       ${meta("Продукт-владелец", escapeHtml(info.product))}
+      ${meta("Ветка", escapeHtml(info.branch||"main"))}
       ${meta("Начальный метод", `<span class="impl-meta-id">${escapeHtml(e2eStartMethod(info.code)||"—")}</span>`)}
+      ${meta("Операция архитектуры", info.calls[0] && info.calls[0].opId
+          ? `<span class="impl-meta-id">${escapeHtml(info.calls[0].opId)}</span>`
+          : "не сопоставлена")}
       ${meta("Загружено", escapeHtml(info.loadedAt))}
       ${meta("Идентификатор объекта", `<span class="impl-meta-id">${escapeHtml(info.objectId)}</span>`)}
       ${meta("Вызовов в цепочке", String(info.calls.length))}
@@ -13026,9 +13244,10 @@ function UseCaseImplPage(projectId, ucId, part, code){
    выше в этой же цепочке, в набор попадает, но вглубь не уходит — иначе дерево
    не кончается. */
 function e2eExpansionsFor(call, path){
-  return e2eStartingWith(call, path[path.length-1])
+  const branch = e2eBranch(path[0]) || "main";
+  return e2eStartingWith(call, {exclude: path[path.length-1], branch})
     .filter(code => code!==path[0])
-    .map(code => ({code, seen: path.includes(code)}));
+    .map(code => ({code, seen: path.includes(code), how: e2eMatchKind(code, call)}));
 }
 /* `skipFirst` — для вложенного e2e: его начальный метод и есть тот вызов, который
    он раскрывает, и печатать его внутри себя же значит показать строку дважды.
@@ -13041,7 +13260,7 @@ function e2eTreeRows(code, path, level, skipFirst){
   if(!calls.length) return `<div class="uc-impl-detail-lbl" style="padding:0 var(--size-spacing-x6) var(--space-4);">Кроме начального метода в этом e2e вызовов нет</div>`;
   return calls.map((c, i)=>{
     const idx = skipFirst ? i+1 : i;
-    const exps = e2eExpansionsFor(c.label, path);
+    const exps = e2eExpansionsFor({label:c.label, opId:c.opId||null}, path);
     const key = path.join(">") + "#" + idx;
     const open = !!state.e2eTreeOpen[key];
     const n = exps.length;
@@ -13062,7 +13281,7 @@ function e2eTreeRows(code, path, level, skipFirst){
       const head = `
         <div class="e2t-head">
           <span class="proj-link uc-impl-code" data-action="open-e2e-card" data-code="${escapeHtml(e.code)}">${escapeHtml(e.code)}</span>
-          <span class="uc-cand-meta">${escapeHtml(i.source)} · ${escapeHtml(i.product)} · ${cnt} ${ruPlural(cnt,"вызов","вызова","вызовов")}</span>
+          <span class="uc-cand-meta">${escapeHtml(i.source)} · ${escapeHtml(i.product)} · ${cnt} ${ruPlural(cnt,"вызов","вызова","вызовов")}${e.how==="operation" ? ` · совпало по операции ${escapeHtml(i.calls[0].opId)}` : ""}</span>
         </div>`;
       return e.seen
         ? head + `<div class="uc-impl-detail-lbl" style="padding:0 var(--size-spacing-x6) var(--space-4);">Этот e2e уже раскрыт выше в этой цепочке — вглубь он не разворачивается</div>`
@@ -13075,7 +13294,7 @@ function E2eTreeCard(code){
   const info = implInfo(code);
   const start = e2eStartMethod(code);
   return `
-    <p class="uc-impl-detail-lbl">Начальный метод — <b>${escapeHtml(start||"—")}</b>: по нему этот e2e находят шаги, которые он раскрывает. Разверни вызов, чтобы увидеть e2e, раскрывающие его. У вложенного e2e начальный метод не повторяется — он и есть раскрытый вызов</p>
+    <p class="uc-impl-detail-lbl">Начальный метод — <b>${escapeHtml(start||"—")}</b>: по нему этот e2e находят шаги, которые он раскрывает. Разверни вызов, чтобы увидеть e2e ветки ${escapeHtml(e2eBranch(code)||"main")}, раскрывающие его — связи не пересекают границу ветки. У вложенного e2e начальный метод не повторяется: он и есть раскрытый вызов</p>
     <div class="ac-tree">${e2eTreeRows(code, [code], 1)}</div>`;
 }
 
@@ -15826,7 +16045,7 @@ function AcMethodDescPanel(){
     <div class="side-body">
       ${row("Статус метода", acMethodStatusBadge(m.status))}
       ${row("Техническая возможность", m.tcName ? escapeHtml(m.tcName)+' <span class="row-sub" style="display:inline;">'+escapeHtml(m.tcCode)+'</span>' : '<span class="empty-cell">—</span>')}
-      ${row("Реализация", acDynamicCell(m.dynamic))}
+      ${row("Раскрывающий e2e", acE2eCell(m.method))}
       <div style="margin-top:var(--space-6);">
         <div style="color:var(--text-secondary);font-size:13px;line-height:16px;letter-spacing:.2px;margin-bottom:var(--space-2);">Описание</div>
         <div style="font-size:15px;line-height:22px;letter-spacing:.2px;white-space:pre-wrap;">${escapeHtml(m.desc)}</div>
