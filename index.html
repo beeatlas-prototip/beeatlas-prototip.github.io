@@ -4,9 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>beeatlas (прототип)</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261021-180732">
+<meta name="beeatlas-build" content="20261022-101841">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -12394,9 +12395,11 @@ function BranchCreatePanel({panel, branches, note, reserved, actions, inputId}){
    `strategies` — какие стратегии вообще применимы к этому артефакту; по умолчанию
    обе. У e2e применима только замена: его состав — цепочка вызовов, и добавить
    в неё отдельные вызовы из другой ветки нельзя (см. e2eBranchMerge). Когда
-   стратегия одна, выбирать не из чего — вместо радиокнопок печатается
-   объяснение, иначе получился бы выбор из одного пункта. */
-function BranchMergePanel({m, branches, note, unit, conflict, actions, confirmOpen, running, strategies}){
+   стратегия одна, выбирать не из чего: радиокнопки не печатаются вовсе, а
+   почему так — говорит описание под заголовком панели (`desc`), там же, где
+   описана форма создания ветки. Блоком это не рисуется: блок в этой панели
+   красный, он для конфликта, и пояснение в нём читалось бы как ошибка. */
+function BranchMergePanel({m, branches, note, unit, conflict, actions, confirmOpen, running, strategies, desc}){
   const ent = panelEnter(m);
   const canMerge = !!m.source && !!m.target && m.source!==m.target && !running;
   const allowed = strategies || ["add","replace"];
@@ -12405,6 +12408,7 @@ function BranchMergePanel({m, branches, note, unit, conflict, actions, confirmOp
     <div class="side-panel${ent}">
       <div class="side-head" style="display:block;">
         <h2>Объединение веток</h2>
+        ${desc ? `<p class="side-desc">${escapeHtml(desc)}</p>` : ""}
       </div>
       <div class="side-body">
         <div class="field-block">
@@ -12435,11 +12439,7 @@ function BranchMergePanel({m, branches, note, unit, conflict, actions, confirmOp
               <div class="d">Весь состав «${escapeHtml(m.target)}» будет полностью заменён составом «${escapeHtml(m.source)}»</div>
             </div>
           </div>` : ""}
-        </div>` : `
-        <div class="cj-merge-conflict-box">
-          <div class="t">${icon("info")} Только замена</div>
-          <div class="hint">${escapeHtml(unit)} — одно целое, по отдельности они не переносятся: состав «${escapeHtml(m.target)}» будет полностью заменён составом «${escapeHtml(m.source)}»</div>
-        </div>`}
+        </div>` : ""}
 
         ${conflict ? `
           <div class="cj-merge-conflict-box">
@@ -12511,6 +12511,7 @@ function E2eMergePanel(){
   return BranchMergePanel({
     m, branches:e2eBranchList(m.code), note:b=>e2eBranchUpdNote(m.code,b),
     unit:"Цепочка вызовов", conflict:null, strategies:["replace"],
+    desc:"Состав e2e — цепочка вызовов, и переносится она целиком: ветка-цель будет полностью заменена ветко-источником. Перенести отдельные вызовы из другой ветки нельзя — такой цепочки не выгружал ни один источник",
     confirmOpen:state.e2eMergeConfirm, running:false,
     actions:{close:"e2e-close-merge", setSource:"e2e-merge-set-source", setTarget:"e2e-merge-set-target",
              setStrategy:"e2e-merge-set-strategy", submit:"e2e-merge-submit",
