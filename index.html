@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=6">
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261022-221003">
+<meta name="beeatlas-build" content="20261022-221455">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -2662,6 +2662,9 @@
   .merge-note{border:1px solid var(--border);background:var(--bg-alt);border-radius:var(--radius-sm);padding:var(--space-4);}
   .merge-note .t{display:flex;align-items:flex-start;gap:var(--space-2);font-weight:500;font-size:13px;color:var(--text);}
   .merge-note .d{margin-top:var(--space-2);padding-left:var(--space-6);font-size:13px;color:var(--text-secondary);line-height:1.45;}
+  .merge-note-list{margin:var(--space-3) 0 0;padding-left:var(--space-6);list-style:none;font-size:13px;line-height:18px;color:var(--text);}
+  .merge-note-list li{margin-bottom:var(--space-1);}
+  .merge-note-list span{color:var(--text-secondary);}
   .cj-merge-conflict-box{margin-top:var(--space-5);border:1px solid var(--red-text);background:var(--red-bg);border-radius:var(--radius-sm);padding:var(--space-4);}
   .cj-merge-conflict-box .t{display:flex;align-items:flex-start;gap:var(--space-2);font-weight:500;font-size:13px;color:var(--red-text);}
   .cj-merge-conflict-box ul{margin:var(--space-3) 0 0;padding-left:34px;font-size:13px;color:var(--text);line-height:1.6;}
@@ -12389,6 +12392,19 @@ function CjMergePanel(){
             <div class="hint">Приведи ссылки в соответствие в ветке «${escapeHtml(p.target)}» и повтори объединение.</div>
           </div>
         ` : ""}
+        ${/* A-5: связи переехали в ветку, поэтому появился второй класс конфликта —
+              шаг в целевой ветке связан не с тем Use Case. Он не блокирует объединение
+              (состав всё равно заменяется целиком), но предупредить о подмене нужно. */""}
+        ${p.linkConflicts && p.linkConflicts.length ? `
+          <div class="merge-note" style="margin-top:var(--space-5);">
+            <div class="t">${icon("alertTriangle")} Связи шагов изменятся</div>
+            <div class="d">В «${escapeHtml(p.target)}» эти шаги связаны с другими Use Case — после объединения связь станет такой, как в «${escapeHtml(p.source)}»</div>
+            <ul class="merge-note-list">
+              ${p.linkConflicts.slice(0,5).map(c=>`<li>${escapeHtml(c.step)} <span>${escapeHtml(c.from||"—")} → ${escapeHtml(c.to||"—")}</span></li>`).join("")}
+              ${p.linkConflicts.length>5 ? `<li>и ещё ${p.linkConflicts.length-5}</li>` : ""}
+            </ul>
+          </div>
+        ` : ""}
       </div>
       <div class="side-foot">
         <button class="btn btn-outline" data-action="cj-close-merge">Отменить</button>
@@ -12708,6 +12724,49 @@ function acDiffGroups(appId, source, target){
 /* CJ: «ты просто вертикально выводишь BI и степы — добавился степ, убрался степ,
    добавился BI, убрался BI» (встреча, 17:15). Этап несёт свой BI, поэтому
    верхний уровень — этап, внутри него шаги сценария. */
+/* A-5. Связи шага живут в ветке (см. stepBranchLinks в каталоге), поэтому объединение
+   переносит и их — а сравнение обязано это показать: иначе человек утверждает перенос,
+   не видя половины того, что меняется. Данные берём из модели каталога: это тот же CJ
+   по идентификатору, просто собранный в другом месте прототипа. */
+function catalogCj(cjId){
+  return (typeof CJ_LIST !== "undefined") ? CJ_LIST.find(c=>c.id===cjId) : null;
+}
+function cjLinkNodes(cjId, source, target){
+  const cj = catalogCj(cjId);
+  if(!cj) return [];
+  const names = l => (l||[]).map(x=>x.code || x.name || "—");
+  const out = [];
+  cj.bi.forEach(bi=>{
+    (bi.steps||[]).forEach(step=>{
+      const by = step.linksByBranch; if(!by) return;
+      const b = by[target] || {ucs:[], e2e:[]}, a = by[source] || {ucs:[], e2e:[]};
+      const fields = [
+        {cap:"Use Case", before:names(b.ucs).join(", ") || "—", after:names(a.ucs).join(", ") || "—"},
+        {cap:"E2E",      before:names(b.e2e).join(", ") || "—", after:names(a.e2e).join(", ") || "—"},
+      ].filter(f=>f.before !== f.after);
+      if(fields.length) out.push({status:"changed", kind:"Шаг", label:`${bi.title} · ${step.title}`, fields, children:[]});
+    });
+  });
+  return out;
+}
+/* Второй класс конфликта, которого раньше не было: в целевой ветке шаг уже связан
+   с другим Use Case. Пока связь стояла на агрегате, такого быть не могло. */
+function cjLinkConflicts(cjId, source, target){
+  const cj = catalogCj(cjId);
+  if(!cj) return [];
+  const out = [];
+  cj.bi.forEach(bi=>{
+    (bi.steps||[]).forEach(step=>{
+      const by = step.linksByBranch; if(!by) return;
+      const s = (by[source]||{}).ucs || [], t = (by[target]||{}).ucs || [];
+      if(!s.length || !t.length) return;
+      const sc = s.map(x=>x.code).sort().join(","), tc = t.map(x=>x.code).sort().join(",");
+      if(sc !== tc) out.push({step:step.title, biName:bi.title, from:tc, to:sc});
+    });
+  });
+  return out;
+}
+
 function cjDiffGroups(cjId, source, target){
   const a = cjBranchTree(cjId, source), b = cjBranchTree(cjId, target);
   const stepsOf = st => (st.scenario||[]).map((s,i)=>({i, text:s}));
@@ -12719,7 +12778,11 @@ function cjDiffGroups(cjId, source, target){
     child:{ kind:"Шаг", key:x=>x.i, label:x=>x.text,
             fields:[{cap:"Текст шага", get:x=>x.text}] },
   });
-  return nodes.length ? [{id:"stages", title:"Этапы и BI", nodes}] : [];
+  const groups = [];
+  if(nodes.length) groups.push({id:"stages", title:"Этапы и BI", nodes});
+  const links = cjLinkNodes(cjId, source, target);
+  if(links.length) groups.push({id:"links", title:"Связи шагов", nodes:links});
+  return groups;
 }
 
 /* Use Case: состав ветки — шаги сценария, ключ шага это его код (part). */
@@ -18071,6 +18134,9 @@ function handleAction(action, el){
         render();
         break;
       }
+      /* Конфликт связей не блокирует: он не про отсутствующие ссылки, а про подмену.
+         Показываем его в панели и пускаем дальше, на страницу сравнения. */
+      p.linkConflicts = cjLinkConflicts(cjId, p.source, p.target);
       /* Конфликтов нет — но сразу объединять не даём: по решению встречи 22.10
          следующим шагом открывается страница сравнения, и уже оттуда запускается
          подтверждение. Панель не закрываем: с «Назад» человек возвращается к выбору. */
