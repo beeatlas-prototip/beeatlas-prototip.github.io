@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=6">
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261022-184016">
+<meta name="beeatlas-build" content="20261022-190634">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -2278,6 +2278,65 @@
   .wizard-close .ic{width:24px;height:24px;}
   /* Сверху 0: над телом мастера стоит собственная шапка, 32px дал бы двойной отступ */
   .wizard-body{flex:1;overflow-y:auto;padding:0 var(--size-spacing-x8) var(--size-spacing-x10);}
+
+  /* ── Сравнение веток (встреча 22.10) ──
+     Статус узла несут и цвет, и значок с подписью: зелёно-красная пара без второго
+     признака не читается при дальтонизме, а жёлтый у нас занят брендом. Роли берём
+     семантические, вручную цвет не пишем — иначе он не переживёт смену темы. */
+  .diff-body{max-width:1120px;}
+  .diff-lead{margin:var(--space-6) 0 var(--space-5);font-size:15px;line-height:22px;color:var(--text-secondary);}
+  .diff-summary{display:flex;align-items:center;gap:var(--space-2);flex:0 0 auto;}
+  .diff-chip{display:inline-flex;align-items:center;gap:var(--size-spacing-x2);height:32px;padding:0 var(--size-spacing-x3);
+    border-radius:var(--size-border-radius-x15);font-size:13px;line-height:18px;letter-spacing:.2px;white-space:nowrap;
+    background:var(--md-sys-color-surface-container-highest);color:var(--text);}
+  .diff-chip b{font-weight:500;}
+  .diff-chip.added{color:var(--md-sys-color-ext-success);}
+  .diff-chip.changed{color:var(--md-sys-color-ext-info);}
+  .diff-chip.removed{color:var(--danger-text);}
+
+  .diff-group{border:1px solid var(--border);border-radius:var(--size-border-radius-x6);margin-bottom:var(--space-3);overflow:hidden;}
+  .diff-group-head{display:flex;align-items:center;gap:var(--space-3);min-height:var(--size-control-height-medium);
+    padding:0 var(--size-spacing-x4);cursor:pointer;background:var(--bg-alt);}
+  .diff-group-head:hover{background:color-mix(in srgb, var(--md-sys-color-on-surface) 8%, var(--bg-alt));}
+  .diff-group-head h3{margin:0;font-size:15px;line-height:20px;font-weight:500;letter-spacing:.2px;flex:1;min-width:0;}
+  .diff-count{min-width:24px;height:24px;padding:0 var(--size-spacing-x2);border-radius:var(--size-border-radius-x15);
+    background:var(--md-sys-color-surface-container-highest);color:var(--text);
+    display:inline-flex;align-items:center;justify-content:center;font-size:13px;line-height:16px;}
+
+  .diff-list{border-top:1px solid var(--border);}
+  .diff-row{display:flex;align-items:center;gap:var(--space-3);min-height:var(--size-control-height-medium);
+    padding:0 var(--size-spacing-x4);border-bottom:1px solid var(--border);}
+  .diff-row:last-child{border-bottom:none;}
+  .diff-row.foldable{cursor:pointer;}
+  .diff-row.foldable:hover{background:color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);}
+  .diff-row.foldable:active{background:color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);}
+  /* Полоса слева читается как статус строки — тот же приём, что у вложенных уровней
+     таблицы (docs/components.md, «Уровни таблицы»). */
+  .diff-mark{width:4px;height:20px;border-radius:2px;flex:0 0 auto;}
+  .diff-mark.added{background:var(--md-sys-color-ext-success);}
+  .diff-mark.changed{background:var(--md-sys-color-ext-info);}
+  .diff-mark.removed{background:var(--danger-text);}
+  .diff-caret{width:18px;height:18px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);transition:transform .12s ease;}
+  .diff-caret.open{transform:rotate(90deg);}
+  .diff-kind{flex:0 0 auto;font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);min-width:96px;}
+  .diff-name{flex:1;min-width:0;font-size:15px;line-height:20px;letter-spacing:.2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .diff-row.removed .diff-name{text-decoration:line-through;color:var(--text-secondary);}
+  .diff-sub{flex:0 0 auto;font-size:13px;line-height:16px;color:var(--text-secondary);}
+
+  .diff-fields{padding:var(--space-3) var(--size-spacing-x4) var(--space-4) 54px;border-bottom:1px solid var(--border);}
+  .diff-field{display:grid;grid-template-columns:160px 1fr 24px 1fr;align-items:start;gap:var(--space-3);margin-bottom:var(--space-2);}
+  .diff-field:last-child{margin-bottom:0;}
+  .diff-field-cap{font-size:13px;line-height:18px;color:var(--text-secondary);}
+  .diff-was{font-size:13px;line-height:18px;color:var(--text-secondary);text-decoration:line-through;}
+  .diff-arrow{color:var(--text-secondary);display:flex;align-items:center;justify-content:center;}
+  .diff-now{font-size:13px;line-height:18px;color:var(--text);}
+  /* Вложенный уровень без своей заливки, сдвиг по тексту родителя — как в таблицах. */
+  .diff-children{padding-left:54px;}
+  .diff-children .diff-row{padding-left:0;}
+
+  .diff-empty{padding:var(--space-10) 0;text-align:center;}
+  .diff-empty h3{margin:0 0 var(--space-2);font-size:20px;line-height:28px;font-weight:500;letter-spacing:.2px;}
+  .diff-empty p{margin:0;font-size:15px;line-height:22px;color:var(--text-secondary);}
   .wizard-stepper-wrap{padding-top:0;}
 
   /* side panel */
@@ -7262,6 +7321,12 @@ const state = {
   // Ветки e2e. Открытая ветка карточки лежит в маршруте (route.implBranch), здесь
   // только панели. Прогресса объединения у e2e нет: замена снимка мгновенна,
   // ссылки под ландшафт ветки не пересобираются — цепочку приносит канон.
+  /* Страница сравнения веток перед объединением (встреча 22.10). Держит, что с чем
+     сравниваем и какие узлы раскрыты; само объединение запускает merge-diff-confirm-do. */
+  mergeDiff:null,              // {kind:"cj"|"uc"|"ac", ...ids, source, target, title}
+  mergeDiffGroup:null,         // id свёрнутой группы (по умолчанию раскрыты все)
+  mergeDiffOpen:{},            // путь узла → раскрыт
+  mergeDiffConfirm:false,
   e2eBranchPanel:null,         // {code, name, parent}
   e2eMergePanel:null,          // {code, source, target, strategy}
   e2eBranchDeleteConfirm:null, // id ветки, для которой открыт запрос подтверждения
@@ -7937,6 +8002,7 @@ function renderShell(){
     ${state.graph.addNode ? GraphAddNodeOverlay() : ""}
     ${state.graph.addRel ? GraphAddRelOverlay() : ""}
     ${state.cjCallDelete ? CjCallDeleteDialog() : ""}
+    ${state.mergeDiff ? MergeDiffOverlay() : ""}
     ${state.toast ? Toast() : ""}
   `;
   document.documentElement.setAttribute("data-theme", state.theme);
@@ -9498,6 +9564,19 @@ function ensureAcBranches(appId){
   const main = acBaseBranchData();
   const design = deepClone(main);
   design.patterns = design.patterns.slice(0, -1);
+  /* Расхождение по интерфейсам нужно, чтобы странице сравнения было что показать на
+     всех трёх уровнях: контейнер → интерфейс → метод («по методу тыкнуть, посмотреть,
+     в чём он участвовал», встреча 22.10). Трогаем только те интерфейсы, у которых нет
+     своих методов, и статус одного метода: состав ландшафта от этого не меняется,
+     поэтому main → design по-прежнему проходит без конфликтов. */
+  const dash = design.interfaces.find(c=>c.id==="dash");
+  if(dash && dash.interfaces){
+    dash.interfaces = dash.interfaces.filter(i=>i.id!=="api6");
+    const api2 = dash.interfaces.find(i=>i.id==="api2");
+    if(api2){ api2.status = "С ошибкой"; api2.methodCount = 11; }
+    const api1 = dash.interfaces.find(i=>i.id==="api1");
+    if(api1 && api1.methods && api1.methods.length) api1.methods[0] = Object.assign({}, api1.methods[0], {status:"С ошибкой"});
+  }
   const develop = deepClone(main);
   develop.interfaces.push({
     id:"apigw4", name:"Notification API", code:"ext_apache_lb_webcrm01_20004", date:"05.02.2025, 00:00",
@@ -12380,16 +12459,8 @@ function BranchCreatePanel({panel, branches, note, reserved, actions, inputId}){
   `;
 }
 
-/* `unit` — чем назван переносимый состав в описании стратегий («Шаги» у Use Case,
-   «Элементы состава» у приложения). `conflict` — {title, items:[строки], hint}.
-   `strategies` — какие стратегии вообще применимы к этому артефакту; по умолчанию
-   обе. У e2e применима только замена: его состав — цепочка вызовов, и добавить
-   в неё отдельные вызовы из другой ветки нельзя (см. e2eBranchMerge). Когда
-   стратегия одна, выбирать не из чего: радиокнопки не печатаются вовсе, а
-   почему так — говорит описание под заголовком панели (`desc`), там же, где
-   описана форма создания ветки. Блоком это не рисуется: блок в этой панели
-   красный, он для конфликта, и пояснение в нём читалось бы как ошибка. */
-/* Встреча 22.10: выбор стратегии убран, объединение всегда заменяет состав целиком
+/* `conflict` — {title, items:[строки], hint}; `desc` — пояснение под заголовком панели.
+   Встреча 22.10: выбор стратегии убран, объединение всегда заменяет состав целиком
    («давай пока оставим только замену, выбор этот уберём, оставим плашку»). Карточки
    с радио заменены неинтерактивной плашкой: решать нечего, а объяснить, что будет,
    по-прежнему нужно. Пока ветки не выбраны, называть их в тексте нечем — тогда
@@ -12403,6 +12474,257 @@ function MergeStrategyNote(source, target){
         ? `Весь состав «${escapeHtml(target)}» будет полностью заменён составом «${escapeHtml(source)}»`
         : "Состав целевой ветки будет полностью заменён составом исходной"}</div>
     </div>`;
+}
+
+/* ─────────── Сравнение веток перед объединением ───────────
+   Встреча 22.10: между «откуда-куда» и «объединить» встаёт отдельная страница —
+   «чтобы было не страшно дальше жать». Решения оттуда же, в порядке обсуждения:
+   • без диаграмм («только без картинок») — графический вариант предложили и отклонили;
+   • группировка по типам объектов, за основу взяты вкладки карточки приложения;
+   • у группы счётчик изменений, внутри — список «было → стало», «простыня вниз»;
+   • можно провалиться в объект и посмотреть, из чего он состоит;
+   • экран однотипный для приложения, CJ и Use Case: меняется только тип объекта.
+
+   Узел дерева: {status:"added"|"removed"|"changed", label, kind, fields[], children[]}.
+   Узлы без изменений наверх не всплывают: ветка показывается, только если изменился
+   сам узел или кто-то внутри него. */
+const DIFF_LABEL = {added:"Добавлено", removed:"Удалено", changed:"Изменено"};
+
+function diffNodes(before, after, spec){
+  const key = spec.key, label = spec.label;
+  /* Ключ в данных не всегда уникален: у интерфейса несколько методов с одним и тем же
+     путём, и без разведения одноимённые строки склеивались в одну — сравнение честно
+     находило «изменение» там, где просто два разных метода с одинаковым именем.
+     Одноимённые сопоставляются между собой по порядку. */
+  const uniq = list => {
+    const n = {};
+    return (list||[]).map((x,i)=>{
+      const k = String(key(x,i));
+      n[k] = (n[k]||0) + 1;
+      return {x, k: n[k] > 1 ? k+"#"+n[k] : k};
+    });
+  };
+  const bList = uniq(before), aList = uniq(after);
+  const idx = new Map();
+  bList.forEach(e=>idx.set(e.k, e.x));
+  const out = [], seen = new Set();
+
+  aList.forEach(({x:a, k})=>{
+    const b = idx.get(k);
+    seen.add(k);
+    if(!b){ out.push({status:"added", label:label(a), kind:spec.kind, fields:[], children:diffNodes([], spec.sub?spec.sub(a):[], spec.child||spec)}); return; }
+    const fields = (spec.fields||[]).map(f=>({cap:f.cap, before:f.get(b), after:f.get(a)}))
+                                    .filter(f=>String(f.before??"") !== String(f.after??""));
+    const children = spec.sub ? diffNodes(spec.sub(b), spec.sub(a), spec.child||spec) : [];
+    if(fields.length || children.length) out.push({status:"changed", label:label(a), kind:spec.kind, fields, children});
+  });
+
+  (before||[]).forEach(b=>{
+    if(seen.has(key(b))) return;
+    out.push({status:"removed", label:label(b), kind:spec.kind, fields:[], children:diffNodes(spec.sub?spec.sub(b):[], [], spec.child||spec)});
+  });
+  return out;
+}
+
+/* Счётчик считает все изменившиеся узлы вместе с вложенными: на встрече просили
+   «количество изменений» у группы, а не количество строк верхнего уровня. */
+function diffCount(nodes){
+  return (nodes||[]).reduce((n,x)=>n + 1 + diffCount(x.children), 0);
+}
+function diffTotals(groups){
+  const t = {added:0, removed:0, changed:0};
+  const walk = ns => (ns||[]).forEach(n=>{ t[n.status]++; walk(n.children); });
+  groups.forEach(g=>walk(g.nodes));
+  return t;
+}
+
+const byName = x => x.name || x.label || x.code || "—";
+
+/* Приложение: группы повторяют вкладки карточки — «можно как бы для прототипа
+   за базу взять» (встреча, 11:35). Интерфейсы — единственная тройная вложенность:
+   контейнер → интерфейс → метод, и провалиться просили именно до метода. */
+function acDiffGroups(appId, source, target){
+  const a = acBranchData(appId, source), b = acBranchData(appId, target);
+  const g = (id, title, field, spec) => ({id, title, nodes: diffNodes(b[field], a[field], spec)});
+  return [
+    g("ifaces", "Интерфейсы", "interfaces", {
+      kind:"Контейнер", key:x=>x.id||x.code, label:byName,
+      fields:[{cap:"Статус", get:x=>x.status}, {cap:"Методов", get:x=>x.methodCount}],
+      sub:x=>x.interfaces||[],
+      child:{ kind:"Интерфейс", key:x=>x.id||x.name, label:byName,
+              fields:[{cap:"Статус", get:x=>x.status}, {cap:"Методов", get:x=>x.methodCount}],
+              sub:x=>x.methods||[],
+              child:{ kind:"Метод", key:x=>x.method, label:x=>x.method,
+                      fields:[{cap:"Статус", get:x=>x.status}, {cap:"Возможность", get:x=>x.cap},
+                              {cap:"RPS", get:x=>x.rps}, {cap:"Задержка, мс", get:x=>x.lat}] } },
+    }),
+    g("caps", "Технические возможности", "techCaps", {
+      kind:"Возможность", key:x=>x.name, label:byName,
+      fields:[{cap:"Домен", get:x=>x.domain}],
+    }),
+    g("tech", "Технологии", "technologies", {
+      kind:"Технология", key:x=>x.id||x.name, label:byName,
+      fields:[{cap:"Статус", get:x=>x.status}, {cap:"КИ", get:x=>x.ki}, {cap:"Источник", get:x=>x.src}],
+    }),
+    g("patterns", "Паттерны", "patterns", {
+      kind:"Паттерн", key:x=>x.id||x.name, label:byName,
+      fields:[{cap:"Тип", get:x=>x.type}, {cap:"Технологии", get:x=>(x.tech||[]).join(", ")}],
+    }),
+    g("nfrs", "Нефункциональные требования", "nfrs", {
+      kind:"Требование", key:x=>x.code, label:byName,
+      fields:[{cap:"Статус", get:x=>x.status}, {cap:"Назначение", get:x=>x.assign}, {cap:"Версия", get:x=>x.ver}],
+    }),
+    g("obs", "Наблюдаемость", "obs", {
+      kind:"Узел", key:x=>x.id||x.code||x.name, label:byName,
+      fields:[{cap:"Статус", get:x=>x.status}],
+    }),
+  ].filter(x=>x.nodes.length);
+}
+
+/* CJ: «ты просто вертикально выводишь BI и степы — добавился степ, убрался степ,
+   добавился BI, убрался BI» (встреча, 17:15). Этап несёт свой BI, поэтому
+   верхний уровень — этап, внутри него шаги сценария. */
+function cjDiffGroups(cjId, source, target){
+  const a = cjBranchTree(cjId, source), b = cjBranchTree(cjId, target);
+  const stepsOf = st => (st.scenario||[]).map((s,i)=>({i, text:s}));
+  const nodes = diffNodes(b, a, {
+    kind:"Этап", key:x=>x.id, label:x=>x.biName ? `${x.name} · ${x.biName}` : x.name,
+    fields:[{cap:"BI", get:x=>x.biName}, {cap:"Идентификатор BI", get:x=>x.biId},
+            {cap:"Описание", get:x=>x.description}, {cap:"Каналы", get:x=>x.channels}],
+    sub:stepsOf,
+    child:{ kind:"Шаг", key:x=>x.i, label:x=>x.text,
+            fields:[{cap:"Текст шага", get:x=>x.text}] },
+  });
+  return nodes.length ? [{id:"stages", title:"Этапы и BI", nodes}] : [];
+}
+
+/* Use Case: состав ветки — шаги сценария, ключ шага это его код (part). */
+function ucDiffGroups(u, source, target){
+  const a = ucBranchData(u, source), b = ucBranchData(u, target);
+  const nodes = diffNodes(b.scenarios, a.scenarios, {
+    kind:"Шаг", key:x=>x.part, label:x=>`${x.part} · ${x.participant||""}`.trim(),
+    fields:[{cap:"Действие", get:x=>x.action}, {cap:"Интерфейс", get:x=>x.api},
+            {cap:"Вызов", get:x=>x.call}, {cap:"Статус", get:x=>x.status}],
+  });
+  return nodes.length ? [{id:"steps", title:"Шаги сценария", nodes}] : [];
+}
+
+/* Панель объединения на время сравнения убирается: иначе она висит поверх страницы
+   и закрывает правую треть. Её состояние запоминаем и возвращаем по «Назад» —
+   человек попадает обратно к выбору веток, а не к началу. */
+const MERGE_PANEL_KEY = {cj:"cjMergePanel", uc:"ucMergePanel", ac:"acMergePanel", e2e:"e2eMergePanel"};
+
+function openMergeDiff(d){
+  const key = MERGE_PANEL_KEY[d.kind];
+  state.mergeDiff = Object.assign({}, d, {panelKey:key, panelState:key ? state[key] : null});
+  if(key) state[key] = null;
+  state.mergeDiffGroup = null;
+  state.mergeDiffOpen = {};
+  state.mergeDiffConfirm = false;
+}
+function closeMergeDiff(restorePanel){
+  const d = state.mergeDiff;
+  if(d && d.panelKey && restorePanel) state[d.panelKey] = d.panelState;
+  state.mergeDiff = null;
+  state.mergeDiffGroup = null;
+  state.mergeDiffOpen = {};
+  state.mergeDiffConfirm = false;
+}
+
+function mergeDiffGroups(d){
+  if(!d) return [];
+  if(d.kind === "ac") return acDiffGroups(d.appId, d.source, d.target);
+  if(d.kind === "cj") return cjDiffGroups(d.cjId, d.source, d.target);
+  if(d.kind === "uc"){
+    const p = findProject(d.projectId), u = p && findUseCase(p, d.ucId);
+    return u ? ucDiffGroups(u, d.source, d.target) : [];
+  }
+  return [];
+}
+
+/* Страница сравнения. Шапка называет обе ветки и направление, под ней сводка
+   «добавлено / изменено / удалено», дальше группы. Внизу — то самое действие,
+   ради которого сюда и пришли. */
+function MergeDiffOverlay(){
+  const d = state.mergeDiff;
+  if(!d) return "";
+  const groups = mergeDiffGroups(d);
+  const t = diffTotals(groups);
+  const empty = !groups.length;
+
+  const chip = (st, n) => `<span class="diff-chip ${st}">${DIFF_LABEL[st]} <b>${n}</b></span>`;
+
+  const node = (n, path) => {
+    const open = !!state.mergeDiffOpen[path];
+    const kids = n.children.length, flds = n.fields.length;
+    const foldable = kids || flds;
+    return `
+      <div class="diff-node">
+        <div class="diff-row ${n.status}${foldable?" foldable":""}"
+             ${foldable?`data-action="merge-diff-toggle" data-path="${escapeHtml(path)}" tabindex="0" role="button" aria-expanded="${open}"`:""}>
+          <span class="diff-mark ${n.status}" title="${DIFF_LABEL[n.status]}"></span>
+          ${foldable?`<span class="diff-caret${open?" open":""}">${icon("chevronRight", 18)}</span>`:`<span class="diff-caret"></span>`}
+          <span class="diff-kind">${escapeHtml(n.kind)}</span>
+          <span class="diff-name">${escapeHtml(n.label)}</span>
+          ${kids?`<span class="diff-sub">внутри ${kids}</span>`:""}
+        </div>
+        ${open && flds ? `
+          <div class="diff-fields">
+            ${n.fields.map(f=>`
+              <div class="diff-field">
+                <div class="diff-field-cap">${escapeHtml(f.cap)}</div>
+                <div class="diff-was">${escapeHtml(String(f.before ?? "—"))}</div>
+                <div class="diff-arrow">${icon("chevronRight", 18)}</div>
+                <div class="diff-now">${escapeHtml(String(f.after ?? "—"))}</div>
+              </div>`).join("")}
+          </div>` : ""}
+        ${open && kids ? `<div class="diff-children">${n.children.map((c,i)=>node(c, path+"."+i)).join("")}</div>` : ""}
+      </div>`;
+  };
+
+  return `
+  <div class="wizard-overlay diff-overlay">
+    <div class="wizard-head">
+      <button class="cj-head-back" data-action="merge-diff-close" title="Назад">${icon("chevronLeft")}</button>
+      <div class="cj-head-titles">
+        <h2>Сравнение веток</h2>
+        <div class="sub">«${escapeHtml(d.source)}» → «${escapeHtml(d.target)}» · ${escapeHtml(d.title||"")}</div>
+      </div>
+      <div class="cj-head-spacer"></div>
+      ${empty ? "" : `<div class="diff-summary">${chip("added",t.added)}${chip("changed",t.changed)}${chip("removed",t.removed)}</div>`}
+    </div>
+
+    <div class="wizard-body diff-body">
+      <p class="diff-lead">Так изменится ветка «${escapeHtml(d.target)}» после объединения. Состав заменяется целиком составом «${escapeHtml(d.source)}»</p>
+      ${empty ? `
+        <div class="diff-empty">
+          <h3>Ветки совпадают</h3>
+          <p>Между «${escapeHtml(d.source)}» и «${escapeHtml(d.target)}» нет расхождений — объединять нечего</p>
+        </div>` :
+        groups.map(g=>{
+          /* Группы раскрыты по умолчанию: человек пришёл смотреть изменения.
+             Свёрнута только та, по которой он сам кликнул. */
+          const collapsed = state.mergeDiffGroup === g.id;
+          return `
+          <section class="diff-group">
+            <div class="diff-group-head" data-action="merge-diff-group" data-group="${escapeHtml(g.id)}" tabindex="0" role="button" aria-expanded="${!collapsed}">
+              <span class="diff-caret${collapsed?"":" open"}">${icon("chevronRight", 18)}</span>
+              <h3>${escapeHtml(g.title)}</h3>
+              <span class="diff-count">${diffCount(g.nodes)}</span>
+            </div>
+            ${collapsed ? "" : `<div class="diff-list">${g.nodes.map((n,i)=>node(n, g.id+"."+i)).join("")}</div>`}
+          </section>`;
+        }).join("")}
+    </div>
+
+    <div class="wizard-foot">
+      <button class="btn btn-outline" data-action="merge-diff-close">Назад</button>
+      <button class="btn btn-primary" data-action="merge-diff-apply" ${empty?"disabled":""}>Объединить</button>
+    </div>
+  </div>
+  ${state.mergeDiffConfirm ? CjConfirmDialog({title:"Объединить ветки?", text:"После объединения веток их нельзя будет откатить назад",
+                                              confirmLabel:"Объединить", confirmAction:"merge-diff-confirm-do", cancelAction:"merge-diff-confirm-cancel"}) : ""}
+  `;
 }
 
 function BranchMergePanel({m, branches, note, conflict, actions, confirmOpen, running, desc}){
@@ -17544,13 +17866,51 @@ function handleAction(action, el){
         render();
         break;
       }
-      // конфликтов нет — спрашиваем подтверждение необратимого действия (макет
-      // «Объединить ветки?»), само объединение запускает cj-merge-confirm-do
-      state.cjMergeConfirm = true;
+      /* Конфликтов нет — но сразу объединять не даём: по решению встречи 22.10
+         следующим шагом открывается страница сравнения, и уже оттуда запускается
+         подтверждение. Панель не закрываем: с «Назад» человек возвращается к выбору. */
+      openMergeDiff({kind:"cj", cjId, source:p.source, target:p.target, title:cjMeta(cjId).title});
       state.popover = null;
       render();
       break;
     }
+    /* ── страница сравнения веток ── */
+    case "merge-diff-toggle": {
+      const k = el.dataset.path;
+      state.mergeDiffOpen[k] = !state.mergeDiffOpen[k];
+      render();
+      break;
+    }
+    case "merge-diff-group": {
+      const g = el.dataset.group;
+      /* Группы раскрыты по умолчанию: человек пришёл смотреть изменения, а не
+         раскрывать их по одной. Свёрнутой держим ту, по которой кликнули. */
+      state.mergeDiffGroup = state.mergeDiffGroup === g ? null : g;
+      render();
+      break;
+    }
+    case "merge-diff-close": closeMergeDiff(true); render(); break;
+    case "merge-diff-apply": {
+      if(!mergeDiffGroups(state.mergeDiff).length) break;
+      state.mergeDiffConfirm = true;
+      render();
+      break;
+    }
+    case "merge-diff-confirm-cancel": state.mergeDiffConfirm = false; render(); break;
+    case "merge-diff-confirm-do": {
+      const d = state.mergeDiff;
+      if(!d) break;
+      state.mergeDiffConfirm = false;
+      /* Объединение запускают прежние обработчики — страница сравнения только
+         показывает, что произойдёт, и не дублирует их логику. Панель им нужна:
+         оттуда они берут source/target, поэтому возвращаем её перед вызовом. */
+      closeMergeDiff(true);
+      handleAction(d.kind + "-merge-confirm-do", el);
+      if(d.panelKey) state[d.panelKey] = null;
+      render();
+      break;
+    }
+
     case "cj-merge-confirm-cancel": state.cjMergeConfirm = false; render(); break;
     case "cj-merge-confirm-do": {
       const p = state.cjMergePanel;
@@ -17788,9 +18148,8 @@ function handleAction(action, el){
       if(!u || !m.source || !m.target || m.source===m.target || state.ucMergeRunning) break;
       const conflicts = ucMergeConflicts(u, m.source, m.target, m.strategy);
       if(conflicts.length){ m.conflicts = conflicts; render(); break; }
-      // Конфликтов нет — спрашиваем подтверждение необратимого действия (тот же диалог,
-      // что в CJ); само объединение запускает uc-merge-confirm-do.
-      state.ucMergeConfirm = true;
+      // Конфликтов нет — дальше страница сравнения (встреча 22.10), подтверждение уже там.
+      openMergeDiff({kind:"uc", projectId:m.projectId, ucId:m.ucId, source:m.source, target:m.target, title:u.name||u.code});
       state.popover = null;
       render();
       break;
@@ -18567,7 +18926,7 @@ function handleAction(action, el){
       if(!m.source || !m.target || m.source===m.target || state.acMergeRunning) break;
       const conflicts = acMergeConflicts(m.appId, m.source, m.target, m.strategy);
       if(conflicts.length){ m.conflicts = conflicts; render(); break; }
-      state.acMergeConfirm = true;
+      openMergeDiff({kind:"ac", appId:m.appId, source:m.source, target:m.target, title:(findApp(m.appId)||{}).name||""});
       state.popover = null;
       render();
       break;
