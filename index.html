@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=6">
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261022-221455">
+<meta name="beeatlas-build" content="20261022-222229">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -4144,6 +4144,8 @@
 /* Выбор реализации: кодов может быть много и они нечитаемые, поэтому показываем
    первые три чипса, остальные прячем за «ещё N» — страница не пугает длинными
    идентификаторами, но и лишних кликов за частым выбором нет. */
+.e2ecat-scope .e2e-branch-note{font-size:13px;line-height:18px;color:var(--text-secondary);margin:0 0 18px;}
+.e2ecat-scope .e2e-branch-note b{font-weight:500;color:var(--text);}
 .e2ecat-scope .cat-branch-row{display:flex;align-items:center;gap:var(--space-3);margin-bottom:12px;}
 .e2ecat-scope .cat-branch-lbl{font-size:13px;color:var(--text-secondary);}
 .e2ecat-scope .cat-branch-chips{margin-bottom:0;}
@@ -4237,9 +4239,6 @@
    Контейнер свой, не .pill-toggle: в этом скоупе .pill-toggle — другой
    компонент, сегментный переключатель режима со своим фоном и padding:3px,
    и чипы в нём получали серую подложку и шаг 2 вместо 8. */
-.e2ecat-scope .e2e-branch-row{display:flex;align-items:center;gap:var(--space-3);margin:0 0 18px;}
-.e2ecat-scope .e2e-branch-row .lbl{font-size:13px;color:var(--text-secondary);}
-.e2ecat-scope .e2e-branch-chips{display:flex;align-items:center;gap:var(--size-spacing-x2);flex-wrap:wrap;}
 .e2ecat-scope .dv-field{margin-bottom:18px;}
 .e2ecat-scope .dv-field .lbl{font-size:13px;color:var(--text-secondary);margin-bottom:4px;}
 .e2ecat-scope .dv-field .val{font-size:15px;line-height:1.4;}
@@ -4683,14 +4682,6 @@ function catApplyBranch(e,b){
   var snap=e.branchStore[b];
   E2E_CAT_BRANCH_FIELDS.forEach(function(f){ e[f]=snap[f]; });
   e.branch=b;
-}
-function switchE2eBranch(id,b){
-  var e=findE2e(id); if(!e) return;
-  catApplyBranch(e,b);
-  /* Раскрытия и выбор вызова сбрасываем: они держатся на ключе сущности,
-     а последовательность вызовов в другой ветке своя. */
-  state.expandedCalls={}; state.selectedCall={};
-  render();
 }
 
 /* call tree shared by BI-step page and E2E page */
@@ -5507,7 +5498,12 @@ function statusPillFor(e){
 }
 function renderE2eList(){
   var q=state.e2eSearch.trim().toLowerCase();
-  var items=E2E_LIST_COMBINED.filter(function(e){ return !q || textMatches(e.title,q); });
+  /* F-3: ветка отбирает и список E2E — у сценария, не заведённого в этой ветке,
+     показывать нечего. Правило то же, что у CJ: catHasBranch знает, в каких ветках
+     сценарий существует. */
+  var items=E2E_LIST_COMBINED.filter(function(e){
+    return (!q || textMatches(e.title,q)) && catHasBranch(e, state.branch);
+  });
   if(!items.length) return '<div class="empty-list">Нет совпадений</div>';
   return items.map(function(e){
     var sel=state.selected && state.selected.type==='e2e' && state.selected.id===e.id;
@@ -5755,6 +5751,10 @@ function ucStatusPill(status){
 }
 function renderE2ePage(id){
   var e=findE2e(id); if(!e) return renderEmptyState();
+  /* Сценарий мог открыться в другой ветке — приводим его состав к текущей ветке
+     каталога, иначе вкладка «Источник» покажет чужую историю загрузок. */
+  if(!catHasBranch(e, state.branch)) return branchMissingState(e.title, catBranches(e));
+  catApplyCurrentBranch(e);
   var active=state.activeTab[id]||'calls';
   var linkedCj=CJ_LIST.slice(0,3);
   var linkedSteps=ALL_STEPS.slice(0,3);
@@ -5775,7 +5775,10 @@ function renderE2ePage(id){
 
   var html=titleHtml+
     '<div class="page-code">'+esc(e.code||'E2E')+'</div>'+
-    renderE2eBranchRow(e)+
+    /* F-2: свой ряд чипсов с карточки убран — ветку на весь каталог задаёт общий
+       переключатель в шапке списка, и два органа управления одним и тем же спорили бы.
+       Под кодом остаётся строка-напоминание, в какой ветке смотрим. */
+    '<div class="e2e-branch-note">Ветка: <b>'+esc(state.branch)+'</b></div>'+
     tabsBar(id,[
       {key:'calls',label:'Последовательность вызовов'},
       {key:'cj',label:'Связанные CJ ('+linkedCj.length+')'},
@@ -5801,20 +5804,11 @@ function renderE2ePage(id){
    стоит поле-переключатель с удалением внутри.
    Ветка, в которой сценарий не заведён, из ряда не исчезает, а стоит
    недоступной: так видно, что состав ветки заводят отдельно. */
-function renderE2eBranchRow(e){
-  var chips=E2E_CAT_SYSTEM_BRANCHES.map(function(b){
-    if(!catHasBranch(e,b)){
-      return '<div class="pill-item disabled" title="В этой ветке сценарий не заведён">'+esc(b)+'</div>';
-    }
-    return '<div class="pill-item'+(e.branch===b?' active':'')+'" tabindex="0"'+
-      ' onclick="switchE2eBranch(\''+e.id+'\',\''+b+'\')"'+
-      ' onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();switchE2eBranch(\''+e.id+'\',\''+b+'\');}">'+
-      esc(b)+'</div>';
-  }).join('');
-  return '<div class="e2e-branch-row"><span class="lbl">Ветка</span>'+
-    '<div class="e2e-branch-chips">'+chips+'</div></div>';
+/* Карточка показывает состав текущей ветки каталога. Раньше ветку переключали прямо
+   здесь (renderE2eBranchRow), теперь источник один — state.branch. */
+function catApplyCurrentBranch(e){
+  if(e && catHasBranch(e, state.branch) && e.branch !== state.branch) catApplyBranch(e, state.branch);
 }
-
 /* ---- вкладка «Источник» (внутри карточки E2E-сценария) ----
    Загрузчиков канона несколько, поэтому вкладка называется по смыслу, а не по
    одному из них. Ручная загрузка остаётся только у PlantUML: dynamic view
