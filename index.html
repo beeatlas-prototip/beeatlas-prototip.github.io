@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=6">
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261022-222229">
+<meta name="beeatlas-build" content="20261022-231626">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -4646,11 +4646,11 @@ function findStep(id){ return ALL_STEPS.find(function(s){return s.id===id;}); }
 var E2E_SOURCES = ['PlantUML','Structurizr','Sparx'];
 var E2E_LIST_COMBINED = E2E_TITLES.map(function(t,i){
   return {id:'e2e-c'+i, type:'e2e', title:t, code:'E2E.00.00.'+pad2(i+1), createdAt:daysAgoStr(60-i),
-          source:E2E_SOURCES[i%E2E_SOURCES.length], branch:'main', versions:[]};
+          source:E2E_SOURCES[i%E2E_SOURCES.length], branch:'main', versions:[], callsOffset:0};
 });
 var E2E_LIST_CALLS = E2E_CALLS_ONLY.map(function(t,i){
   return {id:'e2e-o'+i, type:'e2e', title:t, mono:true, code:'E2E.00.01.'+pad2(i+1), createdAt:daysAgoStr(45-i),
-          source:E2E_SOURCES[(i+1)%E2E_SOURCES.length], branch:'main', versions:[]};
+          source:E2E_SOURCES[(i+1)%E2E_SOURCES.length], branch:'main', versions:[], callsOffset:0};
 });
 function findE2e(id){
   return E2E_LIST_COMBINED.concat(E2E_LIST_CALLS).find(function(e){return e.id===id;});
@@ -4666,7 +4666,12 @@ function findE2e(id){
    ветко-зависимыми без переписывания. Логический якорь — код, название,
    дата создания — на ветке не висит. */
 var E2E_CAT_SYSTEM_BRANCHES=['design','develop','main'];
-var E2E_CAT_BRANCH_FIELDS=['source','versions'];
+/* F-1: в ветке каталога лежал только загрузчик канона и история его загрузок, а сам
+   состав сценария — цепочка вызовов — был общим. Из-за этого требование встречи
+   «в том составе, в котором они существуют в этой ветке» (24:07) не выполнялось:
+   ветку переключали, а вызовы оставались те же. Длина цепочки теперь тоже свойство
+   ветки: ранняя ветка описана не целиком. */
+var E2E_CAT_BRANCH_FIELDS=['source','versions','callsOffset'];
 function catCapture(e){
   var s={}; E2E_CAT_BRANCH_FIELDS.forEach(function(f){ s[f]=e[f]; }); return s;
 }
@@ -4876,8 +4881,8 @@ function validatePlantUml(text){
     /* В ранних ветках канон обычно приезжает другим загрузчиком и ещё не
        выгружен — отсюда пустая история: статус станет «Нет версий», и это
        правда про ветку, а не заглушка. */
-    if(i%2===0) e.branchStore.design={source:'Structurizr', versions:[]};
-    if(i%3===0) e.branchStore.develop={source:'Sparx', versions:[]};
+    if(i%2===0) e.branchStore.design={source:'Structurizr', versions:[], callsOffset:4};
+    if(i%3===0) e.branchStore.develop={source:'Sparx', versions:[], callsOffset:2};
   });
 })();
 
@@ -5786,7 +5791,7 @@ function renderE2ePage(id){
       {key:'source',label:'Источник'}
     ],active);
 
-  if(active==='calls') html+=renderCallsTab();
+  if(active==='calls') html+=renderCallsTab(e.callsOffset||0);
   else if(active==='cj') html+='<div class="related-list">'+linkedCj.map(function(c){
       return '<div class="related-item"><a onclick="selectCj(\''+c.id+'\')">'+esc(c.title)+'</a><span class="meta">'+esc(c.code)+'</span></div>';
     }).join('')+'</div>';
@@ -7443,6 +7448,7 @@ const state = {
   mergeDiffGroup:null,         // id свёрнутой группы (по умолчанию раскрыты все)
   mergeDiffOpen:{},            // путь узла → раскрыт
   mergeDiffConfirm:false,
+  ucImportConfirmed:false,   // импорт уже подтверждён на странице сравнения
   e2eBranchPanel:null,         // {code, name, parent}
   e2eMergePanel:null,          // {code, source, target, strategy}
   e2eBranchDeleteConfirm:null, // id ветки, для которой открыт запрос подтверждения
@@ -12271,6 +12277,10 @@ function positionDsSelectMenus(){
 // хотя бы один незаполненный этап-заготовку, см. cjUnfilledStage/CjUnfilledStageCell) —
 // это значит, что CJ в этой ветке вообще не заводили. Более редкий случай, отдельная
 // формулировка, чтобы не путать с обычным "ещё не заполнен".
+/* N-5: пустая ветка показывает ту же объёмную коробку, что и каталог, — встреча
+   22.10: «здесь будет наша стандартная иллюстрация с коробочкой и соответствующие
+   сообщения, что пока ещё не загружена ветка». Двух разных фигур одного состояния
+   быть не должно, поэтому зовём boxSvg каталога, а не рисуем свой кружок. */
 function CjBranchEmptyState(){
   const cjId = state.cjOpen.cjId;
   const branch = state.cjOpen.branch;
@@ -12280,7 +12290,7 @@ function CjBranchEmptyState(){
     : `В других ветках этого CJ его тоже пока нет — начни с нуля.`;
   return `
     <div class="empty-state">
-      <div style="width:56px;height:56px;border-radius:50%;background:var(--bg-alt);display:flex;align-items:center;justify-content:center;margin-bottom:var(--space-5);color:var(--text-tertiary);">${icon("gitBranch")}</div>
+      <div style="margin-bottom:var(--space-5);">${boxSvg(96)}</div>
       <h3>Этот CJ не создан в ветке «${escapeHtml(branch)}»</h3>
       <div style="color:var(--text-secondary);max-width:420px;">Ветки полностью изолированы — состав не расшаривается автоматически. ${hint}</div>
     </div>
@@ -12542,7 +12552,7 @@ function UcBranchEmptyState(u){
     : `В других ветках этого Use Case его тоже пока нет — начни с импорта.`;
   return `
     <div class="card empty-state" style="padding:var(--space-9) var(--space-5);">
-      <div style="width:56px;height:56px;border-radius:50%;background:var(--bg-alt);display:flex;align-items:center;justify-content:center;margin-bottom:var(--space-5);color:var(--text-tertiary);">${icon("gitBranch")}</div>
+      <div style="margin-bottom:var(--space-5);">${boxSvg(96)}</div>
       <h3>Use Case не заполнен в ветке «${escapeHtml(u.branch)}»</h3>
       <div style="color:var(--text-secondary);max-width:460px;">Ветки полностью изолированы — состав не расшаривается автоматически. ${hint}</div>
     </div>
@@ -12853,6 +12863,17 @@ function mergeDiffGroups(d){
     const p = findProject(d.projectId), u = p && findUseCase(p, d.ucId);
     return u ? ucDiffGroups(u, d.source, d.target) : [];
   }
+  if(d.kind === "ucimport"){
+    const p = findProject(d.projectId), u = p && findUseCase(p, d.ucId);
+    if(!u) return [];
+    const before = ucBranchData(u, d.target).scenarios || [];
+    const nodes = diffNodes(before, d.incoming || [], {
+      kind:"Шаг", key:x=>x.part, label:x=>`${x.part} · ${x.participant||""}`.trim(),
+      fields:[{cap:"Действие", get:x=>x.action}, {cap:"Интерфейс", get:x=>x.api},
+              {cap:"Вызов", get:x=>x.call}, {cap:"Статус", get:x=>x.status}],
+    });
+    return nodes.length ? [{id:"steps", title:"Шаги сценария", nodes}] : [];
+  }
   return [];
 }
 
@@ -12910,6 +12931,7 @@ function MergeDiffOverlay(){
   const groups = mergeDiffGroups(d);
   const t = diffTotals(groups);
   const empty = !groups.length;
+  const isImport = d.kind === "ucimport";
 
   const chip = (st, n) => `<span class="diff-chip ${st}">${DIFF_LABEL[st]} <b>${n}</b></span>`;
 
@@ -12946,19 +12968,25 @@ function MergeDiffOverlay(){
     <div class="wizard-head">
       <button class="cj-head-back" data-action="merge-diff-close" title="Назад">${icon("chevronLeft")}</button>
       <div class="cj-head-titles">
-        <h2>Сравнение веток</h2>
-        <div class="sub">«${escapeHtml(d.source)}» → «${escapeHtml(d.target)}» · ${escapeHtml(d.title||"")}</div>
+        <h2>${isImport ? "Что изменится после импорта" : "Сравнение веток"}</h2>
+        <div class="sub">${isImport
+          ? `Файл → ветка «${escapeHtml(d.target)}» · ${escapeHtml(d.title||"")}`
+          : `«${escapeHtml(d.source)}» → «${escapeHtml(d.target)}» · ${escapeHtml(d.title||"")}`}</div>
       </div>
       <div class="cj-head-spacer"></div>
       ${empty ? "" : `<div class="diff-summary">${chip("added",t.added)}${chip("changed",t.changed)}${chip("removed",t.removed)}</div>`}
     </div>
 
     <div class="wizard-body diff-body">
-      <p class="diff-lead">Так изменится ветка «${escapeHtml(d.target)}» после объединения. Состав заменяется целиком составом «${escapeHtml(d.source)}»</p>
+      <p class="diff-lead">${isImport
+        ? `Так изменится ветка «${escapeHtml(d.target)}» после импорта. Состав заменяется целиком тем, что приехало из файла`
+        : `Так изменится ветка «${escapeHtml(d.target)}» после объединения. Состав заменяется целиком составом «${escapeHtml(d.source)}»`}</p>
       ${empty ? `
         <div class="diff-empty">
-          <h3>Ветки совпадают</h3>
-          <p>Между «${escapeHtml(d.source)}» и «${escapeHtml(d.target)}» нет расхождений — объединять нечего</p>
+          <h3>${isImport ? "Изменений нет" : "Ветки совпадают"}</h3>
+          <p>${isImport
+            ? `То, что приехало из файла, совпадает с составом ветки «${escapeHtml(d.target)}»`
+            : `Между «${escapeHtml(d.source)}» и «${escapeHtml(d.target)}» нет расхождений — объединять нечего`}</p>
         </div>` :
         groups.map(g=>{
           /* Группы раскрыты по умолчанию: человек пришёл смотреть изменения.
@@ -12978,11 +13006,14 @@ function MergeDiffOverlay(){
 
     <div class="wizard-foot">
       <button class="btn btn-outline" data-action="merge-diff-close">Назад</button>
-      <button class="btn btn-primary" data-action="merge-diff-apply" ${empty?"disabled":""}>Объединить</button>
+      <button class="btn btn-primary" data-action="merge-diff-apply" ${empty&&!isImport?"disabled":""}>${isImport ? "Применить" : "Объединить"}</button>
     </div>
   </div>
-  ${state.mergeDiffConfirm ? CjConfirmDialog({title:"Объединить ветки?", text:"После объединения веток их нельзя будет откатить назад",
-                                              confirmLabel:"Объединить", confirmAction:"merge-diff-confirm-do", cancelAction:"merge-diff-confirm-cancel"}) : ""}
+  ${state.mergeDiffConfirm ? CjConfirmDialog({
+      title: isImport ? "Применить импорт?" : "Объединить ветки?",
+      text: isImport ? `Состав ветки «${d.target}» будет заменён тем, что приехало из файла` : "После объединения веток их нельзя будет откатить назад",
+      confirmLabel: isImport ? "Применить" : "Объединить",
+      confirmAction:"merge-diff-confirm-do", cancelAction:"merge-diff-confirm-cancel"}) : ""}
   `;
 }
 
@@ -16851,7 +16882,26 @@ function ucAbortImport(){
   showToast("Импорт прерван. Запуск сохранён в истории импорта");
 }
 
+/* M-7, встреча 22.10 (12:02): «а нам такой экран не нужен и в момент обычной
+   загрузки — не когда я мержу, а когда я main обновляю из файла?» — «можно
+   унифицировать, точно так же, это прям полезно». Импорт в существующий Use Case
+   заменяет состав ветки целиком, то есть ровно то же действие, что объединение,
+   поэтому перед применением показываем ту же страницу сравнения. Новый Use Case
+   сравнивать не с чем — там экран пропускаем. */
 function ucConfirmApply(){
+  const w0 = state.ucWizard;
+  if(w0 && w0.data.mode==="existing" && !state.ucImportConfirmed){
+    const p0 = findProject(w0.projectId);
+    const u0 = p0 && findUseCase(p0, w0.data.existingUcId);
+    if(u0){
+      openMergeDiff({kind:"ucimport", projectId:p0.id, ucId:u0.id,
+                     source:"импорт", target:u0.branch, title:u0.name||u0.code,
+                     incoming: ucDerivedScenarios(w0.data.parts)});
+      render();
+      return;
+    }
+  }
+  state.ucImportConfirmed = false;
   const w = state.ucWizard;
   const p = findProject(w.projectId);
   const d = w.data;
@@ -18162,7 +18212,10 @@ function handleAction(action, el){
       break;
     case "merge-history-close": state.mergeHistory = null; render(); break;
     case "merge-diff-apply": {
-      if(!mergeDiffGroups(state.mergeDiff).length) break;
+      const dd = state.mergeDiff;
+      /* У импорта «нет изменений» — не повод запрещать применение: файл мог приехать
+         тем же составом, и человек всё равно вправе его записать. */
+      if(dd && dd.kind !== "ucimport" && !mergeDiffGroups(dd).length) break;
       state.mergeDiffConfirm = true;
       render();
       break;
@@ -18175,6 +18228,14 @@ function handleAction(action, el){
       /* Объединение запускают прежние обработчики — страница сравнения только
          показывает, что произойдёт, и не дублирует их логику. Панель им нужна:
          оттуда они берут source/target, поэтому возвращаем её перед вызовом. */
+      if(d.kind === "ucimport"){
+        /* Возвращаемся в мастер и применяем по-настоящему: страница сравнения только
+           показала, что произойдёт, саму запись делает прежний обработчик. */
+        closeMergeDiff(false);
+        state.ucImportConfirmed = true;
+        ucConfirmApply();
+        break;
+      }
       closeMergeDiff(true);
       handleAction(d.kind + "-merge-confirm-do", el);
       if(d.panelKey) state[d.panelKey] = null;
