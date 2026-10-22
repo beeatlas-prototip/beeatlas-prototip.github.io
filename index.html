@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=6">
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261022-190634">
+<meta name="beeatlas-build" content="20261022-193747">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -7323,6 +7323,7 @@ const state = {
   // ссылки под ландшафт ветки не пересобираются — цепочку приносит канон.
   /* Страница сравнения веток перед объединением (встреча 22.10). Держит, что с чем
      сравниваем и какие узлы раскрыты; само объединение запускает merge-diff-confirm-do. */
+  mergeHistory:null,           // {kind, artifactId, title} — экран истории объединений
   mergeDiff:null,              // {kind:"cj"|"uc"|"ac", ...ids, source, target, title}
   mergeDiffGroup:null,         // id свёрнутой группы (по умолчанию раскрыты все)
   mergeDiffOpen:{},            // путь узла → раскрыт
@@ -8003,6 +8004,7 @@ function renderShell(){
     ${state.graph.addRel ? GraphAddRelOverlay() : ""}
     ${state.cjCallDelete ? CjCallDeleteDialog() : ""}
     ${state.mergeDiff ? MergeDiffOverlay() : ""}
+    ${state.mergeHistory ? MergeHistoryOverlay() : ""}
     ${state.toast ? Toast() : ""}
   `;
   document.documentElement.setAttribute("data-theme", state.theme);
@@ -11950,6 +11952,7 @@ function CjBranchBar(cjId){
                        meta:b=>cjBranchUpdNote(cjId,b), deleteAction:"cj-branch-delete-ask"})}
       <button class="btn btn-outline btn-sm" data-action="cj-open-branch-create">Новая ветка</button>
       <button class="btn btn-outline btn-sm" data-action="cj-open-merge" ${running?"disabled":""} title="${running?"Дождитесь завершения текущего объединения":""}">Объединить ветки</button>
+      <button class="btn btn-outline btn-sm" data-action="merge-history-open" data-kind="cj" data-artifact="${escapeHtml(cjId)}" data-title="${escapeHtml(cjMeta(cjId).title)}">История объединений</button>
       ${cjBranchLocked(cjId, active) ? `<span class="cj-branch-lock-badge" style="margin-left:auto;"><span class="mini-spinner"></span>Ветка обновляется</span>` : ""}
       ${runningHere ? `<span class="cj-merge-running-banner"${cjBranchLocked(cjId, active)?"":' style="margin-left:auto;"'}><span class="mini-spinner"></span>Объединение «${escapeHtml(running.source)}» → «${escapeHtml(running.target)}»…</span>` : ""}
     </div>
@@ -12358,6 +12361,9 @@ function UcActionsMenu(p, u, narrow){
     ${item("uc-open-branch-create","","plus","Новая ветка")}
     <div class="uc-menu-item${mergeBlocked?" disabled":""}" ${mergeBlocked?`title="Дождитесь завершения текущего объединения"`:`data-action="uc-open-merge"`}>
       ${icon("gitMerge")}<span class="txt">Объединить ветки</span>
+    </div>
+    <div class="uc-menu-item" data-action="merge-history-open" data-kind="uc" data-artifact="${escapeHtml(u.id)}" data-title="${escapeHtml(u.name||u.code||"")}">
+      ${icon("history")}<span class="txt">История объединений</span>
     </div>`;
   if(!narrow) return `<div class="uc-menu">${branchCmds}</div>`;
 
@@ -12614,6 +12620,39 @@ function ucDiffGroups(u, source, target){
    человек попадает обратно к выбору веток, а не к началу. */
 const MERGE_PANEL_KEY = {cj:"cjMergePanel", uc:"ucMergePanel", ac:"acMergePanel", e2e:"e2eMergePanel"};
 
+/* ─────────── Журнал объединений ───────────
+   Встреча 22.10: «у мержа будет какой-то статус, потом можно будет посмотреть мержи…
+   это, по сути, история твоих изменений объединений веток» — «мы что-то не подумали
+   про эту страничку». Запись появляется в момент запуска (статус «Идёт»), и тот же
+   отложенный обработчик, что заканчивает объединение, переводит её в «Выполнено». */
+const MERGE_LOG = [];
+let mergeLogSeq = 0;
+
+function logMergeStart({kind, artifactId, title, source, target}){
+  const e = {id:"ml"+(++mergeLogSeq), kind, artifactId, title, source, target,
+             who:ARCHITECT, at:NOW_DAY, status:"Идёт"};
+  MERGE_LOG.unshift(e);
+  return e.id;
+}
+function logMergeDone(id){
+  const e = MERGE_LOG.find(x=>x.id===id);
+  if(e) e.status = "Выполнено";
+}
+function mergeLogFor(kind, artifactId){
+  return MERGE_LOG.filter(e=>e.kind===kind && e.artifactId===artifactId);
+}
+/* Пара прошлых объединений у героя: пустая история ничего не объясняет, а встреча
+   просила видеть именно «кто, когда и куда» — на примере это читается сразу. */
+function seedMergeLog(){
+  [{kind:"cj", artifactId:"cj1", title:"CJ по услуге «Определитель номера»",
+    source:"design", target:"develop", who:ARCHITECT, at:"22.01.2025"},
+   {kind:"cj", artifactId:"cj1", title:"CJ по услуге «Определитель номера»",
+    source:"develop", target:"main", who:MOCK_ARCHITECT_POOL[0], at:"20.01.2025"},
+   {kind:"ac", artifactId:"b2c", title:"B2C digital retail delivery catalog",
+    source:"design", target:"develop", who:ARCHITECT, at:"05.02.2025"},
+  ].forEach(e=>MERGE_LOG.push(Object.assign({id:"ml"+(++mergeLogSeq), status:"Выполнено"}, e)));
+}
+
 function openMergeDiff(d){
   const key = MERGE_PANEL_KEY[d.kind];
   state.mergeDiff = Object.assign({}, d, {panelKey:key, panelState:key ? state[key] : null});
@@ -12640,6 +12679,51 @@ function mergeDiffGroups(d){
     return u ? ucDiffGroups(u, d.source, d.target) : [];
   }
   return [];
+}
+
+/* История объединений артефакта. Встреча просила именно «кто, когда, какой мерж и
+   куда» — поэтому таблица, а не лента: четыре коротких поля читаются строками. */
+function MergeHistoryOverlay(){
+  const h = state.mergeHistory;
+  if(!h) return "";
+  const rows = mergeLogFor(h.kind, h.artifactId);
+  return `
+  <div class="wizard-overlay">
+    <div class="wizard-head">
+      <button class="cj-head-back" data-action="merge-history-close" title="Назад">${icon("chevronLeft")}</button>
+      <div class="cj-head-titles">
+        <h2>История объединений</h2>
+        <div class="sub">${escapeHtml(h.title||"")}</div>
+      </div>
+      <div class="cj-head-spacer"></div>
+    </div>
+    <div class="wizard-body diff-body">
+      ${rows.length ? `
+        <div class="table-wrap" style="margin-top:var(--space-6);">
+          <table class="table">
+            <thead><tr>
+              <th>Дата</th><th>Автор</th><th>Откуда</th><th>Куда</th><th>Статус</th>
+            </tr></thead>
+            <tbody>
+              ${rows.map(e=>`
+                <tr>
+                  <td>${escapeHtml(e.at)}</td>
+                  <td>${escapeHtml(e.who)}</td>
+                  <td>${escapeHtml(e.source)}</td>
+                  <td>${escapeHtml(e.target)}</td>
+                  <td>${e.status==="Идёт"
+                        ? `<span class="cj-merge-running-banner"><span class="mini-spinner"></span>Идёт</span>`
+                        : `<span class="badge green">Выполнено</span>`}</td>
+                </tr>`).join("")}
+            </tbody>
+          </table>
+        </div>` : `
+        <div class="diff-empty">
+          <h3>Объединений ещё не было</h3>
+          <p>Здесь появятся записи о том, кто и когда объединял ветки этого артефакта</p>
+        </div>`}
+    </div>
+  </div>`;
 }
 
 /* Страница сравнения. Шапка называет обе ветки и направление, под ней сводка
@@ -12840,6 +12924,9 @@ function AcActionsMenu(){
       ${item("ac-open-branch-create","plus","Новая ветка")}
       <div class="uc-menu-item${running?" disabled":""}" ${running?`title="Дождитесь завершения текущего объединения"`:`data-action="ac-open-merge"`}>
         ${icon("gitMerge")}<span class="txt">Объединить ветки</span>
+      </div>
+      <div class="uc-menu-item" data-action="merge-history-open" data-kind="ac" data-artifact="${escapeHtml(state.appcat.detailId||"")}" data-title="${escapeHtml((findApp(state.appcat.detailId)||{}).name||"")}">
+        ${icon("history")}<span class="txt">История объединений</span>
       </div>
     </div>
   `;
@@ -17890,6 +17977,12 @@ function handleAction(action, el){
       break;
     }
     case "merge-diff-close": closeMergeDiff(true); render(); break;
+    case "merge-history-open":
+      state.mergeHistory = {kind:el.dataset.kind, artifactId:el.dataset.artifact, title:el.dataset.title||""};
+      state.popover = null;
+      render();
+      break;
+    case "merge-history-close": state.mergeHistory = null; render(); break;
     case "merge-diff-apply": {
       if(!mergeDiffGroups(state.mergeDiff).length) break;
       state.mergeDiffConfirm = true;
@@ -17920,7 +18013,9 @@ function handleAction(action, el){
       // target branch's own product methods, which takes time in the real system. Panel
       // closes right away; a persistent banner in CjBranchBar shows progress and the
       // target branch stays visible (read-only) so the user can "провалиться и посмотреть".
-      state.cjMergeRunning = {cjId, source:p.source, target:p.target, strategy:p.strategy};
+      state.cjMergeRunning = {cjId, source:p.source, target:p.target, strategy:p.strategy,
+                              logId: logMergeStart({kind:"cj", artifactId:cjId, title:cjMeta(cjId).title,
+                                                    source:p.source, target:p.target})};
       state.cjMergePanel = null;
       state.cjMergeConfirm = false;
       state.popover = null;
@@ -17932,6 +18027,7 @@ function handleAction(action, el){
         if(CJ_BRANCHES[r.cjId] && CJ_BRANCHES[r.cjId][r.target]){
           CJ_BRANCHES[r.cjId][r.target].updatedAt = NOW_DAY;
         }
+        logMergeDone(r.logId);
         state.cjMergeRunning = null;
         showToast("Ветки объединены");
         render();
@@ -18164,7 +18260,9 @@ function handleAction(action, el){
       // Объединение не мгновенное: ссылки пересобираются под ландшафт целевой ветки.
       // Панель закрывается сразу, прогресс виден в строке веток, а целевую ветку в это
       // время можно открыть и посмотреть — но не редактировать.
-      state.ucMergeRunning = {projectId:p.id, ucId:u.id, source:m.source, target:m.target, strategy:m.strategy};
+      state.ucMergeRunning = {projectId:p.id, ucId:u.id, source:m.source, target:m.target, strategy:m.strategy,
+                              logId: logMergeStart({kind:"uc", artifactId:u.id, title:u.name||u.code,
+                                                    source:m.source, target:m.target})};
       state.ucMergePanel = null;
       state.ucMergeConfirm = false;
       state.popover = null;
@@ -18178,6 +18276,7 @@ function handleAction(action, el){
           ucMergeExecute(uc, r.source, r.target, r.strategy);
           uc.branchInfo[r.target] = {updatedAt: NOW_DAY};
         }
+        logMergeDone(r.logId);
         state.ucMergeRunning = null;
         showToast("Ветки объединены");
         render();
@@ -18937,7 +19036,9 @@ function handleAction(action, el){
       if(!m || !m.source || !m.target || m.source===m.target || state.acMergeRunning) break;
       /* Объединение не мгновенное — как в CJ и Use Case: панель закрывается сразу,
          прогресс виден строкой под шапкой, целевую ветку в это время можно открыть. */
-      state.acMergeRunning = {appId:m.appId, source:m.source, target:m.target, strategy:m.strategy};
+      state.acMergeRunning = {appId:m.appId, source:m.source, target:m.target, strategy:m.strategy,
+                              logId: logMergeStart({kind:"ac", artifactId:m.appId, title:(findApp(m.appId)||{}).name||"",
+                                                    source:m.source, target:m.target})};
       state.acMergePanel = null;
       state.acMergeConfirm = false;
       state.popover = null;
@@ -18947,6 +19048,7 @@ function handleAction(action, el){
         if(!r) return;
         acMergeExecute(r.appId, r.source, r.target, r.strategy);
         if(AC_BRANCHES[r.appId] && AC_BRANCHES[r.appId][r.target]) AC_BRANCHES[r.appId][r.target].updatedAt = NOW_DAY;
+        logMergeDone(r.logId);
         state.acMergeRunning = null;
         showToast("Ветки объединены");
         render();
@@ -19297,6 +19399,9 @@ document.addEventListener("scroll", ()=>{ positionDsSelectMenus(); positionToast
     }
   }
 })();
+/* Журнал объединений засевается здесь, а не вместе с остальными демо-данными:
+   MERGE_LOG объявлен ниже по файлу, и ранний вызов упирался во временную мёртвую зону. */
+seedMergeLog();
 render();
 
 })();
