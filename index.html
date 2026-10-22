@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=6">
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261022-193747">
+<meta name="beeatlas-build" content="20261022-195416">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -4140,6 +4140,9 @@
 /* Выбор реализации: кодов может быть много и они нечитаемые, поэтому показываем
    первые три чипса, остальные прячем за «ещё N» — страница не пугает длинными
    идентификаторами, но и лишних кликов за частым выбором нет. */
+.e2ecat-scope .cat-branch-row{display:flex;align-items:center;gap:var(--space-3);margin-bottom:12px;}
+.e2ecat-scope .cat-branch-lbl{font-size:13px;color:var(--text-secondary);}
+.e2ecat-scope .cat-branch-chips{margin-bottom:0;}
 .e2ecat-scope .impl-row{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:20px;}
 .e2ecat-scope .impl-lbl{font-size:13px;color:var(--text-secondary);margin-right:4px;}
 .e2ecat-scope .impl-chip{display:inline-flex;align-items:center;gap:6px;max-width:320px;height:32px;padding:0 12px;border-radius:var(--radius-pill);background:var(--bg-hover);color:var(--text);font-size:13px;line-height:16px;cursor:pointer;border:1px solid transparent;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
@@ -4503,6 +4506,22 @@ var UC_EXTRA_TITLES=[
   'Альтернативный поток: вход по паролю',
   'Поток восстановления доступа'
 ];
+/* Связи шага по веткам. main — полный набор, он же был у шага раньше; develop —
+   на один Use Case меньше (его ещё не довели до разработки); design — самая ранняя
+   ветка, там связан только первый Use Case и половина E2E. Так на шаге видно, что
+   «в том составе, в котором они существуют в этой ветке» — это разный состав,
+   а у части шагов в design связей нет вовсе, и это рабочее состояние, не ошибка. */
+function buildStepLinks(n, stepTitle){
+  var ucsMain = buildStepUcs(n, stepTitle);
+  var e2eMain = buildStepE2eImpls(n);
+  var half = Math.ceil(e2eMain.length / 2);
+  return {
+    main:    {ucs: ucsMain,                      e2e: e2eMain},
+    develop: {ucs: ucsMain.slice(0, Math.max(1, ucsMain.length - 1)), e2e: e2eMain},
+    design:  {ucs: n % 2 === 0 ? [] : ucsMain.slice(0, 1),            e2e: e2eMain.slice(0, half)},
+  };
+}
+
 function buildStepUcs(n, stepTitle){
   var first=buildStepUc(n, stepTitle);
   if(!first) return [];
@@ -4571,6 +4590,10 @@ var CJ_LIST=[];
       title:CJ_TITLES[i%CJ_TITLES.length],
       code:'CJ.00.00.'+pad2(i+1)+'.'+(90+i),
       published: (i%3!==2),
+      /* Встреча 22.10: каталог показывает «только те CJ, у которых есть эта ветка,
+         и в том составе, в котором они существуют в этой ветке». У части CJ ранних
+         веток ещё нет — в design они просто не появятся. */
+      branches: (i%4===0) ? ['main'] : (i%4===1 ? ['develop','main'] : ['design','develop','main']),
       bi:[]
     };
     for(var b=0;b<3;b++){
@@ -4579,6 +4602,9 @@ var CJ_LIST=[];
         id:biId, type:'bi', parentCj:cjId,
         title:BI_TITLES[(i*3+b)%BI_TITLES.length],
         code:'BI.00.00.'+pad2(i+1)+'.'+(b+1),
+        /* Состав CJ по ветке: в design у каждого CJ только первые BI — ранняя ветка
+           описана не целиком. */
+        branches: b===0 ? ['design','develop','main'] : (b===1 ? ['develop','main'] : ['main']),
         steps:[]
       };
       for(var s=0;s<2;s++){
@@ -4590,8 +4616,7 @@ var CJ_LIST=[];
           title:stepTitle,
           code:'STEP.00.00.'+pad2(i+1)+'.'+(stepGlobalIdx%100),
           uc: buildStepUc(stepGlobalIdx, stepTitle),
-          ucs: buildStepUcs(stepGlobalIdx, stepTitle),
-          e2eImpls: buildStepE2eImpls(stepGlobalIdx)
+          linksByBranch: buildStepLinks(stepGlobalIdx, stepTitle)
         });
       }
       cj.bi.push(bi);
@@ -4869,6 +4894,9 @@ function defaultState(){
   return {
     theme:'light',
     mode:'cj',
+    /* Ветка каталога. Встреча 22.10: ветка выбирается глобально на экране, где
+       пересекаются CJ, E2E и Use Case, и задаёт представление обеим сторонам сразу. */
+    branch:'main',
     cjSearch:'',
     e2eSearch:'',
     renamingE2e:null,
@@ -5363,6 +5391,16 @@ function renderCatalog(){
     '<div class="pill-toggle">'+
       '<button class="'+(state.mode==='cj'?'on':'')+'" onclick="setMode(\'cj\')">CJ</button>'+
       '<button class="'+(state.mode==='e2e'?'on':'')+'" onclick="setMode(\'e2e\')">Шаги Е2Е-сценария</button>'+
+    '</div>'+
+    /* B-1: общий переключатель ветки на весь каталог — «здесь глобально где-то должна
+       быть ветки E2E и CJ». Он задаёт и отбор списка, и то, какие связи видны на шаге. */
+    '<div class="cat-branch-row">'+
+      '<span class="cat-branch-lbl">Ветка</span>'+
+      '<div class="pill-toggle cat-branch-chips">'+
+        CAT_BRANCHES.map(function(b){
+          return '<button class="'+(state.branch===b?'on':'')+'" onclick="setCatBranch(\''+b+'\')">'+esc(b)+'</button>';
+        }).join('')+
+      '</div>'+
     '</div>';
 
   if(state.mode==='cj'){
@@ -5385,17 +5423,31 @@ function renderCatalog(){
 }
 function textMatches(t,q){ return t.toLowerCase().indexOf(q)>=0; }
 
+var CAT_BRANCHES=['design','develop','main'];
+function setCatBranch(b){
+  if(state.branch===b) return;
+  state.branch=b;
+  /* Выбранная реализация и раскрытия привязаны к ключу сущности, а состав ветки свой:
+     оставлять их — значит показывать выбор, которого в этой ветке нет. */
+  state.stepImpl={}; state.implMore={}; state.expandedCalls={}; state.selectedCall={};
+  persist(); render();
+}
+function inBranch(x){
+  return !x.branches || x.branches.indexOf(state.branch) >= 0;
+}
 function renderCjList(){
   var q=state.cjSearch.trim().toLowerCase();
   /* Ряд чипсов «Все / Опубликованные / Не опубликованные» убран 2026-10-16:
      список показывается целиком, отбор идёт поиском. */
-  var items=CJ_LIST;
+  /* B-2: ветка отбирает и сам CJ, и его состав — BI, которых в этой ветке нет,
+     в дерево не попадают. */
+  var items=CJ_LIST.filter(inBranch);
 
   var out='';
   items.forEach(function(cj){
     var cjMatch = !q || textMatches(cj.title,q) || textMatches(cj.code,q);
     var biOut=[];
-    cj.bi.forEach(function(bi){
+    cj.bi.filter(inBranch).forEach(function(bi){
       var biMatch = !q || cjMatch || textMatches(bi.title,q) || textMatches(bi.code,q);
       var steps=bi.steps.filter(function(s){
         return !q || cjMatch || biMatch || textMatches(s.title,q) || textMatches(s.code,q);
@@ -5416,7 +5468,7 @@ function renderCjList(){
 
     if(cjOpen){
       out+='<div class="tree-children">';
-      (q?biOut:cj.bi.map(function(b){return {bi:b,steps:b.steps};})).forEach(function(entry){
+      (q?biOut:cj.bi.filter(inBranch).map(function(b){return {bi:b,steps:b.steps};})).forEach(function(entry){
         var bi=entry.bi, steps=entry.steps;
         var biOpen = forceOpen || !!state.expanded[bi.id];
         out+='<div class="tree-row lvl-bi" onclick="toggleExpand(\''+bi.id+'\')">'+
@@ -5541,13 +5593,34 @@ function renderStepPage(id){
 /* ---- реализации шага: E2E и Use Case ---- */
 // Дерево вызовов строится по конкретной реализации, а не по шагу вообще: у каждой
 // загрузки свой состав вызовов, их для того и сравнивают.
+/* Встреча 22.10, «логический косяк»: связь Use Case и E2E с BI-шагом стояла НАД веткой —
+   атрибутом корневой сущности. Это запрещало привязывать разные представления к разным
+   шагам, и на встрече решили вязать к ветке: «есть абстрактная сущность юз-кейса… есть
+   его реализация, которая уже вяжется к ветке».
+   Поэтому связи шага живут в step.linksByBranch, а не в step.ucs / step.e2eImpls,
+   и читаются по текущей ветке каталога. */
+function stepBranchLinks(step, branch){
+  var by = step.linksByBranch;
+  if(!by) return {ucs: step.ucs || [], e2e: step.e2eImpls || []};
+  return by[branch || state.branch] || {ucs: [], e2e: []};
+}
+/* В каких ветках у шага вообще есть связи этого вида — нужно, чтобы пустое состояние
+   отличало «связи нет нигде» от «связь есть, но в другой ветке». */
+function branchesWithLinks(step, kind){
+  var by = step.linksByBranch; if(!by) return [];
+  return Object.keys(by).filter(function(b){
+    var l = by[b] || {};
+    return (kind==='uc' ? (l.ucs||[]) : (l.e2e||[])).length > 0;
+  });
+}
 function stepImpls(step, kind){
+  var links = stepBranchLinks(step);
   if(kind==='uc'){
-    return (step.ucs||[]).map(function(u,i){
+    return (links.ucs||[]).map(function(u,i){
       return {id:'ucimpl-'+step.id+'-'+i, kind:'uc', code:u.code, source:u.name, uc:u, offset:i};
     });
   }
-  return step.e2eImpls||[];
+  return links.e2e||[];
 }
 function implCountSuffix(step, kind){
   var n=stepImpls(step,kind).length;
@@ -5593,8 +5666,14 @@ function renderImplChips(step, kind){
 function renderStepE2eCallsTab(step){
   var list=stepImpls(step,'e2e');
   if(!list.length){
+    /* A-4: связь теперь живёт в ветке, поэтому «ничего нет» бывает двух разных смыслов.
+       Если в другой ветке связь есть — это не пустой шаг, а состав этой ветки, и так
+       и говорим, иначе человек решит, что данные потеряли. */
+    var elsewhere=branchesWithLinks(step,'e2e').filter(function(b){ return b!==state.branch; });
     return '<div class="card"><div class="card-title">Вызовы E2E</div>'+
-      '<p class="impl-empty">К этому шагу не привязано ни одного E2E-сценария, поэтому последовательность вызовов пустая</p>'+
+      '<p class="impl-empty">'+(elsewhere.length
+        ? 'В ветке «'+esc(state.branch)+'» к шагу не привязан ни один E2E-сценарий. Он есть в '+(elsewhere.length>1?'ветках':'ветке')+' '+esc(elsewhere.map(function(b){return '«'+b+'»';}).join(', '))
+        : 'К этому шагу не привязано ни одного E2E-сценария, поэтому последовательность вызовов пустая')+'</p>'+
     '</div>';
   }
   var cur=currentImpl(step,'e2e');
@@ -5608,9 +5687,12 @@ function renderStepE2eCallsTab(step){
 function renderStepUcCallsTab(step){
   var list=stepImpls(step,'uc');
   if(!list.length){
+    var elsewhereUc=branchesWithLinks(step,'uc').filter(function(b){ return b!==state.branch; });
     return '<div class="card">'+
       '<div class="card-title">Вызовы Use Case</div>'+
-      '<p class="impl-empty">К этому шагу пока не привязан Use Case — сценарий описан только вызовами E2E</p>'+
+      '<p class="impl-empty">'+(elsewhereUc.length
+        ? 'В ветке «'+esc(state.branch)+'» к шагу не привязан Use Case. Он есть в '+(elsewhereUc.length>1?'ветках':'ветке')+' '+esc(elsewhereUc.map(function(b){return '«'+b+'»';}).join(', '))
+        : 'К этому шагу пока не привязан Use Case — сценарий описан только вызовами E2E')+'</p>'+
       '<div class="btnrow"><button class="btn primary" onclick="notAvail()">Привязать Use Case</button></div>'+
     '</div>';
   }
