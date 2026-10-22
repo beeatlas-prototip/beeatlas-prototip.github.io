@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=6">
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261022-111433">
+<meta name="beeatlas-build" content="20261022-184016">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -2597,11 +2597,12 @@
   .cj-select-item .check svg{width:18px;height:18px;}
   .cj-select-item .check .ic{width:18px;height:18px;}
 
-  .cj-merge-strategy{display:flex;flex-direction:column;gap:var(--space-3);}
-  .cj-merge-strategy-card{border:1px solid var(--border-strong);border-radius:var(--radius-sm);padding:var(--space-4);cursor:pointer;}
-  .cj-merge-strategy-card .t{font-weight:700;font-size:13px;margin-bottom:4px;}
-  .cj-merge-strategy-card .d{font-size:13px;color:var(--text-secondary);line-height:1.45;}
-  .cj-merge-strategy-card.active{border-color:var(--yellow);background:var(--bg-alt);}
+  /* Плашка «Замена состава» встала на место карточек выбора стратегии: выбора больше
+     нет, поэтому ни рамки-радио, ни курсора-указателя — обычный информационный блок
+     на поверхности контейнера. */
+  .merge-note{border:1px solid var(--border);background:var(--bg-alt);border-radius:var(--radius-sm);padding:var(--space-4);}
+  .merge-note .t{display:flex;align-items:flex-start;gap:var(--space-2);font-weight:500;font-size:13px;color:var(--text);}
+  .merge-note .d{margin-top:var(--space-2);padding-left:var(--space-6);font-size:13px;color:var(--text-secondary);line-height:1.45;}
   .cj-merge-conflict-box{margin-top:var(--space-5);border:1px solid var(--red-text);background:var(--red-bg);border-radius:var(--radius-sm);padding:var(--space-4);}
   .cj-merge-conflict-box .t{display:flex;align-items:flex-start;gap:var(--space-2);font-weight:500;font-size:13px;color:var(--red-text);}
   .cj-merge-conflict-box ul{margin:var(--space-3) 0 0;padding-left:34px;font-size:13px;color:var(--text);line-height:1.6;}
@@ -2629,13 +2630,6 @@
   .cj-select-item .sub{font-size:13px;line-height:16px;color:var(--text-secondary);}
 
   /* стратегия объединения — радио-карточки (Radiobutton: жёлтая точка у выбранной) */
-  .cj-merge-strategy-card.radio{display:flex;align-items:flex-start;gap:var(--space-4);border-color:var(--border);}
-  .cj-merge-strategy-card.radio .dot{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border-strong);flex:0 0 auto;display:flex;align-items:center;justify-content:center;margin-top:2px;}
-  .cj-merge-strategy-card.radio .t{font-size:15px;line-height:20px;font-weight:500;margin-bottom:var(--space-1);}
-  .cj-merge-strategy-card.radio .d{font-size:13px;line-height:18px;}
-  .cj-merge-strategy-card.radio.active{border-color:var(--yellow);background:transparent;}
-  .cj-merge-strategy-card.radio.active .dot{border-color:var(--yellow);}
-  .cj-merge-strategy-card.radio.active .dot::after{content:"";width:10px;height:10px;border-radius:50%;background:var(--yellow);}
 
   /* подтверждение необратимого действия поверх панели (Dialog) */
   .cj-dialog-backdrop{position:fixed;inset:0;z-index:320;display:flex;align-items:center;justify-content:center;padding:var(--space-6);}
@@ -6735,8 +6729,9 @@ function e2eBranchCreate(code, name, parent){
 }
 /* Объединение у e2e — только замена. Состав ветки здесь не набор независимых
    элементов, а цепочка вызовов: перенести «те вызовы, которых в цели нет»
-   значило бы собрать цепочку, которой ни один канон не выгружал. Стратегии
-   «Добавление», как у Use Case и приложения, у e2e поэтому нет. */
+   значило бы собрать цепочку, которой ни один канон не выгружал.
+   С 22.10 замена — единственная стратегия и у остальных артефактов, выбор убран
+   из интерфейса; ветка «add» ниже по коду осталась неиспользуемой. */
 function e2eBranchMerge(code, source, target){
   const a = E2E_REGISTRY[code];
   if(!a || !a.branches[source] || !a.branches[target] || source===target) return false;
@@ -7025,17 +7020,18 @@ function ucApplyBranch(u, branchId){
 }
 
 /* §3.1: создание логического артефакта = создание трёх системных веток, текущий состав
-   уезжает в main. Док там же пишет, что design и develop стартуют пустыми, но пустой
-   design — отдельное стоящее продуктовое решение по Библиотеке CJ: самая ранняя ветка
-   жизненного цикла не бывает пустой, в ней всегда есть черновик. Поэтому design получает
-   начало сценария (первые шаги), а по-настоящему пустым стартует только develop. */
+   уезжает в main.
+   Встреча 22.10: design и develop стартуют ПУСТЫМИ, копией main их не заполняем —
+   «чтобы людей не путать», а дубль того же состава читался бы как ошибка. Раньше
+   design получал черновик (первые шаги сценария); это было собственное решение по
+   Библиотеке CJ, и оно отменено. Пустая ветка не блокируется: в неё нужно уметь
+   загрузить состав, поэтому она кликабельна и показывает своё пустое состояние. */
 function ensureUcBranches(u){
   if(u.branches) return;
   u.branches = ucSystemBranchMeta();
   u.branch = "main";
-  const draftLen = Math.max(1, Math.ceil((u.scenarios||[]).length / 2));
   u.branchStore = {
-    design: {scenarios: deepClone((u.scenarios||[]).slice(0, draftLen)), rawPlantUml:""},
+    design: ucEmptyBranchData(),
     develop: ucEmptyBranchData(),
     main: ucCaptureBranch(u),
   };
@@ -7130,6 +7126,14 @@ function seedHeroUcBranches(useCases){
   useCases.forEach(ensureUcBranches);
   const uc1 = useCases[0];
   if(!uc1) return;
+  /* Черновик в design — свойство демо-данных героя, а не поведение по умолчанию:
+     по решению встречи новые ветки стартуют пустыми (см. ensureUcBranches), и
+     содержимое в design означает, что в ней уже кто-то поработал. Без этого
+     объединению и сравнению не на чем показать расхождение. */
+  const draft = deepClone(ucBranchData(uc1, "main"));
+  draft.scenarios = draft.scenarios.slice(0, Math.max(1, Math.ceil(draft.scenarios.length / 2)));
+  draft.rawPlantUml = "";
+  uc1.branchStore.design = draft;
   uc1.branchInfo.design.updatedAt = "22.01.2025";
 
   const develop = deepClone(ucBranchData(uc1, "main"));
@@ -9567,7 +9571,8 @@ function acMergeExecute(appId, source, target, strategy){
   AC_BRANCH_FIELDS.forEach(f=>{
     if(strategy==="replace"){ tgt[f] = deepClone(src[f]); return; }
     /* Добавление: приходит только то, чего в целевой ветке нет. Узлы наблюдаемости и
-       НФТ своего id не имеют — у них ключом служит код или подпись. */
+       НФТ своего id не имеют — у них ключом служит код или подпись.
+       С 22.10 из интерфейса эта ветка недостижима: стратегия всегда «replace». */
     const key = x => x.id || x.code || x.name || x.label;
     const have = new Set((tgt[f]||[]).map(key));
     (src[f]||[]).forEach(x=>{ if(!have.has(key(x))) tgt[f].push(deepClone(x)); });
@@ -12173,22 +12178,7 @@ function CjMergePanel(){
                            disabledId:p.source, disabledTitle:"Совпадает с источником"})}
         </div>
 
-        <div class="cj-merge-strategy">
-          <div class="cj-merge-strategy-card radio ${p.strategy==="add"?"active":""}" data-action="cj-merge-set-strategy" data-strategy="add">
-            <div class="dot"></div>
-            <div>
-              <div class="t">Добавление</div>
-              <div class="d">Элементы, которых нет в «${escapeHtml(p.target)}», будут добавлены. Существующие — не тронуты, без диффа и cherry-pick</div>
-            </div>
-          </div>
-          <div class="cj-merge-strategy-card radio ${p.strategy==="replace"?"active":""}" data-action="cj-merge-set-strategy" data-strategy="replace">
-            <div class="dot"></div>
-            <div>
-              <div class="t">Замена</div>
-              <div class="d">Весь состав «${escapeHtml(p.target)}» будет полностью заменён составом «${escapeHtml(p.source)}»</div>
-            </div>
-          </div>
-        </div>
+        ${MergeStrategyNote(p.source, p.target)}
 
         ${p.conflicts && p.conflicts.length ? `
           <div class="cj-merge-conflict-box">
@@ -12399,10 +12389,25 @@ function BranchCreatePanel({panel, branches, note, reserved, actions, inputId}){
    почему так — говорит описание под заголовком панели (`desc`), там же, где
    описана форма создания ветки. Блоком это не рисуется: блок в этой панели
    красный, он для конфликта, и пояснение в нём читалось бы как ошибка. */
-function BranchMergePanel({m, branches, note, unit, conflict, actions, confirmOpen, running, strategies, desc}){
+/* Встреча 22.10: выбор стратегии убран, объединение всегда заменяет состав целиком
+   («давай пока оставим только замену, выбор этот уберём, оставим плашку»). Карточки
+   с радио заменены неинтерактивной плашкой: решать нечего, а объяснить, что будет,
+   по-прежнему нужно. Пока ветки не выбраны, называть их в тексте нечем — тогда
+   плашка говорит общее правило. */
+function MergeStrategyNote(source, target){
+  const named = source && target && source !== target;
+  return `
+    <div class="merge-note">
+      <div class="t">${icon("info")} Замена состава</div>
+      <div class="d">${named
+        ? `Весь состав «${escapeHtml(target)}» будет полностью заменён составом «${escapeHtml(source)}»`
+        : "Состав целевой ветки будет полностью заменён составом исходной"}</div>
+    </div>`;
+}
+
+function BranchMergePanel({m, branches, note, conflict, actions, confirmOpen, running, desc}){
   const ent = panelEnter(m);
   const canMerge = !!m.source && !!m.target && m.source!==m.target && !running;
-  const allowed = strategies || ["add","replace"];
   return `
     <div class="backdrop${ent}" data-action="${actions.close}"></div>
     <div class="side-panel${ent}">
@@ -12421,25 +12426,7 @@ function BranchMergePanel({m, branches, note, unit, conflict, actions, confirmOp
                            disabledId:m.source, disabledTitle:"Совпадает с источником"})}
         </div>
 
-        ${allowed.length > 1 ? `
-        <div class="cj-merge-strategy">
-          ${allowed.includes("add") ? `
-          <div class="cj-merge-strategy-card radio ${m.strategy==="add"?"active":""}" data-action="${actions.setStrategy}" data-strategy="add">
-            <div class="dot"></div>
-            <div>
-              <div class="t">Добавление</div>
-              <div class="d">${escapeHtml(unit)}, которых нет в «${escapeHtml(m.target)}», будут добавлены. Существующие — не тронуты, без диффа и cherry-pick</div>
-            </div>
-          </div>` : ""}
-          ${allowed.includes("replace") ? `
-          <div class="cj-merge-strategy-card radio ${m.strategy==="replace"?"active":""}" data-action="${actions.setStrategy}" data-strategy="replace">
-            <div class="dot"></div>
-            <div>
-              <div class="t">Замена</div>
-              <div class="d">Весь состав «${escapeHtml(m.target)}» будет полностью заменён составом «${escapeHtml(m.source)}»</div>
-            </div>
-          </div>` : ""}
-        </div>` : ""}
+        ${MergeStrategyNote(m.source, m.target)}
 
         ${conflict ? `
           <div class="cj-merge-conflict-box">
@@ -12482,10 +12469,10 @@ function UcMergePanel(){
     hint:`Опиши недостающие интерфейсы в ветке «${m.target}» и повтори объединение.`,
   } : null;
   return BranchMergePanel({
-    m, branches:ucBranchList(u), note:b=>ucBranchUpdNote(u,b), unit:"Шаги", conflict,
+    m, branches:ucBranchList(u), note:b=>ucBranchUpdNote(u,b), conflict,
     confirmOpen:state.ucMergeConfirm, running:state.ucMergeRunning,
     actions:{close:"uc-close-merge", setSource:"uc-merge-set-source", setTarget:"uc-merge-set-target",
-             setStrategy:"uc-merge-set-strategy", submit:"uc-merge-submit",
+             submit:"uc-merge-submit",
              confirmDo:"uc-merge-confirm-do", confirmCancel:"uc-merge-confirm-cancel",
              sourceField:"uc-merge-source", targetField:"uc-merge-target"},
   });
@@ -12510,11 +12497,11 @@ function E2eMergePanel(){
   if(!m || !E2E_REGISTRY[m.code]) return "";
   return BranchMergePanel({
     m, branches:e2eBranchList(m.code), note:b=>e2eBranchUpdNote(m.code,b),
-    unit:"Цепочка вызовов", conflict:null, strategies:["replace"],
+    conflict:null,
     desc:"Состав e2e — цепочка вызовов, и переносится она целиком: ветка-цель будет полностью заменена ветко-источником. Перенести отдельные вызовы из другой ветки нельзя — такой цепочки не выгружал ни один источник",
     confirmOpen:state.e2eMergeConfirm, running:false,
     actions:{close:"e2e-close-merge", setSource:"e2e-merge-set-source", setTarget:"e2e-merge-set-target",
-             setStrategy:"e2e-merge-set-strategy", submit:"e2e-merge-submit",
+             submit:"e2e-merge-submit",
              confirmDo:"e2e-merge-confirm-do", confirmCancel:"e2e-merge-confirm-cancel",
              sourceField:"e2e-merge-source", targetField:"e2e-merge-target"},
   });
@@ -12574,10 +12561,10 @@ function AcMergePanel(){
   } : null;
   return BranchMergePanel({
     m, branches:acBranchList(m.appId), note:b=>acBranchUpdNote(m.appId,b),
-    unit:"Элементы состава", conflict,
+    conflict,
     confirmOpen:state.acMergeConfirm, running:state.acMergeRunning,
     actions:{close:"ac-close-merge", setSource:"ac-merge-set-source", setTarget:"ac-merge-set-target",
-             setStrategy:"ac-merge-set-strategy", submit:"ac-merge-submit",
+             submit:"ac-merge-submit",
              confirmDo:"ac-merge-confirm-do", confirmCancel:"ac-merge-confirm-cancel",
              sourceField:"ac-merge-source", targetField:"ac-merge-target"},
   });
@@ -17519,7 +17506,7 @@ function handleAction(action, el){
       const branches = cjBranchList(cjId).map(b=>b.id);
       const source = state.cjOpen.branch;
       const target = branches.find(b=>b!==source) || source;
-      state.cjMergePanel = {source, target, strategy:"add", conflicts:null};
+      state.cjMergePanel = {source, target, strategy:"replace", conflicts:null};
       state.cjMergeConfirm = false;
       state.popover = null;
       render();
@@ -17544,13 +17531,6 @@ function handleAction(action, el){
       p.target = el.dataset.branch;
       p.conflicts = null;
       state.popover = null;
-      render();
-      break;
-    }
-    case "cj-merge-set-strategy": {
-      const p = state.cjMergePanel;
-      p.strategy = el.dataset.strategy;
-      p.conflicts = null;
       render();
       break;
     }
@@ -17679,7 +17659,6 @@ function handleAction(action, el){
     }
     /* Стратегия у e2e одна, но действие остаётся: панель общая, и без него
        клик по объяснению ушёл бы в неизвестное действие. */
-    case "e2e-merge-set-strategy": break;
     case "e2e-merge-submit": {
       const m = state.e2eMergePanel;
       if(!m || !m.source || !m.target || m.source===m.target) break;
@@ -17772,7 +17751,7 @@ function handleAction(action, el){
       const ids = ucBranchList(u).map(b=>b.id);
       const source = u.branch;
       const target = ids.find(b=>b!==source) || source;
-      state.ucMergePanel = {projectId:p.id, ucId:u.id, source, target, strategy:"add", conflicts:null};
+      state.ucMergePanel = {projectId:p.id, ucId:u.id, source, target, strategy:"replace", conflicts:null};
       state.ucMergeConfirm = false;
       state.popover = null;
       render();
@@ -17799,13 +17778,6 @@ function handleAction(action, el){
       m.target = el.dataset.branch;
       m.conflicts = null;
       state.popover = null;
-      render();
-      break;
-    }
-    case "uc-merge-set-strategy": {
-      const m = state.ucMergePanel;
-      m.strategy = el.dataset.strategy;
-      m.conflicts = null;
       render();
       break;
     }
@@ -18566,7 +18538,7 @@ function handleAction(action, el){
       const ids = acBranchList(appId).map(b=>b.id);
       const source = state.appcat.branch;
       const target = ids.find(b=>b!==source) || source;
-      state.acMergePanel = {appId, source, target, strategy:"add", conflicts:null};
+      state.acMergePanel = {appId, source, target, strategy:"replace", conflicts:null};
       state.acMergeConfirm = false;
       state.popover = null;
       render();
@@ -18588,11 +18560,6 @@ function handleAction(action, el){
       if(el.dataset.branch===m.source) break;
       m.target = el.dataset.branch;
       m.conflicts = null; state.popover = null; render();
-      break;
-    }
-    case "ac-merge-set-strategy": {
-      const m = state.acMergePanel;
-      m.strategy = el.dataset.strategy; m.conflicts = null; render();
       break;
     }
     case "ac-merge-submit": {
