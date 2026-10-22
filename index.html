@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=6">
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261022-195416">
+<meta name="beeatlas-build" content="20261022-221003">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -4122,6 +4122,7 @@
 .e2ecat-scope .empty-state .box svg{width:auto;height:auto;}
 .e2ecat-scope .empty-state .box .ic{width:auto;height:auto;}
 .e2ecat-scope .empty-state p{margin:0;font-size:15px;}
+.e2ecat-scope .empty-state p.sub{margin-top:var(--space-2);font-size:13px;line-height:18px;color:var(--text-secondary);max-width:380px;}
 
 .e2ecat-scope .crumbs{font-size:15px;margin-bottom:6px;color:var(--text-secondary);}
 .e2ecat-scope .crumbs a{color:var(--link);}
@@ -5539,8 +5540,43 @@ function boxSvg(size){
   return '<img class="box-illustration" width="'+w+'" height="'+w+'" src="'+EMPTY_OBJ+'" alt="" aria-hidden="true" draggable="false">';
 }
 
+/* B-5: сущность может быть выбрана, но в текущей ветке её нет — состав ветки свой.
+   Пустым экраном это объяснять нельзя: человек решит, что данные пропали. Называем
+   ветку и подсказываем выход, который на встрече назвали «пока лайфхак» —
+   перенести состав объединением из main. */
+function branchMissingState(title, branches){
+  var have=(branches||[]).filter(function(b){ return b!==state.branch; });
+  return '<div class="empty-state">'+
+    '<div class="box">'+boxSvg()+'</div>'+
+    '<p>'+esc(title)+' не заведён в ветке «'+esc(state.branch)+'»</p>'+
+    (have.length
+      ? '<p class="sub">Состав есть в '+(have.length>1?'ветках':'ветке')+' '+
+        esc(have.map(function(b){return '«'+b+'»';}).join(', '))+
+        '. Перенести его можно объединением веток</p>'
+      : '')+
+  '</div>';
+}
+function selectionMissing(){
+  var sel=state.selected; if(!sel) return null;
+  if(sel.type==='cj'){
+    var cj=findCj(sel.id);
+    if(cj && !inBranch(cj)) return branchMissingState(cj.title, cj.branches);
+  }
+  if(sel.type==='step'){
+    var st=findStep(sel.id);
+    if(st){
+      var bi=ALL_BI.find(function(b){ return b.id===st.parentBi; });
+      var cj2=findCj(st.parentCj);
+      if(cj2 && !inBranch(cj2)) return branchMissingState(cj2.title, cj2.branches);
+      if(bi && !inBranch(bi)) return branchMissingState(bi.title, bi.branches);
+    }
+  }
+  return null;
+}
 function renderContent(){
   var banner=renderBanner();
+  var missing=selectionMissing();
+  if(missing) return banner+missing;
   if(!state.selected) return banner+renderEmptyState();
   if(state.selected.type==='cj') return banner+renderCjPage(state.selected.id);
   if(state.selected.type==='step') return banner+renderStepPage(state.selected.id);
