@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=6">
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261023-132209">
+<meta name="beeatlas-build" content="20261023-135854">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -2310,8 +2310,10 @@
      верх вилки): поля и плашка рассчитаны на эту ширину. Прокручивается каждая
      колонка сама, иначе короткий левый столбец уезжает вместе с длинным правым.
      На узком экране колонки встают друг под друга: две по 400 там не помещаются. */
+  /* Нижнего паддинга у самой сетки нет: он живёт внутри колонок, иначе отступ
+     складывался дважды и разделитель обрывался, не дойдя до футера. */
   .merge-body{display:grid;grid-template-columns:400px minmax(0,1fr);gap:var(--size-spacing-x8);
-    padding:0 var(--size-spacing-x8) var(--size-spacing-x8);overflow:hidden;align-items:stretch;}
+    padding:0 var(--size-spacing-x8);overflow:hidden;align-items:stretch;}
   .merge-body > *{min-width:0;overflow-y:auto;padding-bottom:var(--size-spacing-x8);}
   .merge-col-setup{border-right:1px solid var(--border);padding-right:var(--size-spacing-x8);}
   .merge-setup{padding-top:var(--size-spacing-x6);}
@@ -13235,17 +13237,15 @@ function MergeDiffOverlay(){
   const ready = isImport || (!!source && !!target && source !== target);
   const setup = isImport ? "" : mergeSetupPane(d);
 
+  /* Пояснения над таблицей нет: подписи колонок уже называют обе ветки и
+     направление, а сводка изменений стоит в шапке. Строка повторяла и то и другое. */
   const compare = `
-      <p class="diff-lead">${changes
-        ? `Слева состав ветки «${escapeHtml(target)}» сейчас, справа — тот, что встанет на его место${isImport ? " из файла" : ` из «${escapeHtml(source)}»`}. Сверь обе стороны и объединяй`
-        : (isImport
-            ? `Состав из файла совпадает с составом ветки «${escapeHtml(target)}»`
-            : `Между «${escapeHtml(source)}» и «${escapeHtml(target)}» нет расхождений — объединять нечего`)}</p>
       ${!groups.length ? `
         <div class="diff-empty">
           <h3>Сравнивать нечего</h3>
           <p>Обе ветки пустые: состав ещё не загружен ни в одну из них</p>
         </div>` : `
+        ${groups.length < 2 ? "" : `
         <div class="ac-tabs-wrap diff-tabs">
           <div class="ac-tabs-track">
             ${groups.map(g=>{
@@ -13259,7 +13259,7 @@ function MergeDiffOverlay(){
           <div class="ac-tabs-fade right"></div>
           <button class="ac-tabs-btn left" data-action="ac-tabs-scroll" data-dir="left" title="Прокрутить влево">${icon("chevronLeft")}</button>
           <button class="ac-tabs-btn right" data-action="ac-tabs-scroll" data-dir="right" title="Прокрутить вправо">${icon("chevronRight")}</button>
-        </div>
+        </div>`}
         <div class="diff-split">
           <div class="diff-split-head">
             <div class="diff-side-cap">${leftCap}</div>
