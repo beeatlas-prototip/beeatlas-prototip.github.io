@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=6">
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261023-152036">
+<meta name="beeatlas-build" content="20261023-175404">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -2310,22 +2310,29 @@
      верх вилки): поля и плашка рассчитаны на эту ширину. Прокручивается каждая
      колонка сама, иначе короткий левый столбец уезжает вместе с длинным правым.
      На узком экране колонки встают друг под друга: две по 400 там не помещаются. */
-  /* Нижнего паддинга у самой сетки нет: он живёт внутри колонок, иначе отступ
-     складывался дважды и разделитель обрывался, не дойдя до футера. */
+  /* Паддингов у самой сетки нет — они живут внутри колонок. Снизу иначе отступ
+     складывался дважды и разделитель обрывался, не дойдя до футера; справа колонка
+     кончалась за 32px до края окна, и её полоса прокрутки вставала у края контента,
+     а не экрана. Прокручиваемый блок должен доходить до края — полоса принадлежит
+     окну, а не таблице. */
   .merge-body{display:grid;grid-template-columns:400px minmax(0,1fr);gap:var(--size-spacing-x8);
-    padding:0 var(--size-spacing-x8);overflow:hidden;align-items:stretch;}
+    padding:0 0 0 var(--size-spacing-x8);overflow:hidden;align-items:stretch;}
   .merge-body > *{min-width:0;overflow-y:auto;padding-bottom:var(--size-spacing-x8);}
+  .merge-col-diff{padding-right:var(--size-spacing-x8);}
   .merge-col-setup{border-right:1px solid var(--border);padding-right:var(--size-spacing-x8);}
   .merge-setup{padding-top:var(--size-spacing-x6);}
   .merge-setup-desc{margin:0 0 var(--space-5);font-size:15px;line-height:22px;color:var(--text-secondary);}
   /* Сравнение занимает весь остаток строки: ограничивать его шириной страницы
      незачем — оно и так разделено на две колонки, и каждый лишний пиксель идёт
      в длинные названия шагов и описания. */
-  .merge-col-diff{padding-top:var(--size-spacing-x6);}
+  .merge-col-diff{padding-top:var(--size-spacing-x6);padding-right:var(--size-spacing-x8);}
   @media (max-width:1200px){
-    .merge-body{grid-template-columns:minmax(0,1fr);overflow-y:auto;}
+    /* Колонки друг под другом — прокручивается вся сетка, и правый паддинг
+       возвращается ей: полоса снова принадлежит окну. */
+    .merge-body{grid-template-columns:minmax(0,1fr);overflow-y:auto;padding-right:var(--size-spacing-x8);}
     .merge-body > *{overflow:visible;}
     .merge-col-setup{border-right:none;border-bottom:1px solid var(--border);padding-right:0;}
+    .merge-col-diff{padding-right:0;}
   }
 
   /* ── Сравнение веток (встреча 22.10) ──
