@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=6">
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261023-120429">
+<meta name="beeatlas-build" content="20261023-130703">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -404,11 +404,23 @@
      .popover здесь НЕТ намеренно: в прототипе этот класс — дропдаун-меню (DS Menu),
      а не подсказка. Настоящий Popover в файле один — .ds-popover (маркер расхождения
      в таблице вызовов); он рисуется в текущей теме, а не в обратной, и в этом списке
-     его нет — расхождение известное, чинить вместе со всеми подсказками. */
-  :root .invertedTheme, :root .toast, :root .fab, :root .cell-tooltip, :root .ds-tip,
-  [data-theme="light"] .invertedTheme, [data-theme="light"] .toast, [data-theme="light"] .fab,
+     его нет — расхождение известное, чинить вместе со всеми подсказками.
 
-  [data-theme="dark"] .invertedTheme, [data-theme="dark"] .toast, [data-theme="dark"] .fab,
+     Селектор здесь когда-то остался без тела: список имён обрывался запятой, и
+     следующий за ним блок `:root{…}` оказывался его продолжением. Из-за этого
+     снекбар, подсказки и FAB получали токены ТЕКУЩЕЙ темы вместо обратной — белый
+     снекбар на белом полотне.
+     Инверсию дают роли палитры `inverse-surface` / `inverse-on-surface`: они для
+     того и заведены, и так уже сделана подсказка свёрнутого меню. Переопределять
+     весь набор токенов в двух темах руками не нужно. */
+  .invertedTheme, .toast, .fab, .cell-tooltip, .ds-tip{
+    background:var(--md-sys-color-inverse-surface);
+    color:var(--md-sys-color-inverse-on-surface);
+  }
+  /* Внутри инвертированной плоскости вторичный текст и разделители считаются от её
+     же фона, иначе наследуют цвета полотна и пропадают. */
+  .invertedTheme .t-sub, .toast .t-sub{color:color-mix(in srgb, var(--md-sys-color-inverse-on-surface) 74%, transparent);}
+  .toast .btn-plain{color:var(--md-sys-color-inverse-primary);}
 
 
   /* ══════════════════════════════════════════════════════════════════════
@@ -714,6 +726,9 @@
   .suggest-dropdown::-webkit-scrollbar,
   .cj-matrix-wrap::-webkit-scrollbar,
   .uc-menu::-webkit-scrollbar,
+  .merge-body::-webkit-scrollbar,
+  .merge-col-setup::-webkit-scrollbar,
+  .merge-col-diff::-webkit-scrollbar,
   .uc-chain::-webkit-scrollbar,
   .table-scroll::-webkit-scrollbar{width:15px;height:15px;}
   /* Дорожка прозрачная и отступает от верхнего и нижнего края на 8px (спека:
@@ -730,6 +745,9 @@
   .cj-matrix-wrap::-webkit-scrollbar-track,
   .uc-menu::-webkit-scrollbar-track,
   .ds-select-menu::-webkit-scrollbar-track,
+  .merge-body::-webkit-scrollbar-track,
+  .merge-col-setup::-webkit-scrollbar-track,
+  .merge-col-diff::-webkit-scrollbar-track,
   .uc-chain::-webkit-scrollbar-track,
   .main::-webkit-scrollbar-track{background-color:transparent;margin:var(--size-spacing-x2) 0;}
   /* Горизонтальная полоса: 8 слева и справа (margin трека), 4 от нижнего края
@@ -752,6 +770,9 @@
   .suggest-dropdown::-webkit-scrollbar-thumb,
   .cj-matrix-wrap::-webkit-scrollbar-thumb,
   .uc-menu::-webkit-scrollbar-thumb,
+  .merge-body::-webkit-scrollbar-thumb,
+  .merge-col-setup::-webkit-scrollbar-thumb,
+  .merge-col-diff::-webkit-scrollbar-thumb,
   .uc-chain::-webkit-scrollbar-thumb,
   .table-scroll::-webkit-scrollbar-thumb{
     background-color:var(--text-tertiary);border:4px solid transparent;
@@ -771,8 +792,12 @@
   .suggest-dropdown::-webkit-scrollbar-thumb:hover,
   .cj-matrix-wrap::-webkit-scrollbar-thumb:hover,
   .uc-menu::-webkit-scrollbar-thumb:hover,
+  .merge-body::-webkit-scrollbar-thumb:hover,
+  .merge-col-setup::-webkit-scrollbar-thumb:hover,
+  .merge-col-diff::-webkit-scrollbar-thumb:hover,
   .table-scroll::-webkit-scrollbar-thumb:hover{background-color:var(--md-sys-color-on-surface-variant);}
   @supports not selector(::-webkit-scrollbar){
+    .merge-body, .merge-col-setup, .merge-col-diff,
     .sidebar, .main, .table-scroll, .uc-diagram-scroll, .uc-menu,
     .code-editor-body, .table-wrap-fit, .table-wrap, .ds-dialog-desc, .suggest-dropdown, .cj-matrix-wrap,
     .graph-search-suggest, .graph-canvas-pane, .graph-detail, .lp-auth-body,
@@ -2280,10 +2305,30 @@
   /* Сверху 0: над телом мастера стоит собственная шапка, 32px дал бы двойной отступ */
   .wizard-body{flex:1;overflow-y:auto;padding:0 var(--size-spacing-x8) var(--size-spacing-x10);}
 
+  /* ── Модалка объединения: выбор слева, сравнение справа ──
+     Колонка выбора — те же 400, что были у боковой панели (components/sidesheet,
+     верх вилки): поля и плашка рассчитаны на эту ширину. Прокручивается каждая
+     колонка сама, иначе короткий левый столбец уезжает вместе с длинным правым.
+     На узком экране колонки встают друг под друга: две по 400 там не помещаются. */
+  .merge-body{display:grid;grid-template-columns:400px minmax(0,1fr);gap:var(--size-spacing-x8);
+    padding:0 var(--size-spacing-x8) var(--size-spacing-x8);overflow:hidden;align-items:stretch;}
+  .merge-body > *{min-width:0;overflow-y:auto;padding-bottom:var(--size-spacing-x8);}
+  .merge-col-setup{border-right:1px solid var(--border);padding-right:var(--size-spacing-x8);}
+  .merge-setup{padding-top:var(--size-spacing-x6);}
+  .merge-setup-desc{margin:0 0 var(--space-5);font-size:15px;line-height:22px;color:var(--text-secondary);}
+  .merge-col-diff{max-width:none;}
+  @media (max-width:1200px){
+    .merge-body{grid-template-columns:minmax(0,1fr);overflow-y:auto;}
+    .merge-body > *{overflow:visible;}
+    .merge-col-setup{border-right:none;border-bottom:1px solid var(--border);padding-right:0;}
+  }
+
   /* ── Сравнение веток (встреча 22.10) ──
      Статус узла несут и цвет, и значок с подписью: зелёно-красная пара без второго
      признака не читается при дальтонизме, а жёлтый у нас занят брендом. Роли берём
      семантические, вручную цвет не пишем — иначе он не переживёт смену темы. */
+  /* Ограничение ширины осталось у отдельных страниц (история объединений); в модалке
+     сравнение занимает свою колонку целиком — см. .merge-col-diff. */
   .diff-body{max-width:1120px;}
   .diff-lead{margin:var(--space-6) 0 var(--space-5);font-size:15px;line-height:22px;color:var(--text-secondary);}
   .diff-summary{display:flex;align-items:center;gap:var(--space-2);flex:0 0 auto;}
@@ -2474,9 +2519,11 @@
      если есть bottom action bar — над ним, и те же 24 считаются от края панели.
      Нижнюю границу ищет positionToast() — она же учитывает футер визарда и .footer-bar.
      Размеры по токенам: min 344 / max 660, текст 15/18/0.2, паддинги 16 слева и 8 справа. */
+  /* Цвет снекбара здесь НЕ задаём: он приходит из блока инвертированной темы выше
+     (.invertedTheme, .toast, …). Правило с тем же именем класса, стоящее ниже,
+     перебивает его по каскаду — так снекбар и стал белым на белом. */
   .toast{
     position:fixed;left:50%;bottom:var(--size-spacing-x6);transform:translateX(-50%);
-    background:var(--md-sys-color-surface);color:var(--md-sys-color-on-surface);
     padding:var(--size-spacing-x4) var(--size-spacing-x2) var(--size-spacing-x4) var(--size-spacing-x4);
     border-radius:var(--size-border-radius-x6);display:flex;align-items:center;gap:var(--size-spacing-x4);z-index:500;
     box-shadow:var(--elevation-high);font-size:15px;line-height:18px;letter-spacing:.2px;
@@ -2716,7 +2763,10 @@
   /* стратегия объединения — радио-карточки (Radiobutton: жёлтая точка у выбранной) */
 
   /* подтверждение необратимого действия поверх панели (Dialog) */
-  .cj-dialog-backdrop{position:fixed;inset:0;z-index:320;display:flex;align-items:center;justify-content:center;padding:var(--space-6);}
+  /* Затемнение обязательно: без него диалог висел прозрачной карточкой поверх
+     страницы, а в тёмной теме его край вовсе терялся. Значение то же, что у
+     .ds-dialog-backdrop — одно затемнение на все модальные слои. */
+  .cj-dialog-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.48);z-index:320;display:flex;align-items:center;justify-content:center;padding:var(--space-6);}
   .cj-dialog{background:var(--bg);border-radius:var(--size-border-radius-x8);box-shadow:var(--elevation-high);padding:var(--size-spacing-x8);width:100%;max-width:560px;}
   .cj-dialog h3{font-size:19px;line-height:24px;font-weight:500;margin:0 0 var(--space-4);}
   .cj-dialog .txt{font-size:15px;line-height:20px;color:var(--text);margin-bottom:var(--size-spacing-x8);}
@@ -4379,9 +4429,10 @@
 .e2ecat-scope .elpill svg{width:18px;height:18px;}
 .e2ecat-scope .elpill .ic{width:18px;height:18px;}
 
-/* Тот же Snackbar, что и глобальный .toast — цвета берём из токенов темы,
+/* Тот же Snackbar, что и глобальный .toast — цвет приходит из блока инвертированной
+   темы, здесь только положение (у каталога своя нижняя граница),
    инвертирование делает общее правило выше. */
-.e2ecat-scope .toast{position:fixed;left:50%;bottom:var(--size-spacing-x9);transform:translateX(-50%);background:var(--md-sys-color-surface);color:var(--md-sys-color-on-surface);padding:var(--size-spacing-x4) var(--size-spacing-x2) var(--size-spacing-x4) var(--size-spacing-x4);border-radius:var(--size-border-radius-x6);font-size:15px;box-shadow:var(--elevation-high);z-index:120;display:flex;align-items:center;gap:var(--size-spacing-x4);}
+.e2ecat-scope .toast{position:fixed;left:50%;bottom:var(--size-spacing-x9);transform:translateX(-50%);padding:var(--size-spacing-x4) var(--size-spacing-x2) var(--size-spacing-x4) var(--size-spacing-x4);border-radius:var(--size-border-radius-x6);font-size:15px;box-shadow:var(--elevation-high);z-index:120;display:flex;align-items:center;gap:var(--size-spacing-x4);}
 
 /* Полосы прокрутки острова — тот же приём, что у меню и контента приложения:
    трек прозрачный с отступом 8px от верхней и нижней точки, у бегунка прозрачная
@@ -8246,11 +8297,11 @@ function renderShell(){
     ${state.hldWizard ? HldWizardOverlay() : ""}
     ${state.ucWizard ? UcWizardOverlay() : ""}
     ${state.ucBranchPanel ? UcBranchCreatePanel() : ""}
-    ${state.ucMergePanel ? UcMergePanel() : ""}
+
     ${state.acBranchPanel ? AcBranchCreatePanel() : ""}
-    ${state.acMergePanel ? AcMergePanel() : ""}
+
     ${state.e2eBranchPanel ? E2eBranchCreatePanel() : ""}
-    ${state.e2eMergePanel ? E2eMergePanel() : ""}
+
     ${state.createPanel ? CreatePanelWrap() : ""}
     ${state.sidePanel ? SidePanelWrap() : ""}
     ${state.cjOpen ? CjOverlay() : ""}
@@ -11911,7 +11962,7 @@ function CjOverlay(){
   ${state.cjSourcePanel ? CjSourcePanel() : ""}
   ${state.cjBpmnOpen ? CjBpmnOverlay() : ""}
   ${state.cjBranchPanel ? CjBranchCreatePanel() : ""}
-  ${state.cjMergePanel ? CjMergePanel() : ""}
+
   `;
 }
 
@@ -12462,20 +12513,16 @@ function CjBranchCreatePanel(){
 // в боковую панель — дата обновления ветки переехала внутрь полей «Откуда/Куда» (поэтому
 // отдельных карточек сравнения больше нет), стратегия стала радио-карточками, а
 // необратимость объединения подтверждается отдельным диалогом, а не текстовой сноской.
-function CjMergePanel(){
+function CjMergeSetup(){
   const p = state.cjMergePanel;
-  const ent = panelEnter(p);
+  /* Обработчик объединения гасит выбор веток и перерисовывает страницу раньше, чем
+     закроется модалка, — на этом промежуточном рендере рисовать нечего. */
+  if(!p) return "";
   const cjId = state.cjOpen.cjId;
   const branches = cjBranchList(cjId);
   const note = b=>cjBranchUpdNote(cjId, b);
-  const canMerge = !!p.source && !!p.target && p.source!==p.target && !state.cjMergeRunning;
   return `
-    <div class="backdrop${ent}" data-action="cj-close-merge"></div>
-    <div class="side-panel${ent}">
-      <div class="side-head" style="display:block;">
-        <h2>Объединение веток</h2>
-      </div>
-      <div class="side-body">
+    <div class="merge-setup">
         <div class="field-block">
           ${CjSelectField({id:"cj-merge-source", branches, activeId:p.source, action:"cj-merge-set-source", wide:true,
                            label:"Откуда", placeholder:"Откуда", meta:note})}
@@ -12510,14 +12557,7 @@ function CjMergePanel(){
             </ul>
           </div>
         ` : ""}
-      </div>
-      <div class="side-foot">
-        <button class="btn btn-outline" data-action="cj-close-merge">Отменить</button>
-        <button class="btn btn-primary" data-action="cj-merge-submit" ${canMerge?"":"disabled"} title="${state.cjMergeRunning?"Дождитесь завершения текущего объединения":""}">Объединить</button>
-      </div>
     </div>
-    ${state.cjMergeConfirm ? CjConfirmDialog({title:"Объединить ветки?", text:"После объединения веток их нельзя будет откатить назад",
-                                               confirmLabel:"Объединить", confirmAction:"cj-merge-confirm-do", cancelAction:"cj-merge-confirm-cancel"}) : ""}
   `;
 }
 
@@ -12955,10 +12995,19 @@ function ucDiffGroups(u, source, target){
   return nodes.length ? [{id:"steps", title:"Шаги сценария", nodes}] : [];
 }
 
-/* Панель объединения на время сравнения убирается: иначе она висит поверх страницы
-   и закрывает правую треть. Её состояние запоминаем и возвращаем по «Назад» —
-   человек попадает обратно к выбору веток, а не к началу. */
+/* Где лежит выбор веток. Раньше это была боковая панель, которую сравнение прятало
+   и возвращало по «Назад»; теперь тот же объект рисуется левой колонкой модалки,
+   поэтому его не прячут — его читают. */
 const MERGE_PANEL_KEY = {cj:"cjMergePanel", uc:"ucMergePanel", ac:"acMergePanel", e2e:"e2eMergePanel"};
+/* Выбранные ветки живут в одном месте — в состоянии выбора. Сравнение берёт их
+   оттуда на каждом рендере, поэтому смена ветки слева сразу пересобирает его
+   справа: отдельной копии source/target в state.mergeDiff нет и быть не должно. */
+function mergeBranches(d){
+  if(!d) return {source:null, target:null};
+  if(d.kind === "ucimport") return {source:null, target:d.target};
+  const m = state[MERGE_PANEL_KEY[d.kind]];
+  return {source:(m&&m.source)||null, target:(m&&m.target)||null};
+}
 
 /* ─────────── Журнал объединений ───────────
    Встреча 22.10: «у мержа будет какой-то статус, потом можно будет посмотреть мержи…
@@ -12994,35 +13043,51 @@ function seedMergeLog(){
 }
 
 function openMergeDiff(d){
-  const key = MERGE_PANEL_KEY[d.kind];
-  state.mergeDiff = Object.assign({}, d, {panelKey:key, panelState:key ? state[key] : null});
-  if(key) state[key] = null;
+  state.mergeDiff = Object.assign({}, d, {panelKey:MERGE_PANEL_KEY[d.kind] || null});
   state.mergeDiffGroup = null;
   state.mergeDiffOpen = {};
   state.mergeDiffConfirm = false;
 }
-function closeMergeDiff(restorePanel){
+/* Закрытие уносит и выбор веток: модалка — весь сценарий объединения целиком,
+   и оставлять его половину открытой за спиной незачем. */
+function closeMergeDiff(){
   const d = state.mergeDiff;
-  if(d && d.panelKey && restorePanel) state[d.panelKey] = d.panelState;
+  if(d && d.panelKey) state[d.panelKey] = null;
   state.mergeDiff = null;
   state.mergeDiffGroup = null;
   state.mergeDiffOpen = {};
   state.mergeDiffConfirm = false;
 }
 
+/* Левая колонка и подзаголовок берутся по виду артефакта: состояние выбора веток
+   осталось там же, где было у боковой панели (state.cjMergePanel и соседние), —
+   переехал только способ показать его. */
+function mergeSetupPane(d){
+  if(d.kind === "cj")  return CjMergeSetup();
+  if(d.kind === "uc")  return UcMergeSetup();
+  if(d.kind === "ac")  return AcMergeSetup();
+  if(d.kind === "e2e") return E2eMergeSetup();
+  return "";
+}
+/* Импорт из файла ветки не выбирает: там нечего настраивать, и левая колонка у него
+   не появляется — страница остаётся одним сравнением. */
+function mergeIsImport(d){ return d.kind === "ucimport"; }
+
 function mergeDiffGroups(d){
   if(!d) return [];
-  if(d.kind === "ac") return acDiffGroups(d.appId, d.source, d.target);
-  if(d.kind === "cj") return cjDiffGroups(d.cjId, d.source, d.target);
-  if(d.kind === "e2e") return e2eDiffGroups(d.code, d.source, d.target);
+  const {source, target} = mergeBranches(d);
+  if(d.kind !== "ucimport" && (!source || !target || source === target)) return [];
+  if(d.kind === "ac") return acDiffGroups(d.appId, source, target);
+  if(d.kind === "cj") return cjDiffGroups(d.cjId, source, target);
+  if(d.kind === "e2e") return e2eDiffGroups(d.code, source, target);
   if(d.kind === "uc"){
     const p = findProject(d.projectId), u = p && findUseCase(p, d.ucId);
-    return u ? ucDiffGroups(u, d.source, d.target) : [];
+    return u ? ucDiffGroups(u, source, target) : [];
   }
   if(d.kind === "ucimport"){
     const p = findProject(d.projectId), u = p && findUseCase(p, d.ucId);
     if(!u) return [];
-    const before = ucBranchData(u, d.target).scenarios || [];
+    const before = ucBranchData(u, target).scenarios || [];
     const nodes = diffRows(before, d.incoming || [], {
       kind:"Шаг", key:x=>x.part, label:x=>`${x.part} · ${x.participant||""}`.trim(),
       fields:[{cap:"Действие", get:x=>x.action}, {cap:"Интерфейс", get:x=>x.api},
@@ -13085,6 +13150,9 @@ function MergeHistoryOverlay(){
 function MergeDiffOverlay(){
   const d = state.mergeDiff;
   if(!d) return "";
+  /* Ветки берём из состояния выбора на каждом рендере — поэтому смена ветки слева
+     пересобирает сравнение справа сама, без отдельного обработчика. */
+  const {source, target} = mergeBranches(d);
   const groups = mergeDiffGroups(d);
   const t = diffTotals(groups);
   const changes = t.added + t.changed + t.removed;
@@ -13092,8 +13160,8 @@ function MergeDiffOverlay(){
 
   /* Колонки: слева ветка, в которую объединяют, справа — то, чем её заменят.
      Порядок «было → стало» и направление чтения совпадают. */
-  const leftCap  = `Было · ветка «${escapeHtml(d.target)}»`;
-  const rightCap = isImport ? "Станет · из файла" : `Станет · из ветки «${escapeHtml(d.source)}»`;
+  const leftCap  = `Было · ветка «${escapeHtml(target)}»`;
+  const rightCap = isImport ? "Станет · из файла" : `Станет · из ветки «${escapeHtml(source)}»`;
 
   /* Вкладка на тип объекта со счётчиком изменений: «может, тут вот выбор — интерфейс,
      возможности и так далее, количество изменений… дальше выводить список» (11:17).
@@ -13159,30 +13227,17 @@ function MergeDiffOverlay(){
       ${open && kids ? n.children.map((c,i)=>row(c, path+"."+i, depth+1)).join("") : ""}`;
   };
 
-  return `
-  <div class="wizard-overlay diff-overlay">
-    <div class="wizard-head">
-      <button class="cj-head-back" data-action="merge-diff-close" title="Назад">${icon("chevronLeft")}</button>
-      <div class="cj-head-titles">
-        <h2>${isImport ? "Сравнение с файлом" : "Сравнение веток"}</h2>
-        <div class="sub">${isImport
-          ? `Файл → ветка «${escapeHtml(d.target)}» · ${escapeHtml(d.title||"")}`
-          : `«${escapeHtml(d.source)}» → «${escapeHtml(d.target)}» · ${escapeHtml(d.title||"")}`}</div>
-      </div>
-      <div class="cj-head-spacer"></div>
-      <div class="diff-summary">
-        <span class="diff-chip added">Добавится <b>${t.added}</b></span>
-        <span class="diff-chip changed">Изменится <b>${t.changed}</b></span>
-        <span class="diff-chip removed">Исчезнет <b>${t.removed}</b></span>
-      </div>
-    </div>
+  /* Пока обе ветки не выбраны, сравнивать нечего: справа стоит плейсхолдер, а не
+     пустая таблица — иначе место выглядит сломанным, а не ждущим выбора. */
+  const ready = isImport || (!!source && !!target && source !== target);
+  const setup = isImport ? "" : mergeSetupPane(d);
 
-    <div class="wizard-body diff-body">
+  const compare = `
       <p class="diff-lead">${changes
-        ? `Слева состав ветки «${escapeHtml(d.target)}» сейчас, справа — тот, что встанет на его место${isImport ? " из файла" : ` из «${escapeHtml(d.source)}»`}. Сверь обе стороны и объединяй`
+        ? `Слева состав ветки «${escapeHtml(target)}» сейчас, справа — тот, что встанет на его место${isImport ? " из файла" : ` из «${escapeHtml(source)}»`}. Сверь обе стороны и объединяй`
         : (isImport
-            ? `Состав из файла совпадает с составом ветки «${escapeHtml(d.target)}»`
-            : `Между «${escapeHtml(d.source)}» и «${escapeHtml(d.target)}» нет расхождений — объединять нечего`)}</p>
+            ? `Состав из файла совпадает с составом ветки «${escapeHtml(target)}»`
+            : `Между «${escapeHtml(source)}» и «${escapeHtml(target)}» нет расхождений — объединять нечего`)}</p>
       ${!groups.length ? `
         <div class="diff-empty">
           <h3>Сравнивать нечего</h3>
@@ -13208,60 +13263,83 @@ function MergeDiffOverlay(){
             <div class="diff-side-cap">${rightCap}</div>
           </div>
           ${active.nodes.map((n,i)=>row(n, active.id+"."+i, 0)).join("")}
-        </div>`}
+        </div>`}`;
+
+  const placeholder = `
+      <div class="diff-empty">
+        <h3>Выбери ветки</h3>
+        <p>Слева укажи, откуда и куда переносить состав — здесь появится сравнение обеих веток</p>
+      </div>`;
+
+  return `
+  <div class="wizard-overlay diff-overlay">
+    <div class="wizard-head">
+      <button class="cj-head-back" data-action="merge-diff-close" title="Закрыть">${icon("chevronLeft")}</button>
+      <div class="cj-head-titles">
+        <h2>${isImport ? "Импорт из файла" : "Объединение веток"}</h2>
+        <div class="sub">${isImport
+          ? `Файл → ветка «${escapeHtml(target)}» · ${escapeHtml(d.title||"")}`
+          : escapeHtml(d.title||"")}</div>
+      </div>
+      <div class="cj-head-spacer"></div>
+      ${ready ? `<div class="diff-summary">
+        <span class="diff-chip added">Добавится <b>${t.added}</b></span>
+        <span class="diff-chip changed">Изменится <b>${t.changed}</b></span>
+        <span class="diff-chip removed">Исчезнет <b>${t.removed}</b></span>
+      </div>` : ""}
+    </div>
+
+    <div class="wizard-body merge-body">
+      ${setup ? `<div class="merge-col-setup">${setup}</div>` : ""}
+      <div class="merge-col-diff diff-body">${ready ? compare : placeholder}</div>
     </div>
 
     <div class="wizard-foot">
-      <button class="btn btn-outline" data-action="merge-diff-close">Назад</button>
-      <button class="btn btn-primary" data-action="merge-diff-apply" ${!changes&&!isImport?"disabled":""}>${isImport ? "Применить" : "Объединить"}</button>
+      <button class="btn btn-outline" data-action="merge-diff-close">Отменить</button>
+      <button class="btn btn-primary" data-action="merge-diff-apply" ${ready && (changes||isImport) ? "" : "disabled"}>${isImport ? "Применить" : "Объединить"}</button>
     </div>
   </div>
   ${state.mergeDiffConfirm ? CjConfirmDialog({
       title: isImport ? "Применить импорт?" : "Объединить ветки?",
-      text: isImport ? `Состав ветки «${d.target}» будет заменён тем, что приехало из файла` : "После объединения веток их нельзя будет откатить назад",
+      text: isImport ? `Состав ветки «${target}» будет заменён тем, что приехало из файла` : "После объединения веток их нельзя будет откатить назад",
       confirmLabel: isImport ? "Применить" : "Объединить",
       confirmAction:"merge-diff-confirm-do", cancelAction:"merge-diff-confirm-cancel"}) : ""}
   `;
 }
 
-function BranchMergePanel({m, branches, note, conflict, actions, confirmOpen, running, desc}){
-  const ent = panelEnter(m);
-  const canMerge = !!m.source && !!m.target && m.source!==m.target && !running;
+/* Левая колонка модалки объединения: выбор «откуда / куда», плашка про замену
+   состава и конфликты. Раньше это была боковая панель, а сравнение открывалось
+   следующим экраном — два шага ради одного решения, и, выбрав ветки, человек терял
+   их из виду ровно там, где сверял состав. Теперь обе половины на одном экране, и
+   смена ветки слева тут же пересобирает сравнение справа. */
+function MergeSetupPane({m, branches, note, conflict, actions, running, desc}){
   return `
-    <div class="backdrop${ent}" data-action="${actions.close}"></div>
-    <div class="side-panel${ent}">
-      <div class="side-head" style="display:block;">
-        <h2>Объединение веток</h2>
-        ${desc ? `<p class="side-desc">${escapeHtml(desc)}</p>` : ""}
+    <div class="merge-setup">
+      ${desc ? `<p class="merge-setup-desc">${escapeHtml(desc)}</p>` : ""}
+      <div class="field-block">
+        ${CjSelectField({id:actions.sourceField, branches, activeId:m.source, action:actions.setSource, wide:true,
+                         label:"Откуда", placeholder:"Откуда", meta:note})}
       </div>
-      <div class="side-body">
-        <div class="field-block">
-          ${CjSelectField({id:actions.sourceField, branches, activeId:m.source, action:actions.setSource, wide:true,
-                           label:"Откуда", placeholder:"Откуда", meta:note})}
-        </div>
-        <div class="field-block">
-          ${CjSelectField({id:actions.targetField, branches, activeId:m.target, action:actions.setTarget, wide:true,
-                           label:"Куда", placeholder:"Куда", meta:note,
-                           disabledId:m.source, disabledTitle:"Совпадает с источником"})}
-        </div>
+      <div class="field-block">
+        ${CjSelectField({id:actions.targetField, branches, activeId:m.target, action:actions.setTarget, wide:true,
+                         label:"Куда", placeholder:"Куда", meta:note,
+                         disabledId:m.source, disabledTitle:"Совпадает с источником"})}
+      </div>
 
-        ${MergeStrategyNote(m.source, m.target)}
+      ${MergeStrategyNote(m.source, m.target)}
 
-        ${conflict ? `
-          <div class="cj-merge-conflict-box">
-            <div class="t">${icon("info")} ${conflict.title}</div>
-            <ul>${conflict.items.map(x=>`<li>${x}</li>`).join("")}</ul>
-            <div class="hint">${escapeHtml(conflict.hint)}</div>
-          </div>` : ""}
-      </div>
-      <div class="side-foot">
-        <button class="btn btn-outline" data-action="${actions.close}">Отменить</button>
-        <button class="btn btn-primary" data-action="${actions.submit}" ${canMerge?"":"disabled"} title="${running?"Дождитесь завершения текущего объединения":""}">Объединить</button>
-      </div>
-    </div>
-    ${confirmOpen ? CjConfirmDialog({title:"Объединить ветки?", text:"После объединения веток их нельзя будет откатить назад",
-                                     confirmLabel:"Объединить", confirmAction:actions.confirmDo, cancelAction:actions.confirmCancel}) : ""}
-  `;
+      ${running ? `<div class="merge-note" style="margin-top:var(--space-5);">
+          <div class="t"><span class="mini-spinner"></span>Идёт объединение</div>
+          <div class="d">Дождись завершения текущего объединения — следующее можно будет запустить после него</div>
+        </div>` : ""}
+
+      ${conflict ? `
+        <div class="cj-merge-conflict-box">
+          <div class="t">${icon("info")} ${conflict.title}</div>
+          <ul>${conflict.items.map(x=>`<li>${x}</li>`).join("")}</ul>
+          <div class="hint">${escapeHtml(conflict.hint)}</div>
+        </div>` : ""}
+    </div>`;
 }
 
 function UcBranchCreatePanel(){
@@ -13277,8 +13355,9 @@ function UcBranchCreatePanel(){
   });
 }
 
-function UcMergePanel(){
+function UcMergeSetup(){
   const m = state.ucMergePanel;
+  if(!m) return "";
   const p = findProject(m.projectId);
   const u = p && findUseCase(p, m.ucId);
   if(!u) return "";
@@ -13287,12 +13366,9 @@ function UcMergePanel(){
     items:m.conflicts.map(c=>`<b>${escapeHtml(c.api)}</b> — ${escapeHtml(c.call||"")}${c.part?` (шаг ${escapeHtml(c.part)}, ${escapeHtml(c.participant||"")})`:""}`),
     hint:`Опиши недостающие интерфейсы в ветке «${m.target}» и повтори объединение.`,
   } : null;
-  return BranchMergePanel({
-    m, branches:ucBranchList(u), note:b=>ucBranchUpdNote(u,b), conflict,
-    confirmOpen:state.ucMergeConfirm, running:state.ucMergeRunning,
-    actions:{close:"uc-close-merge", setSource:"uc-merge-set-source", setTarget:"uc-merge-set-target",
-             submit:"uc-merge-submit",
-             confirmDo:"uc-merge-confirm-do", confirmCancel:"uc-merge-confirm-cancel",
+  return MergeSetupPane({
+    m, branches:ucBranchList(u), note:b=>ucBranchUpdNote(u,b), conflict, running:state.ucMergeRunning,
+    actions:{setSource:"uc-merge-set-source", setTarget:"uc-merge-set-target",
              sourceField:"uc-merge-source", targetField:"uc-merge-target"},
   });
 }
@@ -13311,17 +13387,14 @@ function E2eBranchCreatePanel(){
   });
 }
 
-function E2eMergePanel(){
+function E2eMergeSetup(){
   const m = state.e2eMergePanel;
   if(!m || !E2E_REGISTRY[m.code]) return "";
-  return BranchMergePanel({
+  return MergeSetupPane({
     m, branches:e2eBranchList(m.code), note:b=>e2eBranchUpdNote(m.code,b),
-    conflict:null,
+    conflict:null, running:false,
     desc:"Состав e2e — цепочка вызовов, и переносится она целиком: ветка-цель будет полностью заменена ветко-источником. Перенести отдельные вызовы из другой ветки нельзя — такой цепочки не выгружал ни один источник",
-    confirmOpen:state.e2eMergeConfirm, running:false,
-    actions:{close:"e2e-close-merge", setSource:"e2e-merge-set-source", setTarget:"e2e-merge-set-target",
-             submit:"e2e-merge-submit",
-             confirmDo:"e2e-merge-confirm-do", confirmCancel:"e2e-merge-confirm-cancel",
+    actions:{setSource:"e2e-merge-set-source", setTarget:"e2e-merge-set-target",
              sourceField:"e2e-merge-source", targetField:"e2e-merge-target"},
   });
 }
@@ -13374,20 +13447,18 @@ function AcBranchCreatePanel(){
   });
 }
 
-function AcMergePanel(){
+function AcMergeSetup(){
   const m = state.acMergePanel;
+  if(!m) return "";
   const conflict = m.conflicts && m.conflicts.length ? {
     title:`Объединение невозможно: в ветке «${escapeHtml(m.target)}» нет методов, на которые ссылаются технические возможности «${escapeHtml(m.source)}»`,
     items:m.conflicts.map(c=>`<b>${escapeHtml(c.method)}</b> — ${escapeHtml(c.cap)} (${escapeHtml(c.code)})`),
     hint:`Опиши недостающие интерфейсы в ветке «${m.target}» и повтори объединение.`,
   } : null;
-  return BranchMergePanel({
+  return MergeSetupPane({
     m, branches:acBranchList(m.appId), note:b=>acBranchUpdNote(m.appId,b),
-    conflict,
-    confirmOpen:state.acMergeConfirm, running:state.acMergeRunning,
-    actions:{close:"ac-close-merge", setSource:"ac-merge-set-source", setTarget:"ac-merge-set-target",
-             submit:"ac-merge-submit",
-             confirmDo:"ac-merge-confirm-do", confirmCancel:"ac-merge-confirm-cancel",
+    conflict, running:state.acMergeRunning,
+    actions:{setSource:"ac-merge-set-source", setTarget:"ac-merge-set-target",
              sourceField:"ac-merge-source", targetField:"ac-merge-target"},
   });
 }
@@ -18350,6 +18421,7 @@ function handleAction(action, el){
       state.cjMergePanel = {source, target, strategy:"replace", conflicts:null};
       state.cjMergeConfirm = false;
       state.popover = null;
+      openMergeDiff({kind:"cj", cjId, title:cjMeta(cjId).title});
       render();
       break;
     }
@@ -18375,26 +18447,19 @@ function handleAction(action, el){
       render();
       break;
     }
-    case "cj-merge-submit": {
+    /* Проверка правил перед объединением. Зовётся из модалки по «Объединить»:
+       нашлись конфликты — показываем их в левой колонке и не пускаем дальше,
+       нет — открываем диалог подтверждения. */
+    case "cj-merge-check": {
       const p = state.cjMergePanel;
-      if(!p.source || !p.target || p.source===p.target || state.cjMergeRunning) break;
+      if(!p || !p.source || !p.target || p.source===p.target || state.cjMergeRunning) return false;
       const cjId = state.cjOpen.cjId;
       const conflicts = cjMergeConflicts(cjId, p.source, p.target, p.strategy);
-      if(conflicts.length){
-        p.conflicts = conflicts;
-        render();
-        break;
-      }
+      if(conflicts.length){ p.conflicts = conflicts; return false; }
       /* Конфликт связей не блокирует: он не про отсутствующие ссылки, а про подмену.
-         Показываем его в панели и пускаем дальше, на страницу сравнения. */
+         Показываем его рядом с выбором и пускаем дальше. */
       p.linkConflicts = cjLinkConflicts(cjId, p.source, p.target);
-      /* Конфликтов нет — но сразу объединять не даём: по решению встречи 22.10
-         следующим шагом открывается страница сравнения, и уже оттуда запускается
-         подтверждение. Панель не закрываем: с «Назад» человек возвращается к выбору. */
-      openMergeDiff({kind:"cj", cjId, source:p.source, target:p.target, title:cjMeta(cjId).title});
-      state.popover = null;
-      render();
-      break;
+      return true;
     }
     /* ── страница сравнения веток ── */
     case "merge-diff-toggle": {
@@ -18409,7 +18474,7 @@ function handleAction(action, el){
       render();
       break;
     }
-    case "merge-diff-close": closeMergeDiff(true); render(); break;
+    case "merge-diff-close": closeMergeDiff(); render(); break;
     case "merge-history-open":
       state.mergeHistory = {kind:el.dataset.kind, artifactId:el.dataset.artifact, title:el.dataset.title||""};
       state.popover = null;
@@ -18418,13 +18483,17 @@ function handleAction(action, el){
     case "merge-history-close": state.mergeHistory = null; render(); break;
     case "merge-diff-apply": {
       const dd = state.mergeDiff;
+      if(!dd) break;
       /* У импорта «нет изменений» — не повод запрещать применение: файл мог приехать
          тем же составом, и человек всё равно вправе его записать. */
-      /* Группы теперь показывают и неизменившийся состав, поэтому «объединять нечего»
-         считается по сводке изменений, а не по наличию групп. */
-      if(dd && dd.kind !== "ucimport"){
+      if(dd.kind !== "ucimport"){
+        /* Группы показывают и неизменившийся состав, поэтому «объединять нечего»
+           считается по сводке изменений, а не по наличию групп. */
         const tt = diffTotals(mergeDiffGroups(dd));
         if(!(tt.added + tt.changed + tt.removed)) break;
+        /* Правила объединения проверяются здесь, перед подтверждением: проверка у
+           каждого артефакта своя и возвращает true/false, а не рисует экран. */
+        if(!handleAction(dd.kind + "-merge-check", el)){ render(); break; }
       }
       state.mergeDiffConfirm = true;
       render();
@@ -18435,20 +18504,17 @@ function handleAction(action, el){
       const d = state.mergeDiff;
       if(!d) break;
       state.mergeDiffConfirm = false;
-      /* Объединение запускают прежние обработчики — страница сравнения только
-         показывает, что произойдёт, и не дублирует их логику. Панель им нужна:
-         оттуда они берут source/target, поэтому возвращаем её перед вызовом. */
+      /* Объединение запускают прежние обработчики — модалка только показывает, что
+         произойдёт, и не дублирует их логику. Выбор веток им нужен: оттуда они берут
+         source/target, поэтому закрываем модалку уже после вызова. */
       if(d.kind === "ucimport"){
-        /* Возвращаемся в мастер и применяем по-настоящему: страница сравнения только
-           показала, что произойдёт, саму запись делает прежний обработчик. */
-        closeMergeDiff(false);
+        closeMergeDiff();
         state.ucImportConfirmed = true;
         ucConfirmApply();
         break;
       }
-      closeMergeDiff(true);
       handleAction(d.kind + "-merge-confirm-do", el);
-      if(d.panelKey) state[d.panelKey] = null;
+      closeMergeDiff();
       render();
       break;
     }
@@ -18542,6 +18608,7 @@ function handleAction(action, el){
       state.e2eMergePanel = {code, source, target: ids.find(b=>b!==source), strategy:"replace"};
       state.e2eMergeConfirm = false;
       state.popover = null;
+      openMergeDiff({kind:"e2e", code, title:code});
       render();
       break;
     }
@@ -18564,13 +18631,11 @@ function handleAction(action, el){
     }
     /* Стратегия у e2e одна, но действие остаётся: панель общая, и без него
        клик по объяснению ушёл бы в неизвестное действие. */
-    case "e2e-merge-submit": {
+    /* У e2e правил, запрещающих объединение, нет: состав — цепочка вызовов, и она
+       заменяется целиком. Проверять нечего, подтверждение открывается сразу. */
+    case "e2e-merge-check": {
       const m = state.e2eMergePanel;
-      if(!m || !m.source || !m.target || m.source===m.target) break;
-      state.popover = null;
-      openMergeDiff({kind:"e2e", code:m.code, source:m.source, target:m.target, title:m.code});
-      render();
-      break;
+      return !!(m && m.source && m.target && m.source!==m.target);
     }
     case "e2e-merge-confirm-cancel": state.e2eMergeConfirm = false; render(); break;
     case "e2e-merge-confirm-do": {
@@ -18659,6 +18724,7 @@ function handleAction(action, el){
       state.ucMergePanel = {projectId:p.id, ucId:u.id, source, target, strategy:"replace", conflicts:null};
       state.ucMergeConfirm = false;
       state.popover = null;
+      openMergeDiff({kind:"uc", projectId:p.id, ucId:u.id, title:u.name||u.code});
       render();
       break;
     }
@@ -18686,18 +18752,14 @@ function handleAction(action, el){
       render();
       break;
     }
-    case "uc-merge-submit": {
+    case "uc-merge-check": {
       const m = state.ucMergePanel;
-      const p = findProject(m.projectId);
+      const p = findProject(m && m.projectId);
       const u = p && findUseCase(p, m.ucId);
-      if(!u || !m.source || !m.target || m.source===m.target || state.ucMergeRunning) break;
+      if(!u || !m.source || !m.target || m.source===m.target || state.ucMergeRunning) return false;
       const conflicts = ucMergeConflicts(u, m.source, m.target, m.strategy);
-      if(conflicts.length){ m.conflicts = conflicts; render(); break; }
-      // Конфликтов нет — дальше страница сравнения (встреча 22.10), подтверждение уже там.
-      openMergeDiff({kind:"uc", projectId:m.projectId, ucId:m.ucId, source:m.source, target:m.target, title:u.name||u.code});
-      state.popover = null;
-      render();
-      break;
+      if(conflicts.length){ m.conflicts = conflicts; return false; }
+      return true;
     }
     case "uc-merge-confirm-cancel": state.ucMergeConfirm = false; render(); break;
     case "uc-merge-confirm-do": {
@@ -19448,6 +19510,7 @@ function handleAction(action, el){
       state.acMergePanel = {appId, source, target, strategy:"replace", conflicts:null};
       state.acMergeConfirm = false;
       state.popover = null;
+      openMergeDiff({kind:"ac", appId, title:(findApp(appId)||{}).name||""});
       render();
       break;
     }
@@ -19469,15 +19532,12 @@ function handleAction(action, el){
       m.conflicts = null; state.popover = null; render();
       break;
     }
-    case "ac-merge-submit": {
+    case "ac-merge-check": {
       const m = state.acMergePanel;
-      if(!m.source || !m.target || m.source===m.target || state.acMergeRunning) break;
+      if(!m || !m.source || !m.target || m.source===m.target || state.acMergeRunning) return false;
       const conflicts = acMergeConflicts(m.appId, m.source, m.target, m.strategy);
-      if(conflicts.length){ m.conflicts = conflicts; render(); break; }
-      openMergeDiff({kind:"ac", appId:m.appId, source:m.source, target:m.target, title:(findApp(m.appId)||{}).name||""});
-      state.popover = null;
-      render();
-      break;
+      if(conflicts.length){ m.conflicts = conflicts; return false; }
+      return true;
     }
     case "ac-merge-confirm-cancel": state.acMergeConfirm = false; render(); break;
     case "ac-merge-confirm-do": {
