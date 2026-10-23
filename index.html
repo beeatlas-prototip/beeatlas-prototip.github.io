@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=6">
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261023-104621">
+<meta name="beeatlas-build" content="20261023-120429">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -574,6 +574,7 @@
   .navitem:focus-visible, .ac-tree-row:focus-visible, .exp-row-btn:focus-visible,
   .pg-btn:focus-visible, .ds-select-trigger:focus-visible, .cj-select-trigger:focus-visible,
   .ds-select-item:focus-visible, .uc-menu-item:focus-visible, .th-sort:focus-visible,
+  .diff-pair:focus-visible,
   .proj-link:focus-visible, .reset-link:focus-visible{
     outline:2px solid var(--text);outline-offset:2px;border-radius:var(--size-border-radius-x4);
   }
@@ -2294,45 +2295,66 @@
   .diff-chip.changed{color:var(--md-sys-color-ext-info);}
   .diff-chip.removed{color:var(--danger-text);}
 
-  .diff-group{border:1px solid var(--border);border-radius:var(--size-border-radius-x6);margin-bottom:var(--space-3);overflow:hidden;}
-  .diff-group-head{display:flex;align-items:center;gap:var(--space-3);min-height:var(--size-control-height-medium);
-    padding:0 var(--size-spacing-x4);cursor:pointer;background:var(--bg-alt);}
-  .diff-group-head:hover{background:color-mix(in srgb, var(--md-sys-color-on-surface) 8%, var(--bg-alt));}
-  .diff-group-head h3{margin:0;font-size:15px;line-height:20px;font-weight:500;letter-spacing:.2px;flex:1;min-width:0;}
-  .diff-count{min-width:24px;height:24px;padding:0 var(--size-spacing-x2);border-radius:var(--size-border-radius-x15);
-    background:var(--md-sys-color-surface-container-highest);color:var(--text);
-    display:inline-flex;align-items:center;justify-content:center;font-size:13px;line-height:16px;}
+  /* ─ Две колонки сравнения ─
+     Сетка 1fr/1fr на всю страницу: строки обеих сторон стоят друг напротив друга,
+     и глаз читает «было — стало» по горизонтали. Вложенность уводится отступом
+     внутри ячейки, а не отдельным контейнером, иначе колонки разъезжаются. */
+  /* Ряд вкладок — та же прокручиваемая лента, что на карточке приложения
+     (.ac-tabs-wrap): подписи типов длинные, на узком экране ряд переносился бы
+     на вторую строку и отрывал индикатор от вкладки. Стрелки и затухание по краям
+     достаются вместе с компонентом, своего кода здесь нет. */
+  .diff-tabs{margin-top:var(--space-6);}
+  .diff-tabs .diff-count{margin-left:var(--size-spacing-x2);}
+  .diff-split{border:1px solid var(--border);border-radius:var(--size-border-radius-x6);overflow:hidden;}
+  .diff-split-head{display:grid;grid-template-columns:1fr 1fr;background:var(--bg-alt);border-bottom:1px solid var(--border);}
+  .diff-side-cap{display:flex;align-items:center;min-height:var(--size-control-height-medium);
+    padding:0 var(--size-spacing-x4);font-size:13px;line-height:16px;letter-spacing:.2px;
+    color:var(--text-secondary);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .diff-side-cap + .diff-side-cap{border-left:1px solid var(--border);}
+  .diff-pair{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);}
+  .diff-split > .diff-pair:last-child{border-bottom:none;}
+  .diff-pair.foldable{cursor:pointer;}
+  .diff-pair.foldable:hover .diff-cell{background-image:linear-gradient(color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent),color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent));}
+  .diff-pair.foldable:active .diff-cell{background-image:linear-gradient(color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent),color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent));}
+  .diff-cell{display:flex;align-items:center;gap:var(--space-3);min-height:var(--size-control-height-medium);
+    padding:var(--space-2) var(--size-spacing-x4);min-width:0;}
+  .diff-cell + .diff-cell{border-left:1px solid var(--border);}
+  /* Цвет берётся парой «контейнер + текст на нём», поэтому читается в обеих темах. */
+  .diff-cell.added{background:var(--green-bg);color:var(--green-text);}
+  .diff-cell.removed{background:var(--red-bg);color:var(--red-text);}
+  .diff-cell.changed{background:var(--blue-bg);color:var(--blue-text);}
+  .diff-cell.absent{background:var(--bg-alt);}
+  /* Тип приглушаем прозрачностью, но считая контраст с композитингом: на .72
+     подпись давала 4,37:1 на голубой заливке — ниже AA для 13px. */
+  .diff-cell.added .diff-kind, .diff-cell.removed .diff-kind, .diff-cell.changed .diff-kind{color:inherit;opacity:.82;}
+  /* Знак рядом с цветом: по цвету одному судить нельзя, а «+ / − / ±» читается
+     и в монохроме (docs/behaviour.md). */
+  .diff-sign{flex:0 0 auto;width:12px;font-size:15px;line-height:20px;font-weight:500;text-align:center;}
+  .diff-absent{font-size:13px;line-height:18px;color:var(--text-tertiary);}
+  .diff-flag{flex:0 0 auto;height:24px;display:inline-flex;align-items:center;padding:0 var(--size-spacing-x2);
+    border-radius:var(--size-border-radius-x4);background:var(--orange-bg);color:var(--orange-text);
+    font-size:13px;line-height:16px;}
+  /* Подробности — те же две колонки, с тем же отступом под текстом строки. */
+  .diff-pair.detail{background:var(--bg-alt);}
+  .diff-detail-cell{padding:var(--space-3) var(--size-spacing-x4);min-width:0;}
+  .diff-detail-cell + .diff-detail-cell{border-left:1px solid var(--border);}
+  .diff-kv{display:grid;grid-template-columns:160px minmax(0,1fr);gap:var(--space-3);margin-bottom:var(--space-2);}
+  .diff-kv:last-child{margin-bottom:0;}
+  .diff-kv .k{font-size:13px;line-height:18px;color:var(--text-secondary);}
+  .diff-kv .v{font-size:13px;line-height:18px;color:var(--text);overflow-wrap:anywhere;}
+  .diff-kv .v.gone{text-decoration:line-through;color:var(--text-secondary);}
+  .diff-kv .v.muted{color:var(--text-tertiary);}
 
-  .diff-list{border-top:1px solid var(--border);}
-  .diff-row{display:flex;align-items:center;gap:var(--space-3);min-height:var(--size-control-height-medium);
-    padding:0 var(--size-spacing-x4);border-bottom:1px solid var(--border);}
-  .diff-row:last-child{border-bottom:none;}
-  .diff-row.foldable{cursor:pointer;}
-  .diff-row.foldable:hover{background:color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);}
-  .diff-row.foldable:active{background:color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);}
-  /* Полоса слева читается как статус строки — тот же приём, что у вложенных уровней
-     таблицы (docs/components.md, «Уровни таблицы»). */
-  .diff-mark{width:4px;height:20px;border-radius:2px;flex:0 0 auto;}
-  .diff-mark.added{background:var(--md-sys-color-ext-success);}
-  .diff-mark.changed{background:var(--md-sys-color-ext-info);}
-  .diff-mark.removed{background:var(--danger-text);}
+  .diff-count{min-width:24px;height:24px;padding:0 var(--size-spacing-x2);border-radius:var(--size-border-radius-x15);
+    background:var(--gray-bg);color:var(--gray-text);font-size:13px;line-height:24px;text-align:center;
+    display:inline-block;flex:0 0 auto;}
   .diff-caret{width:18px;height:18px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);transition:transform .12s ease;}
   .diff-caret.open{transform:rotate(90deg);}
-  .diff-kind{flex:0 0 auto;font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);min-width:96px;}
+  /* Тип стоит перед названием подписью, а не колонкой: фиксированные 96px отрывали
+     название от начала строки, а тип уже назван вкладкой. */
+  .diff-kind{flex:0 0 auto;font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);}
   .diff-name{flex:1;min-width:0;font-size:15px;line-height:20px;letter-spacing:.2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .diff-row.removed .diff-name{text-decoration:line-through;color:var(--text-secondary);}
-  .diff-sub{flex:0 0 auto;font-size:13px;line-height:16px;color:var(--text-secondary);}
-
-  .diff-fields{padding:var(--space-3) var(--size-spacing-x4) var(--space-4) 54px;border-bottom:1px solid var(--border);}
-  .diff-field{display:grid;grid-template-columns:160px 1fr 24px 1fr;align-items:start;gap:var(--space-3);margin-bottom:var(--space-2);}
-  .diff-field:last-child{margin-bottom:0;}
-  .diff-field-cap{font-size:13px;line-height:18px;color:var(--text-secondary);}
-  .diff-was{font-size:13px;line-height:18px;color:var(--text-secondary);text-decoration:line-through;}
-  .diff-arrow{color:var(--text-secondary);display:flex;align-items:center;justify-content:center;}
-  .diff-now{font-size:13px;line-height:18px;color:var(--text);}
-  /* Вложенный уровень без своей заливки, сдвиг по тексту родителя — как в таблицах. */
-  .diff-children{padding-left:54px;}
-  .diff-children .diff-row{padding-left:0;}
+  .diff-cell.removed .diff-name{text-decoration:line-through;}
 
   .diff-empty{padding:var(--space-10) 0;text-align:center;}
   .diff-empty h3{margin:0 0 var(--space-2);font-size:20px;line-height:28px;font-weight:500;letter-spacing:.2px;}
@@ -4147,8 +4169,11 @@
 .e2ecat-scope .e2e-branch-note{font-size:13px;line-height:18px;color:var(--text-secondary);margin:0 0 18px;}
 .e2ecat-scope .e2e-branch-note b{font-weight:500;color:var(--text);}
 .e2ecat-scope .cat-branch-row{display:flex;align-items:center;gap:var(--space-3);margin-bottom:12px;}
-.e2ecat-scope .cat-branch-lbl{font-size:13px;color:var(--text-secondary);}
-.e2ecat-scope .cat-branch-chips{margin-bottom:0;}
+.e2ecat-scope .cat-branch-lbl{font-size:13px;color:var(--text-secondary);flex:0 0 auto;}
+/* Поле занимает остаток строки: на min-width:160px оно оставляло справа пустое
+   место, а подпись и так короткая. */
+.e2ecat-scope .cat-branch-row > .cj-select-field{flex:1;min-width:0;}
+.e2ecat-scope .cat-branch-row .cj-select-trigger{min-width:0;}
 .e2ecat-scope .impl-row{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:20px;}
 .e2ecat-scope .impl-lbl{font-size:13px;color:var(--text-secondary);margin-right:4px;}
 .e2ecat-scope .impl-chip{display:inline-flex;align-items:center;gap:6px;max-width:320px;height:32px;padding:0 12px;border-radius:var(--radius-pill);background:var(--bg-hover);color:var(--text);font-size:13px;line-height:16px;cursor:pointer;border:1px solid transparent;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;}
@@ -4735,6 +4760,62 @@ function catEmptySnap(source, callsOffset){
    снимок берётся для state.branch. */
 function catSnap(e,b){ return brSnap(e, b||state.branch); }
 
+/* ---------- переключатель ветки ----------
+   Один компонент на все места, где выбирают ветку: Библиотека CJ, карточки
+   приложения, Use Case и e2e — и каталог. В каталоге стоял свой ряд чипов: место
+   верное, а вид собран заново, хотя требование к дизайну прямое — «панель веток
+   выглядит и работает одинаково» (задача-на-дизайн-ветки.md).
+   Разметку и классы задаёт этот компонент. Снаружи приходят две вещи, которые у
+   двух скриптов разные: чем навешано действие (основной скрипт работает
+   делегированием через data-action, каталог — inline onclick) и открыто ли меню
+   (у каждого скрипта свой state). */
+function brIcon(name){
+  var d=M3_ICONS[name];
+  /* Размер не печатаем: его задаёт CSS компонента — см. ic() ниже. */
+  return d ? '<svg class="ic" viewBox="0 -960 960 960" fill="currentColor" aria-hidden="true"><path d="'+d+'"/></svg>' : '';
+}
+function branchGroups(list){
+  var sys=list.filter(function(b){ return b.kind!=='user'; });
+  var user=list.filter(function(b){ return b.kind==='user'; });
+  if(!sys.length || !user.length) return [{title:'', items:list}];
+  return [{title:'Изолированные ветки', items:sys}, {title:'Созданные ветки', items:user}];
+}
+function BranchSelectField(o){
+  var opts=(o.branches||[]).filter(function(b){ return b.id!==o.excludeId; });
+  var metaOf=typeof o.meta==='function' ? o.meta : null;
+  var hasValue=!!o.activeId;
+  var valueText=hasValue ? ((metaOf && o.label) ? o.activeId+', '+metaOf(o.activeId) : o.activeId)
+                         : (o.placeholder||o.label||'—');
+  var trigger=o.label
+    ? '<span class="txt">'+(hasValue?'<span class="lbl">'+esc(o.label)+'</span>':'')+
+      '<span class="name'+(hasValue?'':' placeholder')+'">'+esc(valueText)+'</span></span>'
+    : '<span class="name">'+esc(valueText)+'</span>';
+  var menu='';
+  if(o.open){
+    menu='<div class="cj-select-menu">'+branchGroups(opts).map(function(g){
+      return (g.title?'<div class="cj-select-group">'+esc(g.title)+'</div>':'')+
+        g.items.map(function(b){
+          var isDisabled=b.id===o.disabledId;
+          var sub=metaOf?metaOf(b.id):'';
+          var del=o.delAttrs?o.delAttrs(b):'';
+          var tail=sub ? '<span class="sub">'+esc(sub)+'</span>'
+                       : (b.id===o.activeId ? '<span class="check">'+brIcon('check')+'</span>' : '');
+          return '<div class="cj-select-item'+(sub?' two-line':'')+(b.id===o.activeId?' active':'')+
+                 (isDisabled?' disabled':'')+'" '+
+                 (isDisabled?'title="'+esc(o.disabledTitle||'')+'"':o.itemAttrs(b))+'>'+
+                 '<span class="name">'+esc(b.id)+'</span>'+tail+
+                 (del?'<button class="icon-btn del" '+del+' title="Удалить ветку">'+brIcon('trash')+'</button>':'')+
+          '</div>';
+        }).join('');
+    }).join('')+'</div>';
+  }
+  return '<div class="cj-select-field'+(o.wide?' wide':'')+'">'+
+    '<button class="cj-select-trigger'+(o.open?' open':'')+(o.label?' labeled':'')+'" '+o.triggerAttrs+'>'+
+      trigger+brIcon('chevronDown')+
+    '</button>'+menu+
+  '</div>';
+}
+
 /* call tree shared by BI-step page and E2E page */
 var CALL_TREE = (function(){
   var rows=[];
@@ -4942,6 +5023,7 @@ function defaultState(){
     /* Ветка каталога. Встреча 22.10: ветка выбирается глобально на экране, где
        пересекаются CJ, E2E и Use Case, и задаёт представление обеим сторонам сразу. */
     branch:'main',
+    branchMenu:false,
     cjSearch:'',
     e2eSearch:'',
     renamingE2e:null,
@@ -4967,7 +5049,14 @@ function defaultState(){
 function load(){
   try{
     var raw=localStorage.getItem('e2e_catalog_proto_v1');
-    if(raw){ var s=JSON.parse(raw); return Object.assign(defaultState(),s); }
+    if(raw){
+      var s=JSON.parse(raw);
+      var st=Object.assign(defaultState(),s);
+      /* Открытое меню в сохранённое состояние попадать не должно: после
+         перезагрузки оно висело бы поверх списка без причины. */
+      st.branchMenu=false;
+      return st;
+    }
   }catch(e){}
   var s=defaultState();
   s.expanded[CJ_LIST[0].id]=true;
@@ -5353,9 +5442,18 @@ function downloadVersionFile(e2eId,version){
 
 document.addEventListener('keydown',function(e){
   if(e.key==='Escape'){
+    /* Меню ветки — самый верхний слой: Esc закрывает его, а не панель под ним. */
+    if(state.branchMenu){ closeCatBranchMenu(); return; }
     if(state.diagramModalOpen){ closeDiagramModal(); return; }
     if(state.panel){ closePanel(); return; }
   }
+});
+/* Щелчок вне поля закрывает меню — как у остальных меню прототипа
+   (docs/behaviour.md). Пока меню закрыто, обработчик ничего не делает. */
+document.addEventListener('click',function(e){
+  if(!state || !state.branchMenu) return;
+  if(e.target && e.target.closest && e.target.closest('.cat-branch-row')) return;
+  closeCatBranchMenu();
 });
 
 /* =========================================================
@@ -5445,17 +5543,19 @@ function renderCatalog(){
     '</div>'+
     /* B-1: общий переключатель ветки на весь каталог — «здесь глобально где-то должна
        быть ветки E2E и CJ». Он задаёт и отбор списка, и то, какие связи видны на шаге.
-       Чипы, а не выпадающий список: ветки известны, их три, и по docs/behaviour.md выбор
-       одного значения из ≤ 7 известных — это чипы («селект: лишний клик там, где всё
-       видно сразу»). На карточке e2e в разделе проектов список веток не фиксирован —
-       туда заводят пользовательские, и там стоит поле-переключатель с удалением внутри. */
+       Тот же компонент, что на карточках CJ, приложения, Use Case и e2e
+       (BranchSelectField): требование к дизайну — «панель веток выглядит и работает
+       одинаково». Здесь стоял свой ряд чипов, и ветка в каталоге переключалась иначе,
+       чем в тех же сервисах рядом. */
     '<div class="cat-branch-row">'+
       '<span class="cat-branch-lbl">Ветка</span>'+
-      '<div class="pill-toggle cat-branch-chips">'+
-        BRANCH_SYSTEM_IDS.map(function(b){
-          return '<button class="'+(state.branch===b?'on':'')+'" onclick="setCatBranch(\''+b+'\')">'+esc(b)+'</button>';
-        }).join('')+
-      '</div>'+
+      BranchSelectField({
+        open: !!state.branchMenu,
+        branches: BRANCH_SYSTEM_IDS.map(function(b){ return {id:b, kind:'system'}; }),
+        activeId: state.branch,
+        triggerAttrs: 'onclick="toggleCatBranchMenu(event)"',
+        itemAttrs: function(b){ return 'onclick="setCatBranch(\''+b.id+'\')"'; }
+      })+
     '</div>';
 
   if(state.mode==='cj'){
@@ -5478,8 +5578,21 @@ function renderCatalog(){
 }
 function textMatches(t,q){ return t.toLowerCase().indexOf(q)>=0; }
 
+/* Меню переключателя: открыто/закрыто живёт в state каталога — у основного скрипта
+   для того же компонента свой state.popover. */
+function toggleCatBranchMenu(e){
+  if(e) e.stopPropagation();
+  state.branchMenu=!state.branchMenu;
+  render();
+}
+function closeCatBranchMenu(){
+  if(!state.branchMenu) return;
+  state.branchMenu=false;
+  render();
+}
 function setCatBranch(b){
-  if(state.branch===b) return;
+  state.branchMenu=false;
+  if(state.branch===b){ render(); return; }
   state.branch=b;
   /* Выбранная реализация и раскрытия привязаны к ключу сущности, а состав ветки свой:
      оставлять их — значит показывать выбор, которого в этой ветке нет. */
@@ -7465,7 +7578,7 @@ const state = {
      сравниваем и какие узлы раскрыты; само объединение запускает merge-diff-confirm-do. */
   mergeHistory:null,           // {kind, artifactId, title} — экран истории объединений
   mergeDiff:null,              // {kind:"cj"|"uc"|"ac", ...ids, source, target, title}
-  mergeDiffGroup:null,         // id свёрнутой группы (по умолчанию раскрыты все)
+  mergeDiffGroup:null,         // id выбранной вкладки сравнения (null — первая с изменениями)
   mergeDiffOpen:{},            // путь узла → раскрыт
   mergeDiffConfirm:false,
   ucImportConfirmed:false,   // импорт уже подтверждён на странице сравнения
@@ -12120,50 +12233,17 @@ function CjBranchBar(cjId){
    и в двухстрочном пункте с датой обновления спорил с подписью за ту же строку.
    Подписи появляются, только когда есть обе группы: над единственным списком
    заголовок ничего не разделяет. */
-function branchGroups(list){
-  const sys  = list.filter(b=>b.kind!=="user");
-  const user = list.filter(b=>b.kind==="user");
-  if(!sys.length || !user.length) return [{title:"", items:list}];
-  return [{title:"Изолированные ветки", items:sys}, {title:"Созданные ветки", items:user}];
+/* Переключатель ветки — общий компонент BranchSelectField (объявлен в скрипте
+   каталога, он глобальный). Здесь только то, чем этот скрипт отличается:
+   действия навешаны делегированием, а «меню открыто» лежит в state.popover. */
+function CjSelectField(o){
+  return BranchSelectField(Object.assign({}, o, {
+    open: state.popover===o.id,
+    triggerAttrs: `data-action="toggle-popover" data-popover="${o.id}"`,
+    itemAttrs: b => `data-action="${o.action}" data-branch="${b.id}"`,
+    delAttrs: o.deleteAction ? (b => b.kind==="user" ? `data-action="${o.deleteAction}" data-branch="${b.id}"` : "") : null,
+  }));
 }
-
-function CjSelectField({id, branches, activeId, action, excludeId, disabledId, disabledTitle, wide, label, placeholder, meta, deleteAction}){
-  const opts = branches.filter(b=>b.id!==excludeId);
-  const open = state.popover===id;
-  const metaOf = typeof meta==="function" ? meta : null;
-  const hasValue = !!activeId;
-  const valueText = hasValue ? ((metaOf && label) ? `${activeId}, ${metaOf(activeId)}` : activeId) : (placeholder||label||"—");
-  const trigger = label
-    ? `<span class="txt">${hasValue?`<span class="lbl">${escapeHtml(label)}</span>`:""}<span class="name${hasValue?"":" placeholder"}">${escapeHtml(valueText)}</span></span>`
-    : `<span class="name">${escapeHtml(valueText)}</span>`;
-  return `
-    <div class="cj-select-field${wide?" wide":""}">
-      <button class="cj-select-trigger${open?" open":""}${label?" labeled":""}" data-action="toggle-popover" data-popover="${id}">
-        ${trigger}${icon("chevronDown")}
-      </button>
-      ${open ? `
-        <div class="cj-select-menu">
-          ${branchGroups(opts).map(g=>`
-            ${g.title?`<div class="cj-select-group">${escapeHtml(g.title)}</div>`:""}
-            ${g.items.map(b=>{
-              const isDisabled = b.id===disabledId;
-              const sub = metaOf ? metaOf(b.id) : "";
-              const canDelete = deleteAction && b.kind==="user";
-              return `<div class="cj-select-item ${sub?"two-line":""} ${b.id===activeId?"active":""} ${isDisabled?"disabled":""}" ${isDisabled?`title="${escapeHtml(disabledTitle||"")}"`:`data-action="${action}" data-branch="${b.id}"`}>
-                <span class="name">${escapeHtml(b.id)}</span>${sub?`<span class="sub">${escapeHtml(sub)}</span>`:`${b.id===activeId?`<span class="check">${icon("check")}</span>`:""}`}
-                ${canDelete?`<button class="icon-btn del" data-action="${deleteAction}" data-branch="${b.id}" title="Удалить ветку">${icon("trash")}</button>`:""}
-              </div>`;
-            }).join("")}
-          `).join("")}
-        </div>` : ""}
-    </div>
-  `;
-}
-
-/* Выпадающий список по (components/select). Нативный <select> не годится:
-   его список рисует ОС — поверх поля, с системной подсветкой и мимо токенов.
-   Открытием управляет общий механизм state.popover, поэтому клик вне закрывает меню.
-   dataAttrs — произвольные data-* для обработчика (например, {cid: id кандидата}). */
 function DsSelect({id, value, placeholder, options, action, dataAttrs}){
   const open = state.popover===id;
   const attrs = Object.entries(dataAttrs||{}).map(([k,v])=>`data-${k}="${escapeHtml(String(v))}"`).join(" ");
@@ -12650,12 +12730,20 @@ function MergeStrategyNote(source, target){
    • можно провалиться в объект и посмотреть, из чего он состоит;
    • экран однотипный для приложения, CJ и Use Case: меняется только тип объекта.
 
-   Узел дерева: {status:"added"|"removed"|"changed", label, kind, fields[], children[]}.
-   Узлы без изменений наверх не всплывают: ветка показывается, только если изменился
-   сам узел или кто-то внутри него. */
-const DIFF_LABEL = {added:"Добавлено", removed:"Удалено", changed:"Изменено"};
+   Страница сравнивает две ветки, а не перечисляет изменения: встреча просила
+   «как в ГИТе… слева, справа» (09:45) и «было — стало» (10:31). Поэтому строка есть
+   у каждого элемента состава, а не только у изменившегося: неизменные стоят на обеих
+   сторонах спокойными, и видно, из чего ветка состоит целиком. Без них это список
+   изменений, по которому нельзя свериться.
 
-function diffNodes(before, after, spec){
+   Строка: {status:"same"|"added"|"removed"|"changed", kind, before, after,
+            fields:[{cap, before, after}], children[], conflict?}.
+   `before` и `after` — подпись элемента с каждой стороны; null значит, что с этой
+   стороны элемента нет. */
+const DIFF_LABEL = {added:"Добавлено", removed:"Удалено", changed:"Изменено", same:"Без изменений"};
+const DIFF_SIGN  = {added:"+", removed:"−", changed:"±", same:""};
+
+function diffRows(before, after, spec){
   const key = spec.key, label = spec.label;
   /* Ключ в данных не всегда уникален: у интерфейса несколько методов с одним и тем же
      путём, и без разведения одноимённые строки склеивались в одну — сравнение честно
@@ -12670,35 +12758,49 @@ function diffNodes(before, after, spec){
     });
   };
   const bList = uniq(before), aList = uniq(after);
-  const idx = new Map();
-  bList.forEach(e=>idx.set(e.k, e.x));
-  const out = [], seen = new Set();
+  const sub = x => spec.sub ? spec.sub(x) : null;
+  const kid = spec.child || spec;
+  const own = (x, side) => (spec.fields||[])
+    .map(f=>({cap:f.cap, before: side==="before" ? f.get(x) : null, after: side==="after" ? f.get(x) : null}))
+    .filter(f=>String((side==="before" ? f.before : f.after) ?? "") !== "");
 
-  aList.forEach(({x:a, k})=>{
-    const b = idx.get(k);
-    seen.add(k);
-    if(!b){ out.push({status:"added", label:label(a), kind:spec.kind, fields:[], children:diffNodes([], spec.sub?spec.sub(a):[], spec.child||spec)}); return; }
+  const rowAdded = a => ({status:"added", kind:spec.kind, before:null, after:label(a),
+                          fields:own(a,"after"), children:diffRows([], sub(a)||[], kid)});
+  const rowRemoved = b => ({status:"removed", kind:spec.kind, before:label(b), after:null,
+                            fields:own(b,"before"), children:diffRows(sub(b)||[], [], kid)});
+  const rowBoth = (b, a) => {
     const fields = (spec.fields||[]).map(f=>({cap:f.cap, before:f.get(b), after:f.get(a)}))
                                     .filter(f=>String(f.before??"") !== String(f.after??""));
-    const children = spec.sub ? diffNodes(spec.sub(b), spec.sub(a), spec.child||spec) : [];
-    if(fields.length || children.length) out.push({status:"changed", label:label(a), kind:spec.kind, fields, children});
-  });
+    const children = spec.sub ? diffRows(sub(b), sub(a), kid) : [];
+    const moved = children.some(c=>c.status!=="same");
+    return {status:(fields.length||moved) ? "changed" : "same", kind:spec.kind,
+            before:label(b), after:label(a), fields, children};
+  };
 
-  (before||[]).forEach(b=>{
-    if(seen.has(key(b))) return;
-    out.push({status:"removed", label:label(b), kind:spec.kind, fields:[], children:diffNodes(spec.sub?spec.sub(b):[], [], spec.child||spec)});
+  /* Порядок строк задаёт состав «после», а удалённые встают на своё место в составе
+     «до»: в сравнении строка должна стоять там, где человек её помнит, а не в хвосте
+     списка. */
+  const aKeys = new Set(aList.map(e=>e.k));
+  const bAt = new Map(bList.map((e,i)=>[e.k, i]));
+  const out = [];
+  let bp = 0;
+  const drainTo = i => { while(bp < i){ const e = bList[bp++]; if(!aKeys.has(e.k)) out.push(rowRemoved(e.x)); } };
+  aList.forEach(({x:a, k})=>{
+    if(bAt.has(k)){ const i = bAt.get(k); drainTo(i); bp = i + 1; out.push(rowBoth(bList[i].x, a)); }
+    else out.push(rowAdded(a));
   });
+  drainTo(bList.length);
   return out;
 }
 
 /* Счётчик считает все изменившиеся узлы вместе с вложенными: на встрече просили
    «количество изменений» у группы, а не количество строк верхнего уровня. */
 function diffCount(nodes){
-  return (nodes||[]).reduce((n,x)=>n + 1 + diffCount(x.children), 0);
+  return (nodes||[]).reduce((n,x)=>n + (x.status==="same" ? 0 : 1) + diffCount(x.children), 0);
 }
 function diffTotals(groups){
   const t = {added:0, removed:0, changed:0};
-  const walk = ns => (ns||[]).forEach(n=>{ t[n.status]++; walk(n.children); });
+  const walk = ns => (ns||[]).forEach(n=>{ if(n.status!=="same") t[n.status]++; walk(n.children); });
   groups.forEach(g=>walk(g.nodes));
   return t;
 }
@@ -12710,7 +12812,7 @@ const byName = x => x.name || x.label || x.code || "—";
    контейнер → интерфейс → метод, и провалиться просили именно до метода. */
 function acDiffGroups(appId, source, target){
   const a = acBranchData(appId, source), b = acBranchData(appId, target);
-  const g = (id, title, field, spec) => ({id, title, nodes: diffNodes(b[field], a[field], spec)});
+  const g = (id, title, field, spec) => ({id, title, nodes: diffRows(b[field], a[field], spec)});
   return [
     g("ifaces", "Интерфейсы", "interfaces", {
       kind:"Контейнер", key:x=>x.id||x.code, label:byName,
@@ -12769,7 +12871,14 @@ function cjLinkNodes(cjId, source, target){
         {cap:"Use Case", before:names(b.ucs).join(", ") || "—", after:names(a.ucs).join(", ") || "—"},
         {cap:"E2E",      before:names(b.e2e).join(", ") || "—", after:names(a.e2e).join(", ") || "—"},
       ].filter(f=>f.before !== f.after);
-      if(fields.length) out.push({status:"changed", kind:"Шаг", label:`${bi.title} · ${step.title}`, fields, children:[]});
+      const name = `${bi.title} · ${step.title}`;
+      /* Конфликт: шаг связан с Use Case в обеих ветках, и связи разные. Помечаем саму
+         строку, а не только баннер над списком: встреча просила видеть конфликт
+         «и слева, и справа» (10:01). */
+      const conflict = !!(b.ucs||[]).length && !!(a.ucs||[]).length &&
+        names(b.ucs).sort().join(",") !== names(a.ucs).sort().join(",");
+      out.push({status: fields.length ? "changed" : "same", kind:"Шаг",
+                before:name, after:name, fields, children:[], conflict});
     });
   });
   return out;
@@ -12795,7 +12904,7 @@ function cjLinkConflicts(cjId, source, target){
 function cjDiffGroups(cjId, source, target){
   const a = cjBranchTree(cjId, source), b = cjBranchTree(cjId, target);
   const stepsOf = st => (st.scenario||[]).map((s,i)=>({i, text:s}));
-  const nodes = diffNodes(b, a, {
+  const nodes = diffRows(b, a, {
     kind:"Этап", key:x=>x.id, label:x=>x.biName ? `${x.name} · ${x.biName}` : x.name,
     fields:[{cap:"BI", get:x=>x.biName}, {cap:"Идентификатор BI", get:x=>x.biId},
             {cap:"Описание", get:x=>x.description}, {cap:"Каналы", get:x=>x.channels}],
@@ -12810,10 +12919,35 @@ function cjDiffGroups(cjId, source, target){
   return groups;
 }
 
+/* e2e: состав ветки — выгруженный канон и цепочка вызовов. До 23.10 объединение
+   веток e2e шло от выбора веток сразу к подтверждению, в обход сравнения: у трёх
+   артефактов страница была, у четвёртого нет. */
+function e2eDiffGroups(code, source, target){
+  const a = implInfo(code, source), b = implInfo(code, target);
+  if(!a || !b) return [];
+  const groups = [];
+  const calls = diffRows(b.calls, a.calls, {
+    kind:"Вызов", key:x=>`${x.from}→${x.to}:${x.label}`, label:x=>x.label,
+    fields:[{cap:"Вызывающий", get:x=>x.from}, {cap:"Вызываемый", get:x=>x.to},
+            {cap:"Операция архитектуры", get:x=>x.opId}],
+  });
+  if(calls.length) groups.push({id:"calls", title:"Цепочка вызовов", nodes:calls});
+  /* Канон одной строкой: загрузчик в подписи, остальное — в полях. Ветка меняется
+     целиком вместе с выгрузкой, и это та же часть состава, что и вызовы. */
+  const canon = x => ({source:x.source, origin:x.origin, loadedAt:x.loadedAt, objectId:x.objectId});
+  const canonRows = diffRows([canon(b)], [canon(a)], {
+    kind:"Канон", key:()=>"canon", label:x=>x.source||"—",
+    fields:[{cap:"Откуда загружено", get:x=>x.origin}, {cap:"Загружено", get:x=>x.loadedAt},
+            {cap:"Идентификатор объекта", get:x=>x.objectId}],
+  });
+  if(canonRows.length) groups.push({id:"canon", title:"Канон", nodes:canonRows});
+  return groups;
+}
+
 /* Use Case: состав ветки — шаги сценария, ключ шага это его код (part). */
 function ucDiffGroups(u, source, target){
   const a = ucBranchData(u, source), b = ucBranchData(u, target);
-  const nodes = diffNodes(b.scenarios, a.scenarios, {
+  const nodes = diffRows(b.scenarios, a.scenarios, {
     kind:"Шаг", key:x=>x.part, label:x=>`${x.part} · ${x.participant||""}`.trim(),
     fields:[{cap:"Действие", get:x=>x.action}, {cap:"Интерфейс", get:x=>x.api},
             {cap:"Вызов", get:x=>x.call}, {cap:"Статус", get:x=>x.status}],
@@ -12880,6 +13014,7 @@ function mergeDiffGroups(d){
   if(!d) return [];
   if(d.kind === "ac") return acDiffGroups(d.appId, d.source, d.target);
   if(d.kind === "cj") return cjDiffGroups(d.cjId, d.source, d.target);
+  if(d.kind === "e2e") return e2eDiffGroups(d.code, d.source, d.target);
   if(d.kind === "uc"){
     const p = findProject(d.projectId), u = p && findUseCase(p, d.ucId);
     return u ? ucDiffGroups(u, d.source, d.target) : [];
@@ -12888,7 +13023,7 @@ function mergeDiffGroups(d){
     const p = findProject(d.projectId), u = p && findUseCase(p, d.ucId);
     if(!u) return [];
     const before = ucBranchData(u, d.target).scenarios || [];
-    const nodes = diffNodes(before, d.incoming || [], {
+    const nodes = diffRows(before, d.incoming || [], {
       kind:"Шаг", key:x=>x.part, label:x=>`${x.part} · ${x.participant||""}`.trim(),
       fields:[{cap:"Действие", get:x=>x.action}, {cap:"Интерфейс", get:x=>x.api},
               {cap:"Вызов", get:x=>x.call}, {cap:"Статус", get:x=>x.status}],
@@ -12944,44 +13079,84 @@ function MergeHistoryOverlay(){
 }
 
 /* Страница сравнения. Шапка называет обе ветки и направление, под ней сводка
-   «добавлено / изменено / удалено», дальше группы. Внизу — то самое действие,
-   ради которого сюда и пришли. */
+   «добавится / изменится / исчезнет», ряд вкладок по типам объектов и две колонки:
+   слева ветка, в которую объединяют, справа — состав, который её заменит. Внизу —
+   то самое действие, ради которого сюда и пришли. */
 function MergeDiffOverlay(){
   const d = state.mergeDiff;
   if(!d) return "";
   const groups = mergeDiffGroups(d);
   const t = diffTotals(groups);
-  const empty = !groups.length;
+  const changes = t.added + t.changed + t.removed;
   const isImport = d.kind === "ucimport";
 
-  const chip = (st, n) => `<span class="diff-chip ${st}">${DIFF_LABEL[st]} <b>${n}</b></span>`;
+  /* Колонки: слева ветка, в которую объединяют, справа — то, чем её заменят.
+     Порядок «было → стало» и направление чтения совпадают. */
+  const leftCap  = `Было · ветка «${escapeHtml(d.target)}»`;
+  const rightCap = isImport ? "Станет · из файла" : `Станет · из ветки «${escapeHtml(d.source)}»`;
 
-  const node = (n, path) => {
-    const open = !!state.mergeDiffOpen[path];
-    const kids = n.children.length, flds = n.fields.length;
-    const foldable = kids || flds;
+  /* Вкладка на тип объекта со счётчиком изменений: «может, тут вот выбор — интерфейс,
+     возможности и так далее, количество изменений… дальше выводить список» (11:17).
+     Структуру типов взяли со вкладок карточки приложения (11:35). */
+  const active = groups.find(g=>g.id===state.mergeDiffGroup)
+              || groups.find(g=>diffCount(g.nodes))
+              || groups[0];
+
+  const cell = (side, n, depth, open, foldable) => {
+    const label = side==="before" ? n.before : n.after;
+    const pad = `padding-left:calc(var(--size-spacing-x4) + ${depth*24}px);`;
+    if(label == null){
+      return `<div class="diff-cell absent" style="${pad}"><span class="diff-absent">${
+        side==="before" ? "нет в этой ветке" : "не останется"}</span></div>`;
+    }
+    const tone = n.status==="same" ? "" : ` ${n.status}`;
+    const sign = DIFF_SIGN[n.status];
     return `
-      <div class="diff-node">
-        <div class="diff-row ${n.status}${foldable?" foldable":""}"
-             ${foldable?`data-action="merge-diff-toggle" data-path="${escapeHtml(path)}" tabindex="0" role="button" aria-expanded="${open}"`:""}>
-          <span class="diff-mark ${n.status}" title="${DIFF_LABEL[n.status]}"></span>
-          ${foldable?`<span class="diff-caret${open?" open":""}">${icon("chevronRight", 18)}</span>`:`<span class="diff-caret"></span>`}
-          <span class="diff-kind">${escapeHtml(n.kind)}</span>
-          <span class="diff-name">${escapeHtml(n.label)}</span>
-          ${kids?`<span class="diff-sub">внутри ${kids}</span>`:""}
-        </div>
-        ${open && flds ? `
-          <div class="diff-fields">
-            ${n.fields.map(f=>`
-              <div class="diff-field">
-                <div class="diff-field-cap">${escapeHtml(f.cap)}</div>
-                <div class="diff-was">${escapeHtml(String(f.before ?? "—"))}</div>
-                <div class="diff-arrow">${icon("chevronRight", 18)}</div>
-                <div class="diff-now">${escapeHtml(String(f.after ?? "—"))}</div>
-              </div>`).join("")}
-          </div>` : ""}
-        ${open && kids ? `<div class="diff-children">${n.children.map((c,i)=>node(c, path+"."+i)).join("")}</div>` : ""}
+      <div class="diff-cell${tone}" style="${pad}">
+        <span class="diff-sign" aria-hidden="true">${sign}</span>
+        ${foldable && (n.before != null ? side==="before" : side==="after")
+          ? `<span class="diff-caret${open?" open":""}">${icon("chevronRight", 18)}</span>`
+          : `<span class="diff-caret"></span>`}
+        <span class="diff-kind">${escapeHtml(n.kind)}</span>
+        <span class="diff-name">${escapeHtml(label)}</span>
+        ${n.conflict ? `<span class="diff-flag">Конфликт</span>` : ""}
       </div>`;
+  };
+
+  /* Подробности встают под названием строки: тот же отступ плюс знак и каретка. */
+  const detailCell = (side, n, depth) => {
+    const pad = `padding-left:calc(var(--size-spacing-x4) + ${depth*24 + 54}px);`;
+    /* Со стороны, где элемента нет, перечислять нечего: столбик «поле — прочерк»
+       только мешал бы читать соседнюю колонку. */
+    if((side==="before" ? n.before : n.after) == null) return `<div class="diff-detail-cell"></div>`;
+    const vals = n.fields.map(f=>{
+      const v = side==="before" ? f.before : f.after;
+      const other = side==="before" ? f.after : f.before;
+      const gone = side==="before" && String(v ?? "") !== String(other ?? "");
+      if(v == null || v === "") return `<div class="diff-kv"><span class="k">${escapeHtml(f.cap)}</span><span class="v muted">—</span></div>`;
+      return `<div class="diff-kv"><span class="k">${escapeHtml(f.cap)}</span><span class="v${gone?" gone":""}">${escapeHtml(String(v))}</span></div>`;
+    }).join("");
+    return `<div class="diff-detail-cell" style="${pad}">${vals || `<span class="diff-absent">—</span>`}</div>`;
+  };
+
+  const row = (n, path, depth) => {
+    const kids = n.children.length, flds = n.fields.length;
+    const foldable = !!(kids || flds);
+    /* Раскрыто по умолчанию то, что изменилось: человек пришёл смотреть изменения,
+       и прятать их за второй клик незачем. Неизменное свёрнуто. Собственный клик
+       всегда сильнее этого правила. */
+    const auto = foldable && n.status !== "same";
+    const stored = state.mergeDiffOpen[path];
+    const open = stored === undefined ? auto : stored;
+    return `
+      <div class="diff-pair${foldable?" foldable":""}"
+           ${foldable?`data-action="merge-diff-toggle" data-path="${escapeHtml(path)}" data-open="${open?1:0}" tabindex="0" role="button" aria-expanded="${open}"`:""}
+           ${n.status==="same" ? "" : `title="${DIFF_LABEL[n.status]}"`}>
+        ${cell("before", n, depth, open, foldable)}
+        ${cell("after",  n, depth, open, foldable)}
+      </div>
+      ${open && flds ? `<div class="diff-pair detail">${detailCell("before", n, depth)}${detailCell("after", n, depth)}</div>` : ""}
+      ${open && kids ? n.children.map((c,i)=>row(c, path+"."+i, depth+1)).join("") : ""}`;
   };
 
   return `
@@ -12989,45 +13164,56 @@ function MergeDiffOverlay(){
     <div class="wizard-head">
       <button class="cj-head-back" data-action="merge-diff-close" title="Назад">${icon("chevronLeft")}</button>
       <div class="cj-head-titles">
-        <h2>${isImport ? "Что изменится после импорта" : "Сравнение веток"}</h2>
+        <h2>${isImport ? "Сравнение с файлом" : "Сравнение веток"}</h2>
         <div class="sub">${isImport
           ? `Файл → ветка «${escapeHtml(d.target)}» · ${escapeHtml(d.title||"")}`
           : `«${escapeHtml(d.source)}» → «${escapeHtml(d.target)}» · ${escapeHtml(d.title||"")}`}</div>
       </div>
       <div class="cj-head-spacer"></div>
-      ${empty ? "" : `<div class="diff-summary">${chip("added",t.added)}${chip("changed",t.changed)}${chip("removed",t.removed)}</div>`}
+      <div class="diff-summary">
+        <span class="diff-chip added">Добавится <b>${t.added}</b></span>
+        <span class="diff-chip changed">Изменится <b>${t.changed}</b></span>
+        <span class="diff-chip removed">Исчезнет <b>${t.removed}</b></span>
+      </div>
     </div>
 
     <div class="wizard-body diff-body">
-      <p class="diff-lead">${isImport
-        ? `Так изменится ветка «${escapeHtml(d.target)}» после импорта. Состав заменяется целиком тем, что приехало из файла`
-        : `Так изменится ветка «${escapeHtml(d.target)}» после объединения. Состав заменяется целиком составом «${escapeHtml(d.source)}»`}</p>
-      ${empty ? `
+      <p class="diff-lead">${changes
+        ? `Слева состав ветки «${escapeHtml(d.target)}» сейчас, справа — тот, что встанет на его место${isImport ? " из файла" : ` из «${escapeHtml(d.source)}»`}. Сверь обе стороны и объединяй`
+        : (isImport
+            ? `Состав из файла совпадает с составом ветки «${escapeHtml(d.target)}»`
+            : `Между «${escapeHtml(d.source)}» и «${escapeHtml(d.target)}» нет расхождений — объединять нечего`)}</p>
+      ${!groups.length ? `
         <div class="diff-empty">
-          <h3>${isImport ? "Изменений нет" : "Ветки совпадают"}</h3>
-          <p>${isImport
-            ? `То, что приехало из файла, совпадает с составом ветки «${escapeHtml(d.target)}»`
-            : `Между «${escapeHtml(d.source)}» и «${escapeHtml(d.target)}» нет расхождений — объединять нечего`}</p>
-        </div>` :
-        groups.map(g=>{
-          /* Группы раскрыты по умолчанию: человек пришёл смотреть изменения.
-             Свёрнута только та, по которой он сам кликнул. */
-          const collapsed = state.mergeDiffGroup === g.id;
-          return `
-          <section class="diff-group">
-            <div class="diff-group-head" data-action="merge-diff-group" data-group="${escapeHtml(g.id)}" tabindex="0" role="button" aria-expanded="${!collapsed}">
-              <span class="diff-caret${collapsed?"":" open"}">${icon("chevronRight", 18)}</span>
-              <h3>${escapeHtml(g.title)}</h3>
-              <span class="diff-count">${diffCount(g.nodes)}</span>
-            </div>
-            ${collapsed ? "" : `<div class="diff-list">${g.nodes.map((n,i)=>node(n, g.id+"."+i)).join("")}</div>`}
-          </section>`;
-        }).join("")}
+          <h3>Сравнивать нечего</h3>
+          <p>Обе ветки пустые: состав ещё не загружен ни в одну из них</p>
+        </div>` : `
+        <div class="ac-tabs-wrap diff-tabs">
+          <div class="ac-tabs-track">
+            ${groups.map(g=>{
+              const n = diffCount(g.nodes);
+              return `<div class="page-tab ${g.id===active.id?"active":""}" style="white-space:nowrap;" data-action="merge-diff-group" data-group="${escapeHtml(g.id)}" tabindex="0" role="button">
+                ${escapeHtml(g.title)}${n?`<span class="diff-count">${n}</span>`:""}
+              </div>`;
+            }).join("")}
+          </div>
+          <div class="ac-tabs-fade left"></div>
+          <div class="ac-tabs-fade right"></div>
+          <button class="ac-tabs-btn left" data-action="ac-tabs-scroll" data-dir="left" title="Прокрутить влево">${icon("chevronLeft")}</button>
+          <button class="ac-tabs-btn right" data-action="ac-tabs-scroll" data-dir="right" title="Прокрутить вправо">${icon("chevronRight")}</button>
+        </div>
+        <div class="diff-split">
+          <div class="diff-split-head">
+            <div class="diff-side-cap">${leftCap}</div>
+            <div class="diff-side-cap">${rightCap}</div>
+          </div>
+          ${active.nodes.map((n,i)=>row(n, active.id+"."+i, 0)).join("")}
+        </div>`}
     </div>
 
     <div class="wizard-foot">
       <button class="btn btn-outline" data-action="merge-diff-close">Назад</button>
-      <button class="btn btn-primary" data-action="merge-diff-apply" ${empty&&!isImport?"disabled":""}>${isImport ? "Применить" : "Объединить"}</button>
+      <button class="btn btn-primary" data-action="merge-diff-apply" ${!changes&&!isImport?"disabled":""}>${isImport ? "Применить" : "Объединить"}</button>
     </div>
   </div>
   ${state.mergeDiffConfirm ? CjConfirmDialog({
@@ -18212,16 +18398,14 @@ function handleAction(action, el){
     }
     /* ── страница сравнения веток ── */
     case "merge-diff-toggle": {
-      const k = el.dataset.path;
-      state.mergeDiffOpen[k] = !state.mergeDiffOpen[k];
+      /* Раскрытие по умолчанию зависит от строки (изменённые раскрыты), поэтому
+         переключаем от того, что человек видит, а не от пустого значения в state. */
+      state.mergeDiffOpen[el.dataset.path] = el.dataset.open !== "1";
       render();
       break;
     }
     case "merge-diff-group": {
-      const g = el.dataset.group;
-      /* Группы раскрыты по умолчанию: человек пришёл смотреть изменения, а не
-         раскрывать их по одной. Свёрнутой держим ту, по которой кликнули. */
-      state.mergeDiffGroup = state.mergeDiffGroup === g ? null : g;
+      state.mergeDiffGroup = el.dataset.group;
       render();
       break;
     }
@@ -18236,7 +18420,12 @@ function handleAction(action, el){
       const dd = state.mergeDiff;
       /* У импорта «нет изменений» — не повод запрещать применение: файл мог приехать
          тем же составом, и человек всё равно вправе его записать. */
-      if(dd && dd.kind !== "ucimport" && !mergeDiffGroups(dd).length) break;
+      /* Группы теперь показывают и неизменившийся состав, поэтому «объединять нечего»
+         считается по сводке изменений, а не по наличию групп. */
+      if(dd && dd.kind !== "ucimport"){
+        const tt = diffTotals(mergeDiffGroups(dd));
+        if(!(tt.added + tt.changed + tt.removed)) break;
+      }
       state.mergeDiffConfirm = true;
       render();
       break;
@@ -18378,8 +18567,8 @@ function handleAction(action, el){
     case "e2e-merge-submit": {
       const m = state.e2eMergePanel;
       if(!m || !m.source || !m.target || m.source===m.target) break;
-      state.e2eMergeConfirm = true;
       state.popover = null;
+      openMergeDiff({kind:"e2e", code:m.code, source:m.source, target:m.target, title:m.code});
       render();
       break;
     }
