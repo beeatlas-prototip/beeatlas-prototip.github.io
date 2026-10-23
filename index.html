@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=6">
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261022-231626">
+<meta name="beeatlas-build" content="20261023-104621">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -4596,7 +4596,7 @@ var CJ_LIST=[];
       /* Встреча 22.10: каталог показывает «только те CJ, у которых есть эта ветка,
          и в том составе, в котором они существуют в этой ветке». У части CJ ранних
          веток ещё нет — в design они просто не появятся. */
-      branches: (i%4===0) ? ['main'] : (i%4===1 ? ['develop','main'] : ['design','develop','main']),
+      branches: brInit((i%4===0) ? ['main'] : (i%4===1 ? ['develop','main'] : ['design','develop','main'])),
       bi:[]
     };
     for(var b=0;b<3;b++){
@@ -4607,7 +4607,7 @@ var CJ_LIST=[];
         code:'BI.00.00.'+pad2(i+1)+'.'+(b+1),
         /* Состав CJ по ветке: в design у каждого CJ только первые BI — ранняя ветка
            описана не целиком. */
-        branches: b===0 ? ['design','develop','main'] : (b===1 ? ['develop','main'] : ['main']),
+        branches: brInit(b===0 ? ['design','develop','main'] : (b===1 ? ['develop','main'] : ['main'])),
         steps:[]
       };
       for(var s=0;s<2;s++){
@@ -4646,48 +4646,94 @@ function findStep(id){ return ALL_STEPS.find(function(s){return s.id===id;}); }
 var E2E_SOURCES = ['PlantUML','Structurizr','Sparx'];
 var E2E_LIST_COMBINED = E2E_TITLES.map(function(t,i){
   return {id:'e2e-c'+i, type:'e2e', title:t, code:'E2E.00.00.'+pad2(i+1), createdAt:daysAgoStr(60-i),
-          source:E2E_SOURCES[i%E2E_SOURCES.length], branch:'main', versions:[], callsOffset:0};
+          branches:{main:catEmptySnap(E2E_SOURCES[i%E2E_SOURCES.length])}};
 });
 var E2E_LIST_CALLS = E2E_CALLS_ONLY.map(function(t,i){
   return {id:'e2e-o'+i, type:'e2e', title:t, mono:true, code:'E2E.00.01.'+pad2(i+1), createdAt:daysAgoStr(45-i),
-          source:E2E_SOURCES[(i+1)%E2E_SOURCES.length], branch:'main', versions:[], callsOffset:0};
+          branches:{main:catEmptySnap(E2E_SOURCES[(i+1)%E2E_SOURCES.length])}};
 });
 function findE2e(id){
   return E2E_LIST_COMBINED.concat(E2E_LIST_CALLS).find(function(e){return e.id===id;});
 }
 
+/* ---------- контракт ветвления ----------
+   F-5: у e2e в коде два пути — каталог (E2E_LIST_*) и карточка в разделе проектов
+   (E2E_REGISTRY), — и состав ветки они хранили по-разному. Каталог держал открытую
+   ветку прямо в записи, а остальные снимками в branchStore, и при открытии карточки
+   делал чекаут: записывал текущую ветку на место и выкладывал нужную в поля записи.
+   Из-за этого запись знала только одну ветку за раз, и список каталога показывал
+   статус той ветки, которую последней открыли, а не выбранной.
+
+   Правило теперь одно на оба пути и на любой ветвящийся артефакт каталога:
+
+     a.branches   — состав по веткам: {<ветка>: <снимок>}. Ветка существует ровно
+                    тогда, когда у неё есть снимок;
+     a.branchMeta — метаданные пользовательских веток (у системных их нет).
+
+   Что лежит в снимке — дело артефакта (§1, принцип 1-2: логический якорь — код,
+   название, дата создания — на ветке не висит): у e2e каталога это загрузчик канона,
+   история его загрузок и длина цепочки вызовов, у реестра — выгруженный канон,
+   а у CJ и BI состава нет вовсе и снимок пустой: ветка значит только «заведён здесь».
+   Открытой ветки запись не помнит — её спрашивают снаружи (state.branch в каталоге,
+   маршрут на карточке), поэтому одна и та же запись читается сразу в двух ветках
+   и чекаут не нужен. Контракт объявлен в скрипте каталога, а не в основном: тот
+   обёрнут в IIFE и его функции каталогу не видны, обратное — видно. */
+var BRANCH_SYSTEM_IDS=['design','develop','main'];
+function brClone(x){ return JSON.parse(JSON.stringify(x)); }
+/* Короткая запись для артефактов без состава: только перечень веток. */
+function brInit(ids){
+  var m={}; (ids||[]).forEach(function(b){ m[b]={}; }); return m;
+}
+/* Системные ветки идут в своём порядке, пользовательские — следом, как их завели. */
+function brAll(a){
+  var all=(a&&a.branches)?Object.keys(a.branches):[];
+  return BRANCH_SYSTEM_IDS.filter(function(b){ return all.indexOf(b)>=0; })
+    .concat(all.filter(function(b){ return BRANCH_SYSTEM_IDS.indexOf(b)<0; }));
+}
+function brHas(a,b){ return !!(a&&a.branches&&a.branches[b||'main']); }
+function brSnap(a,b){ return (a&&a.branches&&a.branches[b||'main'])||null; }
+function brMeta(a,id){
+  var m=a&&a.branchMeta&&a.branchMeta[id];
+  return m||{id:id, kind:'system', parent:null, createdBy:null, createdAt:null};
+}
+function brList(a){ return brAll(a).map(function(id){ return brMeta(a,id); }); }
+/* Пользовательская ветка заводится клоном состава родителя — тем же способом, что
+   в Библиотеке CJ и у Use Case. Автора и день передаёт вызывающий: в каталоге и в
+   основном скрипте они берутся из разных мест. */
+function brCreate(a,name,parent,author,day){
+  if(!a||!a.branches||!a.branches[parent]||a.branches[name]) return false;
+  a.branches[name]=brClone(a.branches[parent]);
+  a.branchMeta=a.branchMeta||{};
+  a.branchMeta[name]={id:name, kind:'user', parent:parent, createdBy:author||null, createdAt:day||null};
+  return true;
+}
+/* Объединение — только замена: с 22.10 это единственная стратегия у всех артефактов,
+   выбор убран из интерфейса. */
+function brMerge(a,source,target){
+  if(!a||!a.branches||!a.branches[source]||!a.branches[target]||source===target) return false;
+  a.branches[target]=brClone(a.branches[source]);
+  return true;
+}
+function brDelete(a,id){
+  if(!a||!a.branches||brMeta(a,id).kind!=='user') return false;
+  delete a.branches[id];
+  if(a.branchMeta) delete a.branchMeta[id];
+  return true;
+}
+
 /* ---------- ветки e2e в каталоге ----------
-   §2.1: e2e — ветвящийся артефакт. В каталоге ветка была подписью во вкладке
-   «Источник» и ни на что не влияла; теперь это переключатель, а состав ветки
-   свой: загрузчик канона и история его загрузок. Приём тот же, что у веток
-   Use Case: состав открытой ветки лежит прямо в записи, остальные — снимками
-   в branchStore. За счёт этого вкладки, загрузка PlantUML и история версий
-   продолжают читать и писать e.source / e.versions напрямую и становятся
-   ветко-зависимыми без переписывания. Логический якорь — код, название,
-   дата создания — на ветке не висит. */
-var E2E_CAT_SYSTEM_BRANCHES=['design','develop','main'];
-/* F-1: в ветке каталога лежал только загрузчик канона и история его загрузок, а сам
-   состав сценария — цепочка вызовов — был общим. Из-за этого требование встречи
-   «в том составе, в котором они существуют в этой ветке» (24:07) не выполнялось:
-   ветку переключали, а вызовы оставались те же. Длина цепочки теперь тоже свойство
-   ветки: ранняя ветка описана не целиком. */
-var E2E_CAT_BRANCH_FIELDS=['source','versions','callsOffset'];
-function catCapture(e){
-  var s={}; E2E_CAT_BRANCH_FIELDS.forEach(function(f){ s[f]=e[f]; }); return s;
+   Состав ветки каталожного e2e: загрузчик канона, история его загрузок и длина
+   цепочки вызовов.
+   F-1: раньше в ветке лежал только загрузчик с историей, а сама цепочка вызовов была
+   общей. Из-за этого требование встречи «в том составе, в котором они существуют в
+   этой ветке» (24:07) не выполнялось: ветку переключали, а вызовы оставались те же.
+   Длина цепочки — тоже свойство ветки: ранняя ветка описана не целиком. */
+function catEmptySnap(source, callsOffset){
+  return {source:source||'PlantUML', versions:[], callsOffset:callsOffset||0};
 }
-function catBranches(e){
-  return E2E_CAT_SYSTEM_BRANCHES.filter(function(b){
-    return e.branch===b || (e.branchStore && e.branchStore[b]);
-  });
-}
-function catHasBranch(e,b){ return catBranches(e).indexOf(b)>=0; }
-function catApplyBranch(e,b){
-  if(!catHasBranch(e,b) || b===e.branch) return;
-  e.branchStore[e.branch]=catCapture(e);
-  var snap=e.branchStore[b];
-  E2E_CAT_BRANCH_FIELDS.forEach(function(f){ e[f]=snap[f]; });
-  e.branch=b;
-}
+/* Ветку на весь каталог задаёт один переключатель (F-2), поэтому по умолчанию
+   снимок берётся для state.branch. */
+function catSnap(e,b){ return brSnap(e, b||state.branch); }
 
 /* call tree shared by BI-step page and E2E page */
 var CALL_TREE = (function(){
@@ -4861,7 +4907,7 @@ function validatePlantUml(text){
     var e=findE2e(s.id); if(!e) return;
     s.versions.forEach(function(v,vi){
       var report=validatePlantUml(v.text);
-      e.versions.push({
+      catSnap(e,'main').versions.push({
         version:vi+1, date:daysAgoStr(v.daysAgo), author:v.author, comment:v.comment,
         sourceText:v.text, status: report.hasWarnings?'warn':'ok', report:report
       });
@@ -4872,17 +4918,16 @@ function validatePlantUml(text){
 /* Ветки заводятся не у каждого e2e: часть сценариев живёт только в main.
    Иначе переключатель всегда показывал бы три заполненные ветки и не объяснил
    бы главного — состав в каждой ветке заводится отдельно, и в соседней
-   сценария может не быть вовсе. Идёт после seedE2ePlantUml: снимок main
-   должен застать уже загруженные версии. */
+   сценария может не быть вовсе.
+   Снимок main записи уже носят с собой, поэтому порядок с seedE2ePlantUml здесь
+   больше не важен: засев дописывает ветки, а не пересобирает весь состав. */
 (function seedE2eCatBranches(){
   E2E_LIST_COMBINED.concat(E2E_LIST_CALLS).forEach(function(e,i){
-    e.branch='main';
-    e.branchStore={main:catCapture(e)};
     /* В ранних ветках канон обычно приезжает другим загрузчиком и ещё не
        выгружен — отсюда пустая история: статус станет «Нет версий», и это
        правда про ветку, а не заглушка. */
-    if(i%2===0) e.branchStore.design={source:'Structurizr', versions:[], callsOffset:4};
-    if(i%3===0) e.branchStore.develop={source:'Sparx', versions:[], callsOffset:2};
+    if(i%2===0) e.branches.design=catEmptySnap('Structurizr', 4);
+    if(i%3===0) e.branches.develop=catEmptySnap('Sparx', 2);
   });
 })();
 
@@ -5066,11 +5111,10 @@ function refreshDashboard(stepId){
   render();
   toast('Дашборд обновлён');
 }
-function nowStr(){
-  var d=new Date();
-  function p(n){return (n<10?'0':'')+n;}
-  return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+', '+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
-}
+/* Одно написание даты на весь каталог: «23.10.2026, 10:30», как у daysAgoStr. Раньше
+   здесь был ISO с секундами, и у записи, созданной руками, дата читалась иначе, чем
+   у засеянных рядом. */
+function nowStr(){ return daysAgoStr(0); }
 
 function openPanel(type,stepId){
   state.panel={type:type,stepId:stepId,value:'',err:null,success:null};
@@ -5199,7 +5243,11 @@ function submitCreateE2e(){
   var p=state.panel; if(!p) return;
   var val=(p.value||'').trim();
   if(!val){ p.err='Введи название шага Е2Е-сценария'; render(); return; }
-  var e={id:uid('e2e-c'), type:'e2e', title:val, code:'E2E.00.00.'+pad2(E2E_LIST_COMBINED.length+1), createdAt:nowStr(), versions:[]};
+  /* Заводится в открытой ветке, и только в ней: состав ветки заводят отдельно.
+     Раньше запись создавалась без веток вовсе и в список не попадала. */
+  var e={id:uid('e2e-c'), type:'e2e', title:val, code:'E2E.00.00.'+pad2(E2E_LIST_COMBINED.length+1),
+         createdAt:nowStr(), branches:{}};
+  e.branches[state.branch]=catEmptySnap();
   E2E_LIST_COMBINED.push(e);
   closePanel();
   selectE2e(e.id);
@@ -5276,8 +5324,10 @@ function backToEdit(){ var p=state.panel; if(p){ p.stage='edit'; render(); } }
 function saveVersion(){
   var p=state.panel; if(!p||!p.report||p.report.blocking) return;
   var e=findE2e(p.e2eId); if(!e) return;
-  var vNum=e.versions.length+1;
-  e.versions.push({
+  /* Версия ложится в ветку, открытую в каталоге: загрузка канона — её состав. */
+  var snap=catSnap(e); if(!snap) return;
+  var vNum=snap.versions.length+1;
+  snap.versions.push({
     version:vNum, date:nowStr(), author:'Юзер Сеанс', comment:'',
     sourceText:p.value, status:p.report.hasWarnings?'warn':'ok', report:p.report
   });
@@ -5290,7 +5340,8 @@ function openVersionPanel(e2eId,version){
 }
 function downloadVersionFile(e2eId,version){
   var e=findE2e(e2eId); if(!e) return;
-  var v=e.versions.find(function(x){return x.version===version;}); if(!v) return;
+  var snap=catSnap(e); if(!snap) return;
+  var v=snap.versions.find(function(x){return x.version===version;}); if(!v) return;
   var blob=new Blob([v.sourceText],{type:'text/plain;charset=utf-8'});
   var url=URL.createObjectURL(blob);
   var a=document.createElement('a');
@@ -5393,11 +5444,15 @@ function renderCatalog(){
       '<button class="'+(state.mode==='e2e'?'on':'')+'" onclick="setMode(\'e2e\')">Шаги Е2Е-сценария</button>'+
     '</div>'+
     /* B-1: общий переключатель ветки на весь каталог — «здесь глобально где-то должна
-       быть ветки E2E и CJ». Он задаёт и отбор списка, и то, какие связи видны на шаге. */
+       быть ветки E2E и CJ». Он задаёт и отбор списка, и то, какие связи видны на шаге.
+       Чипы, а не выпадающий список: ветки известны, их три, и по docs/behaviour.md выбор
+       одного значения из ≤ 7 известных — это чипы («селект: лишний клик там, где всё
+       видно сразу»). На карточке e2e в разделе проектов список веток не фиксирован —
+       туда заводят пользовательские, и там стоит поле-переключатель с удалением внутри. */
     '<div class="cat-branch-row">'+
       '<span class="cat-branch-lbl">Ветка</span>'+
       '<div class="pill-toggle cat-branch-chips">'+
-        CAT_BRANCHES.map(function(b){
+        BRANCH_SYSTEM_IDS.map(function(b){
           return '<button class="'+(state.branch===b?'on':'')+'" onclick="setCatBranch(\''+b+'\')">'+esc(b)+'</button>';
         }).join('')+
       '</div>'+
@@ -5423,7 +5478,6 @@ function renderCatalog(){
 }
 function textMatches(t,q){ return t.toLowerCase().indexOf(q)>=0; }
 
-var CAT_BRANCHES=['design','develop','main'];
 function setCatBranch(b){
   if(state.branch===b) return;
   state.branch=b;
@@ -5432,8 +5486,10 @@ function setCatBranch(b){
   state.stepImpl={}; state.implMore={}; state.expandedCalls={}; state.selectedCall={};
   persist(); render();
 }
+/* Заведён ли в открытой ветке каталога. Запись без веток не ветвится вовсе
+   (шаг BI) — такая есть везде. */
 function inBranch(x){
-  return !x.branches || x.branches.indexOf(state.branch) >= 0;
+  return !x.branches || brHas(x, state.branch);
 }
 function renderCjList(){
   var q=state.cjSearch.trim().toLowerCase();
@@ -5496,23 +5552,27 @@ function renderCjList(){
   return out;
 }
 
-function statusPillFor(e){
-  if(!e.versions || !e.versions.length) return '<span class="pillstat neutral">Нет версий</span>';
-  var last=e.versions[e.versions.length-1];
+/* Статус последней загрузки — свойство ветки, поэтому считается по снимку:
+   раньше здесь читались поля записи, то есть ветка, открытая последней, и в
+   списке у неиспытанных сценариев стоял статус чужой ветки. */
+function statusPillFor(snap){
+  if(!snap || !snap.versions.length) return '<span class="pillstat neutral">Нет версий</span>';
+  var last=snap.versions[snap.versions.length-1];
   return last.status==='ok' ? '<span class="pillstat ok">Валидно</span>' : '<span class="pillstat warn">Есть замечания</span>';
 }
 function renderE2eList(){
   var q=state.e2eSearch.trim().toLowerCase();
   /* F-3: ветка отбирает и список E2E — у сценария, не заведённого в этой ветке,
-     показывать нечего. Правило то же, что у CJ: catHasBranch знает, в каких ветках
+     показывать нечего. Правило то же, что у CJ: inBranch знает, в каких ветках
      сценарий существует. */
   var items=E2E_LIST_COMBINED.filter(function(e){
-    return (!q || textMatches(e.title,q)) && catHasBranch(e, state.branch);
+    return (!q || textMatches(e.title,q)) && inBranch(e);
   });
   if(!items.length) return '<div class="empty-list">Нет совпадений</div>';
   return items.map(function(e){
     var sel=state.selected && state.selected.type==='e2e' && state.selected.id===e.id;
-    var pill = (e.versions && e.versions.length) ? statusPillFor(e) : '';
+    var snap=catSnap(e);
+    var pill = (snap && snap.versions.length) ? statusPillFor(snap) : '';
     return '<div class="flat-row'+(sel?' selected':'')+'" onclick="selectE2e(\''+e.id+'\')">'+
       '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;'+(e.mono?'font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;':'')+'">'+
         '<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+esc(e.title)+'</span>'+pill+
@@ -5564,15 +5624,15 @@ function selectionMissing(){
   var sel=state.selected; if(!sel) return null;
   if(sel.type==='cj'){
     var cj=findCj(sel.id);
-    if(cj && !inBranch(cj)) return branchMissingState(cj.title, cj.branches);
+    if(cj && !inBranch(cj)) return branchMissingState(cj.title, brAll(cj));
   }
   if(sel.type==='step'){
     var st=findStep(sel.id);
     if(st){
       var bi=ALL_BI.find(function(b){ return b.id===st.parentBi; });
       var cj2=findCj(st.parentCj);
-      if(cj2 && !inBranch(cj2)) return branchMissingState(cj2.title, cj2.branches);
-      if(bi && !inBranch(bi)) return branchMissingState(bi.title, bi.branches);
+      if(cj2 && !inBranch(cj2)) return branchMissingState(cj2.title, brAll(cj2));
+      if(bi && !inBranch(bi)) return branchMissingState(bi.title, brAll(bi));
     }
   }
   return null;
@@ -5756,10 +5816,10 @@ function ucStatusPill(status){
 }
 function renderE2ePage(id){
   var e=findE2e(id); if(!e) return renderEmptyState();
-  /* Сценарий мог открыться в другой ветке — приводим его состав к текущей ветке
-     каталога, иначе вкладка «Источник» покажет чужую историю загрузок. */
-  if(!catHasBranch(e, state.branch)) return branchMissingState(e.title, catBranches(e));
-  catApplyCurrentBranch(e);
+  if(!inBranch(e)) return branchMissingState(e.title, brAll(e));
+  /* Состав берётся снимком открытой ветки каталога. Приводить запись к ветке
+     больше не нужно: открытой ветки она не помнит. */
+  var snap=catSnap(e);
   var active=state.activeTab[id]||'calls';
   var linkedCj=CJ_LIST.slice(0,3);
   var linkedSteps=ALL_STEPS.slice(0,3);
@@ -5791,44 +5851,32 @@ function renderE2ePage(id){
       {key:'source',label:'Источник'}
     ],active);
 
-  if(active==='calls') html+=renderCallsTab(e.callsOffset||0);
+  if(active==='calls') html+=renderCallsTab(snap.callsOffset||0);
   else if(active==='cj') html+='<div class="related-list">'+linkedCj.map(function(c){
       return '<div class="related-item"><a onclick="selectCj(\''+c.id+'\')">'+esc(c.title)+'</a><span class="meta">'+esc(c.code)+'</span></div>';
     }).join('')+'</div>';
   else if(active==='steps') html+='<div class="related-list">'+linkedSteps.map(function(s){
       return '<div class="related-item"><a onclick="selectStep(\''+s.id+'\')">'+esc(s.title)+'</a><span class="meta">'+esc(s.code)+'</span></div>';
     }).join('')+'</div>';
-  else html+=renderSourceTab(e);
+  else html+=renderSourceTab(e, snap);
   return html;
 }
 
-/* Ветка выбирается чипами, а не выпадающим списком: ветки известны, их три,
-   и по docs/behaviour.md выбор одного значения из ≤ 7 известных — это чипы
-   («селект: лишний клик там, где всё видно сразу»). На карточке e2e в разделе
-   проектов список веток не фиксирован — туда заводят пользовательские, и там
-   стоит поле-переключатель с удалением внутри.
-   Ветка, в которой сценарий не заведён, из ряда не исчезает, а стоит
-   недоступной: так видно, что состав ветки заводят отдельно. */
-/* Карточка показывает состав текущей ветки каталога. Раньше ветку переключали прямо
-   здесь (renderE2eBranchRow), теперь источник один — state.branch. */
-function catApplyCurrentBranch(e){
-  if(e && catHasBranch(e, state.branch) && e.branch !== state.branch) catApplyBranch(e, state.branch);
-}
 /* ---- вкладка «Источник» (внутри карточки E2E-сценария) ----
    Загрузчиков канона несколько, поэтому вкладка называется по смыслу, а не по
    одному из них. Ручная загрузка остаётся только у PlantUML: dynamic view
    и модель Sparx приезжают пайплайном, и кнопка «загрузить» там обманывала бы.
    Загрузчик и история загрузок — свойства ветки, а дата создания карточки нет;
    ветку называем в заголовке, иначе ряд полей читается как общий для всего e2e. */
-function renderSourceTab(e){
-  var src=e.source||'PlantUML';
+function renderSourceTab(e, snap){
+  var src=snap.source||'PlantUML';
   var html='<div class="card">'+
-    '<div class="card-title">Описание процесса в ветке '+esc(e.branch||'main')+'</div>'+
+    '<div class="card-title">Описание процесса в ветке '+esc(state.branch)+'</div>'+
     '<div class="field-grid">'+
       '<div class="field"><div class="lbl">Источник</div><div class="val">'+esc(src)+'</div></div>'+
       '<div class="field"><div class="lbl">Дата создания</div><div class="val">'+esc(e.createdAt)+'</div></div>'+
-      '<div class="field"><div class="lbl">Версий</div><div class="val">'+e.versions.length+'</div></div>'+
-      '<div class="field"><div class="lbl">Последняя валидация</div><div class="val">'+statusPillFor(e)+'</div></div>'+
+      '<div class="field"><div class="lbl">Версий</div><div class="val">'+snap.versions.length+'</div></div>'+
+      '<div class="field"><div class="lbl">Последняя валидация</div><div class="val">'+statusPillFor(snap)+'</div></div>'+
     '</div>'+
     (src==='PlantUML'
       ? '<div class="btnrow" style="margin-top:4px;">'+
@@ -5836,7 +5884,7 @@ function renderSourceTab(e){
         '</div>'
       : '<p class="impl-empty" style="margin:4px 0 0;">Канон приезжает пайплайном выгрузки архитектуры, вручную его здесь не загружают</p>')+
   '</div>';
-  html+=renderVersionHistory(e);
+  html+=renderVersionHistory(e, snap);
   return html;
 }
 
@@ -6021,13 +6069,13 @@ function renderObsTab(stepId){
 }
 
 /* ---------------- PlantUML: история версий / отчёт валидации ---------------- */
-function renderVersionHistory(proc){
-  if(!proc.versions.length){
+function renderVersionHistory(e, snap){
+  if(!snap.versions.length){
     return '<div class="card"><div class="card-title">История загрузок</div>'+
       '<div style="color:var(--text-secondary);font-size:15px;">Ещё не загружено ни одной версии PlantUML для этого процесса</div>'+
     '</div>';
   }
-  var rows=proc.versions.slice().reverse().map(function(v){
+  var rows=snap.versions.slice().reverse().map(function(v){
     var pill=v.status==='ok'?'<span class="pillstat ok">Валидно</span>':'<span class="pillstat warn">Есть замечания</span>';
     return '<tr>'+
       '<td><span class="vbadge">v'+v.version+'</span></td>'+
@@ -6035,8 +6083,8 @@ function renderVersionHistory(proc){
       '<td>'+esc(v.author)+'</td>'+
       '<td>'+pill+'</td>'+
       '<td style="text-align:right;white-space:nowrap;">'+
-        '<button class="btn ghost" style="padding:6px 10px;" onclick="openVersionPanel(\''+proc.id+'\','+v.version+')">Отчёт</button>'+
-        '<button class="btn ghost" style="padding:6px 10px;" title="Скачать" onclick="downloadVersionFile(\''+proc.id+'\','+v.version+')">'+ic('download',18)+'</button>'+
+        '<button class="btn ghost" style="padding:6px 10px;" onclick="openVersionPanel(\''+e.id+'\','+v.version+')">Отчёт</button>'+
+        '<button class="btn ghost" style="padding:6px 10px;" title="Скачать" onclick="downloadVersionFile(\''+e.id+'\','+v.version+')">'+ic('download',18)+'</button>'+
       '</td>'+
     '</tr>';
   }).join('');
@@ -6142,7 +6190,8 @@ function renderImportModal(){
 
   if(p.type==='viewVersion'){
     var vproc=findE2e(p.e2eId);
-    var v=vproc?vproc.versions.find(function(x){return x.version===p.version;}):null;
+    var vsnap=vproc?catSnap(vproc):null;
+    var v=vsnap?vsnap.versions.find(function(x){return x.version===p.version;}):null;
     if(!v){
       return '<div class="import-backdrop"><div class="import-head"><h3>Версия PlantUML</h3><button class="panel-close" onclick="closePanel()">'+ic('x',18)+'</button></div>'+
         '<div class="import-body"><div class="import-body-inner">Версия не найдена</div></div>'+
@@ -6174,7 +6223,8 @@ function renderImportModal(){
     body='<div class="import-body-inner">'+renderResultBody(p.report)+'</div>';
     var canSave=!p.report.blocking;
     var proc=findE2e(p.e2eId);
-    var nextV=proc?proc.versions.length+1:1;
+    var psnap=proc?catSnap(proc):null;
+    var nextV=psnap?psnap.versions.length+1:1;
     foot='<button class="btn" onclick="backToEdit()">Назад</button>'+
       '<button class="btn primary" '+(canSave?'':'disabled')+' onclick="saveVersion()">Сохранить'+(canSave?(' версию '+nextV):'')+'</button>';
   } else {
@@ -6847,24 +6897,18 @@ function implInfo(code, branch){
   const a = E2E_REGISTRY[code];
   if(!a) return null;
   const br = branch || "main";
-  const snap = a.branches[br];
+  const snap = brSnap(a, br);
   if(!snap) return null;
   return Object.assign({code, product:a.product, branch:br}, snap);
 }
 /* Ветки, в которых этот e2e существует. Системные идут в своём порядке,
    пользовательские — следом, как их завели. */
-const E2E_SYSTEM_BRANCHES = ["design","develop","main"];
-function e2eBranchesOf(code){
-  const a = E2E_REGISTRY[code];
-  if(!a) return [];
-  const all = Object.keys(a.branches);
-  return E2E_SYSTEM_BRANCHES.filter(b=>all.includes(b))
-    .concat(all.filter(b=>!E2E_SYSTEM_BRANCHES.includes(b)));
-}
-function e2eHasBranch(code, branch){
-  const a = E2E_REGISTRY[code];
-  return !!(a && a.branches[branch||"main"]);
-}
+/* Дальше — тот же контракт ветвления, что и в каталоге (brAll / brHas / brMeta /
+   brCreate / brMerge / brDelete объявлены в скрипте каталога): реестр хранит состав
+   в a.branches, а метаданные пользовательских веток — в a.branchMeta. Здесь остались
+   только обёртки «код → артефакт» и то, что принадлежит именно e2e. */
+function e2eBranchesOf(code){ return brAll(E2E_REGISTRY[code]); }
+function e2eHasBranch(code, branch){ return brHas(E2E_REGISTRY[code], branch); }
 /* Где этот e2e вообще существует — фразой. Нужна там, где привязка не действует
    в открытой ветке: сказать «в этой ветке его нет» и не сказать, где он есть,
    значит оставить человека без следующего шага. Одна ветка — «ветка main»,
@@ -6881,42 +6925,25 @@ function e2eBranchesNote(code){
    Снимок — это выгруженный канон, поэтому `loadedAt` клон наследует от родителя:
    заново его никто не выгружал, и ставить сюда сегодняшнюю дату значило бы
    выдать копию за новую выгрузку. */
-function e2eBranchMeta(code, id){
-  const a = E2E_REGISTRY[code];
-  const m = a && a.branchMeta && a.branchMeta[id];
-  return m || {id, kind:"system", parent:null, createdBy:null, createdAt:null};
-}
-function e2eBranchList(code){
-  return e2eBranchesOf(code).map(id=>e2eBranchMeta(code, id));
-}
+function e2eBranchMeta(code, id){ return brMeta(E2E_REGISTRY[code], id); }
+function e2eBranchList(code){ return brList(E2E_REGISTRY[code]); }
 /* Хвост значения в поле и вторая строка пункта списка. У e2e состав руками
    не правят — его приносит загрузчик канона, поэтому «загружено», а не
    «обновлено», как у Use Case. */
 function e2eBranchUpdNote(code, id){
-  const a = E2E_REGISTRY[code];
-  const snap = a && a.branches[id];
+  const snap = brSnap(E2E_REGISTRY[code], id);
   const day = snap && String(snap.loadedAt||"").split(",")[0];
   return day ? `загружено ${day}` : "состав не загружен";
 }
 function e2eBranchCreate(code, name, parent){
-  const a = E2E_REGISTRY[code];
-  if(!a || !a.branches[parent] || a.branches[name]) return false;
-  a.branches[name] = deepClone(a.branches[parent]);
-  a.branchMeta = a.branchMeta || {};
-  a.branchMeta[name] = {id:name, kind:"user", parent, createdBy:ARCHITECT, createdAt:NOW_DAY};
-  return true;
+  return brCreate(E2E_REGISTRY[code], name, parent, ARCHITECT, NOW_DAY);
 }
 /* Объединение у e2e — только замена. Состав ветки здесь не набор независимых
    элементов, а цепочка вызовов: перенести «те вызовы, которых в цели нет»
    значило бы собрать цепочку, которой ни один канон не выгружал.
    С 22.10 замена — единственная стратегия и у остальных артефактов, выбор убран
    из интерфейса; ветка «add» ниже по коду осталась неиспользуемой. */
-function e2eBranchMerge(code, source, target){
-  const a = E2E_REGISTRY[code];
-  if(!a || !a.branches[source] || !a.branches[target] || source===target) return false;
-  a.branches[target] = deepClone(a.branches[source]);
-  return true;
-}
+function e2eBranchMerge(code, source, target){ return brMerge(E2E_REGISTRY[code], source, target); }
 /* Ветка, в которой читается карточка e2e. Выбор человека живёт в маршруте; пока
    его нет — берётся ветка места, откуда вошли: шаг Use Case читается в своей
    ветке, рабочее место продукта — в ветке приложения. Если в этой ветке
@@ -6928,13 +6955,7 @@ function implPageBranch(code, projectId, ucId){
   if(e2eHasBranch(code, wanted)) return wanted;
   return e2eBranchesOf(code)[0] || "main";
 }
-function e2eBranchDelete(code, id){
-  const a = E2E_REGISTRY[code];
-  if(!a || e2eBranchMeta(code, id).kind!=="user") return false;
-  delete a.branches[id];
-  if(a.branchMeta) delete a.branchMeta[id];
-  return true;
-}
+function e2eBranchDelete(code, id){ return brDelete(E2E_REGISTRY[code], id); }
 /* Начальный метод e2e в ветке — корень дерева вызовов (в модели: связь с пустым
    вызывающим). Автоматические связи считаются только по нему. */
 function e2eStartMethod(code, branch){
@@ -7168,10 +7189,9 @@ const MOCK_ARCHITECT_POOL = [
    и визард редактирования продолжают читать и писать u.scenarios напрямую и становятся
    ветко-зависимыми без переписывания (тот же приём, что activeCjStages() в Библиотеке CJ). */
 const UC_BRANCH_FIELDS = ["scenarios","rawPlantUml"];
-const UC_SYSTEM_BRANCHES = ["design","develop","main"];
 
 function ucSystemBranchMeta(){
-  return UC_SYSTEM_BRANCHES.map(id=>({id, kind:"system", parent:null, createdBy:null, createdAt:null}));
+  return BRANCH_SYSTEM_IDS.map(id=>({id, kind:"system", parent:null, createdBy:null, createdAt:null}));
 }
 function ucBranchList(u){ return u.branches || []; }
 function ucBranchInfo(u, branchId){
@@ -8041,7 +8061,9 @@ function m3svg(d, size){
 function escapeHtml(s){
   return String(s==null?"":s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
-function deepClone(x){ return JSON.parse(JSON.stringify(x)); }
+/* Одна глубокая копия на оба скрипта: объявлена контрактом ветвления в скрипте
+   каталога. Объявлением функции, а не const: deepClone зовут засевы выше по коду. */
+function deepClone(x){ return brClone(x); }
 /* Выгрузка отрисованной диаграммы в файл. Один помощник на оба места выгрузки
    (карточка Use Case и страница реализации): копия этого кода разъехалась бы. */
 function downloadSvg(svg, filename){
@@ -9659,7 +9681,6 @@ const AC_E2E_UC_CASES = [
    НФТ, наблюдаемость. Вкладки «Общая информация», «Фитнес-функции» и «Участие
    в процессах» остаются общими: это факты о продукте и его внешние связи,
    а не предмет проектного ветвления. */
-const AC_SYSTEM_BRANCHES = ["design","develop","main"];
 const AC_BRANCH_FIELDS = ["techCaps","interfaces","technologies","patterns","nfrs","obs"];
 const AC_BRANCH_META = {};     // appId → [{id, kind, parent, createdBy, createdAt}]
 const AC_BRANCHES = {};        // appId → {branchId: {поля AC_BRANCH_FIELDS, updatedAt}}
@@ -9675,7 +9696,7 @@ function acBaseBranchData(){
   };
 }
 function acSystemBranchMeta(){
-  return AC_SYSTEM_BRANCHES.map(id=>({id, kind:"system", parent:null, createdBy:null, createdAt:null}));
+  return BRANCH_SYSTEM_IDS.map(id=>({id, kind:"system", parent:null, createdBy:null, createdAt:null}));
 }
 /* Ветки расходятся на живых данных, а не декоративно: в develop заведён ещё не
    описанный в main интерфейс и технология под него, в design снят паттерн. За счёт
@@ -13064,7 +13085,7 @@ function UcBranchCreatePanel(){
   if(!u) return "";
   return BranchCreatePanel({
     panel, branches:ucBranchList(u), note:b=>ucBranchUpdNote(u,b),
-    reserved:UC_SYSTEM_BRANCHES, inputId:"ucBranchName",
+    reserved:BRANCH_SYSTEM_IDS, inputId:"ucBranchName",
     actions:{close:"uc-close-branch-create", setParent:"uc-branch-set-parent",
              submit:"uc-branch-create-submit", parentField:"uc-branch-parent"},
   });
@@ -13098,7 +13119,7 @@ function E2eBranchCreatePanel(){
   if(!panel || !E2E_REGISTRY[panel.code]) return "";
   return BranchCreatePanel({
     panel, branches:e2eBranchList(panel.code), note:b=>e2eBranchUpdNote(panel.code,b),
-    reserved:E2E_SYSTEM_BRANCHES, inputId:"e2eBranchName",
+    reserved:BRANCH_SYSTEM_IDS, inputId:"e2eBranchName",
     actions:{close:"e2e-close-branch-create", setParent:"e2e-branch-set-parent",
              submit:"e2e-branch-create-submit", parentField:"e2e-branch-parent"},
   });
@@ -13161,7 +13182,7 @@ function AcBranchCreatePanel(){
   const panel = state.acBranchPanel;
   return BranchCreatePanel({
     panel, branches:acBranchList(panel.appId), note:b=>acBranchUpdNote(panel.appId,b),
-    reserved:AC_SYSTEM_BRANCHES, inputId:"acBranchName",
+    reserved:BRANCH_SYSTEM_IDS, inputId:"acBranchName",
     actions:{close:"ac-close-branch-create", setParent:"ac-branch-set-parent",
              submit:"ac-branch-create-submit", parentField:"ac-branch-parent"},
   });
@@ -18300,7 +18321,7 @@ function handleAction(action, el){
       if(!panel) break;
       const name = panel.name.trim();
       const existing = e2eBranchesOf(panel.code).map(b=>b.toLowerCase());
-      if(!name || !panel.parent || E2E_SYSTEM_BRANCHES.includes(name.toLowerCase()) || existing.includes(name.toLowerCase())) break;
+      if(!name || !panel.parent || BRANCH_SYSTEM_IDS.includes(name.toLowerCase()) || existing.includes(name.toLowerCase())) break;
       if(!e2eBranchCreate(panel.code, name, panel.parent)) break;
       state.route.implBranch = name;
       state.e2eBranchPanel = null;
@@ -18405,7 +18426,7 @@ function handleAction(action, el){
       if(!u) break;
       const name = panel.name.trim();
       const existing = ucBranchList(u).map(b=>b.id.toLowerCase());
-      if(!name || !panel.parent || UC_SYSTEM_BRANCHES.includes(name.toLowerCase()) || existing.includes(name.toLowerCase())) break;
+      if(!name || !panel.parent || BRANCH_SYSTEM_IDS.includes(name.toLowerCase()) || existing.includes(name.toLowerCase())) break;
       u.branchStore[name] = deepClone(ucBranchData(u, panel.parent));
       /* NOW_DAY, а не NOW_DATE: дата показывается одной строкой внутри значения поля
          («design, обновлено 18.08.2026»), и время дало бы вторую запятую — как в CJ. */
@@ -19201,7 +19222,7 @@ function handleAction(action, el){
       const panel = state.acBranchPanel;
       const name = panel.name.trim();
       const existing = acBranchList(panel.appId).map(b=>b.id.toLowerCase());
-      if(!name || !panel.parent || AC_SYSTEM_BRANCHES.includes(name.toLowerCase()) || existing.includes(name.toLowerCase())) break;
+      if(!name || !panel.parent || BRANCH_SYSTEM_IDS.includes(name.toLowerCase()) || existing.includes(name.toLowerCase())) break;
       AC_BRANCHES[panel.appId][name] = Object.assign(deepClone(acBranchData(panel.appId, panel.parent)), {updatedAt:NOW_DAY});
       acBranchList(panel.appId).push({id:name, kind:"user", parent:panel.parent, createdBy:ARCHITECT, createdAt:NOW_DATE});
       state.appcat.branch = name;
