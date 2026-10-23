@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=6">
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261023-135854">
+<meta name="beeatlas-build" content="20261023-152036">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -4486,6 +4486,15 @@ function esc(s){
   });
 }
 function uid(prefix){ return prefix+'-'+Math.random().toString(36).slice(2,9); }
+/* Склонение числительных — одно на оба скрипта: объявлено в каталожном, потому что
+   он глобальный, а основной обёрнут в IIFE и его функции каталогу не видны. */
+function ruPlural(n, one, few, many){
+  var mod10 = Math.abs(n)%10, mod100 = Math.abs(n)%100;
+  if(mod100>10 && mod100<20) return many;
+  if(mod10>1 && mod10<5) return few;
+  if(mod10===1) return one;
+  return many;
+}
 
 var CJ_TITLES=[
   "[E2E][WEB][KA] Я, как клиент, купивший eSIM, выполняю саморегистрацию",
@@ -5079,7 +5088,7 @@ function defaultState(){
     /* Ветка каталога. Встреча 22.10: ветка выбирается глобально на экране, где
        пересекаются CJ, E2E и Use Case, и задаёт представление обеим сторонам сразу. */
     branch:'main',
-    branchMenu:false,
+    branchPopover:null,
     cjSearch:'',
     e2eSearch:'',
     renamingE2e:null,
@@ -5110,7 +5119,7 @@ function load(){
       var st=Object.assign(defaultState(),s);
       /* Открытое меню в сохранённое состояние попадать не должно: после
          перезагрузки оно висело бы поверх списка без причины. */
-      st.branchMenu=false;
+      st.branchPopover=null;
       return st;
     }
   }catch(e){}
@@ -5499,7 +5508,7 @@ function downloadVersionFile(e2eId,version){
 document.addEventListener('keydown',function(e){
   if(e.key==='Escape'){
     /* Меню ветки — самый верхний слой: Esc закрывает его, а не панель под ним. */
-    if(state.branchMenu){ closeCatBranchMenu(); return; }
+    if(state.branchPopover){ closeCatBranchMenu(); return; }
     if(state.diagramModalOpen){ closeDiagramModal(); return; }
     if(state.panel){ closePanel(); return; }
   }
@@ -5507,7 +5516,7 @@ document.addEventListener('keydown',function(e){
 /* Щелчок вне поля закрывает меню — как у остальных меню прототипа
    (docs/behaviour.md). Пока меню закрыто, обработчик ничего не делает. */
 document.addEventListener('click',function(e){
-  if(!state || !state.branchMenu) return;
+  if(!state || !state.branchPopover) return;
   if(e.target && e.target.closest && e.target.closest('.cat-branch-row')) return;
   closeCatBranchMenu();
 });
@@ -5599,19 +5608,32 @@ function renderCatalog(){
     '</div>'+
     /* B-1: общий переключатель ветки на весь каталог — «здесь глобально где-то должна
        быть ветки E2E и CJ». Он задаёт и отбор списка, и то, какие связи видны на шаге.
-       Тот же компонент, что на карточках CJ, приложения, Use Case и e2e
-       (BranchSelectField): требование к дизайну — «панель веток выглядит и работает
-       одинаково». Здесь стоял свой ряд чипов, и ветка в каталоге переключалась иначе,
-       чем в тех же сервисах рядом. */
+       Блок целиком тот же, что на карточках CJ, приложения, Use Case и e2e: поле
+       выбора плюс меню с созданием ветки, объединением и историей. Подпись «Ветка»
+       рядом с полем убрана — поле само называет себя, как и на карточках. */
     '<div class="cat-branch-row">'+
-      '<span class="cat-branch-lbl">Ветка</span>'+
       BranchSelectField({
-        open: !!state.branchMenu,
-        branches: BRANCH_SYSTEM_IDS.map(function(b){ return {id:b, kind:'system'}; }),
+        open: state.branchPopover==='cat-branch-switch',
+        branches: catBranchList(),
         activeId: state.branch,
-        triggerAttrs: 'onclick="toggleCatBranchMenu(event)"',
-        itemAttrs: function(b){ return 'onclick="setCatBranch(\''+b.id+'\')"'; }
+        label: 'Ветка',
+        meta: catBranchUpdNote,
+        wide: true,
+        triggerAttrs: 'onclick="toggleCatPopover(event,\'cat-branch-switch\')"',
+        itemAttrs: function(b){ return 'onclick="setCatBranch(\''+b.id+'\')"'; },
+        delAttrs: function(b){ return b.kind==='user' ? 'onclick="catBranchDeleteAsk(event,\''+b.id+'\')"' : ''; }
       })+
+      '<div class="uc-menu-wrap">'+
+        '<button class="btn btn-outline btn-icon-only" title="Ветки" '+
+          'onclick="toggleCatPopover(event,\'cat-actions\')">'+ic('moreVertical')+'</button>'+
+        (state.branchPopover==='cat-actions'
+          ? '<div class="uc-menu">'+
+              '<div class="uc-menu-item" onclick="catBranchAction(\'create\')">'+ic('plus')+'<span class="txt">Новая ветка</span></div>'+
+              '<div class="uc-menu-item" onclick="catBranchAction(\'merge\')">'+ic('gitMerge')+'<span class="txt">Объединить ветки</span></div>'+
+              '<div class="uc-menu-item" onclick="catBranchAction(\'history\')">'+ic('history')+'<span class="txt">История объединений</span></div>'+
+            '</div>'
+          : '')+
+      '</div>'+
     '</div>';
 
   if(state.mode==='cj'){
@@ -5634,26 +5656,78 @@ function renderCatalog(){
 }
 function textMatches(t,q){ return t.toLowerCase().indexOf(q)>=0; }
 
-/* Меню переключателя: открыто/закрыто живёт в state каталога — у основного скрипта
-   для того же компонента свой state.popover. */
-function toggleCatBranchMenu(e){
+/* Какое меню раскрыто (поле веток или меню действий) — своё у каталога: у основного
+   скрипта для того же компонента свой state.popover. */
+function toggleCatPopover(e,id){
   if(e) e.stopPropagation();
-  state.branchMenu=!state.branchMenu;
+  state.branchPopover = state.branchPopover===id ? null : id;
   render();
 }
 function closeCatBranchMenu(){
-  if(!state.branchMenu) return;
-  state.branchMenu=false;
+  if(!state.branchPopover) return;
+  state.branchPopover=null;
   render();
 }
+/* Ветки каталога — объединение веток всех его артефактов: ветка существует, если
+   она заведена хотя бы у одного CJ или шага E2E. Системные идут своим порядком,
+   пользовательские — следом. */
+function catAllArtifacts(){
+  return CJ_LIST.concat(E2E_LIST_COMBINED, E2E_LIST_CALLS);
+}
+function catBranchIds(){
+  var seen={}, user=[];
+  catAllArtifacts().forEach(function(a){
+    brAll(a).forEach(function(b){
+      if(seen[b]) return;
+      seen[b]=1;
+      if(BRANCH_SYSTEM_IDS.indexOf(b)<0) user.push(b);
+    });
+  });
+  return BRANCH_SYSTEM_IDS.filter(function(b){ return seen[b]; }).concat(user);
+}
+function catBranchList(){
+  return catBranchIds().map(function(id){
+    return {id:id, kind: BRANCH_SYSTEM_IDS.indexOf(id)>=0 ? 'system' : 'user'};
+  });
+}
+/* Хвост значения в поле: сколько артефактов заведено в этой ветке. Дат обновления
+   у каталога нет — состав приходит из разных мест, и общей для всех даты не бывает. */
+function catBranchUpdNote(branchId){
+  var n = catAllArtifacts().filter(function(a){ return brHas(a, branchId); }).length;
+  return n ? (n + ' ' + ruPlural(n,'артефакт','артефакта','артефактов')) : 'пусто';
+}
+/* Действия над ветками каталога живут в основном скрипте — там и модалка
+   объединения, и журнал. Каталог только зовёт их: его собственный скрипт
+   глобальный, а основной обёрнут в IIFE и наружу отдаёт одну точку входа. */
+function catBranchAction(kind){
+  state.branchPopover=null;
+  render();
+  if(window.catalogBranchMenu) window.catalogBranchMenu.open(kind);
+}
+function catBranchDeleteAsk(e,branch){
+  if(e) e.stopPropagation();
+  state.branchPopover=null;
+  render();
+  if(window.catalogBranchMenu) window.catalogBranchMenu.del(branch);
+}
+/* Мост к основному скрипту: он обёрнут в IIFE и наружу отдаёт одну точку входа,
+   а сюда, наоборот, отдаёт доступ к открытой ветке каталога — ему нужно знать,
+   что выбрано, и уметь перевести каталог на другую ветку после объединения. */
+window.catalogBridge = {
+  branch: function(){ return state ? state.branch : 'main'; },
+  setBranch: function(b){ if(!state) return; state.branch=b; resetBranchScopedChoices(); persist(); render(); },
+};
 function setCatBranch(b){
-  state.branchMenu=false;
+  state.branchPopover=null;
   if(state.branch===b){ render(); return; }
   state.branch=b;
-  /* Выбранная реализация и раскрытия привязаны к ключу сущности, а состав ветки свой:
-     оставлять их — значит показывать выбор, которого в этой ветке нет. */
-  state.stepImpl={}; state.implMore={}; state.expandedCalls={}; state.selectedCall={};
+  resetBranchScopedChoices();
   persist(); render();
+}
+/* Выбранная реализация и раскрытия привязаны к ключу сущности, а состав ветки свой:
+   оставлять их — значит показывать выбор, которого в этой ветке нет. */
+function resetBranchScopedChoices(){
+  state.stepImpl={}; state.implMore={}; state.expandedCalls={}; state.selectedCall={};
 }
 /* Заведён ли в открытой ветке каталога. Запись без веток не ветвится вовсе
    (шаг BI) — такая есть везде. */
@@ -7633,7 +7707,10 @@ const state = {
   /* Страница сравнения веток перед объединением (встреча 22.10). Держит, что с чем
      сравниваем и какие узлы раскрыты; само объединение запускает merge-diff-confirm-do. */
   mergeHistory:null,           // {kind, artifactId, title} — экран истории объединений
-  mergeDiff:null,              // {kind:"cj"|"uc"|"ac", ...ids, source, target, title}
+  mergeDiff:null,              // {kind:"cj"|"uc"|"ac"|"e2e"|"cat"|"ucimport", ...ids, title}
+  catMergePanel:null,          // выбор веток каталога Е2Е
+  catBranchPanel:null,         // создание ветки каталога
+  catBranchDeleteConfirm:null, // подтверждение удаления ветки каталога
   mergeDiffGroup:null,         // id выбранной вкладки сравнения (null — первая с изменениями)
   mergeDiffOpen:{},            // путь узла → раскрыт
   mergeDiffConfirm:false,
@@ -8245,13 +8322,6 @@ function downloadSvg(svg, filename){
   setTimeout(()=>URL.revokeObjectURL(url), 1000);
   showToast("Диаграмма скачана");
 }
-function ruPlural(n, one, few, many){
-  const mod10 = Math.abs(n)%10, mod100 = Math.abs(n)%100;
-  if(mod100>10 && mod100<20) return many;
-  if(mod10>1 && mod10<5) return few;
-  if(mod10===1) return one;
-  return many;
-}
 function clampCell(text, cls){
   const t = escapeHtml(text);
   return `<div class="cell-clamp-wrap"><div class="cell-clamp${cls?(" "+cls):""}">${t}</div><div class="cell-tooltip">${t}</div></div>`;
@@ -8306,6 +8376,11 @@ function renderShell(){
     ${state.acBranchPanel ? AcBranchCreatePanel() : ""}
 
     ${state.e2eBranchPanel ? E2eBranchCreatePanel() : ""}
+    ${state.catBranchPanel ? CatBranchCreatePanel() : ""}
+    ${state.catBranchDeleteConfirm ? CjConfirmDialog({title:"Удалить ветку?",
+        text:`Ветка «${state.catBranchDeleteConfirm}» будет удалена у всех артефактов каталога`,
+        confirmLabel:"Удалить", confirmAction:"cat-branch-delete-do",
+        cancelAction:"cat-branch-delete-cancel", branch:state.catBranchDeleteConfirm}) : ""}
 
     ${state.createPanel ? CreatePanelWrap() : ""}
     ${state.sidePanel ? SidePanelWrap() : ""}
@@ -12989,6 +13064,96 @@ function e2eDiffGroups(code, source, target){
   return groups;
 }
 
+/* ─────────── Ветки каталога Е2Е ───────────
+   В каталоге ветка выбрана на весь экран и отбирает сразу и CJ, и шаги E2E, поэтому
+   её операции тоже общие: создание заводит ветку у всех артефактов, где есть родитель,
+   объединение переносит состав по всему каталогу, журнал — один на каталог.
+   Данные каталога (CJ_LIST, E2E_LIST_*) и контракт ветвления (brAll/brCreate/brMerge)
+   объявлены в его скрипте — он глобальный, и отсюда они видны. */
+const CAT_ARTIFACT_ID = "e2e-catalog";
+/* Открытая ветка каталога лежит в состоянии его скрипта. Оба скрипта объявляют свой
+   `state`, и внутри этой IIFE имя занято — до каталожного добираемся через мост,
+   который он сам и выставляет (window.catalogBridge). */
+function catBridge(){ return window.catalogBridge || null; }
+function catCurrentBranch(){ const c = catBridge(); return (c && c.branch()) || "main"; }
+function catSetBranch(b){ const c = catBridge(); if(c) c.setBranch(b); }
+/* Ветвятся и BI внутри CJ: в ранней ветке у CJ описаны только первые BI. Без них
+   клон ветки получал CJ без состава. */
+function catArtifacts(){
+  const bi = [];
+  CJ_LIST.forEach(c=>(c.bi||[]).forEach(b=>bi.push(b)));
+  return CJ_LIST.concat(bi, E2E_LIST_COMBINED, E2E_LIST_CALLS);
+}
+/* В счётчике у поля — только то, что человек видит строкой каталога: CJ и шаги E2E.
+   BI это состав CJ, и отдельными артефактами он там читался бы неверно. */
+function catTopArtifacts(){ return CJ_LIST.concat(E2E_LIST_COMBINED, E2E_LIST_CALLS); }
+function catBranchIdsMain(){
+  const seen = new Set();
+  catTopArtifacts().forEach(a=>brAll(a).forEach(b=>seen.add(b)));
+  return BRANCH_SYSTEM_IDS.filter(b=>seen.has(b))
+    .concat([...seen].filter(b=>!BRANCH_SYSTEM_IDS.includes(b)));
+}
+function catBranchListMain(){
+  return catBranchIdsMain().map(id=>({id, kind: BRANCH_SYSTEM_IDS.includes(id) ? "system" : "user"}));
+}
+function catBranchNote(branchId){
+  const n = catTopArtifacts().filter(a=>brHas(a, branchId)).length;
+  return n ? `${n} ${ruPlural(n,"артефакт","артефакта","артефактов")}` : "пусто";
+}
+/* Состав ветки каталога — перечень заведённых в ней артефактов. У CJ внутри ещё BI:
+   на встрече просили видеть «добавился степ, убрался BI», поэтому вложенность есть. */
+function catBranchTree(branchId){
+  const cjs = CJ_LIST.filter(c=>brHas(c, branchId)).map(c=>({
+    id:c.id, title:c.title, code:c.code,
+    bi:(c.bi||[]).filter(b=>brHas(b, branchId)).map(b=>({id:b.id, title:b.title, code:b.code})),
+  }));
+  const e2e = E2E_LIST_COMBINED.concat(E2E_LIST_CALLS).filter(e=>brHas(e, branchId)).map(e=>{
+    const snap = brSnap(e, branchId) || {};
+    return {id:e.id, title:e.title, code:e.code, source:snap.source, versions:(snap.versions||[]).length};
+  });
+  return {cjs, e2e};
+}
+function catDiffGroups(source, target){
+  const a = catBranchTree(source), b = catBranchTree(target);
+  const groups = [];
+  const cjs = diffRows(b.cjs, a.cjs, {
+    kind:"CJ", key:x=>x.id, label:x=>x.title,
+    fields:[{cap:"Код", get:x=>x.code}, {cap:"BI в ветке", get:x=>x.bi.length}],
+    sub:x=>x.bi,
+    child:{kind:"BI", key:x=>x.id, label:x=>x.title, fields:[{cap:"Код", get:x=>x.code}]},
+  });
+  if(cjs.length) groups.push({id:"cj", title:"Клиентские пути", nodes:cjs});
+  const e2e = diffRows(b.e2e, a.e2e, {
+    kind:"Шаг E2E", key:x=>x.id, label:x=>x.title,
+    fields:[{cap:"Код", get:x=>x.code}, {cap:"Загрузчик канона", get:x=>x.source},
+            {cap:"Версий", get:x=>x.versions}],
+  });
+  if(e2e.length) groups.push({id:"e2e", title:"Шаги E2E-сценария", nodes:e2e});
+  return groups;
+}
+/* Объединение по всему каталогу: у каждого артефакта, заведённого в источнике,
+   состав ветки-цели заменяется составом источника; артефакт, которого в источнике
+   нет, из цели исчезает — иначе ветки не сошлись бы. */
+function catMergeBranches(source, target){
+  if(!source || !target || source === target) return false;
+  catArtifacts().forEach(a=>{
+    if(brHas(a, source)) brMerge(a, source, target);
+    else if(a.branches) delete a.branches[target];
+  });
+  return true;
+}
+function catCreateBranch(name, parent){
+  if(!name || !parent || catBranchIdsMain().includes(name)) return false;
+  let made = false;
+  catArtifacts().forEach(a=>{ if(brHas(a, parent) && brCreate(a, name, parent, ARCHITECT, NOW_DAY)) made = true; });
+  return made;
+}
+function catDeleteBranch(id){
+  if(BRANCH_SYSTEM_IDS.includes(id)) return false;
+  catArtifacts().forEach(a=>brDelete(a, id));
+  return true;
+}
+
 /* Use Case: состав ветки — шаги сценария, ключ шага это его код (part). */
 function ucDiffGroups(u, source, target){
   const a = ucBranchData(u, source), b = ucBranchData(u, target);
@@ -13003,7 +13168,8 @@ function ucDiffGroups(u, source, target){
 /* Где лежит выбор веток. Раньше это была боковая панель, которую сравнение прятало
    и возвращало по «Назад»; теперь тот же объект рисуется левой колонкой модалки,
    поэтому его не прячут — его читают. */
-const MERGE_PANEL_KEY = {cj:"cjMergePanel", uc:"ucMergePanel", ac:"acMergePanel", e2e:"e2eMergePanel"};
+const MERGE_PANEL_KEY = {cj:"cjMergePanel", uc:"ucMergePanel", ac:"acMergePanel",
+                         e2e:"e2eMergePanel", cat:"catMergePanel"};
 /* Выбранные ветки живут в одном месте — в состоянии выбора. Сравнение берёт их
    оттуда на каждом рендере, поэтому смена ветки слева сразу пересобирает его
    справа: отдельной копии source/target в state.mergeDiff нет и быть не должно. */
@@ -13072,6 +13238,7 @@ function mergeSetupPane(d){
   if(d.kind === "uc")  return UcMergeSetup();
   if(d.kind === "ac")  return AcMergeSetup();
   if(d.kind === "e2e") return E2eMergeSetup();
+  if(d.kind === "cat") return CatMergeSetup();
   return "";
 }
 /* Импорт из файла ветки не выбирает: там нечего настраивать, и левая колонка у него
@@ -13085,6 +13252,7 @@ function mergeDiffGroups(d){
   if(d.kind === "ac") return acDiffGroups(d.appId, source, target);
   if(d.kind === "cj") return cjDiffGroups(d.cjId, source, target);
   if(d.kind === "e2e") return e2eDiffGroups(d.code, source, target);
+  if(d.kind === "cat") return catDiffGroups(source, target);
   if(d.kind === "uc"){
     const p = findProject(d.projectId), u = p && findUseCase(p, d.ucId);
     return u ? ucDiffGroups(u, source, target) : [];
@@ -13447,6 +13615,29 @@ function AcBranchCreatePanel(){
     reserved:BRANCH_SYSTEM_IDS, inputId:"acBranchName",
     actions:{close:"ac-close-branch-create", setParent:"ac-branch-set-parent",
              submit:"ac-branch-create-submit", parentField:"ac-branch-parent"},
+  });
+}
+
+/* Каталог: те же две формы, что у остальных артефактов. Отличие одно — состав
+   ветки здесь не один артефакт, а весь каталог, и это сказано в пояснении. */
+function CatMergeSetup(){
+  const m = state.catMergePanel;
+  if(!m) return "";
+  return MergeSetupPane({
+    m, branches:catBranchListMain(), note:catBranchNote, conflict:null, running:false,
+    desc:"Ветка каталога общая для клиентских путей и шагов E2E: объединение перенесёт состав всех артефактов сразу",
+    actions:{setSource:"cat-merge-set-source", setTarget:"cat-merge-set-target",
+             sourceField:"cat-merge-source", targetField:"cat-merge-target"},
+  });
+}
+function CatBranchCreatePanel(){
+  const panel = state.catBranchPanel;
+  if(!panel) return "";
+  return BranchCreatePanel({
+    panel, branches:catBranchListMain(), note:catBranchNote,
+    reserved:BRANCH_SYSTEM_IDS, inputId:"catBranchName",
+    actions:{close:"cat-close-branch-create", setParent:"cat-branch-set-parent",
+             submit:"cat-branch-create-submit", parentField:"cat-branch-parent"},
   });
 }
 
@@ -18209,6 +18400,7 @@ function handleInput(el){
   else if(el.id==="ucBranchName"){ state.ucBranchPanel.name = el.value; render(); reFocus("ucBranchName"); }
   else if(el.id==="acBranchName"){ state.acBranchPanel.name = el.value; render(); reFocus("acBranchName"); }
   else if(el.id==="e2eBranchName"){ state.e2eBranchPanel.name = el.value; render(); reFocus("e2eBranchName"); }
+  else if(el.id==="catBranchName"){ state.catBranchPanel.name = el.value; render(); reFocus("catBranchName"); }
   else if(el.id==="cjCreatePortrait"){ state.cjCreatePanel.portrait = el.value; render(); reFocus("cjCreatePortrait"); }
   else if(el.id==="cjCreateOwner"){ state.cjCreatePanel.owner = el.value; render(); reFocus("cjCreateOwner"); }
   else if(el.id==="cjCreateTags"){ state.cjCreatePanel.tags = el.value; render(); reFocus("cjCreateTags"); }
@@ -18574,6 +18766,86 @@ function handleAction(action, el){
     }
     case "e2e-close-branch-create": state.e2eBranchPanel = null; state.popover = null; render(); break;
     case "e2e-branch-set-parent": state.e2eBranchPanel.parent = el.dataset.branch; state.popover = null; render(); break;
+    /* ---------- ветки каталога Е2Е ---------- */
+    /* Каталог живёт в своём скрипте и зовёт эти действия через мост
+       window.catalogBranchMenu (см. конец файла): модалка объединения, панель
+       создания и журнал — здесь, и дублировать их в каталоге незачем. */
+    case "cat-open-merge": {
+      const ids = catBranchIdsMain();
+      if(ids.length < 2){ showToast("В каталоге пока одна ветка — объединять нечего"); break; }
+      const source = catCurrentBranch();
+      state.catMergePanel = {source, target: ids.find(b=>b!==source) || source, strategy:"replace"};
+      state.popover = null;
+      openMergeDiff({kind:"cat", title:"Каталог Е2Е-сценариев"});
+      render();
+      break;
+    }
+    case "cat-merge-set-source": {
+      const m = state.catMergePanel;
+      m.source = el.dataset.branch;
+      if(m.target === m.source) m.target = catBranchIdsMain().find(b=>b!==m.source) || m.source;
+      state.popover = null;
+      render();
+      break;
+    }
+    case "cat-merge-set-target": {
+      const m = state.catMergePanel;
+      if(el.dataset.branch === m.source) break;
+      m.target = el.dataset.branch;
+      state.popover = null;
+      render();
+      break;
+    }
+    /* Правил, запрещающих объединение в каталоге, нет: состав заменяется целиком,
+       ссылок между ветками каталога не бывает. */
+    case "cat-merge-check": {
+      const m = state.catMergePanel;
+      return !!(m && m.source && m.target && m.source !== m.target);
+    }
+    case "cat-merge-confirm-do": {
+      const m = state.catMergePanel;
+      if(!m || !catMergeBranches(m.source, m.target)) break;
+      const logId = logMergeStart({kind:"cat", artifactId:CAT_ARTIFACT_ID, title:"Каталог Е2Е-сценариев",
+                                   source:m.source, target:m.target});
+      logMergeDone(logId);
+      /* Открытая ветка каталога могла опустеть или, наоборот, набрать состав —
+         переводим каталог на ветку-цель, чтобы человек увидел результат. */
+      catSetBranch(m.target);
+      showToast(`Состав ветки «${m.target}» заменён составом «${m.source}»`);
+      break;
+    }
+    case "cat-open-branch-create": {
+      state.catBranchPanel = {name:"", parent:catCurrentBranch()};
+      state.popover = null;
+      render();
+      break;
+    }
+    case "cat-close-branch-create": state.catBranchPanel = null; state.popover = null; render(); break;
+    case "cat-branch-set-parent": state.catBranchPanel.parent = el.dataset.branch; state.popover = null; render(); break;
+    case "cat-branch-create-submit": {
+      const panel = state.catBranchPanel;
+      if(!panel) break;
+      const name = panel.name.trim();
+      if(!name || !panel.parent || BRANCH_SYSTEM_IDS.includes(name.toLowerCase())) break;
+      if(catBranchIdsMain().some(b=>b.toLowerCase()===name.toLowerCase())) break;
+      if(!catCreateBranch(name, panel.parent)) break;
+      state.catBranchPanel = null;
+      state.popover = null;
+      catSetBranch(name);
+      showToast("Ветка создана");
+      break;
+    }
+    case "cat-branch-delete-ask": state.catBranchDeleteConfirm = el.dataset.branch; render(); break;
+    case "cat-branch-delete-cancel": state.catBranchDeleteConfirm = null; render(); break;
+    case "cat-branch-delete-do": {
+      const branch = state.catBranchDeleteConfirm;
+      state.catBranchDeleteConfirm = null;
+      if(!branch || !catDeleteBranch(branch)){ render(); break; }
+      if(catCurrentBranch() === branch) catSetBranch(catBranchIdsMain()[0] || "main");
+      showToast("Ветка удалена");
+      render();
+      break;
+    }
     case "e2e-branch-create-submit": {
       const panel = state.e2eBranchPanel;
       if(!panel) break;
@@ -19857,6 +20129,25 @@ window.addEventListener("resize", ()=>{
   fitUcHead();
 });
 document.addEventListener("scroll", ()=>{ positionDsSelectMenus(); positionToast(); }, true);
+
+/* Точка входа для каталога Е2Е: он живёт в своём скрипте и своих модалок веток не
+   строит — зовёт эти. Передаём только действие, остальное обработчики берут из
+   состояния. */
+window.catalogBranchMenu = {
+  open(kind){
+    if(kind === "create")  handleAction("cat-open-branch-create", null);
+    if(kind === "merge")   handleAction("cat-open-merge", null);
+    if(kind === "history"){
+      state.mergeHistory = {kind:"cat", artifactId:CAT_ARTIFACT_ID, title:"Каталог Е2Е-сценариев"};
+      state.popover = null;
+      render();
+    }
+  },
+  del(branch){
+    state.catBranchDeleteConfirm = branch;
+    render();
+  },
+};
 
 (function applyDeepLinkFromUrl(){
   /* Вход восстанавливаем раньше разбора ?home=: иначе переход по ссылке с якорем
