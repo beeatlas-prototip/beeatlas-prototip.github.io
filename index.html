@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=6">
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261023-130703">
+<meta name="beeatlas-build" content="20261023-132209">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -2316,7 +2316,10 @@
   .merge-col-setup{border-right:1px solid var(--border);padding-right:var(--size-spacing-x8);}
   .merge-setup{padding-top:var(--size-spacing-x6);}
   .merge-setup-desc{margin:0 0 var(--space-5);font-size:15px;line-height:22px;color:var(--text-secondary);}
-  .merge-col-diff{max-width:none;}
+  /* Сравнение занимает весь остаток строки: ограничивать его шириной страницы
+     незачем — оно и так разделено на две колонки, и каждый лишний пиксель идёт
+     в длинные названия шагов и описания. */
+  .merge-col-diff{padding-top:var(--size-spacing-x6);}
   @media (max-width:1200px){
     .merge-body{grid-template-columns:minmax(0,1fr);overflow-y:auto;}
     .merge-body > *{overflow:visible;}
@@ -2327,10 +2330,10 @@
      Статус узла несут и цвет, и значок с подписью: зелёно-красная пара без второго
      признака не читается при дальтонизме, а жёлтый у нас занят брендом. Роли берём
      семантические, вручную цвет не пишем — иначе он не переживёт смену темы. */
-  /* Ограничение ширины осталось у отдельных страниц (история объединений); в модалке
-     сравнение занимает свою колонку целиком — см. .merge-col-diff. */
+  /* Ограничение ширины — для отдельных страниц (история объединений). В модалке
+     объединения класс не используется: там ширину задаёт .merge-col-diff. */
   .diff-body{max-width:1120px;}
-  .diff-lead{margin:var(--space-6) 0 var(--space-5);font-size:15px;line-height:22px;color:var(--text-secondary);}
+  .diff-lead{margin:0 0 var(--space-5);font-size:15px;line-height:22px;color:var(--text-secondary);}
   .diff-summary{display:flex;align-items:center;gap:var(--space-2);flex:0 0 auto;}
   .diff-chip{display:inline-flex;align-items:center;gap:var(--size-spacing-x2);height:32px;padding:0 var(--size-spacing-x3);
     border-radius:var(--size-border-radius-x15);font-size:13px;line-height:18px;letter-spacing:.2px;white-space:nowrap;
@@ -2348,7 +2351,7 @@
      (.ac-tabs-wrap): подписи типов длинные, на узком экране ряд переносился бы
      на вторую строку и отрывал индикатор от вкладки. Стрелки и затухание по краям
      достаются вместе с компонентом, своего кода здесь нет. */
-  .diff-tabs{margin-top:var(--space-6);}
+  .diff-tabs{margin-top:var(--space-5);}
   .diff-tabs .diff-count{margin-left:var(--size-spacing-x2);}
   .diff-split{border:1px solid var(--border);border-radius:var(--size-border-radius-x6);overflow:hidden;}
   .diff-split-head{display:grid;grid-template-columns:1fr 1fr;background:var(--bg-alt);border-bottom:1px solid var(--border);}
@@ -13291,7 +13294,7 @@ function MergeDiffOverlay(){
 
     <div class="wizard-body merge-body">
       ${setup ? `<div class="merge-col-setup">${setup}</div>` : ""}
-      <div class="merge-col-diff diff-body">${ready ? compare : placeholder}</div>
+      <div class="merge-col-diff">${ready ? compare : placeholder}</div>
     </div>
 
     <div class="wizard-foot">
