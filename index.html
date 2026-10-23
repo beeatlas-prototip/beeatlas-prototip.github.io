@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=6">
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261023-175404">
+<meta name="beeatlas-build" content="20261023-181508">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -1467,6 +1467,9 @@
      код и маркер расхождения встают рядом, а вместе с пометкой просят 161.
      Ячейка в две строки — норма (docs/behaviour.md §5), усечение кода — нет. */
   .uc-impl-cell{display:flex;align-items:center;gap:var(--space-2);min-width:0;flex-wrap:wrap;}
+  /* Несколько кандидатов — колонкой: коды равнозначны, и в строку они читались бы
+     перечислением через пробел, где первый кажется главным. */
+  .uc-impl-cell.uc-impl-cands{flex-direction:column;align-items:flex-start;gap:2px;}
   .uc-impl-manual{flex-basis:100%;}
   .uc-impl-code{font-size:15px;line-height:20px;letter-spacing:.2px;white-space:nowrap;}
   /* align-items:center ровняет БОКСЫ, а глаз видит чернила. Замер видимых пикселей
@@ -1757,6 +1760,16 @@
   /* Токен ховера полупрозрачный: если положить его на sticky-ячейку одним цветом,
      сквозь неё видно уезжающие под низ ячейки. Кладём его слоем поверх фона страницы. */
   .table-scroll > table > tbody > tr:not(.exp-detail-row):hover > td:first-child{
+    background:linear-gradient(color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent),color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent)), var(--bg);
+  }
+  /* E-1. Base Selected раскрытой строки на закреплённой первой колонке: её фон
+     непрозрачный (иначе сквозь неё видно уезжающие ячейки), и подсветка строки
+     до неё не доходила — строка читалась выделенной со второй колонки.
+     Слоем поверх полотна, тем же приёмом, что у ховера ниже. */
+  .table-scroll > table > tbody > tr.exp-open > td:first-child{
+    background:linear-gradient(color-mix(in srgb, var(--md-sys-color-on-surface) 5%, transparent),color-mix(in srgb, var(--md-sys-color-on-surface) 5%, transparent)), var(--bg);
+  }
+  [data-theme="dark"] .table-scroll > table > tbody > tr.exp-open > td:first-child{
     background:linear-gradient(color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent),color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent)), var(--bg);
   }
   /* У раскрытой строки ховер ложится ПОВЕРХ выделения: иначе закреплённая первая
@@ -14511,11 +14524,23 @@ function scenarioImplCell(s, projectId, ucId){
     return `<div class="uc-impl-cell"><span class="empty-cell">—</span>${marker}</div>`;
   }
   if(cand.length===1) return `<div class="uc-impl-cell">${codeLink(cand[0])}${marker}</div>`;
+  /* E-2, встреча 22.10 (35:12): «e2e получается где-то вот далеко так спрятаны» —
+     при нескольких кандидатах в ячейке стоял счётчик, и сами коды открывались только
+     после раскрытия строки. Теперь они видны сразу, каждый ссылкой на свою страницу.
+     Порядок приоритета не значит (концепция §1: победителя система не выбирает),
+     поэтому коды равнозначны и первый ничем не выделен; подпись «кандидаты» говорит,
+     что это не выбранная реализация.
+     Длинный список обрезаем: больше трёх кодов занимают всю высоту строки, и остаток
+     открывается раскрытием — там же, где он и разбирается. */
   const n = cand.length;
-  const many = (projectId && ucId)
-    ? `<span class="proj-link uc-impl-code" data-action="uc-toggle-impl" data-uc="${ucId}" data-part="${escapeHtml(s.part)}">${n} ${ruPlural(n,"кандидат","кандидата","кандидатов")}</span>`
-    : `<span class="uc-impl-code">${n} ${ruPlural(n,"кандидат","кандидата","кандидатов")}</span>`;
-  return `<div class="uc-impl-cell">${many}${marker}</div>`;
+  const SHOWN = 3;
+  const shown = cand.slice(0, SHOWN);
+  const rest = n - shown.length;
+  const more = rest > 0
+    ? `<span class="proj-link uc-impl-rest" data-action="uc-toggle-impl" data-uc="${ucId}" data-part="${escapeHtml(s.part)}">ещё ${rest}</span>`
+    : "";
+  return `<div class="uc-impl-cell uc-impl-cands">${shown.map(codeLink).join("")}${more}` +
+         `<span class="uc-impl-manual">${n} ${ruPlural(n,"кандидат","кандидата","кандидатов")}</span>${marker}</div>`;
 }
 
 /* Раскрытая строка держит два разных сорта связи раздельно: сверху автоматические
