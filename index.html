@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=6">
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261026-183628">
+<meta name="beeatlas-build" content="20261026-184959">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -13489,6 +13489,40 @@ function seedMergeLog(){
   ].forEach(e=>MERGE_LOG.push(Object.assign({id:"ml"+(++mergeLogSeq), status:"Выполнено", source:null}, e)));
 }
 
+/* Сравнение восстановимо, только если живы и артефакт, и обе ветки: данные
+   прототипа перезагрузку не переживают, и своя ветка из прошлой сессии исчезает
+   вместе с ними. Ветку ищем в том же списке, из которого её выбирали, — иначе
+   экран открылся бы с пустым составом и необъяснимыми нулями в шапке. */
+function mergeDiffRestorable(d){
+  if(!d || !d.kind) return false;
+  const picked = ids => {
+    const m = state[MERGE_PANEL_KEY[d.kind]];
+    return !!m && ids.includes(m.source) && ids.includes(m.target);
+  };
+  if(d.kind === "ac"){
+    if(!findApp(d.appId)) return false;
+    ensureAcBranches(d.appId);
+    return picked(acBranchList(d.appId).map(b=>b.id));
+  }
+  if(d.kind === "cj"){
+    if(!CJ_LIBRARY.some(c=>c.id===d.cjId)) return false;
+    ensureCjBranches(d.cjId);
+    return picked(cjBranchList(d.cjId).map(b=>b.id));
+  }
+  if(d.kind === "e2e") return !!d.code && picked(e2eBranchesOf(d.code));
+  if(d.kind === "cat") return picked(catBranchIdsMain());
+  if(d.kind === "uc" || d.kind === "ucimport"){
+    const pr = findProject(d.projectId), u = pr && findUseCase(pr, d.ucId);
+    if(!u) return false;
+    ensureUcBranches(u);
+    const ids = ucBranchList(u).map(b=>b.id);
+    /* Импорт из файла ветку не выбирает: у него есть только целевая и состав,
+       приехавший из разбора. Нет состава — восстанавливать нечего. */
+    return d.kind === "ucimport" ? (Array.isArray(d.incoming) && ids.includes(d.target)) : picked(ids);
+  }
+  return false;
+}
+
 function openMergeDiff(d){
   state.mergeDiff = Object.assign({}, d, {panelKey:MERGE_PANEL_KEY[d.kind] || null});
   state.mergeDiffFocus = null;
@@ -18568,6 +18602,21 @@ function saveLocation(){
       cj: {
         open: state.cjOpen ? {cjId: state.cjOpen.cjId, branch: state.cjOpen.branch} : null,
       },
+      /* Объединение веток — полноэкранный шаг работы, а не всплывашка: человек
+         сидит на нём подолгу и обновляет страницу прямо там. Без снимка
+         перезагрузка выбрасывала его на карточку артефакта, и выбор веток
+         приходилось делать заново. Сохраняем и само сравнение, и выбор веток
+         (он живёт в своей панели), и что в дереве раскрыто.
+         Подтверждение (mergeDiffConfirm) не сохраняем: диалог «Объединить ветки?»
+         не должен встречать человека после перезагрузки. */
+      mergeDiff: state.mergeDiff ? Object.assign({}, state.mergeDiff) : null,
+      mergePanels: state.mergeDiff ? Object.keys(MERGE_PANEL_KEY).reduce((acc,k)=>{
+        const key = MERGE_PANEL_KEY[k];
+        if(state[key]) acc[key] = Object.assign({}, state[key]);
+        return acc;
+      }, {}) : null,
+      mergeView: state.mergeDiff ? {all: state.mergeDiffAll, open: state.mergeDiffOpen,
+                                    nav: state.mergeNavOpen, focus: state.mergeDiffFocus} : null,
     };
     sessionStorage.setItem(LOCATION_KEY, JSON.stringify(snapshot));
   } catch(e){}
@@ -20743,6 +20792,23 @@ window.catalogBranchMenu = {
       if(o){
         ensureCjBranches(o.cjId);
         if(cjBranchList(o.cjId).some(b=>b.id===o.branch)) state.cjOpen = {cjId: o.cjId, branch: o.branch};
+      }
+    }
+    /* Выбор веток кладём ДО проверки: mergeDiffRestorable смотрит, существуют ли
+       выбранные ветки, а выбор живёт как раз в этих панелях. Не восстановилось —
+       убираем и панель, иначе за закрытым сравнением осталась бы её половина. */
+    if(loc.mergeDiff){
+      const panels = loc.mergePanels || {};
+      Object.keys(panels).forEach(k=>{ if(panels[k]) state[k] = panels[k]; });
+      if(mergeDiffRestorable(loc.mergeDiff)){
+        state.mergeDiff = loc.mergeDiff;
+        const v = loc.mergeView || {};
+        state.mergeDiffAll = !!v.all;
+        state.mergeDiffOpen = v.open || {};
+        state.mergeNavOpen = v.nav || {};
+        state.mergeDiffFocus = v.focus || null;
+      } else {
+        Object.keys(panels).forEach(k=>{ state[k] = null; });
       }
     }
   }
