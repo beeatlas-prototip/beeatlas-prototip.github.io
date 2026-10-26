@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=6">
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261026-140411">
+<meta name="beeatlas-build" content="20261026-161337">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -727,7 +727,7 @@
   .cj-matrix-wrap::-webkit-scrollbar,
   .uc-menu::-webkit-scrollbar,
   .merge-body::-webkit-scrollbar,
-  .merge-col-setup::-webkit-scrollbar,
+  .merge-col-nav::-webkit-scrollbar,
   .merge-col-diff::-webkit-scrollbar,
   .uc-chain::-webkit-scrollbar,
   .table-scroll::-webkit-scrollbar{width:15px;height:15px;}
@@ -746,7 +746,7 @@
   .uc-menu::-webkit-scrollbar-track,
   .ds-select-menu::-webkit-scrollbar-track,
   .merge-body::-webkit-scrollbar-track,
-  .merge-col-setup::-webkit-scrollbar-track,
+  .merge-col-nav::-webkit-scrollbar-track,
   .merge-col-diff::-webkit-scrollbar-track,
   .uc-chain::-webkit-scrollbar-track,
   .main::-webkit-scrollbar-track{background-color:transparent;margin:var(--size-spacing-x2) 0;}
@@ -771,7 +771,7 @@
   .cj-matrix-wrap::-webkit-scrollbar-thumb,
   .uc-menu::-webkit-scrollbar-thumb,
   .merge-body::-webkit-scrollbar-thumb,
-  .merge-col-setup::-webkit-scrollbar-thumb,
+  .merge-col-nav::-webkit-scrollbar-thumb,
   .merge-col-diff::-webkit-scrollbar-thumb,
   .uc-chain::-webkit-scrollbar-thumb,
   .table-scroll::-webkit-scrollbar-thumb{
@@ -793,11 +793,11 @@
   .cj-matrix-wrap::-webkit-scrollbar-thumb:hover,
   .uc-menu::-webkit-scrollbar-thumb:hover,
   .merge-body::-webkit-scrollbar-thumb:hover,
-  .merge-col-setup::-webkit-scrollbar-thumb:hover,
+  .merge-col-nav::-webkit-scrollbar-thumb:hover,
   .merge-col-diff::-webkit-scrollbar-thumb:hover,
   .table-scroll::-webkit-scrollbar-thumb:hover{background-color:var(--md-sys-color-on-surface-variant);}
   @supports not selector(::-webkit-scrollbar){
-    .merge-body, .merge-col-setup, .merge-col-diff,
+    .merge-body, .merge-col-nav, .merge-col-diff,
     .sidebar, .main, .table-scroll, .uc-diagram-scroll, .uc-menu,
     .code-editor-body, .table-wrap-fit, .table-wrap, .ds-dialog-desc, .suggest-dropdown, .cj-matrix-wrap,
     .graph-search-suggest, .graph-canvas-pane, .graph-detail, .lp-auth-body,
@@ -2329,12 +2329,60 @@
      кончалась за 32px до края окна, и её полоса прокрутки вставала у края контента,
      а не экрана. Прокручиваемый блок должен доходить до края — полоса принадлежит
      окну, а не таблице. */
-  .merge-body{display:grid;grid-template-columns:400px minmax(0,1fr);gap:var(--size-spacing-x8);
+  /* N-1 (26.10): слева перечень изменений, справа выбор веток и само сравнение.
+     Раньше слева стоял выбор веток, а типы объектов разводились вкладками —
+     «целиком вот эту часть с левой стороны отдал бы под дерево изменений, а выбор
+     откуда/куда поставил бы с правой стороны» (18:50). */
+  .merge-body{display:grid;grid-template-columns:320px minmax(0,1fr);gap:var(--size-spacing-x8);
     padding:0 0 0 var(--size-spacing-x8);overflow:hidden;align-items:stretch;}
+  .merge-body.no-nav{grid-template-columns:minmax(0,1fr);}
   .merge-body > *{min-width:0;overflow-y:auto;padding-bottom:var(--size-spacing-x8);}
   .merge-col-diff{padding-right:var(--size-spacing-x8);}
-  .merge-col-setup{border-right:1px solid var(--border);padding-right:var(--size-spacing-x8);}
+  .merge-col-nav{border-right:1px solid var(--border);padding-right:var(--size-spacing-x6);}
   .merge-setup{padding-top:var(--size-spacing-x6);}
+  /* Выбор веток встал строкой над сравнением: поля рядом, плашка замены состава
+     занимает остаток ряда. */
+  .merge-setup-row .merge-setup{display:flex;flex-wrap:wrap;gap:var(--space-3);align-items:flex-start;}
+  .merge-setup-row .field-block{flex:0 0 300px;margin:0;}
+  .merge-setup-row .merge-note,
+  .merge-setup-row .cj-merge-conflict-box{flex:1 1 320px;margin-top:0;}
+  .merge-setup-row .merge-setup-desc{flex:1 1 100%;margin:0;}
+
+  /* Навигатор изменений */
+  .diff-nav{padding-top:var(--size-spacing-x6);}
+  .diff-nav-cap{display:flex;align-items:center;gap:var(--size-spacing-x2);
+    font-size:15px;line-height:20px;font-weight:500;letter-spacing:.2px;color:var(--text);
+    margin-bottom:var(--size-spacing-x4);}
+  .diff-nav-group + .diff-nav-group{margin-top:var(--size-spacing-x5);}
+  .diff-nav-title{display:flex;align-items:center;gap:var(--size-spacing-x2);
+    font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);
+    margin-bottom:var(--size-spacing-x2);}
+  .diff-nav-item{display:flex;flex-direction:column;gap:2px;padding:var(--space-2) var(--size-spacing-x3);
+    border-radius:var(--size-border-radius-x4);cursor:pointer;border-left:3px solid transparent;}
+  .diff-nav-item:hover{background:color-mix(in srgb, var(--md-sys-color-on-surface) 8%, transparent);}
+  .diff-nav-item:active{background:color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);}
+  .diff-nav-item:focus-visible{outline:none;background:var(--bg);box-shadow:inset 0 0 0 1px var(--text);}
+  .diff-nav-item.active{background:var(--bg-selected);}
+  .diff-nav-item.added{border-left-color:var(--green-text);}
+  .diff-nav-item.removed{border-left-color:var(--red-text);}
+  .diff-nav-item.changed{border-left-color:var(--blue-text);}
+  .diff-nav-item .k{font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);}
+  .diff-nav-item .n{font-size:15px;line-height:20px;letter-spacing:.2px;color:var(--text);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+  /* Группы в сравнении идут подряд, шапка колонок стоит один раз и не уезжает. */
+  .diff-split-head-top{border:1px solid var(--border);border-radius:var(--size-border-radius-x6);
+    position:sticky;top:0;z-index:2;margin-top:var(--size-spacing-x6);}
+  .diff-group + .diff-group{margin-top:var(--size-spacing-x6);}
+  .diff-group{margin-top:var(--size-spacing-x5);}
+  .diff-group-title{display:flex;align-items:center;gap:var(--size-spacing-x2);
+    font-size:15px;line-height:20px;font-weight:500;letter-spacing:.2px;color:var(--text);
+    margin-bottom:var(--size-spacing-x2);}
+  .diff-group-none{font-size:13px;line-height:16px;font-weight:400;color:var(--text-secondary);}
+  /* Строка, к которой перешли из навигатора, обводится рамкой: заливку уже занимает
+     статус изменения. Именно outline, а не inset-тень: фон ячеек рисуется поверх
+     тени родителя и съедал бы её. */
+  .diff-pair.focus{outline:2px solid var(--text);outline-offset:-2px;border-radius:var(--size-border-radius-x2);}
   .merge-setup-desc{margin:0 0 var(--space-5);font-size:15px;line-height:22px;color:var(--text-secondary);}
   /* Сравнение занимает весь остаток строки: ограничивать его шириной страницы
      незачем — оно и так разделено на две колонки, и каждый лишний пиксель идёт
@@ -2345,7 +2393,7 @@
        возвращается ей: полоса снова принадлежит окну. */
     .merge-body{grid-template-columns:minmax(0,1fr);overflow-y:auto;padding-right:var(--size-spacing-x8);}
     .merge-body > *{overflow:visible;}
-    .merge-col-setup{border-right:none;border-bottom:1px solid var(--border);padding-right:0;}
+    .merge-col-nav{border-right:none;border-bottom:1px solid var(--border);padding-right:0;}
     .merge-col-diff{padding-right:0;}
   }
 
@@ -2377,8 +2425,6 @@
      (.ac-tabs-wrap): подписи типов длинные, на узком экране ряд переносился бы
      на вторую строку и отрывал индикатор от вкладки. Стрелки и затухание по краям
      достаются вместе с компонентом, своего кода здесь нет. */
-  .diff-tabs{margin-top:var(--space-5);}
-  .diff-tabs .diff-count{margin-left:var(--size-spacing-x2);}
   .diff-split{border:1px solid var(--border);border-radius:var(--size-border-radius-x6);overflow:hidden;}
   .diff-split-head{display:grid;grid-template-columns:1fr 1fr;background:var(--bg-alt);border-bottom:1px solid var(--border);}
   /* Название колонки — основным текстом, под ним подпись: что это за сторона
@@ -7803,7 +7849,7 @@ const state = {
   catMergePanel:null,          // выбор веток каталога Е2Е
   catBranchPanel:null,         // создание ветки каталога
   catBranchDeleteConfirm:null, // подтверждение удаления ветки каталога
-  mergeDiffGroup:null,         // id выбранной вкладки сравнения (null — первая с изменениями)
+  mergeDiffFocus:null,         // путь строки, к которой перешли из навигатора изменений
   mergeDiffOpen:{},            // путь узла → раскрыт
   mergeDiffConfirm:false,
   ucImportConfirmed:false,   // импорт уже подтверждён на странице сравнения
@@ -13323,7 +13369,7 @@ function seedMergeLog(){
 
 function openMergeDiff(d){
   state.mergeDiff = Object.assign({}, d, {panelKey:MERGE_PANEL_KEY[d.kind] || null});
-  state.mergeDiffGroup = null;
+  state.mergeDiffFocus = null;
   state.mergeDiffOpen = {};
   state.mergeDiffConfirm = false;
 }
@@ -13333,7 +13379,7 @@ function closeMergeDiff(){
   const d = state.mergeDiff;
   if(d && d.panelKey) state[d.panelKey] = null;
   state.mergeDiff = null;
-  state.mergeDiffGroup = null;
+  state.mergeDiffFocus = null;
   state.mergeDiffOpen = {};
   state.mergeDiffConfirm = false;
 }
@@ -13524,12 +13570,25 @@ function MergeDiffOverlay(){
     ? `Состав из файла заменит нынешний`
     : `Из неё берёшь состав — он заменит состав «${escapeHtml(target)}»`;
 
-  /* Вкладка на тип объекта со счётчиком изменений: «может, тут вот выбор — интерфейс,
-     возможности и так далее, количество изменений… дальше выводить список» (11:17).
-     Структуру типов взяли со вкладок карточки приложения (11:35). */
-  const active = groups.find(g=>g.id===state.mergeDiffGroup)
-              || groups.find(g=>diffCount(g.nodes))
-              || groups[0];
+  /* N-1 (встреча 26.10): вкладок по типам объектов больше нет — «нам по сути эти
+     табы не нужны сверху» (18:34). Вместо них слева стоит перечень самих изменений,
+     и клик по нему проваливает к изменению, «как в гитлабе: вот этот файл, вот этот
+     файл, я могу сюда ткнуть» (17:36–17:47). Сравнение при этом показывает все
+     группы подряд, простынёй вниз.
+     Перечень собирается из тех же узлов, что и таблица: в него попадает только то,
+     что изменилось само, — путь к изменению навигатору не нужен. */
+  const navItems = g => {
+    const out = [];
+    const walk = (ns, prefix) => (ns||[]).forEach((n,i)=>{
+      const path = prefix + "." + i;
+      if(n.status !== "same" && !n.viaChild)
+        out.push({path, kind:n.kind, label:(n.after != null ? n.after : n.before), status:n.status});
+      walk(n.children, path);
+    });
+    walk(g.nodes, g.id);
+    return out;
+  };
+  const nav = groups.map(g=>({id:g.id, title:g.title, items:navItems(g)})).filter(g=>g.items.length);
 
   const cell = (side, n, depth, open, foldable) => {
     const label = side==="before" ? n.before : n.after;
@@ -13560,7 +13619,10 @@ function MergeDiffOverlay(){
     const vals = n.fields.map(f=>{
       const v = side==="before" ? f.before : f.after;
       const other = side==="before" ? f.after : f.before;
-      const diff = String(v ?? "") !== String(other ?? "");
+      /* Подсвечиваем поле только там, где изменилась сама запись: у добавленной или
+         исчезнувшей строки «изменились» все поля сразу, и синие плашки внутри
+         зелёной строки читались как второе, другое изменение. */
+      const diff = n.status === "changed" && String(v ?? "") !== String(other ?? "");
       const gone = side==="before" && diff;
       const cls = `diff-kv${diff ? " changed" : ""}`;
       if(v == null || v === "") return `<div class="${cls}"><span class="k">${escapeHtml(f.cap)}</span><span class="v muted">—</span></div>`;
@@ -13579,7 +13641,7 @@ function MergeDiffOverlay(){
     const stored = state.mergeDiffOpen[path];
     const open = stored === undefined ? auto : stored;
     return `
-      <div class="diff-pair${foldable?" foldable":""}"
+      <div class="diff-pair${foldable?" foldable":""}${state.mergeDiffFocus===path?" focus":""}" data-row="${escapeHtml(path)}"
            ${foldable?`data-action="merge-diff-toggle" data-path="${escapeHtml(path)}" data-open="${open?1:0}" tabindex="0" role="button" aria-expanded="${open}"`:""}
            ${n.status==="same" ? "" : `title="${DIFF_LABEL[n.status]}"`}>
         ${cell("before", n, depth, open, foldable)}
@@ -13602,28 +13664,22 @@ function MergeDiffOverlay(){
           <h3>Сравнивать нечего</h3>
           <p>Обе ветки пустые: состав ещё не загружен ни в одну из них</p>
         </div>` : `
-        ${groups.length < 2 ? "" : `
-        <div class="ac-tabs-wrap diff-tabs">
-          <div class="ac-tabs-track">
-            ${groups.map(g=>{
-              const n = diffCount(g.nodes);
-              return `<div class="page-tab ${g.id===active.id?"active":""}" style="white-space:nowrap;" data-action="merge-diff-group" data-group="${escapeHtml(g.id)}" tabindex="0" role="button">
-                ${escapeHtml(g.title)}${n?`<span class="diff-count">${n}</span>`:""}
-              </div>`;
-            }).join("")}
-          </div>
-          <div class="ac-tabs-fade left"></div>
-          <div class="ac-tabs-fade right"></div>
-          <button class="ac-tabs-btn left" data-action="ac-tabs-scroll" data-dir="left" title="Прокрутить влево">${icon("chevronLeft")}</button>
-          <button class="ac-tabs-btn right" data-action="ac-tabs-scroll" data-dir="right" title="Прокрутить вправо">${icon("chevronRight")}</button>
-        </div>`}
-        <div class="diff-split">
-          <div class="diff-split-head">
-            <div class="diff-side-cap"><span class="t">${leftCap}</span><span class="d">${leftDesc}</span></div>
-            <div class="diff-side-cap"><span class="t">${rightCap}</span><span class="d">${rightDesc}</span></div>
-          </div>
-          ${active.nodes.map((n,i)=>row(n, active.id+"."+i, 0)).join("")}
-        </div>`}`;
+        <div class="diff-split-head diff-split-head-top">
+          <div class="diff-side-cap"><span class="t">${leftCap}</span><span class="d">${leftDesc}</span></div>
+          <div class="diff-side-cap"><span class="t">${rightCap}</span><span class="d">${rightDesc}</span></div>
+        </div>
+        ${groups.map(g=>{
+          const n = diffCount(g.nodes);
+          /* Группа без изменений показывает только заголовок: её состав целиком
+             совпадает с обеих сторон, и разворачивать простыню незачем. */
+          return `
+          <div class="diff-group" data-group="${escapeHtml(g.id)}">
+            <div class="diff-group-title">${escapeHtml(g.title)}${n?`<span class="diff-count">${n}</span>`:`<span class="diff-group-none">без изменений</span>`}</div>
+            ${n ? `<div class="diff-split">
+              ${g.nodes.map((x,i)=>row(x, g.id+"."+i, 0)).join("")}
+            </div>` : ""}
+          </div>`;
+        }).join("")}`}`;
 
   const placeholder = `
       <div class="diff-empty">
@@ -13649,9 +13705,27 @@ function MergeDiffOverlay(){
       </div>` : ""}
     </div>
 
-    <div class="wizard-body merge-body">
-      ${setup ? `<div class="merge-col-setup">${setup}</div>` : ""}
-      <div class="merge-col-diff">${ready ? compare : placeholder}</div>
+    <div class="wizard-body merge-body${nav.length?"":" no-nav"}">
+      ${nav.length ? `<div class="merge-col-nav">
+        <div class="diff-nav">
+          <div class="diff-nav-cap">Изменения<span class="diff-count">${changes}</span></div>
+          ${nav.map(g=>`
+            <div class="diff-nav-group">
+              <div class="diff-nav-title">${escapeHtml(g.title)}<span class="diff-count">${g.items.length}</span></div>
+              ${g.items.map(it=>`
+                <div class="diff-nav-item ${it.status}${state.mergeDiffFocus===it.path?" active":""}"
+                     data-action="merge-diff-goto" data-path="${escapeHtml(it.path)}" tabindex="0" role="button"
+                     title="${DIFF_LABEL[it.status]}">
+                  <span class="k">${escapeHtml(it.kind)}</span>
+                  <span class="n">${escapeHtml(String(it.label == null ? "—" : it.label))}</span>
+                </div>`).join("")}
+            </div>`).join("")}
+        </div>
+      </div>` : ""}
+      <div class="merge-col-diff">
+        ${setup ? `<div class="merge-setup-row">${setup}</div>` : ""}
+        ${ready ? compare : placeholder}
+      </div>
     </div>
 
     <div class="wizard-foot">
@@ -18872,9 +18946,19 @@ function handleAction(action, el){
       render();
       break;
     }
-    case "merge-diff-group": {
-      state.mergeDiffGroup = el.dataset.group;
+    /* Переход из навигатора к самому изменению: строка может лежать внутри
+       свёрнутых родителей, поэтому сперва раскрываем весь путь к ней, а прокрутку
+       делаем после перерисовки — до неё строки в DOM ещё нет. */
+    case "merge-diff-goto": {
+      const path = el.dataset.path;
+      const parts = path.split(".");
+      for(let i = 2; i < parts.length; i++) state.mergeDiffOpen[parts.slice(0,i).join(".")] = true;
+      state.mergeDiffFocus = path;
       render();
+      requestAnimationFrame(()=>{
+        const target = document.querySelector(`.diff-pair[data-row="${CSS.escape(path)}"]`);
+        if(target) target.scrollIntoView({block:"center", behavior:"smooth"});
+      });
       break;
     }
     case "merge-diff-close": closeMergeDiff(); render(); break;
