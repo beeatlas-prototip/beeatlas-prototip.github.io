@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=6">
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261026-163218">
+<meta name="beeatlas-build" content="20261026-164637">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -2371,6 +2371,11 @@
     overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 
   /* Группы в сравнении идут подряд, шапка колонок стоит один раз и не уезжает. */
+  /* Пояснение, чего в сравнении нет и почему: стоит под таблицей, где человек уже
+     увидел состав и может спросить «а где остальное». */
+  .diff-scope-note{display:flex;gap:var(--size-spacing-x2);align-items:flex-start;
+    margin:var(--size-spacing-x6) 0 0;font-size:13px;line-height:18px;letter-spacing:.2px;color:var(--text-secondary);}
+  .diff-scope-note svg{width:18px;height:18px;flex:0 0 auto;color:var(--text-tertiary);}
   .diff-view-row{display:flex;align-items:center;gap:var(--space-3);margin-top:var(--size-spacing-x6);}
   .diff-view-lbl{font-size:15px;line-height:20px;letter-spacing:.2px;color:var(--text);}
   .diff-split-head-top{border:1px solid var(--border);border-radius:var(--size-border-radius-x6);
@@ -13092,6 +13097,18 @@ const byName = x => x.name || x.label || x.code || "—";
 /* Приложение: группы повторяют вкладки карточки — «можно как бы для прототипа
    за базу взять» (встреча, 11:35). Интерфейсы — единственная тройная вложенность:
    контейнер → интерфейс → метод, и провалиться просили именно до метода. */
+/* N-4 (встреча 26.10): в ветке приложения живут только контейнеры, интерфейсы и
+   методы под ними — «сейчас ветка будет менять чисто интерфейсы, контейнеры и
+   методы под ними, всё остальное это общее на продукт» (06:32–06:51), «на первой
+   итерации вот эту вкладку только сделать» (07:00). Технические возможности
+   вяжутся к методу, а не к продукту (05:01), технологии висят на продукте
+   напрямую и ветку не знают (02:52–03:02). Поэтому в сравнении их больше нет:
+   показывать разницу у того, что объединение не перенесёт, — врать человеку
+   перед необратимым действием. Остальные группы собираются, но не отдаются
+   (AC_DIFF_OFF) — вернуть их можно, когда они начнут ветвиться. */
+const AC_DIFF_OFF = ["caps", "tech", "patterns", "nfrs", "obs"];
+const AC_DIFF_NOTE = "Технические возможности, технологии, паттерны, нефункциональные требования и наблюдаемость от ветки не зависят: они общие для продукта, и объединение их не меняет";
+
 function acDiffGroups(appId, source, target){
   const a = acBranchData(appId, source), b = acBranchData(appId, target);
   const g = (id, title, field, spec) => ({id, title, nodes: diffRows(b[field], a[field], spec)});
@@ -13127,7 +13144,7 @@ function acDiffGroups(appId, source, target){
       kind:"Узел", key:x=>x.id||x.code||x.name, label:byName,
       fields:[{cap:"Статус", get:x=>x.status}],
     }),
-  ].filter(x=>x.nodes.length);
+  ].filter(x=>x.nodes.length && !AC_DIFF_OFF.includes(x.id));
 }
 
 /* CJ: «ты просто вертикально выводишь BI и степы — добавился степ, убрался степ,
@@ -13707,7 +13724,8 @@ function MergeDiffOverlay(){
               ${visible(g.nodes, g.id).map(x=>row(x.n, x.path, 0)).join("")}
             </div>` : ""}
           </div>`;
-        }).join("")}`}`;
+        }).join("")}
+        ${d.kind === "ac" ? `<p class="diff-scope-note">${icon("info")}<span>${AC_DIFF_NOTE}</span></p>` : ""}`}`;
 
   const placeholder = `
       <div class="diff-empty">
