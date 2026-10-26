@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=6">
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261026-161337">
+<meta name="beeatlas-build" content="20261026-163218">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -2365,14 +2365,16 @@
   .diff-nav-item.active{background:var(--bg-selected);}
   .diff-nav-item.added{border-left-color:var(--green-text);}
   .diff-nav-item.removed{border-left-color:var(--red-text);}
-  .diff-nav-item.changed{border-left-color:var(--blue-text);}
+  .diff-nav-item.changed{border-left-color:var(--text-secondary);}
   .diff-nav-item .k{font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);}
   .diff-nav-item .n{font-size:15px;line-height:20px;letter-spacing:.2px;color:var(--text);
     overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 
   /* Группы в сравнении идут подряд, шапка колонок стоит один раз и не уезжает. */
+  .diff-view-row{display:flex;align-items:center;gap:var(--space-3);margin-top:var(--size-spacing-x6);}
+  .diff-view-lbl{font-size:15px;line-height:20px;letter-spacing:.2px;color:var(--text);}
   .diff-split-head-top{border:1px solid var(--border);border-radius:var(--size-border-radius-x6);
-    position:sticky;top:0;z-index:2;margin-top:var(--size-spacing-x6);}
+    position:sticky;top:0;z-index:2;margin-top:var(--size-spacing-x4);}
   .diff-group + .diff-group{margin-top:var(--size-spacing-x6);}
   .diff-group{margin-top:var(--size-spacing-x5);}
   .diff-group-title{display:flex;align-items:center;gap:var(--size-spacing-x2);
@@ -2411,7 +2413,9 @@
     background:var(--md-sys-color-surface-container-highest);color:var(--text);}
   .diff-chip b{font-weight:500;}
   .diff-chip.added{color:var(--md-sys-color-ext-success);}
-  .diff-chip.changed{color:var(--md-sys-color-ext-info);}
+  /* У изменения своего цвета нет: в таблице оно показано парой «красное слева,
+     зелёное справа», поэтому чип остаётся нейтральным. */
+  .diff-chip.changed{color:var(--text);}
   /* --danger-text живёт только внутри .e2ecat-scope, а чип — снаружи: переменная не
      разрешалась, и цвет наследовался от шапки, то есть «Исчезнет» выглядела серой
      рядом с зелёной и синей. Берём тот же токен, что у красного бейджа. */
@@ -2448,11 +2452,10 @@
   /* Цвет берётся парой «контейнер + текст на нём», поэтому читается в обеих темах. */
   .diff-cell.added{background:var(--green-bg);color:var(--green-text);}
   .diff-cell.removed{background:var(--red-bg);color:var(--red-text);}
-  .diff-cell.changed{background:var(--blue-bg);color:var(--blue-text);}
   .diff-cell.absent{background:var(--bg-alt);}
   /* Тип приглушаем прозрачностью, но считая контраст с композитингом: на .72
      подпись давала 4,37:1 на голубой заливке — ниже AA для 13px. */
-  .diff-cell.added .diff-kind, .diff-cell.removed .diff-kind, .diff-cell.changed .diff-kind{color:inherit;opacity:.82;}
+  .diff-cell.added .diff-kind, .diff-cell.removed .diff-kind{color:inherit;opacity:.82;}
   /* Знаков «+ / ± / −» в строках нет: то же самое уже сказано цветом строки и
      словами в чипах шапки, а две легенды на один экран — перебор (26.10). */
   .diff-absent{font-size:13px;line-height:18px;color:var(--text-tertiary);}
@@ -2469,15 +2472,19 @@
   .diff-kv .v{font-size:13px;line-height:18px;color:var(--text);overflow-wrap:anywhere;}
   .diff-kv .v.gone{text-decoration:line-through;color:var(--text-secondary);}
   .diff-kv .v.muted{color:var(--text-tertiary);}
-  /* Изменившееся поле красится тем же синим, что строка: цвет значит одно и то же
-     на любом уровне. Отрицательные поля по краям — чтобы заливка выходила за текст,
-     а колонки «поле / значение» стояли там же, где у соседних строк. */
-  .diff-kv.changed{background:var(--blue-bg);color:var(--blue-text);border-radius:var(--size-border-radius-x4);
+  /* Изменившееся поле: слева красное (значение уходит), справа зелёное (приходит) —
+     те же два цвета, что у строк. Отрицательные поля по краям — чтобы заливка
+     выходила за текст, а колонки «поле / значение» стояли там же, где у соседних
+     строк. */
+  .diff-kv.removed,
+  .diff-kv.added{border-radius:var(--size-border-radius-x4);
     margin-left:calc(-1 * var(--size-spacing-x2));margin-right:calc(-1 * var(--size-spacing-x2));
     padding:var(--size-spacing-x1) var(--size-spacing-x2);}
-  .diff-kv.changed .k{color:inherit;opacity:.82;}
-  .diff-kv.changed .v{color:inherit;}
-  .diff-kv.changed .v.gone{color:inherit;opacity:.72;}
+  .diff-kv.removed{background:var(--red-bg);color:var(--red-text);}
+  .diff-kv.added{background:var(--green-bg);color:var(--green-text);}
+  .diff-kv.removed .k, .diff-kv.added .k{color:inherit;opacity:.82;}
+  .diff-kv.removed .v, .diff-kv.added .v{color:inherit;}
+  .diff-kv.removed .v.gone{color:inherit;opacity:.82;}
 
   .diff-count{min-width:24px;height:24px;padding:0 var(--size-spacing-x2);border-radius:var(--size-border-radius-x15);
     background:var(--gray-bg);color:var(--gray-text);font-size:13px;line-height:24px;text-align:center;
@@ -7850,6 +7857,7 @@ const state = {
   catBranchPanel:null,         // создание ветки каталога
   catBranchDeleteConfirm:null, // подтверждение удаления ветки каталога
   mergeDiffFocus:null,         // путь строки, к которой перешли из навигатора изменений
+  mergeDiffAll:false,          // показывать весь состав, а не только изменения (N-2)
   mergeDiffOpen:{},            // путь узла → раскрыт
   mergeDiffConfirm:false,
   ucImportConfirmed:false,   // импорт уже подтверждён на странице сравнения
@@ -13590,6 +13598,14 @@ function MergeDiffOverlay(){
   };
   const nav = groups.map(g=>({id:g.id, title:g.title, items:navItems(g)})).filter(g=>g.items.length);
 
+  /* N-2 (встреча 26.10): «бо́льшую часть занимает то, что не менялось… должен
+     показывать конкретно то, что меняется» (19:40–19:55). Поэтому по умолчанию в
+     таблице остаются изменившиеся строки и путь к ним; весь состав — по
+     переключателю «Показывать весь состав» (19:12). Индексы строк при этом не
+     пересчитываются: путь строки берётся из исходного набора, иначе переход из
+     навигатора уводил бы не туда при переключении. */
+  const visible = (nodes, prefix) => (nodes||[]).map((n,i)=>({n, path: prefix + "." + i}))
+    .filter(x => state.mergeDiffAll || x.n.status !== "same");
   const cell = (side, n, depth, open, foldable) => {
     const label = side==="before" ? n.before : n.after;
     const pad = `padding-left:calc(var(--size-spacing-x4) + ${depth*24}px);`;
@@ -13597,7 +13613,12 @@ function MergeDiffOverlay(){
       return `<div class="diff-cell absent" style="${pad}"><span class="diff-absent">${
         side==="before" ? "нет в этой ветке" : "не останется"}</span></div>`;
     }
-    const tone = (n.status==="same" || n.viaChild) ? "" : ` ${n.status}`;
+    /* N-3 (встреча 26.10): цветов ровно два — красный слева у того, чего не
+       останется, зелёный справа у того, что появится. «Изменилось» своего цвета
+       не имеет: «строчка по факту не изменённая сущность, у неё только один
+       атрибут поменялся — она станет белой» (27:46), а сам атрибут красится ниже,
+       в подробностях. Путь к изменению (viaChild) тоже остаётся белым. */
+    const tone = (n.status==="added" || n.status==="removed") ? ` ${n.status}` : "";
     return `
       <div class="diff-cell${tone}" style="${pad}">
         ${foldable && (n.before != null ? side==="before" : side==="after")
@@ -13624,7 +13645,10 @@ function MergeDiffOverlay(){
          зелёной строки читались как второе, другое изменение. */
       const diff = n.status === "changed" && String(v ?? "") !== String(other ?? "");
       const gone = side==="before" && diff;
-      const cls = `diff-kv${diff ? " changed" : ""}`;
+      /* Изменённое значение = старое удалено, новое добавлено: «изменённое
+         считается удалением и добавлением нового» (25:59). Слева красное,
+         справа зелёное — сторона и задаёт цвет. */
+      const cls = `diff-kv${diff ? (side==="before" ? " removed" : " added") : ""}`;
       if(v == null || v === "") return `<div class="${cls}"><span class="k">${escapeHtml(f.cap)}</span><span class="v muted">—</span></div>`;
       return `<div class="${cls}"><span class="k">${escapeHtml(f.cap)}</span><span class="v${gone?" gone":""}">${escapeHtml(String(v))}</span></div>`;
     }).join("");
@@ -13648,7 +13672,7 @@ function MergeDiffOverlay(){
         ${cell("after",  n, depth, open, foldable)}
       </div>
       ${open && flds ? `<div class="diff-pair detail">${detailCell("before", n, depth)}${detailCell("after", n, depth)}</div>` : ""}
-      ${open && kids ? n.children.map((c,i)=>row(c, path+"."+i, depth+1)).join("") : ""}`;
+      ${open && kids ? visible(n.children, path).map(x=>row(x.n, x.path, depth+1)).join("") : ""}`;
   };
 
   /* Пока обе ветки не выбраны, сравнивать нечего: справа стоит плейсхолдер, а не
@@ -13664,6 +13688,10 @@ function MergeDiffOverlay(){
           <h3>Сравнивать нечего</h3>
           <p>Обе ветки пустые: состав ещё не загружен ни в одну из них</p>
         </div>` : `
+        <div class="diff-view-row">
+          <div class="toggle ${state.mergeDiffAll?"on":""}" data-action="merge-diff-toggle-all" tabindex="0" role="switch" aria-checked="${state.mergeDiffAll}"><div class="knob"></div></div>
+          <span class="diff-view-lbl">Показывать весь состав</span>
+        </div>
         <div class="diff-split-head diff-split-head-top">
           <div class="diff-side-cap"><span class="t">${leftCap}</span><span class="d">${leftDesc}</span></div>
           <div class="diff-side-cap"><span class="t">${rightCap}</span><span class="d">${rightDesc}</span></div>
@@ -13676,7 +13704,7 @@ function MergeDiffOverlay(){
           <div class="diff-group" data-group="${escapeHtml(g.id)}">
             <div class="diff-group-title">${escapeHtml(g.title)}${n?`<span class="diff-count">${n}</span>`:`<span class="diff-group-none">без изменений</span>`}</div>
             ${n ? `<div class="diff-split">
-              ${g.nodes.map((x,i)=>row(x, g.id+"."+i, 0)).join("")}
+              ${visible(g.nodes, g.id).map(x=>row(x.n, x.path, 0)).join("")}
             </div>` : ""}
           </div>`;
         }).join("")}`}`;
@@ -18949,6 +18977,7 @@ function handleAction(action, el){
     /* Переход из навигатора к самому изменению: строка может лежать внутри
        свёрнутых родителей, поэтому сперва раскрываем весь путь к ней, а прокрутку
        делаем после перерисовки — до неё строки в DOM ещё нет. */
+    case "merge-diff-toggle-all": state.mergeDiffAll = !state.mergeDiffAll; render(); break;
     case "merge-diff-goto": {
       const path = el.dataset.path;
       const parts = path.split(".");
