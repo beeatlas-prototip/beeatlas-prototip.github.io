@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=6">
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261026-134843">
+<meta name="beeatlas-build" content="20261026-135725">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -2424,6 +2424,15 @@
   .diff-kv .v{font-size:13px;line-height:18px;color:var(--text);overflow-wrap:anywhere;}
   .diff-kv .v.gone{text-decoration:line-through;color:var(--text-secondary);}
   .diff-kv .v.muted{color:var(--text-tertiary);}
+  /* Изменившееся поле красится тем же синим, что строка: цвет значит одно и то же
+     на любом уровне. Отрицательные поля по краям — чтобы заливка выходила за текст,
+     а колонки «поле / значение» стояли там же, где у соседних строк. */
+  .diff-kv.changed{background:var(--blue-bg);color:var(--blue-text);border-radius:var(--size-border-radius-x4);
+    margin-left:calc(-1 * var(--size-spacing-x2));margin-right:calc(-1 * var(--size-spacing-x2));
+    padding:var(--size-spacing-x1) var(--size-spacing-x2);}
+  .diff-kv.changed .k{color:inherit;opacity:.82;}
+  .diff-kv.changed .v{color:inherit;}
+  .diff-kv.changed .v.gone{color:inherit;opacity:.72;}
 
   .diff-count{min-width:24px;height:24px;padding:0 var(--size-spacing-x2);border-radius:var(--size-border-radius-x15);
     background:var(--gray-bg);color:var(--gray-text);font-size:13px;line-height:24px;text-align:center;
@@ -12987,8 +12996,13 @@ function diffRows(before, after, spec){
                                     .filter(f=>String(f.before??"") !== String(f.after??""));
     const children = spec.sub ? diffRows(sub(b), sub(a), kid) : [];
     const moved = children.some(c=>c.status!=="same");
+    /* Строка бывает изменившейся по двум разным причинам, и смешивать их нельзя:
+       у одной изменились собственные поля, другая только ведёт к такой строке
+       внутри. Заливку и счётчик получает первая, вторая остаётся дорогой к ней —
+       иначе подсвечены три строки пути, а настоящее изменение (статус) нет. */
     return {status:(fields.length||moved) ? "changed" : "same", kind:spec.kind,
-            before:label(b), after:label(a), fields, children};
+            before:label(b), after:label(a), fields, children,
+            viaChild: !fields.length && moved};
   };
 
   /* Порядок строк задаёт состав «после», а удалённые встают на своё место в составе
@@ -13010,11 +13024,11 @@ function diffRows(before, after, spec){
 /* Счётчик считает все изменившиеся узлы вместе с вложенными: на встрече просили
    «количество изменений» у группы, а не количество строк верхнего уровня. */
 function diffCount(nodes){
-  return (nodes||[]).reduce((n,x)=>n + (x.status==="same" ? 0 : 1) + diffCount(x.children), 0);
+  return (nodes||[]).reduce((n,x)=>n + (x.status==="same" || x.viaChild ? 0 : 1) + diffCount(x.children), 0);
 }
 function diffTotals(groups){
   const t = {added:0, removed:0, changed:0};
-  const walk = ns => (ns||[]).forEach(n=>{ if(n.status!=="same") t[n.status]++; walk(n.children); });
+  const walk = ns => (ns||[]).forEach(n=>{ if(n.status!=="same" && !n.viaChild) t[n.status]++; walk(n.children); });
   groups.forEach(g=>walk(g.nodes));
   return t;
 }
@@ -13524,7 +13538,7 @@ function MergeDiffOverlay(){
       return `<div class="diff-cell absent" style="${pad}"><span class="diff-absent">${
         side==="before" ? "нет в этой ветке" : "не останется"}</span></div>`;
     }
-    const tone = n.status==="same" ? "" : ` ${n.status}`;
+    const tone = (n.status==="same" || n.viaChild) ? "" : ` ${n.status}`;
     const sign = DIFF_SIGN[n.status];
     return `
       <div class="diff-cell${tone}" style="${pad}">
@@ -13547,9 +13561,11 @@ function MergeDiffOverlay(){
     const vals = n.fields.map(f=>{
       const v = side==="before" ? f.before : f.after;
       const other = side==="before" ? f.after : f.before;
-      const gone = side==="before" && String(v ?? "") !== String(other ?? "");
-      if(v == null || v === "") return `<div class="diff-kv"><span class="k">${escapeHtml(f.cap)}</span><span class="v muted">—</span></div>`;
-      return `<div class="diff-kv"><span class="k">${escapeHtml(f.cap)}</span><span class="v${gone?" gone":""}">${escapeHtml(String(v))}</span></div>`;
+      const diff = String(v ?? "") !== String(other ?? "");
+      const gone = side==="before" && diff;
+      const cls = `diff-kv${diff ? " changed" : ""}`;
+      if(v == null || v === "") return `<div class="${cls}"><span class="k">${escapeHtml(f.cap)}</span><span class="v muted">—</span></div>`;
+      return `<div class="${cls}"><span class="k">${escapeHtml(f.cap)}</span><span class="v${gone?" gone":""}">${escapeHtml(String(v))}</span></div>`;
     }).join("");
     return `<div class="diff-detail-cell" style="${pad}">${vals || `<span class="diff-absent">—</span>`}</div>`;
   };
