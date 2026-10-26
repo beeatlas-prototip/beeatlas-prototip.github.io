@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=6">
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261026-130755">
+<meta name="beeatlas-build" content="20261026-133441">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -2376,6 +2376,7 @@
      достаются вместе с компонентом, своего кода здесь нет. */
   .diff-tabs{margin-top:var(--space-5);}
   .diff-tabs .diff-count{margin-left:var(--size-spacing-x2);}
+  .diff-sides-note{margin:0 0 var(--size-spacing-x4);font-size:15px;line-height:22px;letter-spacing:.2px;color:var(--text-secondary);}
   .diff-split{border:1px solid var(--border);border-radius:var(--size-border-radius-x6);overflow:hidden;}
   .diff-split-head{display:grid;grid-template-columns:1fr 1fr;background:var(--bg-alt);border-bottom:1px solid var(--border);}
   .diff-side-cap{display:flex;align-items:center;min-height:var(--size-control-height-medium);
@@ -2457,6 +2458,12 @@
   /* (components/sidesheet): паддинги 20 по вертикали и 16 по горизонтали,
      зазор до кнопки закрытия 16, заголовок 20/28 вес 500. */
   .side-head{padding:var(--size-spacing-x5) var(--size-spacing-x4) 0;flex:0 0 auto;display:flex;align-items:flex-start;justify-content:space-between;gap:var(--size-spacing-x4);}
+  /* Крестик равняется по первой строке заголовка, а не по её верху: строка 28,
+     кнопка 24 — без этих двух пикселей их центры расходились, и при однострочном
+     заголовке крестик читался приподнятым. Выравнивание зоны остаётся по верху:
+     у панелей с подзаголовком (описание метода) крестик обязан стоять у первой
+     строки, а не в середине двух. */
+  .side-head > .wizard-close{margin-top:2px;}
   .side-head h2{font-size:20px;line-height:28px;letter-spacing:.2px;font-weight:500;margin:0 0 var(--space-2);}
   .side-head .side-desc{color:var(--text-secondary);font-size:15px;line-height:18px;letter-spacing:.2px;margin:0;}
   .side-body{flex:1;overflow-y:auto;padding:var(--size-spacing-x4) var(--size-spacing-x4) var(--size-spacing-x5);}
@@ -2473,6 +2480,11 @@
 
   .search-result-card{border:1px solid var(--border);border-radius:var(--radius-sm);padding:var(--space-4) var(--space-4);display:flex;align-items:flex-start;gap:var(--space-3);margin-bottom:var(--space-3);cursor:pointer;}
   .search-result-card:hover{border-color:var(--border-strong);}
+  /* Карточка результата по умолчанию выровнена по верху: у выбора с чекбоксом он
+     встаёт к первой строке подписи, а не в середину трёх. Но у строки файла
+     ведущая иконка и действие справа обязаны стоять по центру всей строки —
+     прижатые к верху, они читались как подвешенные. */
+  .search-result-card.row-center{align-items:center;}
   /* Выбранная карточка результата подсвечивается рамкой — как в панели добавления ТС
      в «Оценке»: одной точки в радио мало, чтобы выбор читался с первого взгляда.
      Правило стоит ПОСЛЕ :hover и с ним же по специфичности — иначе наведение
@@ -12373,7 +12385,7 @@ function CjVersionsPanel(){
     </div>
     <div class="side-body">
       ${Array.from({length:6}).map(()=>`
-        <div class="search-result-card">
+        <div class="search-result-card row-center">
           ${icon("doc")}
           <div style="flex:1;">
             <div class="name">Название файла в несколько строк.bpmn</div>
@@ -13482,9 +13494,15 @@ function MergeDiffOverlay(){
      Заголовок называет и роль ветки: поля слева идут «Откуда → Куда», а колонки —
      наоборот, «куда → откуда», и без слов-ролей их приходилось сопоставлять
      по именам веток. */
-  const leftCap  = `Было · ветка «${escapeHtml(target)}», куда объединяешь`;
-  const rightCap = isImport ? "Станет · состав из файла"
-                            : `Станет · ветка «${escapeHtml(source)}», откуда берёшь состав`;
+  const leftCap  = `Было · ветка «${escapeHtml(target)}»`;
+  const rightCap = isImport ? "Станет · из файла" : `Станет · из ветки «${escapeHtml(source)}»`;
+  /* Пояснение словами: заголовков колонок не хватало — поля слева идут
+     «Откуда → Куда», а колонки наоборот, и роль каждой стороны приходилось
+     достраивать в уме. */
+  const sidesNote = isImport
+    ? `Слева — как сейчас, справа — каким состав станет после импорта файла.`
+    : `Слева — ветка «${escapeHtml(target)}», в которую объединяешь, как она выглядит сейчас. `
+      + `Справа — какой она станет: её состав заменит состав ветки «${escapeHtml(source)}», из которой берёшь.`;
 
   /* Вкладка на тип объекта со счётчиком изменений: «может, тут вот выбор — интерфейс,
      возможности и так далее, количество изменений… дальше выводить список» (11:17).
@@ -13578,6 +13596,7 @@ function MergeDiffOverlay(){
           <button class="ac-tabs-btn left" data-action="ac-tabs-scroll" data-dir="left" title="Прокрутить влево">${icon("chevronLeft")}</button>
           <button class="ac-tabs-btn right" data-action="ac-tabs-scroll" data-dir="right" title="Прокрутить вправо">${icon("chevronRight")}</button>
         </div>`}
+        <p class="diff-sides-note">${sidesNote}</p>
         <div class="diff-split">
           <div class="diff-split-head">
             <div class="diff-side-cap">${leftCap}</div>
