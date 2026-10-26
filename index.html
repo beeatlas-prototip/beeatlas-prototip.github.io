@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=6">
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261026-135725">
+<meta name="beeatlas-build" content="20261026-140411">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -2407,9 +2407,8 @@
   /* Тип приглушаем прозрачностью, но считая контраст с композитингом: на .72
      подпись давала 4,37:1 на голубой заливке — ниже AA для 13px. */
   .diff-cell.added .diff-kind, .diff-cell.removed .diff-kind, .diff-cell.changed .diff-kind{color:inherit;opacity:.82;}
-  /* Знак рядом с цветом: по цвету одному судить нельзя, а «+ / − / ±» читается
-     и в монохроме (docs/behaviour.md). */
-  .diff-sign{flex:0 0 auto;width:12px;font-size:15px;line-height:20px;font-weight:500;text-align:center;}
+  /* Знаков «+ / ± / −» в строках нет: то же самое уже сказано цветом строки и
+     словами в чипах шапки, а две легенды на один экран — перебор (26.10). */
   .diff-absent{font-size:13px;line-height:18px;color:var(--text-tertiary);}
   .diff-flag{flex:0 0 auto;height:24px;display:inline-flex;align-items:center;padding:0 var(--size-spacing-x2);
     border-radius:var(--size-border-radius-x4);background:var(--orange-bg);color:var(--orange-text);
@@ -12963,8 +12962,9 @@ function MergeStrategyNote(source, target){
             fields:[{cap, before, after}], children[], conflict?}.
    `before` и `after` — подпись элемента с каждой стороны; null значит, что с этой
    стороны элемента нет. */
+/* Подпись статуса строки — в `title`: знаков «+ / ± / −» в строках больше нет
+   (26.10), значение несут цвет строки и те же слова в чипах наверху. */
 const DIFF_LABEL = {added:"Добавлено", removed:"Удалено", changed:"Изменено", same:"Без изменений"};
-const DIFF_SIGN  = {added:"+", removed:"−", changed:"±", same:""};
 
 function diffRows(before, after, spec){
   const key = spec.key, label = spec.label;
@@ -13539,10 +13539,8 @@ function MergeDiffOverlay(){
         side==="before" ? "нет в этой ветке" : "не останется"}</span></div>`;
     }
     const tone = (n.status==="same" || n.viaChild) ? "" : ` ${n.status}`;
-    const sign = DIFF_SIGN[n.status];
     return `
       <div class="diff-cell${tone}" style="${pad}">
-        <span class="diff-sign" aria-hidden="true">${sign}</span>
         ${foldable && (n.before != null ? side==="before" : side==="after")
           ? `<span class="diff-caret${open?" open":""}">${icon("chevronRight", 18)}</span>`
           : `<span class="diff-caret"></span>`}
@@ -13554,7 +13552,8 @@ function MergeDiffOverlay(){
 
   /* Подробности встают под названием строки: тот же отступ плюс знак и каретка. */
   const detailCell = (side, n, depth) => {
-    const pad = `padding-left:calc(var(--size-spacing-x4) + ${depth*24 + 54}px);`;
+    /* Подробности встают под названием строки: каретка 18 плюс зазор 12. */
+    const pad = `padding-left:calc(var(--size-spacing-x4) + ${depth*24 + 30}px);`;
     /* Со стороны, где элемента нет, перечислять нечего: столбик «поле — прочерк»
        только мешал бы читать соседнюю колонку. */
     if((side==="before" ? n.before : n.after) == null) return `<div class="diff-detail-cell"></div>`;
