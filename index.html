@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=6">
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261026-133441">
+<meta name="beeatlas-build" content="20261026-133926">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -2364,7 +2364,10 @@
   .diff-chip b{font-weight:500;}
   .diff-chip.added{color:var(--md-sys-color-ext-success);}
   .diff-chip.changed{color:var(--md-sys-color-ext-info);}
-  .diff-chip.removed{color:var(--danger-text);}
+  /* --danger-text живёт только внутри .e2ecat-scope, а чип — снаружи: переменная не
+     разрешалась, и цвет наследовался от шапки, то есть «Исчезнет» выглядела серой
+     рядом с зелёной и синей. Берём тот же токен, что у красного бейджа. */
+  .diff-chip.removed{color:var(--red-text);}
 
   /* ─ Две колонки сравнения ─
      Сетка 1fr/1fr на всю страницу: строки обеих сторон стоят друг напротив друга,
@@ -2376,7 +2379,9 @@
      достаются вместе с компонентом, своего кода здесь нет. */
   .diff-tabs{margin-top:var(--space-5);}
   .diff-tabs .diff-count{margin-left:var(--size-spacing-x2);}
-  .diff-sides-note{margin:0 0 var(--size-spacing-x4);font-size:15px;line-height:22px;letter-spacing:.2px;color:var(--text-secondary);}
+  .diff-sides-note{margin:0 0 var(--size-spacing-x2);font-size:15px;line-height:22px;letter-spacing:.2px;color:var(--text-secondary);}
+  .diff-signs-note{margin:0 0 var(--size-spacing-x4);font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-tertiary);}
+  .diff-signs-note b{font-weight:500;color:var(--text-secondary);}
   .diff-split{border:1px solid var(--border);border-radius:var(--size-border-radius-x6);overflow:hidden;}
   .diff-split-head{display:grid;grid-template-columns:1fr 1fr;background:var(--bg-alt);border-bottom:1px solid var(--border);}
   .diff-side-cap{display:flex;align-items:center;min-height:var(--size-control-height-medium);
@@ -13503,6 +13508,10 @@ function MergeDiffOverlay(){
     ? `Слева — как сейчас, справа — каким состав станет после импорта файла.`
     : `Слева — ветка «${escapeHtml(target)}», в которую объединяешь, как она выглядит сейчас. `
       + `Справа — какой она станет: её состав заменит состав ветки «${escapeHtml(source)}», из которой берёшь.`;
+  /* Знаки в строках без расшифровки читались как математика: «±» особенно —
+     он помечает и саму изменившуюся запись, и её родителя, внутри которого
+     изменение лежит. */
+  const signsNote = `<b>+</b> появится · <b>±</b> поменялось внутри · <b>−</b> не останется`;
 
   /* Вкладка на тип объекта со счётчиком изменений: «может, тут вот выбор — интерфейс,
      возможности и так далее, количество изменений… дальше выводить список» (11:17).
@@ -13597,6 +13606,7 @@ function MergeDiffOverlay(){
           <button class="ac-tabs-btn right" data-action="ac-tabs-scroll" data-dir="right" title="Прокрутить вправо">${icon("chevronRight")}</button>
         </div>`}
         <p class="diff-sides-note">${sidesNote}</p>
+        <p class="diff-signs-note">${signsNote}</p>
         <div class="diff-split">
           <div class="diff-split-head">
             <div class="diff-side-cap">${leftCap}</div>
