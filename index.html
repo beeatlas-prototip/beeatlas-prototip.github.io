@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=6">
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261026-184959">
+<meta name="beeatlas-build" content="20261026-205551">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -2363,7 +2363,12 @@
 
   /* Навигатор изменений — дерево, тот же компонент, что в Каталоге Е2Е. */
   .diff-nav{display:flex;flex-direction:column;min-height:0;flex:1 1 auto;
-    margin-top:var(--size-spacing-x6);border-top:1px solid var(--border);padding-top:var(--size-spacing-x5);}
+    padding-top:var(--size-spacing-x6);}
+  /* Черта отбивает дерево от выбора веток — и рисуется только когда выбор есть.
+     У импорта из файла веток не выбирают, и черта висела под шапкой экрана,
+     ничего не отделяя. */
+  .merge-setup + .diff-nav{margin-top:var(--size-spacing-x6);
+    border-top:1px solid var(--border);padding-top:var(--size-spacing-x5);}
   /* Своего заголовка у навигатора нет: его место занимает имя группы со
      счётчиком. «Изменения N» ничего не добавляло — то же число уже стоит чипами
      в шапке экрана, а групп на экране бывает и несколько, и тогда их имена всё
