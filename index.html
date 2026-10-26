@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=6">
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261026-133926">
+<meta name="beeatlas-build" content="20261026-134843">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -2379,14 +2379,17 @@
      достаются вместе с компонентом, своего кода здесь нет. */
   .diff-tabs{margin-top:var(--space-5);}
   .diff-tabs .diff-count{margin-left:var(--size-spacing-x2);}
-  .diff-sides-note{margin:0 0 var(--size-spacing-x2);font-size:15px;line-height:22px;letter-spacing:.2px;color:var(--text-secondary);}
-  .diff-signs-note{margin:0 0 var(--size-spacing-x4);font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-tertiary);}
-  .diff-signs-note b{font-weight:500;color:var(--text-secondary);}
   .diff-split{border:1px solid var(--border);border-radius:var(--size-border-radius-x6);overflow:hidden;}
   .diff-split-head{display:grid;grid-template-columns:1fr 1fr;background:var(--bg-alt);border-bottom:1px solid var(--border);}
-  .diff-side-cap{display:flex;align-items:center;min-height:var(--size-control-height-medium);
-    padding:0 var(--size-spacing-x4);font-size:13px;line-height:16px;letter-spacing:.2px;
-    color:var(--text-secondary);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  /* Название колонки — основным текстом, под ним подпись: что это за сторона
+     и что с ней произойдёт. Обе строки в одну линию с усечением — заголовок
+     таблицы не переносится. */
+  .diff-side-cap{display:flex;flex-direction:column;justify-content:center;gap:var(--size-spacing-x1);
+    min-height:var(--size-control-height-medium);padding:var(--size-spacing-x3) var(--size-spacing-x4);min-width:0;}
+  .diff-side-cap .t{font-size:15px;line-height:20px;letter-spacing:.2px;font-weight:500;color:var(--text);
+    min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .diff-side-cap .d{font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);
+    min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .diff-side-cap + .diff-side-cap{border-left:1px solid var(--border);}
   .diff-pair{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);}
   .diff-split > .diff-pair:last-child{border-bottom:none;}
@@ -13496,22 +13499,16 @@ function MergeDiffOverlay(){
      Порядок «было → стало» и направление чтения совпадают — так же в сплит-диффе
      GitHub (база слева, входящее справа) и так договорились на встрече 22.10
      («надо как в гите», 08:03; «слева, справа?» — «да», 09:49).
-     Заголовок называет и роль ветки: поля слева идут «Откуда → Куда», а колонки —
-     наоборот, «куда → откуда», и без слов-ролей их приходилось сопоставлять
-     по именам веток. */
-  const leftCap  = `Было · ветка «${escapeHtml(target)}»`;
-  const rightCap = isImport ? "Станет · из файла" : `Станет · из ветки «${escapeHtml(source)}»`;
-  /* Пояснение словами: заголовков колонок не хватало — поля слева идут
-     «Откуда → Куда», а колонки наоборот, и роль каждой стороны приходилось
-     достраивать в уме. */
-  const sidesNote = isImport
-    ? `Слева — как сейчас, справа — каким состав станет после импорта файла.`
-    : `Слева — ветка «${escapeHtml(target)}», в которую объединяешь, как она выглядит сейчас. `
-      + `Справа — какой она станет: её состав заменит состав ветки «${escapeHtml(source)}», из которой берёшь.`;
-  /* Знаки в строках без расшифровки читались как математика: «±» особенно —
-     он помечает и саму изменившуюся запись, и её родителя, внутри которого
-     изменение лежит. */
-  const signsNote = `<b>+</b> появится · <b>±</b> поменялось внутри · <b>−</b> не останется`;
+     Роль ветки объясняет подпись под названием колонки: поля слева идут
+     «Откуда → Куда», а колонки наоборот, «куда → откуда», и без слов роль каждой
+     стороны приходилось достраивать в уме. Отдельной легенды под шапкой нет:
+     пояснение стоит там, где смотришь, — у самой колонки. */
+  const leftCap   = `Было · ветка «${escapeHtml(target)}»`;
+  const leftDesc  = `В неё объединяешь. Так она выглядит сейчас`;
+  const rightCap  = isImport ? "Станет · из файла" : `Станет · из ветки «${escapeHtml(source)}»`;
+  const rightDesc = isImport
+    ? `Состав из файла заменит нынешний`
+    : `Из неё берёшь состав — он заменит состав «${escapeHtml(target)}»`;
 
   /* Вкладка на тип объекта со счётчиком изменений: «может, тут вот выбор — интерфейс,
      возможности и так далее, количество изменений… дальше выводить список» (11:17).
@@ -13605,12 +13602,10 @@ function MergeDiffOverlay(){
           <button class="ac-tabs-btn left" data-action="ac-tabs-scroll" data-dir="left" title="Прокрутить влево">${icon("chevronLeft")}</button>
           <button class="ac-tabs-btn right" data-action="ac-tabs-scroll" data-dir="right" title="Прокрутить вправо">${icon("chevronRight")}</button>
         </div>`}
-        <p class="diff-sides-note">${sidesNote}</p>
-        <p class="diff-signs-note">${signsNote}</p>
         <div class="diff-split">
           <div class="diff-split-head">
-            <div class="diff-side-cap">${leftCap}</div>
-            <div class="diff-side-cap">${rightCap}</div>
+            <div class="diff-side-cap"><span class="t">${leftCap}</span><span class="d">${leftDesc}</span></div>
+            <div class="diff-side-cap"><span class="t">${rightCap}</span><span class="d">${rightDesc}</span></div>
           </div>
           ${active.nodes.map((n,i)=>row(n, active.id+"."+i, 0)).join("")}
         </div>`}`;
