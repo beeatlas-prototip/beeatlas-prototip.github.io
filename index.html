@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=6">
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261026-164637">
+<meta name="beeatlas-build" content="20261026-171929">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -2502,6 +2502,9 @@
   .diff-name{flex:1;min-width:0;font-size:15px;line-height:20px;letter-spacing:.2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .diff-cell.removed .diff-name{text-decoration:line-through;}
 
+  /* Способ загрузки стоит в колонке «Откуда» вместо ветки — он не ветка, и
+     одинаковым с ней быть не должен. */
+  .hist-from{color:var(--text-secondary);}
   .diff-empty{padding:var(--space-10) 0;text-align:center;}
   .diff-empty h3{margin:0 0 var(--space-2);font-size:20px;line-height:28px;font-weight:500;letter-spacing:.2px;}
   .diff-empty p{margin:0;font-size:15px;line-height:22px;color:var(--text-secondary);}
@@ -5755,7 +5758,7 @@ function renderCatalog(){
           ? '<div class="uc-menu">'+
               '<div class="uc-menu-item" onclick="catBranchAction(\'create\')">'+ic('plus')+'<span class="txt">Новая ветка</span></div>'+
               '<div class="uc-menu-item" onclick="catBranchAction(\'merge\')">'+ic('gitMerge')+'<span class="txt">Объединить ветки</span></div>'+
-              '<div class="uc-menu-item" onclick="catBranchAction(\'history\')">'+ic('history')+'<span class="txt">История объединений</span></div>'+
+              '<div class="uc-menu-item" onclick="catBranchAction(\'history\')">'+ic('history')+'<span class="txt">История изменений</span></div>'+
             '</div>'
           : '')+
       '</div>'+
@@ -6024,7 +6027,7 @@ function renderCatHistory(){
     if(t) back='<div class="crumbs"><a onclick="closeCatHistory()">'+esc(t.length>60?t.slice(0,60)+'…':t)+'</a><span class="sep">›</span></div>';
   }
   return back+
-    '<div class="page-title" role="heading" aria-level="1">История объединений</div>'+
+    '<div class="page-title" role="heading" aria-level="1">История изменений</div>'+
     (window.mergeHistoryHtml ? window.mergeHistoryHtml() : '');
 }
 function closeCatHistory(){ state.catHistory=false; render(); }
@@ -9407,7 +9410,7 @@ function renderPage(){
     root.innerHTML = UseCaseImplPage(null, null, null, state.route.implCode);
     return;
   }
-  /* История объединений карточки e2e открывается и без контекста Use Case —
+  /* История изменений карточки e2e открывается и без контекста Use Case —
      тогда она живёт в разделе каталога приложений, как и сама карточка. */
   if(state.route.view==="merge-history" && !state.route.projectId){
     root.innerHTML = MergeHistoryPage();
@@ -12499,7 +12502,7 @@ function CjBranchBar(cjId){
                        meta:b=>cjBranchUpdNote(cjId,b), deleteAction:"cj-branch-delete-ask"})}
       <button class="btn btn-outline btn-sm" data-action="cj-open-branch-create">Новая ветка</button>
       <button class="btn btn-outline btn-sm" data-action="cj-open-merge" ${running?"disabled":""} title="${running?"Дождитесь завершения текущего объединения":""}">Объединить ветки</button>
-      <button class="btn btn-outline btn-sm" data-action="merge-history-open" data-kind="cj" data-artifact="${escapeHtml(cjId)}" data-title="${escapeHtml(cjMeta(cjId).title)}">История объединений</button>
+      <button class="btn btn-outline btn-sm" data-action="merge-history-open" data-kind="cj" data-artifact="${escapeHtml(cjId)}" data-title="${escapeHtml(cjMeta(cjId).title)}">История изменений</button>
       ${cjBranchLocked(cjId, active) ? `<span class="cj-branch-lock-badge" style="margin-left:auto;"><span class="mini-spinner"></span>Ветка обновляется</span>` : ""}
       ${runningHere ? `<span class="cj-merge-running-banner"${cjBranchLocked(cjId, active)?"":' style="margin-left:auto;"'}><span class="mini-spinner"></span>Объединение «${escapeHtml(running.source)}» → «${escapeHtml(running.target)}»…</span>` : ""}
     </div>
@@ -12883,7 +12886,7 @@ function UcActionsMenu(p, u, narrow){
       ${icon("gitMerge")}<span class="txt">Объединить ветки</span>
     </div>
     <div class="uc-menu-item" data-action="merge-history-open" data-kind="uc" data-artifact="${escapeHtml(u.id)}" data-title="${escapeHtml(u.name||u.code||"")}">
-      ${icon("history")}<span class="txt">История объединений</span>
+      ${icon("history")}<span class="txt">История изменений</span>
     </div>`;
   if(!narrow) return `<div class="uc-menu">${branchCmds}</div>`;
 
@@ -13359,17 +13362,40 @@ function mergeBranches(d){
   return {source:(m&&m.source)||null, target:(m&&m.target)||null};
 }
 
-/* ─────────── Журнал объединений ───────────
+/* ─────────── Журнал изменений артефакта ───────────
    Встреча 22.10: «у мержа будет какой-то статус, потом можно будет посмотреть мержи…
-   это, по сути, история твоих изменений объединений веток» — «мы что-то не подумали
-   про эту страничку». Запись появляется в момент запуска (статус «Идёт»), и тот же
-   отложенный обработчик, что заканчивает объединение, переводит её в «Выполнено». */
+   мы что-то не подумали про эту страничку». Запись появляется в момент запуска
+   (статус «Идёт»), и тот же отложенный обработчик, что заканчивает объединение,
+   переводит её в «Выполнено».
+
+   Встреча 26.10 (N-5) расширила смысл: «история объединения — какого объединения
+   история? Нам нужна история артефакта» (30:15). «Чтобы здесь дыр не было, нужна
+   не просто история объединений, а история в целом: если мэйн выкачался из
+   стейджинга, то здесь „откуда“ будет прочерк и просто обновился мэйн вот этими
+   данными» (34:08). Поэтому у записи есть тип: объединение (у него есть ветка-
+   источник) или загрузка состава (источник — не ветка, а способ: ручная выгрузка,
+   автозагрузка). «Что это стейджинг — людям знать не обязательно, а что выгружено
+   руками — полезная инфа» (34:40). */
 const MERGE_LOG = [];
 let mergeLogSeq = 0;
 
+/* Чем артефакт выгружается наружу: тип файла у каждого свой — «для продукта это
+   будет Structurizr workspace, для Use Case — PlantUML… для Sparx скачивается
+   JSON» (31:46–32:16). */
+const ARTIFACT_FILE = {ac:"Structurizr workspace (JSON)", cj:"PlantUML (BPMN)",
+                       uc:"PlantUML", e2e:"PlantUML", cat:"Архив каталога (JSON)"};
+
 function logMergeStart({kind, artifactId, title, source, target}){
-  const e = {id:"ml"+(++mergeLogSeq), kind, artifactId, title, source, target,
+  const e = {id:"ml"+(++mergeLogSeq), type:"merge", kind, artifactId, title, source, target,
              who:ARCHITECT, at:NOW_DAY, status:"Идёт"};
+  MERGE_LOG.unshift(e);
+  return e.id;
+}
+/* Загрузка состава в ветку: у неё нет ветки-источника, поэтому вместо «Откуда»
+   стоит способ загрузки. */
+function logUpload({kind, artifactId, title, target, from, who, at}){
+  const e = {id:"ml"+(++mergeLogSeq), type:"upload", kind, artifactId, title,
+             source:null, from, target, who:who||ARCHITECT, at:at||NOW_DAY, status:"Выполнено"};
   MERGE_LOG.unshift(e);
   return e.id;
 }
@@ -13380,16 +13406,24 @@ function logMergeDone(id){
 function mergeLogFor(kind, artifactId){
   return MERGE_LOG.filter(e=>e.kind===kind && e.artifactId===artifactId);
 }
-/* Пара прошлых объединений у героя: пустая история ничего не объясняет, а встреча
-   просила видеть именно «кто, когда и куда» — на примере это читается сразу. */
+/* Пара прошлых записей у героя: пустая история ничего не объясняет, а встреча
+   просила видеть именно «кто, когда и куда» — на примере это читается сразу.
+   Загрузки в списке тоже нужны: без них непонятно, откуда в ветке взялся состав,
+   если её никто ни с чем не объединял. */
 function seedMergeLog(){
-  [{kind:"cj", artifactId:"cj1", title:"CJ по услуге «Определитель номера»",
+  [{type:"merge", kind:"cj", artifactId:"cj1", title:"CJ по услуге «Определитель номера»",
     source:"design", target:"develop", who:ARCHITECT, at:"22.01.2025"},
-   {kind:"cj", artifactId:"cj1", title:"CJ по услуге «Определитель номера»",
+   {type:"upload", kind:"cj", artifactId:"cj1", title:"CJ по услуге «Определитель номера»",
+    from:"Ручная загрузка BPMN", target:"design", who:ARCHITECT, at:"21.01.2025"},
+   {type:"merge", kind:"cj", artifactId:"cj1", title:"CJ по услуге «Определитель номера»",
     source:"develop", target:"main", who:MOCK_ARCHITECT_POOL[0], at:"20.01.2025"},
-   {kind:"ac", artifactId:"b2c", title:"B2C digital retail delivery catalog",
+   {type:"merge", kind:"ac", artifactId:"b2c", title:"B2C digital retail delivery catalog",
     source:"design", target:"develop", who:ARCHITECT, at:"05.02.2025"},
-  ].forEach(e=>MERGE_LOG.push(Object.assign({id:"ml"+(++mergeLogSeq), status:"Выполнено"}, e)));
+   {type:"upload", kind:"ac", artifactId:"b2c", title:"B2C digital retail delivery catalog",
+    from:"Автозагрузка из источника", target:"main", who:MOCK_ARCHITECT_POOL[1], at:"04.02.2025"},
+   {type:"upload", kind:"ac", artifactId:"b2c", title:"B2C digital retail delivery catalog",
+    from:"Ручная выгрузка", target:"design", who:ARCHITECT, at:"28.01.2025"},
+  ].forEach(e=>MERGE_LOG.push(Object.assign({id:"ml"+(++mergeLogSeq), status:"Выполнено", source:null}, e)));
 }
 
 function openMergeDiff(d){
@@ -13450,7 +13484,7 @@ function mergeDiffGroups(d){
   return [];
 }
 
-/* История объединений артефакта. Встреча просила именно «кто, когда, какой мерж и
+/* История изменений артефакта. Встреча просила именно «кто, когда, какой мерж и
    куда» — поэтому таблица, а не лента: четыре коротких поля читаются строками.
 
    Где она открывается, решает не тип истории, а хозяин артефакта. У артефакта со
@@ -13470,28 +13504,40 @@ function MergeHistoryBody(kind, artifactId){
        первую запись (docs/behaviour.md) — иначе экран читается как тупик. */
     return `
       <div class="diff-empty">
-        <h3>Объединений ещё не было</h3>
-        <p>Здесь появятся записи о том, кто и когда объединял ветки этого артефакта</p>
+        <h3>Изменений ещё не было</h3>
+        <p>Здесь появятся записи о том, кто, когда и чем менял состав веток этого артефакта</p>
         ${MERGE_HISTORY_MERGE_ACTION[kind] ? `
           <button class="btn btn-outline" data-action="merge-history-merge" data-kind="${kind}">${icon("gitMerge")} Объединить ветки</button>` : ""}
       </div>`;
   }
+  /* Колонка «Событие» появилась вместе с загрузками: без неё строка с прочерком в
+     «Откуда» читалась как сломанное объединение. «Откуда» у загрузки называет не
+     ветку, а способ — ручная выгрузка или автозагрузка. */
+  const file = ARTIFACT_FILE[kind] || "Файл";
   return `
     <div class="table-wrap" style="margin-top:var(--space-6);">
       <table>
         <thead><tr>
-          <th>Дата</th><th>Автор</th><th>Откуда</th><th>Куда</th><th>Статус</th>
+          <th>Дата</th><th>Автор</th><th>Событие</th><th>Откуда</th><th>Куда</th><th>Статус</th>
+          <th><span class="vh">Скачать состав</span></th>
         </tr></thead>
         <tbody>
           ${rows.map(e=>`
             <tr>
               <td class="nowrap-cell">${escapeHtml(e.at)}</td>
               <td><div class="cell-clamp-wrap"><div class="cell-clamp">${escapeHtml(e.who)}</div><div class="cell-tooltip">${escapeHtml(e.who)}</div></div></td>
-              <td>${escapeHtml(e.source)}</td>
+              <td class="nowrap-cell">${e.type==="upload" ? "Загрузка состава" : "Объединение веток"}</td>
+              <td>${e.source ? escapeHtml(e.source)
+                             : `<span class="hist-from">${escapeHtml(e.from || "—")}</span>`}</td>
               <td>${escapeHtml(e.target)}</td>
               <td>${e.status==="Идёт"
                     ? `<span class="cj-merge-running-banner"><span class="mini-spinner"></span>Идёт</span>`
                     : `<span class="badge green">Выполнено</span>`}</td>
+              <td class="nowrap-cell">
+                <button class="btn btn-outline btn-icon-only" data-action="merge-history-download"
+                        data-file="${escapeHtml(file)}" data-at="${escapeHtml(e.at)}"
+                        title="Скачать состав на эту дату — ${escapeHtml(file)}">${icon("download")}</button>
+              </td>
             </tr>`).join("")}
         </tbody>
       </table>
@@ -13506,7 +13552,7 @@ function MergeHistoryOverlay(){
     <div class="wizard-head">
       <button class="cj-head-back" data-action="merge-history-close" title="Назад">${icon("chevronLeft")}</button>
       <div class="cj-head-titles">
-        <h2>История объединений</h2>
+        <h2>История изменений</h2>
         <div class="sub">${escapeHtml(h.title||"")}</div>
       </div>
       <div class="cj-head-spacer"></div>
@@ -13544,9 +13590,9 @@ function MergeHistoryPage(){
   return `
     <div class="breadcrumb">
       ${crumbs}
-      <span class="current">История объединений</span>
+      <span class="current">История изменений</span>
     </div>
-    <h1>История объединений</h1>
+    <h1>История изменений</h1>
     ${MergeHistoryBody(r.histKind, r.artifactId)}
   `;
 }
@@ -13558,9 +13604,9 @@ function AcMergeHistoryPage(app){
     <div class="breadcrumb">
       <a data-action="ac-back-to-list">Каталог приложений</a><span class="sep">${icon("chevronRight")}</span>
       <a data-action="ac-close-merge-history">${escapeHtml(app.name)}</a><span class="sep">${icon("chevronRight")}</span>
-      <span class="current">История объединений</span>
+      <span class="current">История изменений</span>
     </div>
-    <h1>История объединений</h1>
+    <h1>История изменений</h1>
     ${MergeHistoryBody("ac", app.id)}
   `;
 }
@@ -13892,7 +13938,7 @@ function AcActionsMenu(){
         ${icon("gitMerge")}<span class="txt">Объединить ветки</span>
       </div>
       <div class="uc-menu-item" data-action="merge-history-open" data-kind="ac" data-artifact="${escapeHtml(state.appcat.detailId||"")}" data-title="${escapeHtml((findApp(state.appcat.detailId)||{}).name||"")}">
-        ${icon("history")}<span class="txt">История объединений</span>
+        ${icon("history")}<span class="txt">История изменений</span>
       </div>
     </div>
   `;
@@ -15252,7 +15298,7 @@ function UseCaseImplPage(projectId, ucId, part, code){
               <div class="uc-menu-item" data-action="e2e-open-branch-create">${icon("plus")}<span class="txt">Новая ветка</span></div>
               <div class="uc-menu-item" data-action="e2e-open-merge">${icon("gitMerge")}<span class="txt">Объединить ветки</span></div>
               <div class="uc-menu-item" data-action="merge-history-open" data-kind="e2e" data-artifact="${escapeHtml(code)}" data-title="${escapeHtml(code)}">
-                ${icon("history")}<span class="txt">История объединений</span>
+                ${icon("history")}<span class="txt">История изменений</span>
               </div>
             </div>` : ""}
         </div>
@@ -19031,6 +19077,12 @@ function handleAction(action, el){
       break;
     }
     case "merge-history-close": state.mergeHistory = null; render(); break;
+    /* «Здесь, где откуда-куда, должна быть кнопочка скачать» (встреча 26.10, 31:46):
+       из истории забирают состав артефакта на момент записи, и тип файла у каждого
+       артефакта свой. Сам файл прототип не собирает — как и остальные выгрузки. */
+    case "merge-history-download":
+      showToast(`${el.dataset.file} на ${el.dataset.at} сформирован и отправлен на скачивание`);
+      break;
     case "merge-history-merge": {
       const mk = el.dataset.kind;
       if(!MERGE_HISTORY_MERGE_ACTION[mk]) break;
@@ -20511,7 +20563,7 @@ window.catalogBranchMenu = {
   open(kind){
     if(kind === "create")  handleAction("cat-open-branch-create", null);
     if(kind === "merge")   handleAction("cat-open-merge", null);
-    /* «История объединений» в каталоге рисуется его собственным скриптом, в его
+    /* «История изменений» в каталоге рисуется его собственным скриптом, в его
        рабочей области — сюда он ходит только за разметкой (mergeHistoryHtml). */
   },
   del(branch){
