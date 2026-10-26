@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=6">
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261026-124031">
+<meta name="beeatlas-build" content="20261026-125203">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -4177,10 +4177,10 @@
 .e2ecat-scope .catalog-list{flex:1;overflow-y:auto;padding:6px 8px 24px;}
 .e2ecat-scope .empty-list{padding:40px 20px;text-align:center;color:var(--text-secondary);font-size:15px;}
 
-.e2ecat-scope .tree-row{display:flex;align-items:flex-start;gap:6px;padding:10px 8px;border-radius:var(--radius-sm);cursor:pointer;}
+.e2ecat-scope .tree-row{display:flex;align-items:center;gap:6px;padding:10px 8px;border-radius:var(--radius-sm);cursor:pointer;}
 .e2ecat-scope .tree-row:hover{background:var(--bg-hover);}
 .e2ecat-scope .tree-row.selected{background:var(--bg-selected);}
-.e2ecat-scope .tree-row .chev{width:20px;height:20px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);border-radius:6px;margin-top:1px;}
+.e2ecat-scope .tree-row .chev{width:20px;height:20px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;color:var(--text-tertiary);border-radius:6px;}
 .e2ecat-scope .tree-row .chev:hover{background:var(--border);}
 .e2ecat-scope .tree-row .chev svg{transition:transform .12s;}
 .e2ecat-scope .tree-row .chev .ic{transition:transform .12s;}
@@ -4188,10 +4188,15 @@
 .e2ecat-scope .tree-row .chev.open .ic{transform:rotate(90deg);}
 .e2ecat-scope .tree-row .chev.none{visibility:hidden;}
 /* Вес 500 по docs/components.md «Бейдж»; было 800 — самое тяжёлое начертание Onest. */
-.e2ecat-scope .badge{flex:0 0 auto;height:24px;display:inline-flex;align-items:center;font-size:13px;font-weight:500;letter-spacing:.3px;border-radius:var(--size-border-radius-x4);padding:3px 7px;line-height:1;}
-.e2ecat-scope .badge.cj{background:var(--badge-cj-bg);color:var(--badge-cj-text);}
-.e2ecat-scope .badge.bi{background:var(--badge-bi-bg);color:var(--badge-bi-text);}
-.e2ecat-scope .badge.sp{background:var(--badge-sp-bg);color:var(--badge-sp-text);}
+/* Марка типа сущности в дереве — аватар, а не бейдж: квадратный (аватар человека
+   круглый, всё остальное — квадрат), один размер 40×40 у всех трёх типов, подпись
+   ровно по центру. Бейдж-пилюля давал каждому типу свою ширину по длине букв и
+   высоту 24, из-за чего три марки в одном списке стояли разными. Кегль — subtitle3
+   15/20/500, как у аватара в шапке (typography.md). */
+.e2ecat-scope .ent-avatar{flex:0 0 auto;width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;border-radius:var(--size-border-radius-x6);font-size:15px;font-weight:500;line-height:20px;letter-spacing:.2px;}
+.e2ecat-scope .ent-avatar.cj{background:var(--badge-cj-bg);color:var(--badge-cj-text);}
+.e2ecat-scope .ent-avatar.bi{background:var(--badge-bi-bg);color:var(--badge-bi-text);}
+.e2ecat-scope .ent-avatar.sp{background:var(--badge-sp-bg);color:var(--badge-sp-text);}
 .e2ecat-scope .tree-row .rt{font-size:15px;line-height:1.35;color:var(--text);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
 .e2ecat-scope .tree-row.lvl-cj{padding-left:8px;}
 .e2ecat-scope .tree-row.lvl-bi{padding-left:26px;}
@@ -5800,7 +5805,7 @@ function renderCjList(){
 
     out+='<div class="tree-row lvl-cj'+(selCj?' selected':'')+'" onclick="selectCj(\''+cj.id+'\')">'+
       '<span class="chev '+(cjOpen?'open':'')+'" onclick="event.stopPropagation();toggleExpand(\''+cj.id+'\')">'+ic('chev',18)+'</span>'+
-      '<span class="badge cj">CJ</span>'+
+      '<span class="ent-avatar cj">CJ</span>'+
       '<span class="rt">'+esc(cj.title)+'</span>'+
     '</div>';
 
@@ -5811,7 +5816,7 @@ function renderCjList(){
         var biOpen = forceOpen || !!state.expanded[bi.id];
         out+='<div class="tree-row lvl-bi" onclick="toggleExpand(\''+bi.id+'\')">'+
           '<span class="chev '+(biOpen?'open':'')+(steps.length?'':' none')+'">'+ic('chev',18)+'</span>'+
-          '<span class="badge bi">BI</span>'+
+          '<span class="ent-avatar bi">BI</span>'+
           '<span class="rt">'+esc(bi.title)+'</span>'+
         '</div>';
         if(biOpen){
@@ -5820,7 +5825,7 @@ function renderCjList(){
             var sel = state.selected && state.selected.type==='step' && state.selected.id===s.id;
             out+='<div class="tree-row lvl-step'+(sel?' selected':'')+'" onclick="selectStep(\''+s.id+'\')">'+
               '<span class="chev none">'+ic('chev',18)+'</span>'+
-              '<span class="badge sp">SP</span>'+
+              '<span class="ent-avatar sp">SP</span>'+
               '<span class="rt">'+esc(s.title)+'</span>'+
             '</div>';
           });
