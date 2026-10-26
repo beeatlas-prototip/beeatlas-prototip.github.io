@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=6">
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261026-181440">
+<meta name="beeatlas-build" content="20261026-183628">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -2337,14 +2337,17 @@
      Раньше слева стоял выбор веток, а типы объектов разводились вкладками —
      «целиком вот эту часть с левой стороны отдал бы под дерево изменений, а выбор
      откуда/куда поставил бы с правой стороны» (18:50). */
-  .merge-body{display:grid;grid-template-columns:360px minmax(0,1fr);gap:var(--size-spacing-x8);
+  /* Зазор 28 + левый паддинг колонки 4 = прежние 32 от разделителя до таблицы.
+     Паддинг нужен переключателю: overflow-y:auto у колонки делает overflow-x
+     прокручиваемым, и кольцо наведения (4px наружу) срезалось левым краем. */
+  .merge-body{display:grid;grid-template-columns:400px minmax(0,1fr);gap:var(--size-spacing-x7);
     padding:0 0 0 var(--size-spacing-x8);overflow:hidden;align-items:stretch;}
   .merge-body.no-nav{grid-template-columns:minmax(0,1fr);}
   .merge-body > *{min-width:0;}
   /* Верхний отступ принадлежит первому блоку, а не колонке: с padding-top
      закреплённая шапка липнет к НИЖНЕЙ границе паддинга, и в просвет над ней
      было видно уезжающие строки. */
-  .merge-col-diff{overflow-y:auto;padding:0 var(--size-spacing-x8) var(--size-spacing-x8) 0;}
+  .merge-col-diff{overflow-y:auto;padding:0 var(--size-spacing-x8) var(--size-spacing-x8) var(--size-spacing-x1);}
   .merge-col-diff > .diff-empty{margin-top:var(--size-spacing-x6);}
   /* Левая колонка — две части с разной судьбой: выбор веток стоит на месте,
      дерево изменений прокручивается под ним. «Дерево изменений может быть очень
@@ -2361,16 +2364,15 @@
   /* Навигатор изменений — дерево, тот же компонент, что в Каталоге Е2Е. */
   .diff-nav{display:flex;flex-direction:column;min-height:0;flex:1 1 auto;
     margin-top:var(--size-spacing-x6);border-top:1px solid var(--border);padding-top:var(--size-spacing-x5);}
-  .diff-nav-cap{display:flex;align-items:center;gap:var(--size-spacing-x2);flex:0 0 auto;
-    padding:0 var(--size-spacing-x2);
-    font-size:15px;line-height:20px;font-weight:500;letter-spacing:.2px;color:var(--text);}
-  .diff-nav-search{flex:0 0 auto;margin-top:var(--size-spacing-x3);}
-  .diff-nav-list{flex:1 1 auto;overflow-y:auto;margin-top:var(--size-spacing-x3);
-    padding-bottom:var(--size-spacing-x8);}
-  .diff-nav-group + .diff-nav-group{margin-top:var(--size-spacing-x4);}
+  /* Своего заголовка у навигатора нет: его место занимает имя группы со
+     счётчиком. «Изменения N» ничего не добавляло — то же число уже стоит чипами
+     в шапке экрана, а групп на экране бывает и несколько, и тогда их имена всё
+     равно служат заголовками. */
+  .diff-nav-list{flex:1 1 auto;overflow-y:auto;padding-bottom:var(--size-spacing-x8);}
+  .diff-nav-group + .diff-nav-group{margin-top:var(--size-spacing-x5);}
   .diff-nav-title{display:flex;align-items:center;gap:var(--size-spacing-x2);
-    font-size:13px;line-height:16px;letter-spacing:.2px;color:var(--text-secondary);
-    padding:0 var(--size-spacing-x2);margin-bottom:var(--size-spacing-x2);}
+    font-size:15px;line-height:20px;font-weight:500;letter-spacing:.2px;color:var(--text);
+    padding:0 var(--size-spacing-x2);margin-bottom:var(--size-spacing-x3);}
   /* Название в дереве — одна строка, полное значение в подсказке (docs/behaviour.md).
      Каталог Е2Е клампит на две: там у строки своя плотность, и общий компонент
      этого не навязывает. */
@@ -2379,17 +2381,20 @@
     justify-content:center;color:var(--text-secondary);}
   .diff-nav-ic svg{width:18px;height:18px;}
   /* Метка статуса у листа и счётчик у узла-пути стоят у правого края: в дереве
-     важнее название, а не метка, и ряд не должен прыгать по ширине. */
-  .diff-nav-mark{flex:0 0 auto;width:8px;height:8px;border-radius:50%;margin-left:auto;}
-  .diff-nav-mark.added{background:var(--green-text);}
-  .diff-nav-mark.removed{background:var(--red-text);}
-  .diff-nav-mark.changed{background:var(--text-secondary);}
+     важнее название, а не метка, и ряд не должен прыгать по ширине.
+     Метка — слово, а не кружок: цветная точка без подписи не значит ничего, пока
+     на неё не наведёшь. Слова те же, что в чипах шапки («Добавится / Изменится /
+     Исчезнет»), чтобы счёт наверху и строка в дереве говорили одно и то же.
+     У «Изменится» своего цвета нет (N-3) — оно стоит приглушённым. */
+  .diff-nav-mark{flex:0 0 auto;margin-left:auto;padding-left:var(--size-spacing-x2);
+    font-size:13px;line-height:16px;letter-spacing:.2px;white-space:nowrap;}
+  .diff-nav-mark.added{color:var(--green-text);}
+  .diff-nav-mark.removed{color:var(--red-text);}
+  .diff-nav-mark.changed{color:var(--text-secondary);}
   .diff-nav .tree-row .diff-count{margin-left:auto;}
   /* Счётчик 24px делал строку с ним на 4px выше соседней — ряд дерева должен
      быть одной высоты (docs/interaction.md). Высоту держит токен, не паддинг. */
   .diff-nav .tree-row{min-height:var(--size-control-height-small);padding-top:0;padding-bottom:0;}
-  .diff-nav-empty{padding:var(--size-spacing-x6) var(--size-spacing-x2);
-    font-size:15px;line-height:20px;color:var(--text-secondary);}
 
   /* Группы в сравнении идут подряд, шапка колонок стоит один раз и не уезжает. */
   /* Пояснение, чего в сравнении нет и почему: стоит под таблицей, где человек уже
@@ -2425,7 +2430,7 @@
     .merge-col-nav{border-right:none;border-bottom:1px solid var(--border);padding-right:0;min-height:auto;overflow:visible;}
     .diff-nav, .diff-nav-list{min-height:auto;overflow:visible;}
     .diff-nav-list{max-height:320px;overflow-y:auto;}
-    .merge-col-diff{padding-right:0;overflow:visible;}
+    .merge-col-diff{padding-right:0;padding-left:var(--size-spacing-x1);overflow:visible;}
     /* Колонка стала полосой во всю ширину: поля встают в ряд, а не растягиваются
        каждое на 1700px — поле на всю строку читается как ошибка вёрстки. */
     .merge-setup{display:flex;flex-wrap:wrap;gap:var(--space-3);align-items:flex-start;}
@@ -2433,7 +2438,6 @@
     .merge-setup .merge-note,
     .merge-setup .cj-merge-conflict-box{flex:1 1 320px;margin-top:0;}
     .merge-setup .merge-setup-desc{flex:1 1 100%;margin:0;}
-    .diff-nav-search{max-width:420px;}
   }
 
   /* ── Сравнение веток (встреча 22.10) ──
@@ -2521,19 +2525,17 @@
   .diff-kv .v{font-size:13px;line-height:18px;color:var(--text);overflow-wrap:anywhere;}
   .diff-kv .v.gone{text-decoration:line-through;color:var(--text-secondary);}
   .diff-kv .v.muted{color:var(--text-tertiary);}
-  /* Изменившееся поле: слева красное (значение уходит), справа зелёное (приходит) —
-     те же два цвета, что у строк. Отрицательные поля по краям — чтобы заливка
-     выходила за текст, а колонки «поле / значение» стояли там же, где у соседних
-     строк. */
-  .diff-kv.removed,
-  .diff-kv.added{border-radius:var(--size-border-radius-x4);
-    margin-left:calc(-1 * var(--size-spacing-x2));margin-right:calc(-1 * var(--size-spacing-x2));
-    padding:var(--size-spacing-x1) var(--size-spacing-x2);}
-  .diff-kv.removed{background:var(--red-bg);color:var(--red-text);}
-  .diff-kv.added{background:var(--green-bg);color:var(--green-text);}
-  .diff-kv.removed .k, .diff-kv.added .k{color:inherit;opacity:.82;}
-  .diff-kv.removed .v, .diff-kv.added .v{color:inherit;}
-  .diff-kv.removed .v.gone{color:inherit;opacity:.82;}
+  /* Изменившееся поле: слева красное (значение уходит), справа зелёное (приходит).
+     Цвет лежит на ЗНАЧЕНИИ, а не заливкой на всей строке поля — и это не вкус,
+     а счёт. Заливка значит «запись добавится / исчезнет», и её ровно столько,
+     сколько написано в чипах шапки. Поле же меняется внутри записи, которая
+     остаётся на месте: такая запись считается как «Изменится». Пока у поля была
+     та же заливка, что у записи, экран сам себе противоречил — «Исчезнет 0»
+     рядом с красными плашками и «Добавится 1» рядом с тремя зелёными.
+     Подпись поля остаётся серой: красится то, что поменялось, а не вся пара. */
+  .diff-kv.removed .v{color:var(--red-text);}
+  .diff-kv.added .v{color:var(--green-text);}
+  .diff-kv.removed .v.gone{color:var(--red-text);text-decoration:line-through;}
 
   .diff-count{min-width:24px;height:24px;padding:0 var(--size-spacing-x2);border-radius:var(--size-border-radius-x15);
     background:var(--gray-bg);color:var(--gray-text);font-size:13px;line-height:24px;text-align:center;
@@ -7928,7 +7930,6 @@ const state = {
   mergeDiffAll:false,          // показывать весь состав, а не только изменения (N-2)
   mergeDiffOpen:{},            // путь узла → раскрыт
   mergeNavOpen:{},             // путь узла дерева изменений → раскрыт (по умолчанию да)
-  mergeNavSearch:"",           // поиск по дереву изменений
   mergeDiffConfirm:false,
   ucImportConfirmed:false,   // импорт уже подтверждён на странице сравнения
   e2eBranchPanel:null,         // {code, name, parent}
@@ -13493,7 +13494,6 @@ function openMergeDiff(d){
   state.mergeDiffFocus = null;
   state.mergeDiffOpen = {};
   state.mergeNavOpen = {};
-  state.mergeNavSearch = "";
   state.mergeDiffConfirm = false;
 }
 /* Закрытие уносит и выбор веток: модалка — весь сценарий объединения целиком,
@@ -13505,7 +13505,6 @@ function closeMergeDiff(){
   state.mergeDiffFocus = null;
   state.mergeDiffOpen = {};
   state.mergeNavOpen = {};
-  state.mergeNavSearch = "";
   state.mergeDiffConfirm = false;
 }
 
@@ -13731,24 +13730,15 @@ function MergeDiffOverlay(){
     });
     return out;
   };
-  /* Поиск по дереву: совпал узел — показываем его целиком, не совпал — остаётся
-     дорогой к совпавшим потомкам. «Дерево изменений может быть очень большим»
-     (18:50), и в гитлабе над списком файлов ровно такое же поле. */
-  const navQ = (state.mergeNavSearch||"").trim().toLowerCase();
-  const navFilter = ns => ns.map(n=>{
-    const hit = !navQ || String(n.label==null?"":n.label).toLowerCase().includes(navQ)
-                      || String(n.kind||"").toLowerCase().includes(navQ);
-    if(hit) return n;
-    const kids = navFilter(n.children);
-    return kids.length ? Object.assign({}, n, {children:kids}) : null;
-  }).filter(Boolean);
   const nav = groups.map(g=>({id:g.id, title:g.title, nodes:navTree(g.nodes, g.id)}))
                     .filter(g=>g.nodes.length);
-  const navShown = nav.map(g=>Object.assign({}, g, {nodes:navFilter(g.nodes)})).filter(g=>g.nodes.length);
 
   /* Иконка строки дерева — по типу объекта; имена только из спрайта (docs/icons.md). */
   /* integration и puzzle в спрайте — один и тот же глиф, поэтому вместе не ставятся;
      network и sitemap тоже. */
+  /* Подпись статуса в дереве — будущим временем, как чипы в шапке: дерево говорит,
+     что СТАНЕТ после объединения, а не что уже произошло. */
+  const NAV_MARK = {added:"Добавится", changed:"Изменится", removed:"Исчезнет"};
   const NAV_ICON = {"Контейнер":"box", "Интерфейс":"integration", "Метод":"code",
                     "Возможность":"star", "Технология":"layers", "Паттерн":"grid",
                     "Требование":"doc", "Узел":"network", "Этап":"layers", "Шаг":"flow",
@@ -13766,7 +13756,7 @@ function MergeDiffOverlay(){
         <span class="rt" title="${escapeHtml(name)}">${escapeHtml(name)}</span>
         ${n.status==="path"
           ? `<span class="diff-count" title="Изменений внутри: ${n.count}">${n.count}</span>`
-          : `<span class="diff-nav-mark ${n.status}" title="${DIFF_LABEL[n.status]}"></span>`}
+          : `<span class="diff-nav-mark ${n.status}">${NAV_MARK[n.status]}</span>`}
       </div>
       ${kids && open ? `<div class="tree-children">${n.children.map(k=>navRow(k, depth+1)).join("")}</div>` : ""}`;
   };
@@ -13908,9 +13898,9 @@ function MergeDiffOverlay(){
       </div>
       <div class="cj-head-spacer"></div>
       ${ready ? `<div class="diff-summary">
-        <span class="diff-chip added">Добавится <b>${t.added}</b></span>
-        <span class="diff-chip changed">Изменится <b>${t.changed}</b></span>
-        <span class="diff-chip removed">Исчезнет <b>${t.removed}</b></span>
+        <span class="diff-chip added" title="Записей, которых в ветке «${escapeHtml(target)}» ещё нет">Добавится <b>${t.added}</b></span>
+        <span class="diff-chip changed" title="Записей, у которых поменялись поля или состав внутри">Изменится <b>${t.changed}</b></span>
+        <span class="diff-chip removed" title="Записей, которых после объединения не останется">Исчезнет <b>${t.removed}</b></span>
       </div>` : ""}
     </div>
 
@@ -13918,15 +13908,12 @@ function MergeDiffOverlay(){
       ${setup || nav.length ? `<div class="merge-col-nav">
         ${setup}
         ${nav.length ? `<div class="diff-nav">
-          <div class="diff-nav-cap">Изменения<span class="diff-count">${changes}</span></div>
-          <div class="diff-nav-search search-wrap field-with-icon">${icon("search")}<input class="input" id="mergeNavSearch" placeholder="Поиск по изменениям" value="${escapeHtml(state.mergeNavSearch||"")}"/></div>
           <div class="diff-nav-list">
-            ${navShown.length ? navShown.map(g=>`
+            ${nav.map(g=>`
               <div class="diff-nav-group">
                 <div class="diff-nav-title">${escapeHtml(g.title)}<span class="diff-count">${g.nodes.reduce((s,n)=>s+n.count,0)}</span></div>
                 ${g.nodes.map(n=>navRow(n, 0)).join("")}
-              </div>`).join("")
-              : `<div class="diff-nav-empty">Ничего не нашлось</div>`}
+              </div>`).join("")}
           </div>
         </div>` : ""}
       </div>` : ""}
@@ -18909,7 +18896,6 @@ function handleInput(el){
     state.cjSourcePanel.draft.calls[+el.dataset.callIdx][el.dataset.callField] = el.value;
     render(); reFocus(el.id);
   }
-  else if(el.id==="mergeNavSearch"){ state.mergeNavSearch = el.value; render(); reFocus("mergeNavSearch"); }
   else if(el.id==="acListSearch"){ state.appcat.listSearch = el.value; render(); reFocus("acListSearch"); }
   else if(el.id==="acTcSearch"){ state.appcat.tcSearch = el.value; render(); reFocus("acTcSearch"); }
   else if(el.id==="acIfaceSearch"){ state.appcat.ifaceSearch = el.value; render(); reFocus("acIfaceSearch"); }
