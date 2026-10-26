@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=6">
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261023-181508">
+<meta name="beeatlas-build" content="20261026-115824">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -2429,6 +2429,7 @@
   .diff-empty{padding:var(--space-10) 0;text-align:center;}
   .diff-empty h3{margin:0 0 var(--space-2);font-size:20px;line-height:28px;font-weight:500;letter-spacing:.2px;}
   .diff-empty p{margin:0;font-size:15px;line-height:22px;color:var(--text-secondary);}
+  .diff-empty .btn{margin-top:var(--space-5);}
   .wizard-stepper-wrap{padding-top:0;}
 
   /* side panel */
@@ -9276,6 +9277,12 @@ function renderPage(){
     root.innerHTML = UseCaseImplPage(null, null, null, state.route.implCode);
     return;
   }
+  /* История объединений карточки e2e открывается и без контекста Use Case —
+     тогда она живёт в разделе каталога приложений, как и сама карточка. */
+  if(state.route.view==="merge-history" && !state.route.projectId){
+    root.innerHTML = MergeHistoryPage();
+    return;
+  }
   if(state.activeSidebar === "home"){
     html = HomePage();
   } else if(state.activeSidebar === "cj"){
@@ -9308,6 +9315,8 @@ function renderPage(){
     html = UseCaseDetailPage(r.projectId, r.ucId);
   } else if(r.view==="usecase-history"){
     html = UseCaseHistoryPage(r.projectId, r.ucId);
+  } else if(r.view==="merge-history"){
+    html = MergeHistoryPage();
   } else if(r.view==="impl-detail"){
     html = UseCaseImplPage(r.projectId, r.ucId, r.part, r.implCode);
   } else {
@@ -9452,6 +9461,7 @@ function defaultAppcatState(){
     listSearch:"",
     expanded:{"d-it":true, "sd-hw":true},
     detailId:null,
+    mergeHistory:false,     // открыта страница истории объединений приложения
     branch:"main",          // открытая ветка приложения
     tab:"general",
     generalSub:"info",
@@ -10450,6 +10460,7 @@ function AcUcDescCell(ucCode, m){
 function AppCatalogModule(){
   const ac = state.appcat;
   if(ac.techDetail) return AcTechDetailPage();
+  if(ac.mergeHistory && ac.detailId) return AcMergeHistoryPage(findApp(ac.detailId));
   if(ac.detailId) return AcAppDetailPage(findApp(ac.detailId));
   return AcListPage();
 }
@@ -13292,11 +13303,56 @@ function mergeDiffGroups(d){
 }
 
 /* История объединений артефакта. Встреча просила именно «кто, когда, какой мерж и
-   куда» — поэтому таблица, а не лента: четыре коротких поля читаются строками. */
+   куда» — поэтому таблица, а не лента: четыре коротких поля читаются строками.
+
+   Где она открывается, решает не тип истории, а хозяин артефакта. У артефакта со
+   своим маршрутом и крошками (Use Case, приложение, карточка e2e) это отдельная
+   страница — ровно как «История импорта»: путь виден, уйти можно в любой узел,
+   шапка и разделы остаются на месте. У артефакта, который сам открыт поверх
+   рабочего места (карточка CJ в поп-апе, Каталог Е2Е со своим левым списком),
+   крошкам вести некуда — там история остаётся слоем поверх, с возвратом в шапке.
+   Таблица и пустое состояние в обоих случаях одни и те же. */
+const MERGE_HISTORY_MERGE_ACTION = {cj:"cj-open-merge", uc:"uc-open-merge", ac:"ac-open-merge",
+                                    e2e:"e2e-open-merge", cat:"cat-open-merge"};
+
+function MergeHistoryBody(kind, artifactId){
+  const rows = mergeLogFor(kind, artifactId);
+  if(!rows.length){
+    /* Пустое состояние случая «данных ещё нет» предлагает действие, которое заведёт
+       первую запись (docs/behaviour.md) — иначе экран читается как тупик. */
+    return `
+      <div class="diff-empty">
+        <h3>Объединений ещё не было</h3>
+        <p>Здесь появятся записи о том, кто и когда объединял ветки этого артефакта</p>
+        ${MERGE_HISTORY_MERGE_ACTION[kind] ? `
+          <button class="btn btn-outline" data-action="merge-history-merge" data-kind="${kind}">${icon("gitMerge")} Объединить ветки</button>` : ""}
+      </div>`;
+  }
+  return `
+    <div class="table-wrap" style="margin-top:var(--space-6);">
+      <table>
+        <thead><tr>
+          <th>Дата</th><th>Автор</th><th>Откуда</th><th>Куда</th><th>Статус</th>
+        </tr></thead>
+        <tbody>
+          ${rows.map(e=>`
+            <tr>
+              <td class="nowrap-cell">${escapeHtml(e.at)}</td>
+              <td>${escapeHtml(e.who)}</td>
+              <td>${escapeHtml(e.source)}</td>
+              <td>${escapeHtml(e.target)}</td>
+              <td>${e.status==="Идёт"
+                    ? `<span class="cj-merge-running-banner"><span class="mini-spinner"></span>Идёт</span>`
+                    : `<span class="badge green">Выполнено</span>`}</td>
+            </tr>`).join("")}
+        </tbody>
+      </table>
+    </div>`;
+}
+
 function MergeHistoryOverlay(){
   const h = state.mergeHistory;
   if(!h) return "";
-  const rows = mergeLogFor(h.kind, h.artifactId);
   return `
   <div class="wizard-overlay">
     <div class="wizard-head">
@@ -13308,32 +13364,57 @@ function MergeHistoryOverlay(){
       <div class="cj-head-spacer"></div>
     </div>
     <div class="wizard-body diff-body">
-      ${rows.length ? `
-        <div class="table-wrap" style="margin-top:var(--space-6);">
-          <table class="table">
-            <thead><tr>
-              <th>Дата</th><th>Автор</th><th>Откуда</th><th>Куда</th><th>Статус</th>
-            </tr></thead>
-            <tbody>
-              ${rows.map(e=>`
-                <tr>
-                  <td>${escapeHtml(e.at)}</td>
-                  <td>${escapeHtml(e.who)}</td>
-                  <td>${escapeHtml(e.source)}</td>
-                  <td>${escapeHtml(e.target)}</td>
-                  <td>${e.status==="Идёт"
-                        ? `<span class="cj-merge-running-banner"><span class="mini-spinner"></span>Идёт</span>`
-                        : `<span class="badge green">Выполнено</span>`}</td>
-                </tr>`).join("")}
-            </tbody>
-          </table>
-        </div>` : `
-        <div class="diff-empty">
-          <h3>Объединений ещё не было</h3>
-          <p>Здесь появятся записи о том, кто и когда объединял ветки этого артефакта</p>
-        </div>`}
+      ${MergeHistoryBody(h.kind, h.artifactId)}
     </div>
   </div>`;
+}
+
+/* Страница истории в разделе «Проекты»: Use Case и карточка e2e. Крошки
+   повторяют путь той страницы, с которой пришли, и добавляют последним узлом
+   саму историю. */
+function MergeHistoryPage(){
+  const r = state.route;
+  const p = r.projectId ? findProject(r.projectId) : null;
+  const u = p && r.ucId ? findUseCase(p, r.ucId) : null;
+  const sep = `<span class="sep">${icon("chevronRight")}</span>`;
+  let crumbs = "";
+  if(r.histKind === "e2e"){
+    crumbs = (u
+      ? `<a data-action="nav" data-nav="projects">Проекты</a>${sep}
+         <a data-action="open-project" data-id="${p.id}">${escapeHtml(p.name)}</a>${sep}
+         <a data-action="open-usecase" data-id="${p.id}" data-uc="${u.id}">${escapeHtml(u.name)}</a>${sep}`
+      : `<a data-action="nav" data-nav="appcat">Каталог приложений</a>${sep}`)
+      + `<a data-action="merge-history-back-impl" data-id="${r.projectId||""}" data-uc="${r.ucId||""}" data-part="${escapeHtml(r.part||"")}" data-code="${escapeHtml(r.implCode||"")}">${escapeHtml(r.implCode||"")}</a>${sep}`;
+  } else {
+    if(!p || !u) return `<div class="placeholder-page">Use case не найден</div>`;
+    crumbs = `
+      <a data-action="nav" data-nav="projects">Проекты</a>${sep}
+      <a data-action="open-project" data-id="${p.id}">${escapeHtml(p.name)}</a>${sep}
+      <a data-action="open-project-usecase" data-id="${p.id}">Use Case</a>${sep}
+      <a data-action="open-usecase" data-id="${p.id}" data-uc="${u.id}">${escapeHtml(u.name)}</a>${sep}`;
+  }
+  return `
+    <div class="breadcrumb">
+      ${crumbs}
+      <span class="current">История объединений</span>
+    </div>
+    <h1>История объединений</h1>
+    ${MergeHistoryBody(r.histKind, r.artifactId)}
+  `;
+}
+
+/* Та же страница в каталоге приложений: у него нет маршрута, место хранится
+   в своём состоянии — как у карточки технологии. */
+function AcMergeHistoryPage(app){
+  return `
+    <div class="breadcrumb">
+      <a data-action="ac-back-to-list">Каталог приложений</a><span class="sep">${icon("chevronRight")}</span>
+      <a data-action="ac-close-merge-history">${escapeHtml(app.name)}</a><span class="sep">${icon("chevronRight")}</span>
+      <span class="current">История объединений</span>
+    </div>
+    <h1>История объединений</h1>
+    ${MergeHistoryBody("ac", app.id)}
+  `;
 }
 
 /* Страница сравнения. Шапка называет обе ветки и направление, под ней сводка
@@ -14962,6 +15043,9 @@ function UseCaseImplPage(projectId, ucId, part, code){
             <div class="uc-menu">
               <div class="uc-menu-item" data-action="e2e-open-branch-create">${icon("plus")}<span class="txt">Новая ветка</span></div>
               <div class="uc-menu-item" data-action="e2e-open-merge">${icon("gitMerge")}<span class="txt">Объединить ветки</span></div>
+              <div class="uc-menu-item" data-action="merge-history-open" data-kind="e2e" data-artifact="${escapeHtml(code)}" data-title="${escapeHtml(code)}">
+                ${icon("history")}<span class="txt">История объединений</span>
+              </div>
             </div>` : ""}
         </div>
       </div>
@@ -18107,6 +18191,7 @@ function saveLocation(){
         fitnessSub: state.appcat.fitnessSub,
         ifaceMode: state.appcat.ifaceMode,
         techDetail: state.appcat.techDetail,
+        mergeHistory: state.appcat.mergeHistory,
         e2eSub: state.appcat.e2eSub,
       },
       // CJ_LIBRARY ids are fixed string literals (unlike Проекты's uid()-regenerated
@@ -18131,6 +18216,7 @@ function restoreRoute(r){
   const ok =
     r.view==="assessment-detail" ? !!findAssessment(p, r.assessmentId) :
     r.view==="usecase-detail"    ? !!findUseCase(p, r.ucId) :
+    r.view==="merge-history"     ? (!r.ucId || !!findUseCase(p, r.ucId)) :
     r.view==="impl-detail"       ? (!!implInfo(r.implCode) && (!r.ucId || !!findUseCase(p, r.ucId))) :
     r.view==="hld-report"        ? ((p.agents.hld.reports[r.reportType]||[]).some(x=>x.id===r.reportId)) :
     r.view==="hld-skeleton"      ? !!p.agents.hld.skeleton : true;
@@ -18217,7 +18303,8 @@ function bindGlobalEvents(){
   };
   document.body.onkeydown = function(e){
     if(e.key === "Escape"){
-      if(state.authOpen){ state.authOpen=false; render(); }
+      if(state.mergeHistory){ state.mergeHistory=null; render(); }
+      else if(state.authOpen){ state.authOpen=false; render(); }
       else if(state.demoOpen){ state.demoOpen=false; state.demoSent=false; render(); }
       else if(state.cjMergeConfirm){ state.cjMergeConfirm=false; render(); }
       else if(state.cjSourcePanel){ state.cjSourcePanel=null; render(); }
@@ -18702,12 +18789,42 @@ function handleAction(action, el){
       break;
     }
     case "merge-diff-close": closeMergeDiff(); render(); break;
-    case "merge-history-open":
-      state.mergeHistory = {kind:el.dataset.kind, artifactId:el.dataset.artifact, title:el.dataset.title||""};
+    /* Куда открыть историю, решает хозяин артефакта: у страницы с крошками —
+       страница, у поп-апа и рабочего места каталога — слой поверх. */
+    case "merge-history-open": {
+      const hKind = el.dataset.kind, hId = el.dataset.artifact, hTitle = el.dataset.title||"";
       state.popover = null;
-      render();
+      if(hKind === "uc"){
+        go("merge-history", {histKind:"uc", artifactId:hId, histTitle:hTitle,
+                             projectId:state.route.projectId, ucId:state.route.ucId});
+      } else if(hKind === "e2e"){
+        go("merge-history", {histKind:"e2e", artifactId:hId, histTitle:hTitle,
+                             projectId:state.route.projectId, ucId:state.route.ucId,
+                             part:state.route.part, implCode:state.route.implCode});
+      } else if(hKind === "ac"){
+        state.appcat.mergeHistory = true;
+        render();
+      } else {
+        state.mergeHistory = {kind:hKind, artifactId:hId, title:hTitle};
+        render();
+      }
       break;
+    }
     case "merge-history-close": state.mergeHistory = null; render(); break;
+    case "merge-history-merge": {
+      const mk = el.dataset.kind;
+      if(!MERGE_HISTORY_MERGE_ACTION[mk]) break;
+      state.mergeHistory = null;   // слой истории выше сравнения и закрыл бы его собой
+      handleAction(MERGE_HISTORY_MERGE_ACTION[mk], el);
+      break;
+    }
+    case "ac-close-merge-history": state.appcat.mergeHistory = false; render(); break;
+    /* Возврат на карточку e2e из крошки: маршрут тот же, но закладку не трогаем —
+       человек вернётся на ту, с которой уходил. */
+    case "merge-history-back-impl":
+      go("impl-detail", {projectId: el.dataset.id || null, ucId: el.dataset.uc || null,
+                         part: el.dataset.part || null, implCode: el.dataset.code});
+      break;
     case "merge-diff-apply": {
       const dd = state.mergeDiff;
       if(!dd) break;
@@ -19759,7 +19876,8 @@ function handleAction(action, el){
       break;
     }
     case "ac-open-app":
-      state.appcat.detailId = el.dataset.id; state.appcat.tab = "general"; state.appcat.generalSub = "info";
+      state.appcat.detailId = el.dataset.id; state.appcat.mergeHistory = false;
+      state.appcat.tab = "general"; state.appcat.generalSub = "info";
       state.appcat.branch = acDefaultOpenBranch(el.dataset.id);
       render();
       break;
@@ -19871,7 +19989,7 @@ function handleAction(action, el){
       }, 2200);
       break;
     }
-    case "ac-back-to-list": state.appcat.detailId = null; render(); break;
+    case "ac-back-to-list": state.appcat.detailId = null; state.appcat.mergeHistory = false; render(); break;
     case "ac-set-e2e-sub": state.appcat.e2eSub = el.dataset.sub; render(); break;
     case "ac-e2e-sort": state.appcat.e2eSort = acToggleSort(state.appcat.e2eSort, el.dataset.key); render(); break;
     case "ac-e2e-uc-sort": state.appcat.e2eUcSort = acToggleSort(state.appcat.e2eUcSort, el.dataset.key); render(); break;
