@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=6">
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261027-173143">
+<meta name="beeatlas-build" content="20261027-174502">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -2649,6 +2649,15 @@
   .search-result-card .tag{font-size:13px;color:var(--text-secondary);margin-bottom:var(--space-1);}
   .search-result-card .name{color:var(--blue);font-weight:500;font-size:15px;margin-bottom:var(--space-1);}
   .search-result-card .code{color:var(--text-secondary);font-size:13px;}
+  /* Карточка выбора e2e в привязке шага: заголовок не синий — вся карточка это
+     выбор радио, а синим в прототипе красится то, что открывается (docs/behaviour.md).
+     Под заголовком — причина, по которой e2e попал в список. */
+  .search-result-card .uc-match-title{font-size:15px;line-height:20px;font-weight:500;color:var(--text);margin-bottom:var(--space-1);}
+  .search-result-card .uc-match-why{font-size:13px;line-height:16px;font-weight:500;color:var(--text);margin-bottom:var(--space-1);}
+  .search-result-card .uc-match-why.is-weak{font-weight:400;color:var(--text-secondary);}
+  /* Техданные снимка отбиты от причины и вызова: без отбивки три строки 13px
+     читались одним серым блоком. */
+  .search-result-card .uc-match-meta{margin-top:var(--space-2);}
   .search-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:var(--space-9) var(--space-3);color:var(--text);gap:var(--space-4);}
   /* Progress indicator, circle standart: 44×44, толщина 6, трек — divider */
   .spinner{width:44px;height:44px;border-radius:50%;border:6px solid var(--md-sys-color-outline-variant);border-top-color:var(--yellow);animation:spin .8s linear infinite;}
@@ -15428,9 +15437,9 @@ function openUcImplMatch(projectId, ucId, part){
   state.sidePanel = {
     type:"uc-impl-match", projectId, ucId, part,
     call: sc.call, tcCode: sc.tcCode || null,
-    /* Поиск предзаполняем путём метода вызова: реализация ищется именно по нему,
-       а пустое поле заставляло бы угадывать, что вообще вводить. */
-    query: sc.call || "",
+    /* Поиск пустой. Предзаполнение вызовом шага дублировало отбор, который
+       список уже сделал, и мешало искать по коду, продукту или сценарию. */
+    query: "",
     pick: null,
   };
   render();
@@ -15467,16 +15476,6 @@ function ucImplMatchResults(sp){
     });
 }
 
-/* В карточке результата крупной строкой должен стоять тот вызов цепочки, ради
-   которого идёт сопоставление, а не первый по порядку: иначе у длинной реализации
-   на виду оказывается вызов, к делу не относящийся. */
-function implMatchedCall(r, sp){
-  const q = String(sp.query||"").trim().toLowerCase();
-  return r.calls.find(c=>c.label===sp.call)
-      || (q ? r.calls.find(c=>(c.from+" "+c.to+" "+c.label).toLowerCase().includes(q)) : null)
-      || r.calls[0];
-}
-
 function submitUcImplMatch(){
   const sp = state.sidePanel;
   const found = implInfo(sp.pick);
@@ -15497,6 +15496,8 @@ function UcImplMatchPanel(){
   const results = ucImplMatchResults(sp);
   const sc = ucImplMatchScenario(sp);
   const caller = sc ? splitParticipant(sc.participant).caller : "";
+  const branch = ucScenarioBranch(sp.projectId, sp.ucId);
+  const callRef = {label: sp.call, opId: (sc && sc.opId) || null};
   return `
     <div class="side-head">
       <div>
@@ -15508,20 +15509,38 @@ function UcImplMatchPanel(){
     <div class="side-body">
       <div class="field-with-icon" style="margin-bottom:var(--space-5);">
         ${icon("search")}
-        <input class="input" id="ucImplMatchSearch" placeholder="Код e2e, источник или метод" value="${escapeHtml(sp.query)}"/>
+        <input class="input" id="ucImplMatchSearch" placeholder="Код E2E, продукт или вызов" value="${escapeHtml(sp.query)}"/>
         ${sp.query ? `<div class="clear-x" data-action="uc-impl-match-clear-search">${icon("x")}</div>` : ""}
       </div>
-      ${results.length ? results.map(r=>`
+      ${results.length ? results.map(r=>{
+        /* Чем карточка отличается от соседней — кодом, сценарием и тем, почему она
+           вообще в списке. Вызов шага в заголовке был повтором строки поиска:
+           список и так отобран по нему, и у совпавших карточек заголовок выходил
+           один и тот же (встреча 27.10). */
+        /* Причина отвечает на «подойдёт ли мне этот e2e» и идёт по силе совпадения:
+           начало цепочки сильнее середины, вызов сильнее операции. Автоподбор
+           смотрит только начало — потому в этом списке совпавшее начало встречается
+           лишь у снятых кандидатов, а «вызов есть в середине» не видел никто. */
+        const kind = e2eMatchKind(r.code, callRef, branch);
+        const inside = callRef.label ? r.calls.findIndex(c=>c.label===callRef.label) : -1;
+        const why = kind==="method" ? "Цепочка начинается с вызова этого шага"
+                  : inside>0 ? `Вызов этого шага есть в цепочке, ${inside+1}-м по счёту`
+                  : kind==="operation" ? `Цепочка начинается с той же операции ${escapeHtml(r.calls[0].opId)}`
+                  : "Вызова этого шага в цепочке нет";
+        const mine = caller ? r.calls.filter(c=>c.from===caller) : [];
+        const shown = (kind ? r.calls[0] : (inside>=0 ? r.calls[inside] : mine[0])) || r.calls[0];
+        const more = mine.length>1 ? ` · и ещё ${mine.length-1} ${ruPlural(mine.length-1,"вызов","вызова","вызовов")} от этого приложения` : "";
+        return `
         <div class="search-result-card${sp.pick===r.code?" selected":""}" data-action="uc-impl-match-pick" data-code="${escapeHtml(r.code)}">
           <div class="ds-radio ${sp.pick===r.code?"checked":""}" style="margin-top:var(--space-1);"></div>
-          <div style="flex:1;">
-            <div class="tag">${escapeHtml(r.code)} · ${escapeHtml(r.source)}</div>
-            <div class="name">${escapeHtml(implMatchedCall(r, sp).label)}</div>
-            <div class="code">${escapeHtml(r.product)} · ${escapeHtml(r.origin)}</div>
-            <div class="code">${r.calls.length} ${ruPlural(r.calls.length,"вызов","вызова","вызовов")} в цепочке · загружено ${escapeHtml(r.loadedAt)}</div>
+          <div style="flex:1;min-width:0;">
+            <div class="uc-match-title">${escapeHtml(r.code)} · ${escapeHtml(r.origin)}</div>
+            <div class="uc-match-why${kind||inside>0?"":" is-weak"}">${why}</div>
+            <div class="code">${escapeHtml(shown.from)} → ${escapeHtml(shown.to)} · ${escapeHtml(shown.label)}${more}</div>
+            <div class="code uc-match-meta">${escapeHtml(r.product)} · ${escapeHtml(r.source)} · ${r.calls.length} ${ruPlural(r.calls.length,"вызов","вызова","вызовов")} в цепочке · загружено ${escapeHtml(r.loadedAt)}</div>
           </div>
-        </div>
-      `).join("") : `<div style="color:var(--text-secondary);font-size:13px;">По запросу «${escapeHtml(sp.query)}» e2e не нашлось. Попробуй код e2e или путь метода.</div>`}
+        </div>`;
+      }).join("") : `<div style="color:var(--text-secondary);font-size:13px;">По запросу «${escapeHtml(sp.query)}» ничего не нашлось. Попробуй код E2E, продукт или путь вызова.</div>`}
     </div>
     <div class="side-foot">
       <button class="btn btn-outline" data-action="close-side">Отмена</button>
