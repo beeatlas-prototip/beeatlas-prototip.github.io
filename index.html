@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=6">
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261027-180352">
+<meta name="beeatlas-build" content="20261027-183241">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -7230,7 +7230,7 @@ function freshProject(name, code){
    полем записи, и один и тот же e2e в двух ветках приходилось заводить двумя
    кодами — это ровно то, чего ветвление и не должно требовать.
 
-   На уровне артефакта: `code`, `product` — продукт-владелец карточки (продукт
+   На уровне артефакта: `code`, `product` — приложение-владелец карточки (приложение
    метода в дереве к нему не приравнивается).
    В снимке ветки: `source` — загрузчик канона (Sparx, PlantUML, Structurizr
    и следующие), `origin` — откуда именно взято описание, `loadedAt`, `objectId`
@@ -10411,7 +10411,7 @@ function acEmptyRow(cols){
 /* ═══ Рабочее место продукта: два направления расширения (концепция §5.1) ══
    Экран строится по владельцу карточки e2e и по совпадению методов, а не по
    продуктам всех узлов дерева: продукт метода внутри чужой цепочки — не тот же,
-   что продукт-владелец карточки.
+   что приложение-владелец карточки.
    Читается опубликованная ветка main: рабочие места не заводят второй контур
    записи и смотрят уже опубликованные снимки. */
 function acE2eBranch(){ return (state.appcat && state.appcat.branch) || "main"; }
@@ -10471,7 +10471,7 @@ function acOutgoingExpansions(app){
 }
 function AcExpansionsTables(app){
   if(!app.product){
-    return `<div class="card"><p style="margin:0;color:var(--text-secondary);">У приложения не указан продукт-владелец, поэтому направления расширения посчитать не из чего</p></div>`;
+    return `<div class="card"><p style="margin:0;color:var(--text-secondary);">У приложения не указано приложение-владелец e2e, поэтому направления расширения посчитать не из чего</p></div>`;
   }
   const incoming = acIncomingExpansions(app);
   const outgoing = acOutgoingExpansions(app);
@@ -10480,7 +10480,7 @@ function AcExpansionsTables(app){
   const how = h => h==="operation" ? " · по операции архитектуры" : "";
   const empty = text => `<tr><td colspan="4" style="text-align:center;color:var(--text-secondary);padding:var(--space-8);">${text}</td></tr>`;
   return `
-    <p class="uc-impl-detail-lbl" style="margin-bottom:var(--space-5);">Продукт-владелец — <b>${escapeHtml(app.product)}</b>, у него ${mineCount} ${ruPlural(mineCount,"e2e","e2e","e2e")} в ветке ${escapeHtml(branch)}. Направления считаются по совпадению методов и не пересекают границу ветки</p>
+    <p class="uc-impl-detail-lbl" style="margin-bottom:var(--space-5);">Приложение-владелец — <b>${escapeHtml(app.product)}</b>, у него ${mineCount} ${ruPlural(mineCount,"e2e","e2e","e2e")} в ветке ${escapeHtml(branch)}. Направления считаются по совпадению методов и не пересекают границу ветки</p>
 
     <div class="section-head-row" style="margin-bottom:var(--space-4);">
       <h3 style="margin:0;font-size:15px;">Кто расширяет мои e2e</h3>
@@ -10488,7 +10488,7 @@ function AcExpansionsTables(app){
     <div class="table-wrap" style="margin-bottom:var(--space-7);">
       <table class="fixed-table">
         <colgroup><col style="width:20%"><col style="width:30%"><col style="width:20%"><col style="width:30%"></colgroup>
-        <thead><tr><th>Мой e2e</th><th>Вызов внутри него</th><th>Расширяющий e2e</th><th>Продукт-владелец</th></tr></thead>
+        <thead><tr><th>Мой e2e</th><th>Вызов внутри него</th><th>Расширяющий e2e</th><th>Приложение-владелец</th></tr></thead>
         <tbody>
           ${incoming.length ? incoming.map(r=>`
             <tr>
@@ -10507,7 +10507,7 @@ function AcExpansionsTables(app){
     <div class="table-wrap">
       <table class="fixed-table">
         <colgroup><col style="width:20%"><col style="width:16%"><col style="width:34%"><col style="width:30%"></colgroup>
-        <thead><tr><th>Мой e2e</th><th>Где</th><th>Что раскрывает</th><th>Продукт или сценарий</th></tr></thead>
+        <thead><tr><th>Мой e2e</th><th>Где</th><th>Что раскрывает</th><th>Приложение или сценарий</th></tr></thead>
         <tbody>
           ${outgoing.length ? outgoing.map(r=>`
             <tr>
@@ -15144,7 +15144,7 @@ function scenarioImplDetailRow(s, projectId, ucId, cols){
      чтобы архитектор видел раскрытие каждого шага и вложенные e2e, не уходя
      с Use Case. Ключ раскрытия свой у каждой пары «шаг + e2e». */
   /* Встреча 27.10 (01:48): «не нравится излишняя подробность — её сейчас не получить,
-     это надо по куче сервисов проходиться». Источник, продукт-владелец и длину
+     это надо по куче сервисов проходиться». Источник, приложение-владелец и длину
      цепочки из строки кандидата убрали: они смотрятся на странице самого e2e
      и в раскрытой цепочке. Осталось то, что объясняет, откуда кандидат взялся. */
   const chainRow = (code, how) => {
@@ -15540,8 +15540,8 @@ function UcImplMatchPanel(){
             <div class="uc-match-title">${escapeHtml(r.origin)}</div>
             <div class="uc-match-code">${escapeHtml(r.code)}</div>
             ${field("Совпадение с вызовом шага", escapeHtml(why))}
-            ${field("Продукт-владелец", escapeHtml(r.product))}
-            ${field("Вызов приложения", `${escapeHtml(shown.from)} → ${escapeHtml(shown.to)} · ${escapeHtml(shown.label)}`)}
+            ${field("Приложение-владелец", escapeHtml(r.product))}
+            ${field("Вызов в цепочке", `${escapeHtml(shown.from)} → ${escapeHtml(shown.to)} · ${escapeHtml(shown.label)}`)}
             <div class="uc-match-foot">
               ${field("Источник", `${escapeHtml(r.source)}, загружено ${escapeHtml(r.loadedAt)}`)}
             </div>
@@ -15666,7 +15666,7 @@ function UseCaseImplPage(projectId, ucId, part, code){
     <div class="impl-meta-row">
       ${meta("Источник", escapeHtml(info.source))}
       ${meta("Откуда загружено", escapeHtml(info.origin))}
-      ${meta("Продукт-владелец", escapeHtml(info.product))}
+      ${meta("Приложение-владелец", escapeHtml(info.product))}
       ${meta("Начальный метод", `<span class="impl-meta-id">${escapeHtml(e2eStartMethod(info.code, branch)||"—")}</span>`)}
       ${meta("Операция архитектуры", info.calls[0] && info.calls[0].opId
           ? `<span class="impl-meta-id">${escapeHtml(info.calls[0].opId)}</span>`
