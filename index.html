@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=6">
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261027-175502">
+<meta name="beeatlas-build" content="20261027-180352">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -2653,9 +2653,9 @@
      выбор радио, а синим в прототипе красится то, что открывается (docs/behaviour.md).
      Под заголовком — причина, по которой e2e попал в список. */
   .search-result-card .uc-match-title{font-size:15px;line-height:20px;font-weight:500;color:var(--text);margin-bottom:var(--space-2);}
-  /* Причина совпадения — бейдж ДС (24, радиус 12): он отвечает на «подойдёт ли
-     мне этот e2e», поэтому стоит над парами, а не среди них. */
-  .search-result-card .uc-match-why{white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis;margin-bottom:var(--space-3);}
+  /* Код под названием, вторичным — как в карточке ТС: сперва то, что человек
+     читает, потом идентификатор. */
+  .search-result-card .uc-match-code{font-size:13px;line-height:16px;color:var(--text-secondary);margin-bottom:var(--space-3);}
   /* Пары «подпись → значение»: подпись вторичная, значение основным цветом.
      Шаг между парами 12, внутри пары 2 — подпись должна липнуть к своему значению. */
   .search-result-card .uc-match-cap{font-size:13px;line-height:16px;color:var(--text-secondary);margin-bottom:2px;}
@@ -15522,13 +15522,14 @@ function UcImplMatchPanel(){
         /* Анатомия карточки — пары «подпись → значение» (образец 27.10): раньше
            продукт, источник, длина цепочки и дата шли одной строкой через точку,
            и «PlantUML» в ней читался как случайное слово. Техданные снимка ушли
-           вниз за разделитель, причина совпадения — бейджем над парами. */
+           вниз за разделитель. Заголовок карточки — название сценария, код под ним:
+           так подписаны карточки ТС и связей, у e2e было наоборот (27.10). */
         const kind = e2eMatchKind(r.code, callRef, branch);
         const inside = callRef.label ? r.calls.findIndex(c=>c.label===callRef.label) : -1;
-        const why = kind==="method" ? {tone:"green", text:"Начинается с вызова шага"}
-                  : inside>0 ? {tone:"blue", text:`Вызов шага ${inside+1}-й из ${r.calls.length}`}
-                  : kind==="operation" ? {tone:"blue", text:`Совпала операция ${r.calls[0].opId}`}
-                  : {tone:"gray", text:"Вызова шага в цепочке нет"};
+        const why = kind==="method" ? "Цепочка начинается с вызова шага"
+                  : inside>0 ? `Вызов шага ${inside+1}-й из ${r.calls.length} в цепочке`
+                  : kind==="operation" ? `Совпала операция ${r.calls[0].opId}`
+                  : "Вызова шага в цепочке нет";
         const mine = caller ? r.calls.filter(c=>c.from===caller) : [];
         const shown = (kind ? r.calls[0] : (inside>=0 ? r.calls[inside] : mine[0])) || r.calls[0];
         const field = (cap, val) => `<div class="uc-match-cap">${cap}</div><div class="uc-match-val">${val}</div>`;
@@ -15536,10 +15537,10 @@ function UcImplMatchPanel(){
         <div class="search-result-card${sp.pick===r.code?" selected":""}" data-action="uc-impl-match-pick" data-code="${escapeHtml(r.code)}">
           <div class="ds-radio ${sp.pick===r.code?"checked":""}" style="margin-top:var(--space-1);"></div>
           <div style="flex:1;min-width:0;">
-            <div class="uc-match-title">${escapeHtml(r.code)}</div>
-            <div class="badge ${why.tone} uc-match-why">${escapeHtml(why.text)}</div>
-            ${field("Сценарий", escapeHtml(r.origin))}
-            ${field("Продукт", escapeHtml(r.product))}
+            <div class="uc-match-title">${escapeHtml(r.origin)}</div>
+            <div class="uc-match-code">${escapeHtml(r.code)}</div>
+            ${field("Совпадение с вызовом шага", escapeHtml(why))}
+            ${field("Продукт-владелец", escapeHtml(r.product))}
             ${field("Вызов приложения", `${escapeHtml(shown.from)} → ${escapeHtml(shown.to)} · ${escapeHtml(shown.label)}`)}
             <div class="uc-match-foot">
               ${field("Источник", `${escapeHtml(r.source)}, загружено ${escapeHtml(r.loadedAt)}`)}
