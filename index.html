@@ -7,7 +7,7 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg?v=6">
 <!-- Отметка сборки: подставляется deploy.sh. Видна в консоли как BUILD и в подсказке
      на логотипе — так за секунду понятно, свежую страницу показывает браузер или из кэша. -->
-<meta name="beeatlas-build" content="20261027-112034">
+<meta name="beeatlas-build" content="20261027-171453">
 <style>
   /* ══════════════════════════════════════════════════════════════════════
      Шрифт вшит в файл — прототип должен оставаться одним HTML.
@@ -15501,7 +15501,7 @@ function UcImplMatchPanel(){
     <div class="side-head">
       <div>
         <h2>Привязать e2e</h2>
-        <p class="side-desc">Найди e2e, который реализует вызов <b>${escapeHtml(sp.call||"")}</b>, и привяжи его к шагу ${escapeHtml(sp.part)}. ${caller ? `В списке только e2e, где что-то вызывает <b>${escapeHtml(caller)}</b> — система этого шага. ` : ""}Привязка допускается и к e2e, чей начальный метод с вызовом не совпал</p>
+        <p class="side-desc">Выбери e2e, который реализует вызов <b>${escapeHtml(sp.call||"")}</b>, и привяжи его к шагу ${escapeHtml(sp.part)}. ${caller ? `В списке только те e2e, где вызовы делает приложение <b>${escapeHtml(caller)}</b> — то же, что и на этом шаге. ` : ""}Привязать можно любой из них, даже если вызов в нём отличается</p>
       </div>
       <button class="wizard-close" data-action="close-side">${icon("x")}</button>
     </div>
